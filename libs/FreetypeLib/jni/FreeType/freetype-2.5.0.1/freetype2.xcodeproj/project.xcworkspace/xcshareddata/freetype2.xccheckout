@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>0DE74243-0DA1-44FE-B5F9-E54D95496025</string>
+	<key>IDESourceControlProjectName</key>
+	<string>freetype2</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>1EB643CEC45AE6122EA52F90405606488AB6EF33</key>
+		<string>http://192.168.5.52/ASView.git</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>libs/FreetypeLib/jni/FreeType/freetype-2.5.0.1/freetype2.xcodeproj</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>1EB643CEC45AE6122EA52F90405606488AB6EF33</key>
+		<string>../../../../../../..</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>http://192.168.5.52/ASView.git</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>111</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>1EB643CEC45AE6122EA52F90405606488AB6EF33</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>1EB643CEC45AE6122EA52F90405606488AB6EF33</string>
+			<key>IDESourceControlWCCName</key>
+			<string>SViewSrc</string>
+		</dict>
+	</array>
+</dict>
+</plist>
