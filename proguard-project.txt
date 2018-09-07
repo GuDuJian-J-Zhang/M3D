@@ -1,0 +1,57 @@
+# To enable ProGuard in your project, edit project.properties
+# to define the proguard.config property as described in that file.
+#
+# Add project specific ProGuard rules here.
+# By default, the flags in this file are appended to flags specified
+# in ${sdk.dir}/tools/proguard/proguard-android.txt
+# You can edit the include path and order by changing the ProGuard
+# include property in project.properties.
+#
+# For more details, see
+#   http://developer.android.com/guide/developing/tools/proguard.html
+
+# Add any project specific keep options here:
+
+# If your project uses WebView with JS, uncomment the following
+# and specify the fully qualified class name to the JavaScript interface
+# class:
+#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
+#   public *;
+#}
+
+-keep  public  class ht.svbase.model.SShape {
+	public <init>();
+	public void setID(int );
+	public void setName(java.lang.String) ;
+}
+
+-keep  public  class ht.svbase.model.SModel {
+	public <init>();
+	public void setID(int);
+	public void setName(java.lang.String) ;
+	public void setPlacePath(java.lang.String);
+    public void addSubModel(ht.svbase.model.SModel ) ;
+    public void addBody(ht.svbase.model.SBody) ;
+    public void setModleViews(int[] ,java.lang.String[] ) ;
+}
+
+-keep  public   class ht.svbase.model.SBody {
+	public <init>();
+	public void setID(int );
+	public void setName(java.lang.String) ;
+    public void addFace(ht.svbase.model.SFace );
+    public void addEdge(ht.svbase.model.SEdge );
+}
+
+-keep public   class ht.svbase.model.SFace {
+	public <init>();
+	public void setID(int );
+	public void setName(java.lang.String) ;
+    public void addEdge(ht.svbase.model.SEdge) ;
+}
+
+
+
+
+
+

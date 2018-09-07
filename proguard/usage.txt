@@ -1,0 +1,783 @@
+ht.svbase.command.OpenFileCommand:
+    public static final int OpenFile_Begin_Msg
+    public static final int OpenFile_End_Msg
+    public static final int ShowCommand_Msg
+    public static final int ShowModel_Msg
+    54:54:public android.net.Uri getUri()
+ht.svbase.command.SCommand:
+    55:56:public void setAsyncExecute(boolean)
+    63:64:public void setName(java.lang.String)
+ht.svbase.command.SCommandManager:
+    44:51:public ht.svbase.command.SCommand addCommand(java.lang.Class)
+    60:62:public ht.svbase.command.SCommand addCommand(java.lang.String)
+    81:81:public java.util.List getHistories()
+    90:90:public void redo()
+    95:101:public void runCommand(java.lang.Class)
+    106:113:public void runCommand(java.lang.String)
+    121:121:public void undo()
+ht.svbase.command.SMeasureCommand:
+    static final int CREATE
+    static final int EDIT
+    36:36:public static int getNoteID()
+    93:94:public void setMeasureNotes(java.util.List)
+    97:98:public void setsView(ht.svbase.views.SView)
+    115:115:protected int getCurrentState()
+    128:129:protected void setCurrentState(int)
+    132:133:protected void setMeasureStep(int)
+ht.svbase.command.SMeasureCommand$1:
+    150:150:public boolean onHandle(java.lang.Object,android.view.MotionEvent)
+ht.svbase.command.SPntLineDisMeasureCommand
+ht.svbase.command.SPntPntDisCommand
+ht.svbase.model.SBody:
+    22:24:public void addEdges(ht.svbase.model.SEdge)
+    58:63:public void freeMeshData()
+    93:101:public void setCloneModel(ht.svbase.model.SModel)
+    104:105:public void setMeshData(ht.svbase.model.SMeshData)
+    108:110:public void setMeshDrawData(ht.svbase.model.SMeshDrawData)
+ht.svbase.model.SBox:
+    static java.nio.ShortBuffer indexBuffer
+    private ht.svbase.model.SPoint centerPoint
+    private float[] m_Box
+    private float maxLength
+    private ht.svbase.model.SPoint maxPoint
+    private float minLength
+    private ht.svbase.model.SPoint minPoint
+    18:18:public static ht.svbase.model.SBox fromArray(float[])
+    22:22:public static ht.svbase.model.SBox fromBox(ht.svbase.model.SBox)
+    26:26:public static ht.svbase.model.SBox fromPoints(ht.svbase.model.SPoint,ht.svbase.model.SPoint)
+    31:40:public static java.nio.ShortBuffer getDrawIndexBuffer()
+    43:44:public SBox()
+    46:49:public SBox(float[])
+    52:52:public float[] array()
+    56:73:public void combine(ht.svbase.model.SBox)
+    76:76:public ht.svbase.model.SPoint getCenter()
+    81:94:public java.nio.FloatBuffer getDrawBuffer()
+    98:101:public float getHeight()
+    105:108:public float getLength()
+    112:112:public ht.svbase.model.SPoint getMax()
+    121:121:public float getMaxEdge()
+    125:125:public ht.svbase.model.SPoint getMin()
+    129:129:public float getMinEdge()
+    133:160:public float[] getVertexPoints()
+    164:175:public ht.svbase.model.SPoint[] getVertexs()
+    179:182:public float getWidth()
+    186:186:private float getCenter(float,float)
+    190:195:private void preCalculate()
+    198:206:private void preCalculateMaxEdge()
+    209:217:private void preCalculateMinEdge()
+    220:222:private void priCalculateCenter()
+    225:226:private void priCalculateMax()
+    229:230:private void priCalculateMin()
+ht.svbase.model.SColor:
+    58:62:public void setIntColor(int)
+    65:65:public int toColor()
+ht.svbase.model.SEdge:
+    public int m_iID
+    public int m_indexN
+    25:25:public ht.svbase.model.SBody getBody()
+    29:29:public ht.svbase.model.SFace getFace()
+ht.svbase.model.SFace:
+    38:39:public void freeMeshData()
+    50:50:public ht.svbase.model.SMeshData getMeshData()
+    54:54:public ht.svbase.model.SMeshDrawData getMeshDrawData()
+    79:83:public void setCloneModel(ht.svbase.model.SModel)
+    86:87:public void setEdges(java.util.List)
+    90:91:public void setMeshData(ht.svbase.model.SMeshData)
+ht.svbase.model.SFileInfo:
+    private java.util.HashMap fileInfo
+    private java.lang.String noteFile
+    private java.lang.String preFile
+    private android.net.Uri uri
+    25:45:public static java.util.ArrayList getFilesByPathAndSuffix(java.lang.String,java.lang.String)
+    56:58:public SFileInfo(android.net.Uri)
+    116:116:public java.lang.String getFile()
+    127:127:public java.lang.String getNoteFile()
+    138:138:public java.lang.String getPreFile()
+    147:149:public java.util.Map getProperties()
+    158:158:public android.net.Uri getUri()
+    162:172:public void LogAllPathFile()
+    180:181:public void setFile(java.lang.String)
+    189:190:public void setNoteFile(java.lang.String)
+    198:199:public void setPreFile(java.lang.String)
+    207:208:public void setUri(android.net.Uri)
+ht.svbase.model.SFileInfo$1
+ht.svbase.model.SGeoAttribute:
+    3:3:public SGeoAttribute()
+ht.svbase.model.SGraphicElement:
+    private ht.svbase.model.SBox box
+    private int id
+    private java.lang.String name
+    private ht.svbase.model.SNote note
+    27:27:public float getAlpha()
+    31:31:public ht.svbase.model.SBox getBox()
+    35:35:public ht.svbase.model.SColor getColor()
+    40:40:public int getID()
+    45:45:public java.lang.String getName()
+    49:49:public ht.svbase.model.SNote getNote()
+    53:53:public int getType()
+    57:57:public boolean isSelected()
+    61:61:public boolean isUseIndex()
+    65:65:public boolean isVisible()
+    69:70:public void setBox(float[])
+    73:74:public void setBox(ht.svbase.model.SBox)
+    85:86:public void setId(int)
+    89:90:public void setName(java.lang.String)
+    93:94:public void setNote(ht.svbase.model.SNote)
+    97:98:public void setSelected(boolean)
+    101:102:public void setTransparent(float)
+    105:106:public void setType(int)
+    109:110:public void setVisible(boolean)
+    113:114:public void useIndex(boolean)
+ht.svbase.model.SGraphicElement$NoteElementType
+ht.svbase.model.SLine:
+    private java.nio.FloatBuffer[] endArrowBufferArray
+    private java.nio.FloatBuffer[] startArrowBufferArray
+    19:23:public SLine(float[],float[])
+    32:32:public float[] array()
+ht.svbase.model.SMatrix:
+    25:28:public static ht.svbase.model.SMatrix fromDoubleArray(double[])
+    32:32:public static ht.svbase.model.SMatrix fromMatrix(ht.svbase.model.SMatrix)
+    40:46:public float[] getTransposeArray()
+ht.svbase.model.SMeshData:
+    public static final int PointsType_Index
+    public static final int PointsType_PointAndNomal
+    public static final int PointsType_Triangle
+    public static final int PointsType_Triangle_Fan
+    public static final int PointsType_Triangle_Strip
+    private int id
+    private java.lang.String name
+    private int pointsType
+    30:35:public SMeshData(java.util.List,java.util.List,java.util.List)
+    49:49:public int getID()
+    53:53:public java.util.List getIndexs()
+    58:58:public java.lang.String getName()
+    62:62:public java.util.List getNormalIndexs()
+    66:66:public java.util.List getNormals()
+    74:74:public int getPointsType()
+    81:81:public ht.svbase.model.SShape getShape()
+    89:96:public void MultiMatrix(float[])
+    99:100:public void MultiMatrix(ht.svbase.model.SMatrix)
+    103:104:public void setId(int)
+    107:108:public void setIndexs(java.util.List)
+    111:112:public void setName(java.lang.String)
+    115:116:public void setNormalIndexs(java.util.List)
+    119:120:public void setNormals(java.util.List)
+    123:124:public void setPoints(java.util.List)
+    127:128:public void setPointsType(int)
+ht.svbase.model.SMeshDrawData:
+    private ht.svbase.model.SBox box
+    private int vboIndexArraySize
+    private int vboNormalArraySize
+    private int vboOffSet
+    private int vboTriPointArraySize
+    private int vboVertexArraySize
+    29:29:public ht.svbase.model.SBox getBox()
+    33:33:public float[] getColor()
+    37:37:public java.nio.ShortBuffer getIndexBuffer()
+    41:43:public int getIndexNum()
+    47:47:public java.lang.Boolean getMeshDataDirt()
+    51:54:public java.nio.FloatBuffer getNormalBuffer()
+    58:62:public int getNormalNum()
+    66:69:public java.nio.FloatBuffer getPointBuffer()
+    73:75:public int getPointNum()
+    82:82:public ht.svbase.model.SShape getShape()
+    86:86:public int getShapeType()
+    90:104:public java.nio.ShortBuffer getTriEdgeIndexBuffer()
+    108:132:public java.nio.FloatBuffer getTriEdgePointBuffer()
+    136:136:public int getVboIndexOffSet()
+    140:140:public int getVboNormalOffSet()
+    144:144:public int getVboOffSet()
+    150:150:public int getVboTriPointOffSet()
+    154:154:public int getVboVertexOffSet()
+    158:158:public boolean isUseIndex()
+    171:172:public void setBox(float[])
+    175:176:public void setBox(ht.svbase.model.SBox)
+    179:180:public void setColor(float[])
+    183:184:public void setIndexbBuffer(java.nio.ShortBuffer)
+    187:188:public void setIndexNum(int)
+    191:192:public void setMeshDataDirt(java.lang.Boolean)
+    195:196:public void setNormalBuffer(java.nio.FloatBuffer)
+    199:200:public void setNormalNum(int)
+    203:205:public void setNormals(float[])
+    208:209:public void setPointBuffer(java.nio.FloatBuffer)
+    212:215:public void setPointIndex(int[])
+    218:220:public void setPoints(float[])
+    231:232:public void setShapeType(int)
+    235:236:public void setTriEdgePointBuffer(java.nio.FloatBuffer)
+    239:240:public void setVboIndexOffSet(int)
+    243:244:public void setVboNormalOffSet(int)
+    247:248:public void setVboOffSet(int)
+    251:252:public void setVboTriPointOffSet(int)
+    255:256:public void setVboVertexOffSet(int)
+ht.svbase.model.SModel:
+    private int plcID
+    private java.lang.String plcIDStr
+    19:27:public static ht.svbase.model.SModel findModel(ht.svbase.model.SModel,int)
+    66:67:public void clearNotes()
+    81:88:public void freeMeshData()
+    91:91:public ht.svbase.model.SMatrix getAviPlcMtx()
+    99:99:public ht.svbase.model.SFileInfo getFileInfo()
+    103:103:public boolean getHasColor()
+    107:107:public java.util.List getMeshDataIDs()
+    111:119:public ht.svbase.model.SModel GetModel(int)
+    123:128:public ht.svbase.model.SNote getNote(int)
+    132:132:public java.util.List getNotes()
+    187:187:public int getProtoTypeID()
+    191:199:public ht.svbase.model.SBox getSelfBox()
+    203:203:public java.util.List getSubModelIDs()
+    240:242:public void removeNote(ht.svbase.model.SNote)
+    259:264:public void setAviPlcMtx(ht.svbase.model.SMatrix)
+    267:268:public void setFileInfo(ht.svbase.model.SFileInfo)
+    271:272:public void setHasColor(boolean)
+    275:277:public void setMeshDataIDs(int[])
+    298:305:public void setMovePlcMtx(ht.svbase.model.SMatrix)
+    312:313:public void setPlaceID(int)
+    316:317:public void setPlaceMatrix(float[])
+    320:321:public void setPlaceMatrix(ht.svbase.model.SMatrix)
+    324:327:public void setProtoType(ht.svbase.model.SModel)
+    330:331:public void setProtoTypeID(int)
+    342:344:public void setSubModelIDs(int[])
+    347:364:public void setTransparent(float,boolean)
+    376:376:public boolean useProtoType()
+ht.svbase.model.SModelView:
+    42:43:public void clear()
+    46:46:public java.util.Map getChangedModels()
+    63:63:public ht.svbase.model.SModel getModel()
+    72:72:public java.util.List getNotes()
+    80:80:public boolean isSelected()
+    84:84:public boolean isVisible()
+    88:94:public void removeNode(int)
+    97:98:public void removeNote(ht.svbase.model.SNote)
+ht.svbase.model.SNote:
+    private ht.svbase.model.SModelView view
+    18:19:public void addPlane(ht.svbase.model.SPlane)
+    26:27:public void addPolyline(ht.svbase.model.SPolyline)
+    64:64:public ht.svbase.model.SModelView getView()
+    68:69:public void setView(ht.svbase.model.SModelView)
+ht.svbase.model.SObject
+ht.svbase.model.SPlane:
+    static java.nio.ShortBuffer indexBuffer
+    java.nio.FloatBuffer drawBuffer
+    boolean isGenDrawBuffer
+    21:30:public static java.nio.ShortBuffer getDrawIndexBuffer()
+    37:38:public void addPoint(ht.svbase.model.SPoint)
+    43:45:public void addPoints(float[])
+    48:60:public java.nio.FloatBuffer getDrawBuffer()
+    64:64:public java.util.List getEdgeList()
+    68:68:public ht.svbase.model.SLine[] getLines()
+    72:72:public java.util.List getPoints()
+ht.svbase.model.SPoint:
+    31:32:public float[] array4f()
+    48:53:public boolean equal(ht.svbase.model.SPoint)
+    61:62:public void setX(float)
+    71:75:public void setXYZ(float[])
+    78:79:public void setY(float)
+    82:83:public void setZ(float)
+ht.svbase.model.SPoint2D
+ht.svbase.model.SPolyline:
+    public static final int Continuous_Loop_Polyline
+    public static final int Continuous_NoLoop_Polyline
+    public static final int NoContinuous_Polyline
+    28:30:public void addLine(ht.svbase.model.SLine)
+    33:36:public void addPoint(float,float,float)
+    39:42:public void addPoint(float[])
+    45:46:public void addPoint(ht.svbase.model.SPoint)
+    49:49:public int getLineWidth()
+    53:56:public java.nio.FloatBuffer getPointBuffer()
+    64:64:public int getPolylineType()
+    68:69:public void setLineWidth(int)
+    72:73:public void setPoints(java.util.List)
+    76:77:public void setPolylineType(int)
+ht.svbase.model.SProperties:
+    15:16:public void AddProperties(java.util.Map)
+    27:27:public java.util.Set getKeys()
+    35:37:public java.lang.String getProperty(java.lang.String)
+    45:47:public void removeProperty(java.lang.String)
+ht.svbase.model.SShape:
+    private ht.svbase.model.SBox box
+    62:62:public float getAlpha()
+    66:66:public ht.svbase.model.SBox getBox()
+    104:104:public boolean isUseIndex()
+    112:113:public void setBox(float[])
+    116:117:public void setBox(ht.svbase.model.SBox)
+    120:121:public void setColor(float[])
+    151:152:public void setTransparent(float)
+    159:160:public void useIndex(boolean)
+ht.svbase.model.SText:
+    private java.lang.String fontName
+    private boolean isBold
+    38:38:public java.lang.String getFontName()
+    58:58:public boolean isBold()
+    62:62:public boolean isFixSize()
+    66:66:public boolean isFrontDisplay()
+    70:71:public void setBold(boolean)
+    79:80:public void setFixSize(boolean)
+    83:84:public void setFontName(java.lang.String)
+    91:92:public void setFrontDisplay(boolean)
+    95:96:public void setStartPosition(ht.svbase.model.SPoint)
+    99:100:public void setText(java.lang.String)
+ht.svbase.model.SVoiceNote:
+    11:11:public ht.svbase.model.SPoint getPosition()
+ht.svbase.model.ShapeGeoInfo
+ht.svbase.model.io.SReader:
+    38:40:public SReader(ht.svbase.views.SView)
+    64:66:public void getModel(ht.svbase.model.SModel)
+    88:88:public boolean isPause()
+    112:113:public void setPause(boolean)
+    116:117:public void setsView(ht.svbase.views.SView)
+    120:121:public void setUri(android.net.Uri)
+ht.svbase.model.io.SReaderEvent:
+    public static final int FileRead_Begin
+    public static final int FileRead_Cancel
+    public static final int FileRead_End
+    public static final int FileRead_Processing
+    private static final long serialVersionUID
+    private java.lang.String sName
+    24:25:public SReaderEvent(java.lang.Object)
+    38:38:public java.lang.Object getObj()
+    53:60:public java.lang.String getsInfo()
+    67:69:public java.lang.String getsName()
+    84:85:public void setObj(java.lang.Object)
+    92:93:public void setPercent(int)
+    100:101:public void setsInfo(java.lang.String)
+    108:109:public void setsName(java.lang.String)
+ht.svbase.model.io.STLNativeReader:
+    14:15:public STLNativeReader(ht.svbase.views.SView)
+ht.svbase.model.io.SVL2NativeReader:
+    17:18:public SVL2NativeReader(ht.svbase.views.SView)
+    55:63:private void getModelInfo(ht.svbase.model.SModel,int)
+    67:97:private void getModelInfoFromBody(ht.svbase.model.SModel,int)
+    101:143:private void getModelInfoFromBodyAndFace(ht.svbase.model.SModel,int)
+    147:162:private void getSubModel(ht.svbase.model.SModel,int)
+ht.svbase.natives.AnimationNatives:
+    5:5:public AnimationNatives()
+    13:15:public static boolean animationExecute(double,int)
+    53:55:public static boolean animationSetTick(double,int)
+    private static native boolean nativeAnimationExecute(double,int)
+    private static native boolean nativeAnimationSetTick(double,int)
+ht.svbase.natives.MeasureNatives:
+    3:3:public MeasureNatives()
+ht.svbase.natives.Natives:
+    3:3:public Natives()
+    17:19:public static java.lang.String getParameter(java.lang.String,int)
+    private static native java.lang.String nativeGetParameter(java.lang.String,int)
+ht.svbase.natives.ReadNatives:
+    7:7:public ReadNatives()
+ht.svbase.natives.SelectNatives:
+    7:7:public SelectNatives()
+    25:25:public static void getAll(int)
+    32:35:public static java.lang.String getShapGeoInfo(int,int)
+    61:64:public static void set(ht.svbase.model.SShape,int)
+    private static native java.lang.String nativeGetShapeGeoInfo(int,int)
+    private static native void nativeSelectAdd(int,int,int)
+    private static native void nativeSelectClear(int)
+    private static native void nativeSelectGetAll(int)
+    private static native void nativeSelectRemove(int,int,int)
+    private static native void nativeSelectSet(int,int,int)
+ht.svbase.natives.ViewNatives:
+    18:18:public ViewNatives()
+    28:30:public static int addHandler(float,float,int,int)
+    83:85:public static int addShape(float,float,float,ht.svbase.model.SShape$ShapeType,int)
+    91:93:public static int addShape(float,float,ht.svbase.model.SShape$ShapeType,int)
+    132:135:public static void DeleteViewFromXML(java.lang.String,int,int)
+    196:198:public static void LongPressTest(int,int)
+    public static native void nativeLongPressTest(int,int)
+    public static native void nvativeSaveSettingXML(int)
+    311:313:public static void setcurrentNativeView(int,int)
+    405:408:public static void setRotation(float,float,float,float,int)
+    446:449:public static int viewGetSelectedModel(float[],float[],int[],float[],int)
+    466:468:public static void viewTogglePauseResume(int)
+    private static native int nativeAddHandle2f(float,float,int,int)
+    private static native int nativeAddShape2f(float,float,int,int)
+    private static native int nativeAddShape3f(float,float,float,int,int)
+    private static native boolean nativeDeleteViewFromXML(java.lang.String,int,int)
+    private static native int nativeGetShapePos3f(int,int,float[],int)
+    private static native void nativeInit(int)
+    private static native void nativeSetCurrentNativeView(int,int)
+    private static native int nativeViewGetSelectedModel(float[],float[],int[],float[],int)
+    private static native void nativeViewTogglePauseResume(int)
+ht.svbase.util.Buffer
+ht.svbase.util.ByteUtil
+ht.svbase.util.CppInputStream
+ht.svbase.util.IntentHelper:
+    11:11:public IntentHelper()
+ht.svbase.util.Intersection
+ht.svbase.util.Log:
+    18:18:public Log()
+    33:38:public static void Debug(float[])
+    48:54:public static void e(java.lang.String,java.lang.String)
+    71:75:public static java.lang.String getArrayString(java.lang.Object[])
+    93:94:public static void Info(java.lang.Object[])
+    97:97:public static boolean isDebug()
+    101:102:public static void setDebug(boolean)
+ht.svbase.util.ResUtil:
+    14:14:public ResUtil()
+    16:16:public static int getColorId(android.content.Context,java.lang.String)
+    36:36:public static int getStringId(android.content.Context,java.lang.String)
+    41:41:public static int getStyleId(android.content.Context,java.lang.String)
+    46:54:public static java.lang.String getTempFile(android.content.Context,java.lang.String)
+ht.svbase.util.SDCardHelper:
+    8:8:public SDCardHelper()
+    19:28:public static final long getSDAllSize()
+    33:42:public static long getSDFreeSize()
+ht.svbase.util.SMath
+ht.svbase.util.UIHelper
+ht.svbase.util.UIHelper$1
+ht.svbase.views.Configure:
+    38:38:public android.content.SharedPreferences getSharedPreferences()
+ht.svbase.views.GLHelper:
+    28:28:public GLHelper()
+    55:57:public static float[] getModelPoint(float[],float[])
+    62:64:public static float[] getModelView(javax.microedition.khronos.opengles.GL11)
+    69:74:public static float getModelViewDistanse(float[],float[],float[])
+    78:80:public static float[] getModelViewPoint(float[],float[])
+    84:86:public static float[] getProjectionView(javax.microedition.khronos.opengles.GL11)
+    91:95:public static float[] getProjectPoint(float,float,float,float[],float[],int[])
+    100:100:public static float[] getProjectPoint(float[],float[],float[],int[])
+    106:110:public static float[] getSceneViewPoint(float[],float[])
+    116:121:public static float[] getSceneViewPoint(float[],float[],float[])
+    126:143:public static void getTranMatrix(float[],float[])
+    147:153:public static float getUnProjectDistance(float,float,float,float,float[],float[],int[])
+    159:173:public static float[] getUnProjectLine(float,float,float[],float[],int[])
+    178:187:public static float[] getUnProjectPoint(float,float,float,float[],float[],int[])
+    192:211:public static float[] getUnProjectPoint(float,float,float[],float[],int[])
+    215:217:public static int[] getViewPort(javax.microedition.khronos.opengles.GL11)
+    222:250:public static boolean gluNativeProject(float,float,float,float[],float[],int[],float[])
+    255:272:public static boolean gluNativeUnProject(float,float,float,float[],float[],int[],float[])
+ht.svbase.views.GestureMode
+ht.svbase.views.IModelView:
+    public abstract void allowRedraw(boolean)
+    96:99:public ht.svbase.model.SModel getModel(int)
+    public abstract void getModelPlcMtx(java.lang.String,float[])
+    public abstract boolean isModelDataChanged()
+    public abstract boolean isSceneDataChanged()
+    public abstract boolean isShowPMI()
+    188:195:public void pripareTouch()
+    public abstract void save()
+    public abstract void select(int)
+    public abstract void selectShape(float,float)
+    public abstract void setCamera(float,float[])
+    public abstract void setModelColor(int,float[])
+    public abstract void setModelPlcMtx(java.lang.String,float[])
+    public abstract void showExplosiveView()
+    public abstract void showPMI()
+    public abstract void showPMI(int)
+    public abstract void showShape(java.lang.String,int,boolean)
+    public abstract void unSelect(int)
+ht.svbase.views.ISView
+ht.svbase.views.MeasureManager:
+    51:51:public ht.svbase.views.SView getsView()
+    55:56:public void setsView(ht.svbase.views.SView)
+ht.svbase.views.PriSelector:
+    12:12:public int getCurrentSelectShapeID()
+    16:16:public ht.svbase.model.SShape$ShapeType getPriSelType()
+    20:20:public ht.svbase.views.SView getsView()
+    40:41:public void setCurrentSelectShapeID(int)
+    44:45:public void setPriSelType(ht.svbase.model.SShape$ShapeType)
+    48:49:public void setsView(ht.svbase.views.SView)
+ht.svbase.views.Quaternion
+ht.svbase.views.Rotation:
+    public float angle
+    26:66:public static void MatrixToQuaternion(ht.svbase.views.Quaternion,float[])
+    86:94:public static void QuaternionInverse(ht.svbase.views.Quaternion)
+    101:106:public static ht.svbase.views.Quaternion QuaternionMultiply(ht.svbase.views.Quaternion,ht.svbase.views.Quaternion)
+    114:156:public static ht.svbase.views.Quaternion QuaternionSlerp(ht.svbase.views.Quaternion,ht.svbase.views.Quaternion,float)
+    163:192:public static ht.svbase.views.Rotation QuaternionToRotation(ht.svbase.views.Quaternion)
+    198:202:public static ht.svbase.views.Vector QuaternionToVector(ht.svbase.views.Quaternion)
+    210:222:public static ht.svbase.views.Rotation RotationMultiply(ht.svbase.views.Rotation,ht.svbase.views.Rotation)
+    227:231:public static ht.svbase.views.Rotation RotationSlerp(ht.svbase.views.Rotation,ht.svbase.views.Rotation,float)
+    253:264:public static ht.svbase.views.Rotation[] RotationSlerp(ht.svbase.views.Rotation,ht.svbase.views.Rotation,int)
+    325:338:public static ht.svbase.views.Quaternion RotationToQuaternion(ht.svbase.views.Rotation)
+    496:501:public static ht.svbase.views.Quaternion VectorToQuaternion(ht.svbase.views.Vector)
+    507:516:public static ht.svbase.views.Vector VectorTransform(ht.svbase.views.Vector,ht.svbase.views.Quaternion)
+    522:527:public static ht.svbase.views.Vector VectorTransform(ht.svbase.views.Vector,ht.svbase.views.Rotation)
+    542:548:public Rotation(float,float,float,float)
+    551:557:public Rotation(ht.svbase.views.Vector,float)
+    560:564:public void reset()
+ht.svbase.views.S3DNativeView:
+    private static final int DOUBLE_CLICK_TIME
+    private static final int TOUCH_DRAG
+    private static final int TOUCH_MOVE
+    private static final int TOUCH_NORMAL
+    private static final int TOUCH_ROTATE
+    private static final int TOUCH_SELECT
+    private static final int TOUCH_ZOOM
+    46:48:public S3DNativeView(ht.svbase.views.SView,boolean,int,int)
+    154:160:public void doubleClickHandle(float,float)
+    176:176:public void getModelPlcMtx(java.lang.String,float[])
+    233:233:public boolean isModelDataChanged()
+    239:239:public boolean isSceneDataChanged()
+    245:245:public boolean isShowPMI()
+    471:471:public void save()
+    477:477:public void select(int)
+    509:509:public void setCamera(float,float[])
+    554:554:public void setModelColor(int,float[])
+    566:566:public void setModelPlcMtx(java.lang.String,float[])
+    625:625:public void showExplosiveView()
+    636:636:public void showPMI()
+    642:642:public void showPMI(int)
+    648:648:public void showShape(java.lang.String,int,boolean)
+    654:654:public void unSelect(int)
+ht.svbase.views.S3DNativeView20:
+    53:54:public S3DNativeView20(ht.svbase.views.SView,boolean,int,int)
+ht.svbase.views.S3DNativeViewConfigChooser:
+    107:159:private void printConfig(javax.microedition.khronos.egl.EGL10,javax.microedition.khronos.egl.EGLDisplay,javax.microedition.khronos.egl.EGLConfig)
+    163:169:private void printConfigs(javax.microedition.khronos.egl.EGL10,javax.microedition.khronos.egl.EGLDisplay,javax.microedition.khronos.egl.EGLConfig[])
+ht.svbase.views.S3DNativeViewRenderer:
+    public static final int FRAME_BUFFER_COUNT
+    23:23:public ht.svbase.model.SModel getModel()
+ht.svbase.views.SDirection
+ht.svbase.views.SModelDrawMode:
+    3:3:public SModelDrawMode()
+ht.svbase.views.SPerspective
+ht.svbase.views.SScene:
+    public float aspect
+    public int viewX
+    public int viewY
+    45:48:public void changeSize(int,int)
+    58:59:public void fitWindow(ht.svbase.model.SBox)
+    66:66:public float[] getClipPlane()
+    70:70:public ht.svbase.views.IModelView getView()
+    74:78:public void initialize()
+    81:81:public java.lang.Boolean isShowAxis()
+    85:86:public void isShowAxis(java.lang.Boolean)
+    89:89:public boolean isShowClip()
+    93:93:public java.lang.Boolean isShowGrid()
+    97:98:public void isShowGrid(java.lang.Boolean)
+    101:109:public void reset()
+    112:114:public void setBackColor(float,float,float,float)
+    118:120:public void setBackColor(float,float,float,float,float,float,float,float)
+    123:123:public void setbackImage(android.graphics.Bitmap)
+    126:127:public void setCamera(float,float,float)
+    130:151:public void setClipPlane(int,float)
+    154:220:public void setPerspective(int)
+    223:224:public void setShowClip(boolean)
+    227:230:private void initAxisLineBuffer()
+    234:252:private void initBackgroundBuffer()
+    255:274:private void initGridLineBuffer()
+ht.svbase.views.SScene$Camera:
+    24:27:public void setPosition(float,float,float)
+ht.svbase.views.SView:
+    public static final java.lang.String Name
+    134:137:public void aviContinue()
+    180:182:public void aviPlay(double)
+    185:188:public void aviReset()
+    191:193:public void aviSetPosition(double)
+    304:304:public ht.svbase.model.SModel getModel(int)
+    322:323:public void getModelPlcMtx(java.lang.String,float[])
+    390:390:public boolean isAviPlaying()
+    410:410:public boolean isShowPMI()
+    496:499:public void removeListener(ht.svbase.views.SViewListener)
+    509:510:public void removeModelView(ht.svbase.model.SModelView)
+    527:528:public void save()
+    532:533:public void select(int)
+    536:537:public void selectShape(int,int)
+    545:546:public void setCamera(float,float[])
+    584:585:public void setModelPlcMtx(java.lang.String,float[])
+    624:625:public void showExplosiveView()
+    645:646:public void showPMI()
+    650:651:public void showPMI(int)
+    659:661:public void showToolbar(boolean)
+    699:700:public void unSelect(int)
+ht.svbase.views.SViewEvent:
+    public static final int ModelViewChanged
+    public static final int OpenFile_Cancel
+    public static final int OpenFile_end
+    public static final int OpenFile_Start
+    public static final int SceneChanged
+    public static final int SelectorChanged
+    public static final int SViewClose
+    private static final long serialVersionUID
+    30:31:public SViewEvent(java.lang.Object)
+    40:44:public SViewEvent(java.lang.Object,int,java.lang.Object)
+    51:51:public java.lang.Object getObject()
+    59:60:public void setObject(java.lang.Object)
+ht.svbase.views.SViewGestureListener:
+    public static final int LONGPRESS
+    27:27:public int getTouchType()
+ht.svbase.views.SViewParameters:
+    public static final int OrthoMode
+    public static final int PerspectiveMode
+    private java.lang.String resPath
+    86:86:public ht.svbase.model.SColor getBoxColor()
+    90:90:public ht.svbase.model.SColor getClipPlaneColor()
+    98:98:public ht.svbase.model.SColor getDefaultPMIColor()
+    106:106:public java.lang.String getNativeParameter(java.lang.String)
+    110:110:public int getProjectMode()
+    122:122:public ht.svbase.model.SColor getSelectedColor()
+    126:126:public ht.svbase.views.SView getsView()
+    130:130:public ht.svbase.model.SColor getTrilateralEdgColor()
+    154:154:public boolean isOnlyShowTrilateralEdge()
+    178:178:public boolean isShowClipEdge()
+    238:239:public void setBackBottomColor(ht.svbase.model.SColor)
+    242:243:public void setBackTopColor(ht.svbase.model.SColor)
+    246:247:public void setBoxColor(ht.svbase.model.SColor)
+    250:251:public void setClipPlaneColor(ht.svbase.model.SColor)
+    324:325:public void setDefaultEdgeColor(ht.svbase.model.SColor)
+    328:329:public void setDefaultFaceColor(ht.svbase.model.SColor)
+    332:333:public void setDefaultNoteColor(ht.svbase.model.SColor)
+    336:337:public void setDefaultPMIColor(ht.svbase.model.SColor)
+    340:341:public void setDefaultPointColor(ht.svbase.model.SColor)
+    362:364:public void setNativeParameter(java.lang.String,float)
+    401:402:public void setOnlyShowTrilateralEdge(boolean)
+    415:416:public void setProjectMode(int)
+    429:430:public void SetResPath(java.lang.String)
+    433:434:public void setSelectedColor(ht.svbase.model.SColor)
+    451:452:public void setShowClipEdge(boolean)
+    495:496:public void setTrilateralEdgColor(ht.svbase.model.SColor)
+ht.svbase.views.SViewToolbar$SViewToolbarItem:
+    java.lang.String method
+    27:32:public SViewToolbar$SViewToolbarItem(ht.svbase.views.SViewToolbar,java.lang.String,java.lang.String,java.lang.String,java.lang.String)
+ht.svbase.views.SViewToolbarAdapter:
+    public static final java.lang.String IMAGE
+    public static final java.lang.String NAME
+ht.svbase.views.SelectFitCenter:
+    private static final int TOUCH_MOVE
+    20:20:public ht.svbase.views.SView getView()
+ht.svbase.views.Selector:
+    public static final int SelectChanged_Msg
+    public static final int SelectChangedFromShapePick_Msg
+    public static final int SelectChangedFromTreeList_Msg
+    public static final int SelectCleared_Msg
+    120:122:public void removeListener(ht.svbase.views.Selector$onListener)
+    145:151:public void setShape(ht.svbase.model.SShape)
+    154:162:public void setShapes(ht.svbase.model.SShape[])
+    166:173:public void syncNativeSelector(int)
+ht.svbase.views.Selector$onListener:
+    public static final int SelectChanged_Msg
+ht.svbase.views.Ssearch:
+    30:32:public java.util.ArrayList getAllFromNameContain(java.lang.String)
+    36:36:public int getCaseSensitive()
+    66:66:public int getOperator()
+    70:70:public int getOperatorObject()
+    100:100:public int getSearchType()
+    104:104:public boolean isDataChange()
+    123:123:public ht.svbase.model.SShape searchFromBomID(ht.svbase.model.SModel,int)
+    137:138:public void setCaseSensitive(int)
+    141:142:public void setDataChange(boolean)
+    145:146:public void setOperator(int)
+    149:150:public void setOperatorObject(int)
+    153:154:public void setSearchType(int)
+ht.svbase.views.Vector:
+    public static final int X
+    public static final int Y
+    public static final int Z
+    18:23:public static ht.svbase.views.Vector add(ht.svbase.views.Vector,ht.svbase.views.Vector)
+    27:27:public static float[] addition(float[],float[])
+    32:37:public static ht.svbase.views.Vector cross(ht.svbase.views.Vector,ht.svbase.views.Vector)
+    42:42:public static float[] crossProduct(float[],float[])
+    48:48:public static float dot(float[],float[])
+    53:53:public static float dot(ht.svbase.views.Vector,ht.svbase.views.Vector)
+    58:58:public static float length(float[])
+    63:63:public static float[] minus(float[],float[])
+    68:68:public static float[] scalarProduct(float,float[])
+    73:78:public static ht.svbase.views.Vector scale(ht.svbase.views.Vector,float)
+    83:88:public static ht.svbase.views.Vector sub(ht.svbase.views.Vector,ht.svbase.views.Vector)
+    101:101:public double mod()
+    106:113:public void normalize()
+    116:119:public void set(float,float,float)
+ht.sview.BuildConfig
+ht.sview.ConfigureItem
+ht.sview.FileOperate
+ht.sview.HttpUtil:
+    11:11:public HttpUtil()
+ht.sview.MainActivity:
+    140:141:public void showMessage(java.lang.String)
+ht.sview.MainActivityListener:
+    private ht.sview.dialog.HelpDialog helpDialog
+    373:377:public ht.sview.dialog.HelpDialog getHelpDialog()
+ht.sview.R
+ht.sview.R$attr
+ht.sview.R$color
+ht.sview.R$dimen
+ht.sview.R$drawable
+ht.sview.R$id
+ht.sview.R$layout
+ht.sview.R$string
+ht.sview.R$style
+ht.sview.SApplication:
+    public static final java.lang.String Name
+    private ht.svbase.command.SCommandManager cmdManager
+    58:60:public ht.svbase.command.SCommandManager getCmdManager()
+    76:76:public java.lang.String getRootPath()
+    95:96:public void setCmdManager(ht.svbase.command.SCommandManager)
+ht.sview.SFileManager:
+    private ht.svbase.model.SFileInfo curFile
+    boolean mDualPane
+    32:32:public static java.lang.String downRemoteFile(android.net.Uri)
+    42:42:public static java.lang.String getLocateFile(android.net.Uri)
+    52:52:public static java.lang.String getNoteFileName(java.lang.String)
+    62:63:public static java.lang.String getPreFileName(java.lang.String)
+    179:180:public ht.svbase.model.SFileInfo getSFile(android.net.Uri)
+ht.sview.UIHelper:
+    10:10:public UIHelper()
+ht.sview.dialog.AssemblyDialog:
+    private ht.sview.dialog.ModelViewAdapter noteAdapter
+    private android.view.View noteView
+ht.sview.dialog.AssemblyTreeAdapter:
+    85:93:public void ExpandOrCollapse(int)
+    111:118:public java.util.List getSeletedNodes()
+    265:266:public void setCheckBox(boolean)
+    269:271:public void setExpandedCollapsedIcon(int,int)
+ht.sview.dialog.AssemblyTreeNode:
+    29:30:public void clear()
+    38:38:public java.util.List getChildren()
+    98:98:public boolean isChecked()
+    127:131:public boolean isParent(ht.sview.dialog.AssemblyTreeNode)
+    161:161:public boolean isVisibled()
+    170:173:public void remove(ht.sview.dialog.AssemblyTreeNode)
+    181:182:public void remove(int)
+    190:191:public void setCheckBox(boolean)
+    199:200:public void setChecked(boolean)
+    235:236:public void setValue(ht.svbase.model.SModel)
+    239:240:public void setVisibled(boolean)
+ht.sview.dialog.CloudFile:
+    21:21:public java.lang.String getID()
+    46:46:public java.lang.String getFileName()
+ht.sview.dialog.CloudFileListAdapter$1:
+    private static final long serialVersionUID
+ht.sview.dialog.ESelector:
+    98:98:public ht.sview.dialog.ESelector$ESelectorEvent getSelectorEvent()
+    119:121:public void removeListener(ht.sview.dialog.ESelector$onListener)
+    124:125:public void setSelectorEvent(ht.sview.dialog.ESelector$ESelectorEvent)
+ht.sview.dialog.ESelector$ESelectorEvent:
+    public static final int DOUBLECLICK
+    public static final int LONGPRESS
+    public static final int SINGLECLICK
+ht.sview.dialog.ESelector$onListener:
+    public static final int SelectChanged_Msg
+ht.sview.dialog.ESelectorGestureListener:
+    public static final int DOUBLECLICK
+    public static final int LONGPRESS
+    public static final int SINGLECLICK
+ht.sview.dialog.FileDialog:
+    java.io.File file_edit
+ht.sview.dialog.FileListAdapter$1:
+    private static final long serialVersionUID
+ht.sview.dialog.GestureNoteDialog:
+    36:58:private void CreateGestureNote()
+ht.sview.dialog.HelpDialog
+ht.sview.dialog.MeasureDialog
+ht.sview.dialog.MeasureDialog$1
+ht.sview.dialog.MeasureDialog$MeasureCommand
+ht.sview.dialog.SDialog:
+    37:38:public SDialog(android.view.View)
+    61:61:public android.view.View getParent()
+    234:234:protected void onTouchUpHandle(android.view.View)
+ht.sview.dialog.VoiceNoteDialog:
+    199:199:public ht.svbase.model.SModelView getModelView()
+ht.sview.note.GestureOverlayView:
+    21:23:public GestureOverlayView(android.content.Context,android.util.AttributeSet)
+    26:28:public GestureOverlayView(android.content.Context,android.util.AttributeSet,int)
+    31:35:public void clear()
+ht.sview.note.GestureStroke:
+    10:15:public void addPoints(int[])
+    18:18:public int getColor()
+    22:22:public java.util.ArrayList getPointBuf()
+ht.sview.note.GestureView:
+    28:29:public void addStroke(ht.sview.note.GestureStroke)
+    32:32:public java.lang.String getFile()
+    49:109:public void load(java.lang.String)
+    118:119:public void removeStroke(ht.sview.note.GestureStroke)
+    150:151:public void setFile(java.lang.String)
+    154:155:public void setStrokes(java.util.ArrayList)
