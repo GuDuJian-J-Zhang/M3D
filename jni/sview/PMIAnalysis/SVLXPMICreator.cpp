@@ -696,9 +696,11 @@ bool SVLXPMICreator::createLeader(const vector<Stk_LeaderPtr>& pLeaders, const H
 				{
 					if (plPnts.size() == 2) CSVLXPMIUtilityLib::DivideLeader(2, vecTextBox, plPnts, vecNewPnt);
 				}
-
-
-				else CSVLXPMIUtilityLib::DivideLeader(2, vecTextBox, plPnts, vecNewPnt);
+				else
+				{
+					//此处不进行裁剪--yhp-20180816
+					//CSVLXPMIUtilityLib::DivideLeader(2, vecTextBox, plPnts, vecNewPnt);
+				}
 
 				if (!plPnts.empty())
 				{

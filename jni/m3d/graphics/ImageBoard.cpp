@@ -22,6 +22,8 @@ ImageBoard::ImageBoard():Shape()
 	this->SetFlipV(false);
 
 	this->SetInTop(true);
+
+	this->SetFixShowInScreen(false);
 }
 
 ImageBoard::ImageBoard(const Vector3& pos, const Vector2& size):Shape()
@@ -32,13 +34,15 @@ ImageBoard::ImageBoard(const Vector3& pos, const Vector2& size):Shape()
 	textCoords.clear();
 	origSize = size;
     this->m_texture = NULL;
-
+	this->SetFixShowInScreen(false);
 
 	m_bindBillboard.AllowRotate(false);
 	m_bindBillboard.AllowTran(true);
 	m_bindBillboard.AllowScale(false);
 
 	this->SetFlipV(false);
+	m_fixShowInScreen = false;
+
 	Set(pos,size);
 }
 
@@ -211,7 +215,17 @@ void ImageBoard::UpdateRenderData(RenderAction* renderAction)
 	MutexLock lock(m_mutex);
 	if (renderAction->GetSceneBoxChanged() || points.empty())
 	{
-		Vector2 size = ShapeHelper::GetCommonSize(renderAction->GetScene(), origSize);
+		Vector2 size;
+
+		if (this->m_fixShowInScreen)
+		{
+			size = origSize;
+		}
+		else
+		{
+			size = ShapeHelper::GetCommonSize(renderAction->GetScene(), origSize);
+		}
+
 		Set(this->m_position, size);
 		this->GetVertexs();
 	}
@@ -347,6 +361,21 @@ bool ImageBoard::GetInTop()
 void ImageBoard::SetInTop(bool val)
 {
 	this->SetFrontShow(val);
+}
+
+bool ImageBoard::GetFixShowInScreen() const
+{
+	return m_fixShowInScreen;
+}
+
+void ImageBoard::SetFixShowInScreen(bool val)
+{
+	m_fixShowInScreen = val;
+}
+
+M3D::Vector2 ImageBoard::GetSize()
+{
+	return size_;
 }
 
 }

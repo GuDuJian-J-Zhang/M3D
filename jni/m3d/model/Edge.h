@@ -111,6 +111,8 @@ public:
 
 	virtual const  Color& GetRenderColor();
 
+	void SetNeedClip(bool val);
+	bool GetNeedClip();
 private:
 	///1级TriMeshData	
 	bool m_visible;	
@@ -124,6 +126,7 @@ private:
 	int m_svlId;
 	string m_Properties; //!<属性信息
 	bool m_IsFirstGetProperties; //!<是否是第一次获取属性信息
+	bool m_bNeedClip;
 protected:
 
 };

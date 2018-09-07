@@ -6,7 +6,7 @@
 //  Copyright (c) 2015年 hoteam. All rights reserved.
 //
 
-#include "m3d/ResourceManager.h"
+
 #include "JsonMacro.h"
 #include "document.h"
 #include "stringbuffer.h"
@@ -25,7 +25,7 @@ using rapidjson::MemoryPoolAllocator;
 #include "sview/views/View.h"
 #include "m3d/utils/StringHelper.h"
 #include "m3d/graphics/Texture.h"
-
+#include "m3d/ResourceManager.h"
 #include "sview/views/Parameters.h"
 #include "m3d/SceneManager.h"
 

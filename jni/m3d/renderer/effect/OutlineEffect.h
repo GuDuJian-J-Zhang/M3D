@@ -5,7 +5,7 @@
 namespace M3D
 {
 	/************************************************************************/
-	/* Ñ¡ÔñÍâ¿òÏßÌØÐ§                                                                     */
+	/* é€‰æ‹©å¤–æ¡†çº¿ç‰¹æ•ˆ                                                                     */
 	/************************************************************************/
 	class M3D_API OutlineEffect :public Effect
 	{
@@ -23,7 +23,7 @@ namespace M3D
 		// FullName:  M3D::OutlineEffect::RenderModel
 		// Access:    private 
 		// Returns:   void
-		// Qualifier: äÖÈ¾Ä£ÐÍ
+		// Qualifier: æ¸²æŸ“æ¨¡åž‹
 		// Parameter: RenderQueue * RenderStateArray
 		//************************************
 		void RenderModel(RenderQueue * RenderStateArray);
@@ -32,7 +32,7 @@ namespace M3D
 		// FullName:  M3D::OutlineEffect::RenderOutline
 		// Access:    private 
 		// Returns:   void
-		// Qualifier: äÖÈ¾Íâ¿òÏß
+		// Qualifier: æ¸²æŸ“å¤–æ¡†çº¿
 		//************************************
 		void RenderOutline();
 		//************************************
@@ -40,7 +40,7 @@ namespace M3D
 		// FullName:  M3D::OutlineEffect::RenderGaussianBlurWidth
 		// Access:    private 
 		// Returns:   void
-		// Qualifier: ¸ßË¹Ä£ºý
+		// Qualifier: é«˜æ–¯æ¨¡ç³Š
 		//************************************
 		void RenderGaussianBlurWidth();
 		void RenderGaussianBlurHeight();
@@ -51,7 +51,7 @@ namespace M3D
 		// FullName:  M3D::OutlineEffect::DrawFrameBufferDebug
 		// Access:    private 
 		// Returns:   void
-		// Qualifier: ²âÊÔº¯Êý
+		// Qualifier: æµ‹è¯•å‡½æ•°
 		//************************************
 		void DrawFrameBufferDebug();
 	private:

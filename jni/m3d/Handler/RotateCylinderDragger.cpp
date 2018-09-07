@@ -50,6 +50,7 @@ bool RotateCylinderDragger::handle(const PointerInfo& pointer, const  TouchEvent
                     // Generate the motion command.
                     Rotate3DCommand* cmd = new Rotate3DCommand();
 					cmd->AddRef();
+					cmd->SetRefDragger(this);
                     cmd->setStage(MotionCommand::START);
                     cmd->setLocalToWorldAndWorldToLocal(_startLocalToWorld,_startWorldToLocal);
 
@@ -98,6 +99,7 @@ bool RotateCylinderDragger::handle(const PointerInfo& pointer, const  TouchEvent
 
                     Rotate3DCommand* cmd = new Rotate3DCommand();
 					cmd->AddRef();
+					cmd->SetRefDragger(this);
                     cmd->setStage(MotionCommand::MOVE);
                     cmd->setLocalToWorldAndWorldToLocal(_startLocalToWorld,_startWorldToLocal);
                     cmd->setRotation(rotation);
@@ -120,6 +122,7 @@ bool RotateCylinderDragger::handle(const PointerInfo& pointer, const  TouchEvent
             {
                 Rotate3DCommand* cmd = new Rotate3DCommand();
 				cmd->AddRef();
+				cmd->SetRefDragger(this);
                 cmd->setStage(MotionCommand::FINISH);
                 cmd->setLocalToWorldAndWorldToLocal(_startLocalToWorld,_startWorldToLocal);
 

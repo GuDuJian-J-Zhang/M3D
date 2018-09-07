@@ -1,4 +1,4 @@
-/**@file
+﻿/**@file
  *@brief	渲染器，负责渲染队列的最终渲染
  *@author	XL
  *@date		2014-1-7
@@ -263,6 +263,11 @@ private:
 	 */
 	bool LimitDrawFPS();
 
+	/**
+	* 当窗口改变时，更改hub视口大小
+	* @return
+	*/
+	void ResizeHubViewport();
 
 private:
 	int m_maxFPS; //!<设置最大绘制帧率

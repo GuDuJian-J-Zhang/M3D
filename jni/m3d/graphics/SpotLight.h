@@ -4,7 +4,7 @@
 namespace M3D
 {
 	/************************************************************************/
-	/* ¾Û¹âµÆÀà¡£                                                                     */
+	/* èšå…‰ç¯ç±»ã€‚                                                                     */
 	/************************************************************************/
 	class M3D_API SpotLight : public BaseLight
 	{
@@ -16,7 +16,7 @@ namespace M3D
 		{
 			return SHAPETYPE::SHAPE_LIGHT_SPOT;
 		}
-		//²ÎÊı¿É²ÎÕÕthreeµÆ¹â
+		//å‚æ•°å¯å‚ç…§threeç¯å…‰
 		float Decay() const { return m_decay; }
 		void Decay(float val) { m_decay = val; }
 		float Distance() const { return m_distance; }

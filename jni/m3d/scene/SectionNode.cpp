@@ -6,6 +6,7 @@
 #include "m3d/action/RayPickAction.h"
 
 #include "m3d/scene/SectionNode.h"
+#include "m3d/scene/GroupNode.h"
 #include "m3d/graphics/CameraNode.h"
 #include "m3d/utils/CullerHelper.h"
 #include "m3d/action/RenderAction.h"
@@ -61,7 +62,23 @@ Section * SectionNode::GetSection()
 
 void SectionNode::RayPick(RayPickAction * action)
 {
-	 
+	if (!m_section)
+	{
+		return;
+	}
+
+	list<SectionPlane*>* planeList = m_section->GetPlaneList();
+	if (planeList)
+	{
+		for (list<SectionPlane*>::iterator it = planeList->begin(); it != planeList->end(); it++)
+		{
+			SectionPlane* plane = *it;
+			if (plane)
+			{
+				plane->RayPick(action);
+			}
+		}
+	}
 }
 
 void SectionNode::ComputeBox()

@@ -9,6 +9,8 @@
 #include "sview/extern/PerspectiveOperator.h"
 #include "m3d/Handler/HandlerPoint.h"
 #include "m3d/handler/dragger.h"
+#include "m3d/scene/ScreenUILayerGroup.h"
+
 
 #define EBUILDING
 namespace SVIEW
@@ -211,6 +213,7 @@ bool TouchHandler::HandleDragger(float* p, int n, int touchType, int moveType)
 		default:
 			break;
 		}
+ 
 		m_pView->GetSceneManager()->GetHandlerGroup()->HandleDragger(touchEvent);
 	}
 

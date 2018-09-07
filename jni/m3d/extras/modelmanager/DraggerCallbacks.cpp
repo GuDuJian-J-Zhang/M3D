@@ -250,20 +250,28 @@ namespace M3D
 
 	bool SceneNodeDraggerCallback::receive(const TranslateInLineCommand& command)
 	{
-		if (this->m_draggerNodes.size())
-		{
-			Vector3 translation = command.getTranslation();
-			translation = command.getLocalToWorld()*Vector4(translation, 0);
-			for (int i = 0; i < this->m_draggerNodes.size(); i++)
-			{
-				SceneNode* node = m_draggerNodes.at(i);
-				//ModelAssemblyHelper::TranslateAssemblyModel(node, translation);
-				node->Translate(translation, M3D::TS_WORLD);
-			}
-		}
+		Vector3 translation = command.getTranslation();
+		translation = command.getLocalToWorld()*Vector4(translation, 0);
+		Model* model = (Model*)m_plane;
+		ModelAssemblyHelper::TranslateAssemblyModel(model, translation);
+
+		//if (this->m_draggerNodes.size())
+		//{
+		//	Vector3 translation = command.getTranslation();
+		//	translation = command.getLocalToWorld()*Vector4(translation, 0);
+		//	Model* model = (Model*)m_plane;
+		//	ModelAssemblyHelper::TranslateAssemblyModel(model, translation);
+		//	//for (int i = 0; i < this->m_draggerNodes.size(); i++)
+		//	//{
+		//	//	SceneNode* node = m_draggerNodes.at(i);
+		//	//	//ModelAssemblyHelper::TranslateAssemblyModel(node, translation);
+		//	//	node->Translate(translation, M3D::TS_WORLD);
+		//	//}
+		//}
 
 		return true;
 	}
+
 
 	bool SceneNodeDraggerCallback::receive(const TranslateInPlaneCommand& command)
 	{
@@ -318,11 +326,15 @@ namespace M3D
 			double deltaScale = command.getDeltaScale();
 			Vector3 scale(deltaScale, deltaScale, deltaScale);
 			scale = command.getLocalToWorld().Rotation()*scale + Vector3(1.0f, 1.0f, 1.0f);
-			for (int i = 0; i < this->m_draggerNodes.size(); i++)
+			if (m_plane)
+			{
+				//m_plane->SetTransform(scale);
+			}
+			/*for (int i = 0; i < this->m_draggerNodes.size(); i++)
 			{
 				SceneNode* node = m_draggerNodes.at(i);
 				node->Scale(scale);
-			}
+			}*/
 		}
 		return true;
 	}
@@ -371,5 +383,10 @@ namespace M3D
 			m_draggerNodes.at(i)->Release();
 		}
 		m_draggerNodes.clear();
+	}
+
+	void SceneNodeDraggerCallback::SetSectionPlane(SectionPlane * plane)
+	{
+		this->m_plane = plane;
 	}
 }

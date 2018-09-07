@@ -56,9 +56,11 @@ namespace M3D
 		bool AddNode(SceneNode* node);
 		void AddNodes(vector<SceneNode*> nodes);
 		void ClearNodes();
+		void SetSectionPlane(SectionPlane* plane);
 
 	private:
 		vector<SceneNode*> m_draggerNodes;
+		SectionPlane* m_plane;
 	};
 
 

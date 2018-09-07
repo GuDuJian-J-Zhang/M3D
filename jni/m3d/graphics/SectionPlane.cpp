@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Plane.cpp
  *
  *  Created on: 2013-11-27
@@ -11,9 +11,11 @@
 #include <math.h>
 #include "m3d/base/Quaternion.h"
 #include "m3d/base/Matrix3x4.h"
-#include "../base/Plane.h"
+#include "m3d/base/Plane.h"
 #include "SectionLineHelper.h"
-
+#include "m3d/model/Model.h"
+#include "m3d/action/RayPickAction.h"
+#include "m3d/base/json/json.h"
 namespace M3D
 {
 
@@ -28,16 +30,12 @@ void SectionPlane::Init()
 	m_figureSectonLine.sectionPlane = this;
 	this->SetScene(NULL);
 }
-SectionPlane::SectionPlane():Object()
+SectionPlane::SectionPlane():Model()
 {
 
 	this->m_Id = m_MaxId++;
 	m_GLClipPlaneID = -1;
 	m_Enable = false;
-//	m_Origin ;
-//	m_Normal = NULL;
-//	m_UDir = NULL;
-//	m_VDir = NULL;
 
 	m_edgeColor = Color::GRAY;
 	m_faceColor = Color::GREEN;
@@ -51,10 +49,6 @@ SectionPlane::SectionPlane(const Point3D& origin, const Point3D& normal,const Po
 	this->m_Id = m_MaxId++;
 	m_GLClipPlaneID = -1;
 	m_Enable = false;
-//	m_Origin = NULL;
-//	m_Normal = NULL;
-//	m_UDir = NULL;
-//	m_VDir = NULL;
 	m_Origin = origin;
 	m_Normal = normal;
 	m_UDir = uDir;
@@ -69,10 +63,6 @@ SectionPlane::SectionPlane(const Point3D& origin, const Point3D& normal)
 	this->m_Id = m_MaxId++;
 	m_GLClipPlaneID = -1;
 	m_Enable = false;
-//	m_Origin = NULL;
-//	m_Normal = NULL;
-//	m_UDir = NULL;
-//	m_VDir = NULL;
 	m_Origin = origin;
 	m_Normal = normal;
 	GetParam();
@@ -107,7 +97,7 @@ Point3D SectionPlane::GetInsectPnt(const Point3D& origin, const Point3D& dir)
 	return pnt;
 }
 
-void SectionPlane::SetTransform(Matrix3x4 & transform)
+void SectionPlane::SetDraggerTransform(Matrix3x4 & transform)
 {
 	Plane sectionPlane(Vector3(m_Equation[0], m_Equation[1], m_Equation[2]), m_Equation[3]);
 	sectionPlane.Transform(transform);
@@ -132,8 +122,6 @@ void SectionPlane::GetParam()
 	m_Equation[1] = B;
 	m_Equation[2] = C;
 	m_Equation[3] = D;
-
-	//LOGI("plane:%d normal:%f,%f,%f, origion:%f,%f,%f param:%f,%f,%f,%f", GetID(), m_Normal.x, m_Normal.y, m_Normal.z, m_Origin.x, m_Origin.y, m_Origin.z, A, B, C, D);
 }
 
 void SectionPlane::SetPlaneParam(float A, float B, float C, float D)
@@ -143,7 +131,13 @@ void SectionPlane::SetPlaneParam(float A, float B, float C, float D)
 	m_Equation[2] = C;
 	m_Equation[3] = D;
 	Matrix3x4 indenty = Matrix3x4::IDENTITY;
-	SetTransform(indenty);
+	Plane plane(Vector3(A,B,C), D);
+	SetDraggerTransform(indenty);
+}
+
+Vector3 SectionPlane::GetCenterPointArray()
+{
+     return	m_tempCenter;
 }
 
 void SectionPlane::SetTransformPlaneParam(float A, float B, float C, float D)
@@ -251,11 +245,19 @@ void SectionPlane::UpdateDrawData()
 		float* equation = this->GetTransformPlaneParam();
 
 		Vector3 normal(equation[0], equation[1], equation[2]);
-		//		    LOGI("normal = %s",normal.Normalized().Tostring().c_str());
+		//LOGI("normal = %s",normal.Normalized().Tostring().c_str());
 		Plane projectPlane(normal, equation[3]);
-		//			LOGI("equation[3] = %f",equation[3]);
+		//LOGI("equation[3] = %f",equation[3]);
+		//找到原始平面上面一点
+		Vector3 pntInPlane = projectPlane.Project(m_sceneBox.Center());
 
-		BoundingBox m_box = m_sceneBox.Projected(projectPlane);
+		//找到过此点的XY平面
+		Plane XYPlane(Vector3::FORWARD, pntInPlane);
+
+		Quaternion deltaRot(Vector3::FORWARD,projectPlane.m_normal);
+
+		BoundingBox m_box = m_sceneBox.Projected(XYPlane);
+
 		if (false && this->GetScene())
 		{
 			this->ClearFigureSectionLines();
@@ -272,87 +274,56 @@ void SectionPlane::UpdateDrawData()
 			vector<float> pnts;
 			m_box.GetTriangleArray(pnts);
 		    Vector3 projMin = m_box.m_min;
-		    Vector3 projMax = m_box.m_max;
+		    Vector3 projMax = Vector3(m_box.m_max.m_x, m_box.m_max.m_y,m_box.m_min.m_z);
 
-		//    LOGI("projMin = %s",projMin.Tostring().c_str());
-		//    LOGI("projMax = %s",projMax.Tostring().c_str());
-
-		    Vector3 vertices[8];
+			//仅仅显示包围盒的最底面
+		    Vector3 vertices[4];
 		    vertices[0] = projMin;
-		    vertices[1] = Vector3(projMax.m_x, projMin.m_y, projMin.m_z);
-		    vertices[2] = Vector3(projMin.m_x, projMax.m_y, projMin.m_z);
+			vertices[1] = Vector3(projMin.m_x, projMax.m_y, projMin.m_z);
+			vertices[2] = Vector3(projMax.m_x, projMin.m_y, projMin.m_z);		   
 		    vertices[3] = Vector3(projMax.m_x, projMax.m_y, projMin.m_z);
-		    vertices[4] = Vector3(projMin.m_x, projMin.m_y, projMax.m_z);
-		    vertices[5] = Vector3(projMax.m_x, projMin.m_y, projMax.m_z);
-		    vertices[6] = Vector3(projMin.m_x, projMax.m_y, projMax.m_z);
-		    vertices[7] = projMax;
 
-			Vector3 normals[6];
-			//构造三角形 124 243 213 134
-			m_points.push_back(vertices[1]);m_points.push_back(vertices[0]);m_points.push_back(vertices[2]);
-			m_points.push_back(vertices[0]);m_points.push_back(vertices[3]);m_points.push_back(vertices[2]);
-			normals[0] = ((vertices[3] - vertices[0]).CrossProduct(vertices[1] - vertices[0])).Normalized();
+			//先将标准的面移动到远点，然后旋转，旋转完成之后平移到新的剖切位置
+			Matrix3x4 transformMaxtix;
+			transformMaxtix.MultiTranslate(pntInPlane);
+			Matrix3x4 rotationMatrix = deltaRot.RotationMatrix();
+			transformMaxtix = transformMaxtix*rotationMatrix;
+			transformMaxtix.MultiTranslate(m_box.Center().Nagative());
+			for (int i = 0; i < 4; i++)
+			{
+				vertices[i] = transformMaxtix*vertices[i];
+			}
 
-			m_points.push_back(vertices[0]);m_points.push_back(vertices[4]);m_points.push_back(vertices[3]);
-			m_points.push_back(vertices[0]);m_points.push_back(vertices[5]);m_points.push_back(vertices[4]);
-			normals[1] = Vector3(-1,0,0);
+			//获取面的中心点
+			Vector3 center = (vertices[0] + vertices[1] + vertices[2] + vertices[3]) * 0.25;
+			m_tempCenter = center;
 
-			m_points.push_back(vertices[7]);m_points.push_back(vertices[4]);m_points.push_back(vertices[5]);
-			m_points.push_back(vertices[5]);m_points.push_back(vertices[6]);m_points.push_back(vertices[7]);
-			normals[2] = -normals[0];
+			Vector3 normals[3];
+			m_points.push_back(vertices[0]);m_points.push_back(vertices[1]);m_points.push_back(vertices[2]);
+			m_points.push_back(vertices[1]);m_points.push_back(vertices[2]);m_points.push_back(vertices[3]);
+			normals[0] = ((vertices[2] - vertices[0]).CrossProduct(vertices[1] - vertices[0])).Normalized();
 
-			m_points.push_back(vertices[6]);m_points.push_back(vertices[1]);m_points.push_back(vertices[7]);
-			m_points.push_back(vertices[1]);m_points.push_back(vertices[2]);m_points.push_back(vertices[7]);
-			normals[3] = -normals[1];
-
-			m_points.push_back(vertices[6]);m_points.push_back(vertices[0]);m_points.push_back(vertices[1]);
-			m_points.push_back(vertices[6]);m_points.push_back(vertices[5]);m_points.push_back(vertices[0]);
-			normals[4] = ((vertices[1] - vertices[0]).CrossProduct(vertices[5] - vertices[0])).Normalized();
-
-			m_points.push_back(vertices[3]);m_points.push_back(vertices[7]);m_points.push_back(vertices[2]);
-			m_points.push_back(vertices[3]);m_points.push_back(vertices[4]);m_points.push_back(vertices[7]);
-			normals[5] = -normals[4];
-
-
+	
 			m_normals.push_back(normals[0]);m_normals.push_back(normals[0]);m_normals.push_back(normals[0]);
 			m_normals.push_back(normals[0]);m_normals.push_back(normals[0]);m_normals.push_back(normals[0]);
-
-			m_normals.push_back(normals[1]);m_normals.push_back(normals[1]);m_normals.push_back(normals[1]);
-			m_normals.push_back(normals[1]);m_normals.push_back(normals[1]);m_normals.push_back(normals[1]);
-
-			m_normals.push_back(normals[2]); m_normals.push_back(normals[2]); m_normals.push_back(normals[2]);
-			m_normals.push_back(normals[2]); m_normals.push_back(normals[2]); m_normals.push_back(normals[2]);
-
-			m_normals.push_back(normals[3]); m_normals.push_back(normals[3]); m_normals.push_back(normals[3]);
-			m_normals.push_back(normals[3]); m_normals.push_back(normals[3]); m_normals.push_back(normals[3]);
-
-			m_normals.push_back(normals[4]); m_normals.push_back(normals[4]); m_normals.push_back(normals[4]);
-			m_normals.push_back(normals[4]); m_normals.push_back(normals[4]); m_normals.push_back(normals[4]);
-
-			m_normals.push_back(normals[5]); m_normals.push_back(normals[5]); m_normals.push_back(normals[5]);
-			m_normals.push_back(normals[5]); m_normals.push_back(normals[5]); m_normals.push_back(normals[5]);
 
 			//构造边界线
 			m_edgePoints.push_back(vertices[0]);m_edgePoints.push_back(vertices[1]);
 			m_edgePoints.push_back(vertices[1]);m_edgePoints.push_back(vertices[3]);
-			m_edgePoints.push_back(vertices[2]);m_edgePoints.push_back(vertices[3]);
-			m_edgePoints.push_back(vertices[0]);m_edgePoints.push_back(vertices[2]);
+			m_edgePoints.push_back(vertices[3]);m_edgePoints.push_back(vertices[2]);
+			m_edgePoints.push_back(vertices[2]);m_edgePoints.push_back(vertices[0]);
 
-			m_edgePoints.push_back(vertices[4]);m_edgePoints.push_back(vertices[5]);
-			m_edgePoints.push_back(vertices[5]);m_edgePoints.push_back(vertices[7]);
-			m_edgePoints.push_back(vertices[6]);m_edgePoints.push_back(vertices[7]);
-			m_edgePoints.push_back(vertices[4]);m_edgePoints.push_back(vertices[6]);
-
-			m_edgePoints.push_back(vertices[0]);m_edgePoints.push_back(vertices[4]);
-			m_edgePoints.push_back(vertices[2]);m_edgePoints.push_back(vertices[6]);
-			m_edgePoints.push_back(vertices[3]);m_edgePoints.push_back(vertices[7]);
-			m_edgePoints.push_back(vertices[1]);m_edgePoints.push_back(vertices[5]);
 		this->m_dirty = false;
 	}
 }
 void SectionPlane::SetName(string name)
 {
 	m_Name = name;
+}
+
+string SectionPlane::GetName()
+{
+	return m_Name;
 }
 
 void SectionPlane::SetShowClipPlane(bool flag)
@@ -399,7 +370,7 @@ bool SectionPlane::GetEnable()
 	return m_Enable;
 }
 
-int SectionPlane::GetID()
+IDTYPE SectionPlane::GetID()
 {
 	return m_Id;
 }
@@ -498,4 +469,40 @@ float* SectionPlane::GetTransformPlaneParam()
 	return this->m_transformEquation;
 }
 
+void SectionPlane::RayPick(RayPickAction* action)
+{
+	if (!this->IsVisible() || !this->RendreVisible())
+	{
+		return;
+	}
+
+	action->BeginPickAsGroup(this);
+
+	Model::RayPick(action);
+
+	action->EndPickAsGroup(this, 1);
+}
+string SectionPlane:: toJson(){
+    string jsonStr;
+    Json::FastWriter writer;
+    Json::Value planJson ;
+    Json::Value curveJson ;
+    planJson["id"] = m_Id;
+    planJson["originPnt"] = m_Origin.Tostring();
+    planJson["normal"] = m_Normal.Tostring();
+    planJson["UDir"] = m_UDir.Tostring();
+    planJson["VDir"] = m_VDir.Tostring();
+        
+    curveJson["isDisplay"] = m_Enable;
+    curveJson["drawStyle"] = 0;
+    curveJson["drawType"] = 1;
+    curveJson["angle"] = 12.0;
+    curveJson["ratio"] = 12.0;
+    curveJson["color"] = m_faceColor.Tostring();
+    
+    planJson["clippingCurve"] = curveJson;
+        
+    jsonStr = writer.write(planJson);
+    return jsonStr;
+}
 }

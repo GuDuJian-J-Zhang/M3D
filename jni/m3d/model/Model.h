@@ -435,6 +435,12 @@ public:
 	virtual void RemoveModelView(int viewId);
 
 	/**
+	* 调整自定义视图的顺序
+	* @param viewId
+	*/
+	void MoveModelView(int viewId, int preViewId);
+
+	/**
 	* 获取模型中所有视图的列表
 	* @return
 	*/
@@ -605,7 +611,9 @@ public:
 
 	void SaveProperties(string& key, string& value);
 
-	bool SetFaceMerge();
+	int GetBodyCount();
+
+	void SetNeedClip(bool val);
 protected:
 	ModelShape* m_modelShape;
 	mutable bool m_dirty; //!< @see SceneNode
@@ -642,10 +650,12 @@ public:
 	virtual SHAPETYPE GetType(void);
 
 	void SetImagePath(const string& imagePath);
+	string GetImagePath();
 
 	void SetImageData(char* imageData, int dataLength);
 
 	void SetImageSize(Vector3& position, Vector2& size);
+	Vector2 GetImageSize();
 
 	void SetImagePosition(Vector3& position);
 	Vector3 GetImagePosition();
@@ -661,6 +671,8 @@ public:
 	void  SetInTopShow(bool allowInTopShow);
  
 	void SetAllowTran(bool allowTran);
+
+	void SetFixShowInScreen(bool fixShow);
 
 	ImageModelShape* GetImageModelShape();
 private:

@@ -1039,6 +1039,9 @@ public:
 
 	int GetCurrentRenderImageQueueIndex() const { return m_currentRenderImageQueueIndex; }
 	void SetCurrentRenderImageQueueIndex(int val) { m_currentRenderImageQueueIndex = val; }
+
+	vector<ImageBoard *> GetHudImages() const { return m_hudImages; }
+	void SetHudImages(vector<ImageBoard *> val) { m_hudImages = val; }
 private:
 
 	void InitRenderQueueGroup(map<int, M3D::RenderQueue>& renderQueueGroup);
@@ -1141,6 +1144,8 @@ private:
 	vector<ImageBoard*> m_renderImageboards; //!<渲染图片的列表
 
 	vector<ImageBoard*> m_renderUIs; //!<渲染图片的列表
+
+	vector<ImageBoard*> m_hudImages; //!<hub图片列表
 
 	int m_delayDrawOnceCount;//!< 一次绘制的个数
 

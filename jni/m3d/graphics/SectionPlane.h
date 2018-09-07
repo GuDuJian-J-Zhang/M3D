@@ -1,4 +1,4 @@
-﻿/**@file
+/**@file
  *@brief	Plane类头文件
  *@author	bing
  *@date		2013-11-27
@@ -19,6 +19,7 @@
 #include "m3d/base/BoundingBox.h"
 #include "m3d/graphics/SectionLine.h"
 #include "m3d/graphics/CrossSection.h"
+#include "m3d/model/Model.h"
 
 namespace M3D
 {
@@ -49,7 +50,7 @@ typedef Vector3 Point3D;
  *
  * 表示一个平面，包含定义平面的参数及可设置的绘制示意平面的数据（2个三角形）
  */
-class M3D_API SectionPlane : public Object
+class M3D_API SectionPlane : public Model
 {
 public:
 	SectionPlane();
@@ -77,13 +78,13 @@ public:
 	/**
 	* 通过矩阵变换剖面位置
 	*/
-	void SetTransform(Matrix3x4& transform);
+	void SetDraggerTransform(Matrix3x4& transform);
 
 	/**
 	 *
 	 * @return
 	 */
-	int GetID();
+	IDTYPE GetID();
 	/**
 	 *
 	 * @param id
@@ -122,6 +123,7 @@ public:
 	 * @param name
 	 */
 	void SetName(string name);
+	string GetName();
 	//void setPlaneRect(Point3D* point1,Point3D* point2);
 
 	/**
@@ -238,6 +240,22 @@ public:
 	* 更新绘制数据
 	*/
 	void UpdateDrawData();
+
+	/**
+	* 得到要显示面的中心点
+	* @return
+	*/
+	Vector3 GetCenterPointArray();
+
+	virtual void OnMarkedDirty()
+	{
+		this->SetDraggerTransform(GetWorldTransform());
+	}
+
+	virtual void RayPick(RayPickAction* action);
+    
+    //将对象值转成JSON数据
+    string toJson();
 private:
 	void SetTransformPlaneParam(float A, float B, float C, float D);
 
@@ -310,7 +328,8 @@ private:
 	// 
 	SceneManager* m_scene;
 	mutable Mutex m_mutex;//!<
-
+	Matrix3x4 m_innerTransform; //默认旋转从标准面变化过来的中间差值量
+	Vector3 m_tempCenter; //构建剖切面的中心点;
 };
 }
 

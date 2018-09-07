@@ -1438,6 +1438,61 @@ void Model::RemoveModelView(int viewId)
 	}
 }
 
+void Model::MoveModelView(int viewId, int preViewId)
+{
+	vector<ModelView*>* pVecViews = GetModelViewList();
+	if (pVecViews == NULL)
+		return;
+	int viewCount = (int)pVecViews->size();
+	ModelView* pModelView = NULL;
+	int nModelViewIndex = -1;
+	int nPreModelViewIndex = 0;
+	for (int i = 0; i < viewCount; i++)
+	{
+		if ((*pVecViews)[i]->GetID() == viewId)
+		{
+			pModelView = (*pVecViews)[i];
+			nModelViewIndex = i;
+			break;
+		}
+	}
+
+	if (preViewId >=0)
+	{
+		for (int i = 0; i < viewCount; i++)
+		{
+			if ((*pVecViews)[i]->GetID() == preViewId)
+			{
+				nPreModelViewIndex = i;
+				break;
+			}
+		}
+	}
+	
+
+	if (pModelView)
+	{
+		if(nModelViewIndex > nPreModelViewIndex)
+		{
+			int nModelViewNewIndex = nPreModelViewIndex + 1;
+			for (int i = nModelViewIndex; i > nModelViewNewIndex; i--)
+			{
+				(*pVecViews)[i] = (*pVecViews)[i - 1];
+			}
+			(*pVecViews)[nModelViewNewIndex] = pModelView;
+		}
+		else
+		{
+			int nModelViewNewIndex = nPreModelViewIndex;
+			for (int i = nModelViewIndex; i < nModelViewNewIndex; i++)
+			{
+				(*pVecViews)[i] = (*pVecViews)[i + 1];
+			}
+			(*pVecViews)[nModelViewNewIndex] = pModelView;
+		}
+	}
+}
+
 void Model::AddSectionPlane(SectionPlane* plane)
 {
 	bool exist = false;
@@ -2310,6 +2365,15 @@ void ImageModel::SetImagePath(const string& imagePath)
 	}
 }
 
+string ImageModel::GetImagePath()
+{
+	string strImagePath = "";
+	ImageModelShape* imageModelshape = this->GetImageModelShape();
+	if (imageModelshape)
+		strImagePath = imageModelshape->GetImagePath();
+	return strImagePath;
+}
+
 void ImageModel::SetImageData(char* imageData, int dataLength)
 {
 	this->CreateModelShape();
@@ -2328,6 +2392,18 @@ void ImageModel::SetImageSize(Vector3& position, Vector2& size)
 		ImageModelShape* imageModel = (ImageModelShape*)this->m_modelShape;
 		imageModel->SetImageSize(position, size);
 	}
+}
+
+M3D::Vector2 ImageModel::GetImageSize()
+{
+	Vector2 size;
+	if (m_modelShape)
+	{
+		ImageModelShape* pImgModel = (ImageModelShape*)m_modelShape;
+		if (pImgModel)
+			size = pImgModel->GetImageSize();
+	}
+	return size;
 }
 
 void ImageModel::SetImagePosition(Vector3& position)
@@ -2407,6 +2483,15 @@ void ImageModel::SetAllowTran(bool allowTran)
 	}
 }
 
+
+void ImageModel::SetFixShowInScreen(bool fixShow)
+{
+	if (this->m_modelShape)
+	{
+		ImageModelShape* imageModel = (ImageModelShape*)this->m_modelShape;
+		imageModel->SetFixShowInScreen(fixShow);
+	}
+}
 
 void ImageModel::CreateModelShape()
 {
@@ -2541,13 +2626,27 @@ void Model::SaveProperties(string& key, string& value)
 	InitProperties();
 }
 
-bool Model::SetFaceMerge()
+int Model::GetBodyCount()
+{
+	int count = 0;
+	if (GetBodys())
+	{
+		count += GetBodys()->size();
+	}
+	for (int i = 0; i < m_SubModelArray.size(); i++)
+	{
+		count += m_SubModelArray[i]->GetBodyCount();
+	}
+	return count;
+}
+
+
+void Model::SetNeedClip(bool val)
 {
 	if (this->m_modelShape)
 	{
-		m_modelShape->MergeFace();
+		m_modelShape->SetNeedClip(val);
 	}
-	return true;
 }
 
 }

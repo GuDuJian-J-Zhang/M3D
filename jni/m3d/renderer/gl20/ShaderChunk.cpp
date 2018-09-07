@@ -1,4 +1,4 @@
-#include "m3d/renderer/gl20/ShaderChunk.h"
+﻿#include "m3d/renderer/gl20/ShaderChunk.h"
 namespace M3D
 {
 
@@ -854,7 +854,7 @@ namespace M3D
 			"\n"
 			"#if defined( USE_MATCAPMAP ) &&  !defined( PHYSICAL )\n"
 			"	irradiance = GetMatcapIndirectLight(geometry);\n"
-			"  reflectedLight.indirectDiffuse += (irradiance) /** (material.diffuseColor)*/;\n"
+			"  reflectedLight.indirectDiffuse = (irradiance) /** (material.diffuseColor)*/;\n"
 				//"	vec3 lumcoeff = vec3( 0.2126, 0.7152, 0.0722 );\n"
 				//"	float lum = dot( vec3(material.diffuseColor), lumcoeff );\n"
 				//"	vec3 luminance = vec3( lum );\n"

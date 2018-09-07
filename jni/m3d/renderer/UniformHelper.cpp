@@ -1,4 +1,4 @@
-#include "m3d/renderer/UniformHelper.h"
+﻿#include "m3d/renderer/UniformHelper.h"
 #include "m3d/graphics/Texture.h"
 #include "m3d/graphics/Texture2D.h"
 #include "m3d/graphics/TextureCube.h"

@@ -289,6 +289,8 @@ void RenderAction::Begin()
 	this->m_currentRenderImageQueueIndex = 0;
 	m_currentRenderCount = 0;
 	this->m_renderUIs.clear();
+
+	this->m_hudImages.clear();
 }
 
 void RenderAction::Execute()
@@ -907,6 +909,9 @@ void RenderAction::PrepareRenderImage(ImageBoard* imageBoard)
 	else if (currentImageQueueIndex ==1)
 	{
 		this->m_renderUIs.push_back(imageBoard);
+	}else if (currentImageQueueIndex == 2)
+	{
+		this->m_hudImages.push_back(imageBoard);
 	}
 }
 

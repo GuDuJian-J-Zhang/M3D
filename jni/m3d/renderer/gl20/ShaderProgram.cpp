@@ -4,11 +4,11 @@
  *  Created on: 2016-2-16
  *      Author: Administrator
  */
-#include "m3d/ResourceManager.h"
+
 #include "m3d/renderer/gl20/ShaderProgram.h"
 #include "m3d/graphics/GraphicsDefs.h"
 #include "m3d/renderer/RenderContext.h"
-
+#include "m3d/ResourceManager.h"
 namespace M3D
 {
 /**
@@ -163,17 +163,21 @@ bool ShaderProgram::LinkProgram()
 		return m_isLinked;
 	}
 	glLinkProgram(m_object);
+	M3D_GL_ERROR_CHECK
 	GLint linkStatus,length;
 	////LOGI("program link END");
 	glGetProgramiv(m_object,GL_LINK_STATUS,&linkStatus);
-
+	M3D_GL_ERROR_CHECK
     if (!linkStatus)
     {
         glGetProgramiv(m_object, GL_INFO_LOG_LENGTH, &length);
+		M3D_GL_ERROR_CHECK
         char *msg = new char[length];
         int outLength;
         glGetProgramInfoLog(m_object, length, &outLength, &msg[0]);
+		M3D_GL_ERROR_CHECK
         glDeleteProgram(m_object);
+		M3D_GL_ERROR_CHECK
         m_object = 0;
         LOGE("Could not Linke shader :\n%s\n",  msg);
         m_isLinked = GL_FALSE;
@@ -201,6 +205,7 @@ void ShaderProgram::UseProgram()
 	if(!IsDirty())
 	{
 		glUseProgram(m_object);
+		M3D_GL_ERROR_CHECK
 		return;
 	}
 	const int MAX_PARAMETER_NAME_LENGTH = 256;
@@ -225,11 +230,12 @@ void ShaderProgram::UseProgram()
 	if (m_isLinked)
 	{
 		glUseProgram(m_object);
+		M3D_GL_ERROR_CHECK
 		for (int j = 0; j < 2; j++)
 		{
 			LOGD("j ====%d",j);
 			glGetProgramiv(m_object, ActiveType[j], &valueCount); //获取OpenGL优化后的uniform数量
-
+			M3D_GL_ERROR_CHECK
 			LOGD("value Count ====%d",valueCount);
 			for (int i = 0; i < valueCount; i++)
 			{
@@ -238,6 +244,7 @@ void ShaderProgram::UseProgram()
 				//LOGD("21s");
 				InfoFoo[j](m_object, (GLuint) i,
 						MAX_PARAMETER_NAME_LENGTH, 0, &count, &type, valueName);
+				M3D_GL_ERROR_CHECK
 				LOGD("m_TYPE == %x",type);
 				string tempName(valueName);
 				//为什么要去除"[0]",参考http://www.gamedev.net/topic/666216-glgetactiveuniform-causes-access-violation/
@@ -254,6 +261,7 @@ void ShaderProgram::UseProgram()
 				LOGD("new name = %s",tempName.c_str());
 				////LOGI("22s");
 				int location = LocaFoo[j](m_object, tempName.c_str());
+				M3D_GL_ERROR_CHECK
 				////LOGI("location == %d",location);
 				////LOGI("22e");
 				ShaderParameter newPara(location, type, tempName,count);
@@ -318,6 +326,7 @@ GLint ShaderProgram::GetUniformLocation(string & name)
 void ShaderProgram::BindAttributeLocation(string & name, GLuint location)
 {
 	glBindAttribLocation(m_object,location,name.c_str());
+	M3D_GL_ERROR_CHECK
 }
 
 
@@ -329,6 +338,7 @@ void ShaderProgram::BindAttributeLocation(string & name, GLuint location)
 void ShaderProgram::SetUniformValue(GLint location, GLfloat value)
 {
 	glUniform1f(location,value);
+	M3D_GL_ERROR_CHECK
 }
 void ShaderProgram::SetUniformValue(const string& paraName, GLfloat value)
 {
@@ -336,6 +346,7 @@ void ShaderProgram::SetUniformValue(const string& paraName, GLfloat value)
 	if (para)
 	{
 		glUniform1f(para->m_location, value);
+		M3D_GL_ERROR_CHECK
 	}
 	
 }
@@ -346,24 +357,28 @@ void ShaderProgram::SetUniformValue(const string & paraName, GLint value)
 	if (para)
 	{
 		glUniform1i(para->m_location, value);
+		M3D_GL_ERROR_CHECK
 	}
 }
 
 void ShaderProgram::SetUniformValue(GLint location, GLfloat x, GLfloat y)
 {
 	glUniform2f(location, x, y);
+	M3D_GL_ERROR_CHECK
 }
 
 void ShaderProgram::SetUniformValue(GLint location, GLfloat x, GLfloat y,
 		GLfloat z)
 {
 	glUniform3f(location, x, y, z);
+	M3D_GL_ERROR_CHECK
 }
 
 void ShaderProgram::SetUniformValue(GLint location, GLfloat x, GLfloat y,
 		GLfloat z, GLfloat w)
 {
 	glUniform4f(location, x, y, z,w);
+	M3D_GL_ERROR_CHECK
 }
 
 void ShaderProgram::SetUniformValue(const string& paraName, GLsizei count,
@@ -386,6 +401,7 @@ void ShaderProgram::SetUniformValue(const string& paraName, GLsizei count,
 				glUniformMatrix4fv(para->m_location, count, transpose, v);
 				break;
 			}
+			M3D_GL_ERROR_CHECK
 		}
 	}
 }
@@ -393,6 +409,7 @@ void ShaderProgram::SetUniformValue(const string& paraName, GLsizei count,
 void ShaderProgram::SetUniformValue(GLint location, GLint value)
 {
 	glUniform1i(location, value);
+	M3D_GL_ERROR_CHECK
 }
 
 void ShaderProgram::SetUniformValue(const string& paraName, const Color& color)
@@ -412,6 +429,7 @@ void ShaderProgram::SetUniformValue(const string& paraName, const Vector2& vec2)
 	if (para)
 	{
 		glUniform2f(para->m_location, vec2.m_x,vec2.m_y);
+		M3D_GL_ERROR_CHECK
 	}
 }
 
@@ -422,6 +440,7 @@ void ShaderProgram::SetUniformValue(const string& paraName, const Vector3& vec3)
 	if (para)
 	{
 		glUniform3f(para->m_location, vec3.m_x, vec3.m_y,vec3.m_z);
+		M3D_GL_ERROR_CHECK
 	}
 }
 
@@ -432,6 +451,7 @@ void ShaderProgram::SetUniformValue(const string& paraName, const Vector4& vec4)
 	if (para)
 	{
 		glUniform4f(para->m_location, vec4.m_x, vec4.m_y, vec4.m_z,vec4.m_w	);
+		M3D_GL_ERROR_CHECK
 	}
 }
 
@@ -510,6 +530,7 @@ void ShaderProgram::SetUniformValue(const string& paraName, GLsizei count,
 		      default:
 		        break;
 			}
+			M3D_GL_ERROR_CHECK
 		}
 	}
 }
@@ -543,6 +564,7 @@ void ShaderProgram::SetUniformValue(const string& paraName,const GLfloat * v)
 		      default:
 		        break;
 			}
+			M3D_GL_ERROR_CHECK
 		}
 	}
 }
@@ -582,6 +604,7 @@ void ShaderProgram::SetUniformValue(const string& paraName, const GLint* v)
 		      default:
 		        break;
 			}
+			M3D_GL_ERROR_CHECK
 		}
 	}
 
@@ -597,6 +620,7 @@ void ShaderProgram::SetUniformValue(const string& paraName, GLsizei count,
 		{
 			switch(para->m_Type)
 			{
+			case GL_SAMPLER_2D:
 		      case GL_INT:
 			  case GL_BOOL:
 		        glUniform1iv(para->m_location,count,v);
@@ -616,6 +640,7 @@ void ShaderProgram::SetUniformValue(const string& paraName, GLsizei count,
 		      default:
 		        break;
 			}
+			M3D_GL_ERROR_CHECK
 		}
 	}
 }
@@ -627,11 +652,13 @@ void ShaderProgram::SetUniformValue(const string& paraName, GLsizei count,
 void ShaderProgram::EnableAttributeArray(GLint location)
 {
 	glEnableVertexAttribArray(location);
+	M3D_GL_ERROR_CHECK
 }
 
 void ShaderProgram::DisableAttributeArray(GLint location)
 {
 	glDisableVertexAttribArray(location);
+	M3D_GL_ERROR_CHECK
 }
 
 
@@ -647,6 +674,7 @@ void ShaderProgram::SetVertexAttribPointer(int location, int tupleSize, GLenum t
 		const void* values)
 {
 	glVertexAttribPointer(location,tupleSize,type,GL_FALSE,stride,values);
+	M3D_GL_ERROR_CHECK
 }
 
  SPHashMap & ShaderProgram::GetShaderUniformMap()

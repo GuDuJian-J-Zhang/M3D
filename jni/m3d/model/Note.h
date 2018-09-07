@@ -1,4 +1,4 @@
-/**@file
+﻿/**@file
  *@brief	Note类头文件
  *@author	bing
  *@date		2013-11-27

@@ -7,7 +7,7 @@
 namespace M3D
 {
 	/************************************************************************/
-	/* 效果管理类。用来管理effect所写的效果                                                                     */
+	/* 鏁堟灉绠＄悊绫汇�傜敤鏉ョ鐞唀ffect鎵�鍐欑殑鏁堟灉                                                                     */
 	/************************************************************************/
 	class Effect;
 	class M3D_API EffectManager
@@ -19,7 +19,7 @@ namespace M3D
 		// FullName:  M3D::EffectManager::GetEffect
 		// Access:    public 
 		// Returns:   Effect*
-		// Qualifier: 根据名字获取effect
+		// Qualifier: 鏍规嵁鍚嶅瓧鑾峰彇effect
 		// Parameter: string name
 		//************************************
 		Effect* GetEffect(string name);
@@ -29,7 +29,7 @@ namespace M3D
 		// FullName:  M3D::EffectManager::ClearResource
 		// Access:    public 
 		// Returns:   void
-		// Qualifier: 清理资源
+		// Qualifier: 娓呯悊璧勬簮
 		//************************************
 		void ClearResource();
 		//************************************
@@ -37,7 +37,7 @@ namespace M3D
 		// FullName:  M3D::EffectManager::SetSize
 		// Access:    public 
 		// Returns:   void
-		// Qualifier: 设置大小
+		// Qualifier: 璁剧疆澶у皬
 		// Parameter: int w
 		// Parameter: int h
 		//************************************

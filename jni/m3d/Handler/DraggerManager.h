@@ -14,8 +14,8 @@
 #include "m3d/base/Vector2.h"
 #include "m3d/base/Vector3.h"
 #include "m3d/model/Model.h"
-#include "Sview/views/view.h"
-#include "m3d/handler/dragger.h"
+#include "sview/views/View.h"
+#include "m3d/Handler/dragger.h"
 
 using namespace SVIEW;
 
@@ -46,7 +46,11 @@ public:
 
 	 //
 	 Dragger* BindExplosionDragger(vector<Model*> models, int explosionType);
-	 Dragger* BindDragger(vector<Model*> models, int drggerType);
+	 Dragger* BindExplosionDragger(vector<Model*> models, int explosionType, Vector3 vect);
+	 Dragger* BindExplosionFreedomDragger(vector<Model*> models, int explosionType, Vector3 direction, Vector3 pos);
+	 //用于预选的dragger的移动操作
+	 bool MoveExplosionFreedomDragger(Dragger* dragger,Vector3 direction,Vector3 pos);
+	 Dragger* BindDragger(vector<Model*> models, int drggerType, bool bGloal = true);
 	 bool UnBindDragger(Dragger* dragger);
 
 	 Dragger* BindSectionDragger(int drggerType);
@@ -62,10 +66,12 @@ public:
 	Dragger* GetDragger() { return m_dragger; }
 
 private:
-	Dragger* BindExplosionAxisDragger(vector<Model*> models,int explosionType);
-	Dragger* BindAxisDragger(vector<Model*> models);
+	Dragger* BindExplosionAxisDragger(vector<Model*> models,int explosionType, Vector3 vect);
+	Dragger* BindAxisDragger(vector<Model*> models, bool bGloal = true);
+	Dragger* BindExplosionStdDragger(vector<Model*> models, int explosionType);
+	Dragger* bindMinusAxisDragger(vector<Model*> models);
 	Dragger* BindScaleDragger(vector<Model*> models);
-	Dragger* BindRotateDragger(vector<Model*> models);
+	Dragger* BindRotateDragger(vector<Model*> models, bool bGloal = true);
 public:
 	Vector3 GetBindCenter(Model* model);
 private:

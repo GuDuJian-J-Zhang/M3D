@@ -1,4 +1,4 @@
-#include "m3d/extras/modelmanager/CopyModelOperation.h"
+﻿#include "m3d/extras/modelmanager/CopyModelOperation.h"
 #include "m3d/extras/modelmanager/ModelAssemblyHelper.h"
 #include "m3d/SceneManager.h"
 #include "m3d/model/ExtendInfoManager.h"

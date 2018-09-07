@@ -299,7 +299,7 @@ void Reader::SetUseIndex(bool useIndex) {
 
 BaseMaterial* Reader::CovertColorToMaterial(Color& srcColor)
 {
-	//?Ã¹?YColorÎ¼??Î¼??DDÂ±Ã¨??
+	//?¨´?YColor¦Ì??¦Ì??DD¡À¨¨??
 	char tempBuffer[CONVERSION_BUFFER_LENGTH];
 	sprintf(tempBuffer, "ColorBaseMaterial--%3.2f %3.2f %3.2f %3.2f", srcColor.m_r, srcColor.m_g, srcColor.m_b, srcColor.m_a);
 	string srcColorCode = string(tempBuffer);

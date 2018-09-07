@@ -35,6 +35,7 @@ namespace M3D
 	const string ShaderManager::Wireframe = "Wireframe";
 	const string ShaderManager::Axis = "Axis";
 	const string ShaderManager::Dragger("Dragger");
+	const string ShaderManager::DraggerEdge("DraggerEdge");
 	const string ShaderManager::XRay("XRay");
 	const string ShaderManager::Edge("Edge");
 	const string ShaderManager::Brdf("Brdf");
@@ -88,8 +89,10 @@ namespace M3D
 			if (it != this->m_shaderStrMap.end())
 			{
 				ShaderProgram* temp = CreateShaderProgramFrmCde(name, (it->second).m_vs, (it->second).m_fs);
-				temp->SetType(m_SMTMap[name]);
-				temp->SetName(name);
+                if (temp) {
+                    temp->SetType(m_SMTMap[name]);
+                    temp->SetName(name);
+                }
 				return temp;
 			}
 			else
@@ -333,6 +336,10 @@ namespace M3D
 		m_shaderStrMap.insert(std::make_pair(Dragger, sModelDragger));
 		m_SMTMap.insert(std::make_pair(Dragger, ShaderMaterialType::SMT_Dragger));
 
+		ShaderStrings sModelDraggerEdge(ShaderSrcCode::DraggerEdgeVert(), ShaderSrcCode::DraggerEdgeFrag());
+		m_shaderStrMap.insert(std::make_pair(DraggerEdge, sModelDraggerEdge));
+		m_SMTMap.insert(std::make_pair(DraggerEdge, ShaderMaterialType::SMT_DraggerEdge));
+
 		ShaderStrings sXRay(ShaderSrcCode::XRayVert(), ShaderSrcCode::XRayFrag());
 		m_shaderStrMap.insert(std::make_pair(XRay, sXRay));
 		m_SMTMap.insert(std::make_pair(XRay, ShaderMaterialType::SMT_XRay));
@@ -388,6 +395,8 @@ namespace M3D
 		SET_SHADER_MAP(Ring);
 
 		SET_SHADER_MAP(Dragger);
+
+		SET_SHADER_MAP(DraggerEdge);
 
 		SET_SHADER_MAP(JewelType);
 

@@ -93,6 +93,14 @@ namespace M3D
 		*/
 		Color* GetFrameColor();
 
+		/**
+		* 获取CraeteID
+		* @return 
+		*/
+		IDTYPE GetCreateID();
+
+		void SetCreateID(IDTYPE createID);
+
 	private:
 		Matrix3x4 GetWorldMatrix(const Matrix3x4& mvMatrix,
 			RenderAction* renderAction, const Vector3& center, bool allowTran,
@@ -129,6 +137,8 @@ namespace M3D
 		Color m_FrameColor; //!<外框颜色
 
 		mutable Mutex m_mutex; //!<线程锁对象
+
+		IDTYPE m_CreateID;
 	};
 }
 

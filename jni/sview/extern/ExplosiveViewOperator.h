@@ -87,6 +87,7 @@ public:
 
 	bool SetPercent(View* view,vector<Model*> arrayModels, int style, float percent = 100.0f,
 		bool useAnimation = true);
+	bool setPercentWithDirection(View* view, vector<Model*> arrayModels, int style, float percent = 100.0f, Vector3 director =Vector3(0,0,0));
 	//不带复位的
 	bool SetPercentWithoutRestore(View* view, int style, float percent = 100.0f,
 		bool useAnimation = true);
@@ -189,6 +190,9 @@ private:
 	bool m_isFirstOpen;
 	bool m_isSelector;
 	long modelID;
+	 
+	Vector3 explosiveDirection;//指定爆炸轴为选定方向
+
 	vector<Model*> arrayModels;
 	
 	map<ModelShape*, NodeState> m_allNodeMatrixsCache;
@@ -208,6 +212,15 @@ private:
 	Vector3 m_TopNodeFront; //顶层节点包围盒最前边
 
 	Vector3 m_TopNodeBehind; //顶层节点包围盒最后边
+	//如果是自由指定的方向，则需要以法向量及包围盒合适的点确定的面为参考系
+	Vector3 p000;
+	Vector3 p001;
+	Vector3 p010;
+	Vector3 p011;
+	Vector3 p100;
+	Vector3 p101;
+	Vector3 p110;
+	Vector3 p111;
 
 	float m_screenDepth; //屏幕点到空间点所需的深度
 

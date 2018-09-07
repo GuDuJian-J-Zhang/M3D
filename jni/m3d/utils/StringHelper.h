@@ -1,4 +1,4 @@
-/**@file
+﻿/**@file
  *@brief
  *@author	XL
  *@date		2014-1-7

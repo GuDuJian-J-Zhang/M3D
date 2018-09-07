@@ -16,7 +16,8 @@
 #include "../handler/TranslateAxisDragger.h"
 #include "../extras/modelmanager/DraggerCallbacks.h"
 #include "../handler/RotateCylinderAxisDragger.h"
-
+#include "m3d/base/Vector3.h"
+#include "../handler/TranslateMinusAxisDragger.h"
 using namespace M3D;
 using namespace SVIEW;
 namespace M3D
@@ -61,12 +62,117 @@ namespace M3D
 		pSection->AddPlane(outPlane);
 		outPlane->Release();
 
-		outPlane = new SectionPlane();		outPlane->AddRef();
+		outPlane = new SectionPlane();
+		outPlane->AddRef();
 		outPlane->SetID(_xzPlaneID);
 		pSection->AddPlane(outPlane);
 		outPlane->Release();
 
 		this->ResetThreePlaneSection();
+	}
+
+	SectionPlane* SectionManager::CreateOneSectionPlane(const Vector3 &normalVector, const Vector3 &point, int planeID)
+	{
+		SectionPlane* outPlane = new SectionPlane();
+		outPlane->AddRef();
+		outPlane->SetID(planeID);
+		Section* pSection = m_view->GetSceneManager()->GetSectionNode()->GetSection();
+		//Section* pSection = m_view->GetSceneManager()->CreateSingleSectionNode(planeID)->GetSection();
+
+		list<SectionPlane*> planeList = pSection->GetSectionPlaneList();
+		if (planeList.size() > 0)
+		{
+			list<SectionPlane*>::iterator iter;
+			for (iter = planeList.begin(); iter != planeList.end(); ++iter)
+			{
+				SectionPlane* iPlane = *iter;
+				if (iPlane->GetEnable())
+				{
+					iPlane->SetEnable(false);
+					SetDraggerVisiable(iPlane->GetID(), false);
+				}
+			}
+		}
+
+		pSection->AddPlane(outPlane);
+		outPlane->Release();
+
+		SectionPlane* onePlane = pSection->GetPlaneById(planeID);
+		float D = -(normalVector.DotProduct(point));
+		bool val = true;
+		if (onePlane)
+		{
+			onePlane->SetPlaneParam(normalVector.m_x, normalVector.m_y, normalVector.m_z, D);
+			onePlane->SetEnable(val);
+			BindOneSectionDragger(normalVector, onePlane);
+		}
+		return onePlane;
+	}
+
+	void SectionManager::BindOneSectionDragger(const Vector3 &normalVector, SectionPlane* plane)
+	{
+		m_view->GetSceneManager()->Lock();
+		TranslateMinusAxisDragger* translateAixsDragger = NULL;
+		SceneManager* scene = m_view->GetSceneManager();
+		Vector3 position = scene->GetSceneBox().Center();
+		if (m_view)
+		{
+			translateAixsDragger = m_view->GetSceneManager()->GetHandlerGroup()->GetSingleTransMinusformHandler();
+			translateAixsDragger->SetName("OneSectionAxisDragger");
+			translateAixsDragger->SetVisible(true);
+			translateAixsDragger->SetNeedScale(true);
+			translateAixsDragger->SetWorldPosition(plane->GetCenterPointArray());
+			translateAixsDragger->SetOrientation(normalVector);
+			translateAixsDragger->SetID(plane->GetID());
+			translateAixsDragger->SetMinusXAxisVisible(false);
+			draggerList.push_back(translateAixsDragger);
+			SceneNodeDraggerCallback* draggerCallback = new SceneNodeDraggerCallback();
+			//SectionNode* scetionNode = scene->GetSectionNode(plane->GetID());
+			//SectionNode* scetionNode = scene->GetSectionNode();
+
+			//scetionNode->Reset();
+			draggerCallback->SetSectionPlane(plane);
+			draggerCallback->AddRef();
+			translateAixsDragger->addDraggerCallback(draggerCallback);
+			draggerCallback->Release();
+			//scetionNode->MarkDirty();
+		}
+		translateAixsDragger->SetVisible(true);
+		m_view->GetSceneManager()->UnLock();
+	}
+
+	bool SectionManager::SetDraggerVisiable(int id, bool val)
+	{
+		TranslateMinusAxisDragger* dragger = GetTranslateDragger(id);
+		if (dragger)
+		{
+			dragger->SetVisible(val);
+			return true;
+		}
+		return false;
+	}
+
+	bool SectionManager::UnBindOneDragger(Dragger * dragger)
+	{
+		if (dragger)
+		{
+			return m_view->GetDraggerManager()->UnBindDragger(dragger);
+		}
+		return false;
+	}
+
+	TranslateMinusAxisDragger * SectionManager::GetTranslateDragger(int id)
+	{
+		list<TranslateMinusAxisDragger*>::iterator iter;
+		for (iter = draggerList.begin(); iter != draggerList.end(); ++iter)
+		{
+			TranslateMinusAxisDragger* dragger = *iter;
+			if (dragger->GetID() == id)
+			{
+				return dragger;
+			}
+		}
+		return nullptr;
 	}
 
 	M3D::Dragger* SectionManager::BindSectionDragger(int draggerType)
@@ -138,7 +244,8 @@ namespace M3D
 	M3D::Dragger* SectionManager::BindSectionRotateDragger()
 	{
 		RotateCylinderAxisDragger* translateAixsDragger = NULL;
-		SceneManager* scene = m_view->GetSceneManager(); SectionNode* scetionNode = scene->GetSectionNode();
+		SceneManager* scene = m_view->GetSceneManager(); 
+		SectionNode* scetionNode = scene->GetSectionNode();
 		Vector3 position = scetionNode->GetWorldTransform().Translation();
 		if (m_view)
 		{
@@ -423,6 +530,37 @@ namespace M3D
 				translateAixsDragger->SetXZPlaneVisible(val);
 			}
 		}
+	}
+
+	SectionPlane * SectionManager::GetPlaneById(int sectionPlaneId)
+	{
+		SectionPlane* sectionPlane = nullptr;
+		Section* pSection = m_view->GetSceneManager()->GetSectionNode()->GetSection();
+		sectionPlane = pSection->GetPlaneById(sectionPlaneId);
+		return sectionPlane;
+	}
+
+	list<SectionPlane*> SectionManager::GetPlaneList()
+	{
+		Section* pSection = m_view->GetSceneManager()->GetSectionNode()->GetSection();
+		return pSection->GetSectionPlaneList();
+	}
+
+	bool SectionManager::AddPlane(SectionPlane * plane)
+	{
+		Section* pSection = m_view->GetSceneManager()->GetSectionNode()->GetSection();
+		return pSection->AddPlane(plane);
+	}
+
+	bool SectionManager::RemovePlane(SectionPlane * plane)
+	{
+		Section* pSection = m_view->GetSceneManager()->GetSectionNode()->GetSection();
+		TranslateMinusAxisDragger* dragger = GetTranslateDragger(plane->GetID());
+		if (dragger)
+		{
+			UnBindOneDragger(dragger);
+		}
+		return pSection->RemovePlane(plane);
 	}
 
 	bool SectionManager::GetEnableYZ() const

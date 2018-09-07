@@ -5,8 +5,8 @@
 namespace M3D
 {	
 	/************************************************************************/
-	/* Öé±¦ÌØĞ§¡£Öé±¦Í¨¹ı¶à²ãµş¼ÓµÄ·½Ê½×îºóÊµÏÖĞ§¹û¡£1ÊÇÓñÊ¯¡¢×êÊ¯¡¢ÕäÖéµÄfront²ã£¬2ÊÇback²ã 
-	3ÊÇ½ğÊôÖ¸»·²ã 4ÊÇ¸ß¹â²ã 5ÊÇnote²ã£¬×îºó½«¸÷²ã°´Ò»¶¨·½·¨µş¼Ó£¬Ïê¼ûshader*/
+	/* ç å®ç‰¹æ•ˆã€‚ç å®é€šè¿‡å¤šå±‚å åŠ çš„æ–¹å¼æœ€åå®ç°æ•ˆæœã€‚1æ˜¯ç‰çŸ³ã€é’»çŸ³ã€çç çš„frontå±‚ï¼Œ2æ˜¯backå±‚ 
+	3æ˜¯é‡‘å±æŒ‡ç¯å±‚ 4æ˜¯é«˜å…‰å±‚ 5æ˜¯noteå±‚ï¼Œæœ€åå°†å„å±‚æŒ‰ä¸€å®šæ–¹æ³•å åŠ ï¼Œè¯¦è§shader*/
 	/************************************************************************/
 	class M3D_API JewelEffect :public Effect
 	{
@@ -18,7 +18,7 @@ namespace M3D
 		// FullName:  M3D::JewelEffect::Render
 		// Access:    public 
 		// Returns:   void
-		// Qualifier: äÖÈ¾º¯Êı
+		// Qualifier: æ¸²æŸ“å‡½æ•°
 		//************************************
 		void Render();
 		//************************************
@@ -26,7 +26,7 @@ namespace M3D
 		// FullName:  M3D::JewelEffect::ClearResource
 		// Access:    public 
 		// Returns:   void
-		// Qualifier: ÇåÀí×ÊÔ´
+		// Qualifier: æ¸…ç†èµ„æº
 		//************************************
 		void ClearResource();
 		//************************************
@@ -34,7 +34,7 @@ namespace M3D
 		// FullName:  M3D::JewelEffect::SetSize
 		// Access:    public 
 		// Returns:   void
-		// Qualifier: ÉèÖÃ´óĞ¡
+		// Qualifier: è®¾ç½®å¤§å°
 		// Parameter: int w
 		// Parameter: int h
 		//************************************
@@ -45,7 +45,7 @@ namespace M3D
 		// FullName:  M3D::JewelEffect::RenderJewelFront
 		// Access:    private 
 		// Returns:   void
-		// Qualifier: äÖÈ¾Öé±¦front²ã
+		// Qualifier: æ¸²æŸ“ç å®frontå±‚
 		// Parameter: RenderQueue * RenderStateArray
 		//************************************
 		void RenderJewelFront( RenderQueue * RenderStateArray);
@@ -54,7 +54,7 @@ namespace M3D
 		// FullName:  M3D::JewelEffect::RenderJewelBack
 		// Access:    private 
 		// Returns:   void
-		// Qualifier: back²ã
+		// Qualifier: backå±‚
 		// Parameter: RenderQueue * RenderStateArray
 		//************************************
 		void RenderJewelBack( RenderQueue * RenderStateArray);
@@ -63,7 +63,7 @@ namespace M3D
 		// FullName:  M3D::JewelEffect::RenderRing
 		// Access:    private 
 		// Returns:   void
-		// Qualifier: ½ğÊôÖ¸»·²ã
+		// Qualifier: é‡‘å±æŒ‡ç¯å±‚
 		// Parameter: RenderQueue * RenderStateArray
 		//************************************
 		void RenderRing(RenderQueue* RenderStateArray);
@@ -72,7 +72,7 @@ namespace M3D
 		// FullName:  M3D::JewelEffect::DrawJewelType
 		// Access:    private 
 		// Returns:   void
-		// Qualifier: Öé±¦ÀàĞÍ²ã
+		// Qualifier: ç å®ç±»å‹å±‚
 		// Parameter: RenderQueue * RenderStateArray
 		//************************************
 		void DrawJewelType(RenderQueue* RenderStateArray);
@@ -81,7 +81,7 @@ namespace M3D
 		// FullName:  M3D::JewelEffect::DrawJewelHighLight
 		// Access:    private 
 		// Returns:   void
-		// Qualifier: Öé±¦¸ß¹â²ã
+		// Qualifier: ç å®é«˜å…‰å±‚
 		// Parameter: RenderQueue * RenderStateArray
 		//************************************
 		void DrawJewelHighLight(RenderQueue* RenderStateArray);
@@ -90,7 +90,7 @@ namespace M3D
 		// FullName:  M3D::JewelEffect::DrawJadeBlendQuad
 		// Access:    private 
 		// Returns:   void
-		// Qualifier: Öé±¦»ìºÏ²ã
+		// Qualifier: ç å®æ··åˆå±‚
 		//************************************
 		void DrawJadeBlendQuad();
 		//************************************
@@ -98,7 +98,7 @@ namespace M3D
 		// FullName:  M3D::JewelEffect::DrawJewelQuad
 		// Access:    private 
 		// Returns:   void
-		// Qualifier: Öé±¦×îÖÕäÖÈ¾µ½µÄ¾ØĞÎ
+		// Qualifier: ç å®æœ€ç»ˆæ¸²æŸ“åˆ°çš„çŸ©å½¢
 		//************************************
 		void DrawJewelQuad();
 		void DrawJewelPassGroup(vector<RenderQueue*>& RenderStateArray);
@@ -108,7 +108,7 @@ namespace M3D
 		// FullName:  M3D::JewelEffect::DrawFrameBufferDebug
 		// Access:    private 
 		// Returns:   void
-		// Qualifier: debug²âÊÔ
+		// Qualifier: debugæµ‹è¯•
 		//************************************
 		void DrawFrameBufferDebug();
 	private:

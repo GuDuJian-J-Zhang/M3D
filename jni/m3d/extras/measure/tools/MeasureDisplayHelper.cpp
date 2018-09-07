@@ -1,4 +1,4 @@
-#include "m3d/extras/measure/tools/MeasureDisplayHelper.h"
+﻿#include "m3d/extras/measure/tools/MeasureDisplayHelper.h"
 #include "m3d/model/GeoAttribute.h"
 #include "m3d/extras/measure/Measure.h"
 #include "m3d/extras/measure/MeasureAngle.h"

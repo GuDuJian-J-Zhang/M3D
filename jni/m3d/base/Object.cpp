@@ -1,4 +1,4 @@
-#include "m3d/base/Object.h"
+﻿#include "m3d/base/Object.h"
 
 namespace M3D
 {

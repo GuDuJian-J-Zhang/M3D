@@ -54,7 +54,10 @@ using HoteamSoft::SVLLib::STK_UINT32;
 using HoteamSoft::SVLLib::Stk_MeshFacePtr;
 using HoteamSoft::SVLLib::Stk_MeshEdgePtr;
 using HoteamSoft::SVLLib::Stk_ViewPtr;
-
+using HoteamSoft::SVLLib::Stk_LineSetPtr;
+using HoteamSoft::SVLLib::Stk_CurveEntityPtr;
+using HoteamSoft::SVLLib::Stk_PolyLinePtr;
+using HoteamSoft::SVLLib::Stk_LinePtr;
 namespace SVIEW
 {	
 class View;
@@ -76,6 +79,8 @@ public:
 	void FillModelDrawData(Model* model, void* pstk_NodePtr);
 	void FillModelDrawDataMergeFace(Model* model, void* pstk_NodePtr);
 	void FillModelDrawDataMergeFaceWithColor(Model* model, void* pstk_NodePtr);
+	void	FillLineSetDrawData(Model* i_model, void* i_stkModelPtr); //yhp-20180829
+	bool FillCurve(Stk_CurveEntityPtr curCurve, RefPolyLine * edgeLine, SPolyLine* polyLine);//yhp-20180830
 	void AddProtoTypeToCache(int prototypeID, Model * model);
 	Model* FindPrototypeFromCache(int id);
 	void CopyFormPrototype(Model* model, Model* part_model);

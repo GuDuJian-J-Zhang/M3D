@@ -7,7 +7,7 @@
 
 #include "m3d/model/ModelView.h"
 #include "m3d/base/json/json.h"
-
+#include "m3d/utils/StringHelper.h"
 namespace M3D {
 
 int ModelView::m_MaxId = 1000;
@@ -46,6 +46,7 @@ ModelView::ModelView(ModelView & modelView) :
 	this->m_NoteList = modelView.m_NoteList; /// Note id 列表
 
 	this->m_SectionPlaneIDList = modelView.m_SectionPlaneIDList; //
+    this->m_SectionPlaneStringList = modelView.m_SectionPlaneStringList; //
 	this->m_UpDataCamera = modelView.m_UpDataCamera; /// 标识是否更新Camera
 	this->m_UpDataModel = modelView.m_UpDataModel; /// 标识是否更新模型的矩阵
 	// vector<string> m_noteDataList;//存储视图关联的note数据
@@ -75,10 +76,10 @@ ModelView::~ModelView() {
 //设置Id，可能由ModelView自动生成Id，也可能从外部传入Id
 void ModelView::SetID(int id) {
 	m_ID = id;
-//	if (ModelView::m_MaxId < id)
-//	{
-//		ModelView::m_MaxId = id;a
-//	}
+	if (ModelView::m_MaxId < id)
+	{
+		ModelView::m_MaxId = id;
+	}
 }
 
 void ModelView::AddSectionPlaneId(int id) {
@@ -98,7 +99,24 @@ void ModelView::AddSectionPlaneId(int id) {
 void ModelView::ClearSectionPlaneId() {
 	m_SectionPlaneIDList.clear();
 }
-
+    
+void ModelView::AddSectionPlaneString(string str) {
+    bool exist = false;
+    for (int i = 0; i < m_SectionPlaneStringList.size(); i++) {
+        string value = m_SectionPlaneStringList.at(i);
+        if (value == str) {
+            exist = true;
+            break;
+        }
+    }
+    
+    if (!exist)
+        m_SectionPlaneStringList.push_back(str);
+}
+    
+void ModelView::ClearSectionPlaneString() {
+    m_SectionPlaneStringList.clear();
+}
 vector<int> ModelView::GetNoteList() {
 	return m_NoteList;
 }
@@ -323,35 +341,125 @@ string ModelView:: toJson(){
 	Json::FastWriter writer;
 	Json::Value viewJson ;
 	Json::Value cameraJson ;
-	viewJson["ID"] = m_ID;
+	viewJson["id"] = m_ID;
 	viewJson["name"] = m_Name;
 	viewJson["usageType"] = m_ViewType;
 	viewJson["isActivated"] = false;
 	viewJson["transparency"] = 1;
 
 	cameraJson["projectType"] = m_Camera.IsOrthographic();
-
+    cameraJson["origin"] = m_Camera.GetOrigRotateCenter().Tostring();
+    cameraJson["targetVector"] = m_Camera.GetRight().Tostring();
+    cameraJson["upVector"] = m_Camera.GetUp().Tostring();
+    cameraJson["matix"] = m_Camera.GetPlaceMatrix()->ToString();
 	//TODO 相机暂时没提供以下接口
-	cameraJson["nearDistance"] = m_Camera.GetPosition().Tostring();
-	cameraJson["farDistance"] = m_Camera.GetPosition().Tostring();
-	cameraJson["focalDistance"] = m_Camera.GetPosition().Tostring();
-	cameraJson["viewVolumeSize"] = m_Camera.GetPosition().Tostring();
+	cameraJson["nearDistance"] = m_Camera.GetNearClip();
+	cameraJson["farDistance"] = m_Camera.GetFarClip();
+	cameraJson["focalDistance"] = m_Camera.GetFov();
+	cameraJson["aspectRatio"] = m_Camera.GetAspectRatio();
 	//TODO end
 	cameraJson["pos"] = m_Camera.GetPosition().Tostring();
 	cameraJson["quat"] = m_Camera.GetDirection().Tostring();
 	viewJson["camera"] = cameraJson;
 
+    string planes = "";
+    for (int i = 0; i < m_SectionPlaneStringList.size(); i++) {
+        string plane = m_SectionPlaneStringList.at(i);
+        planes = planes + "," + plane;
+    }
+    string insAttributes = "";
+    map<int, InstanceAttribute>::iterator it;
+    for (it = m_InstanceAttributeMap.begin(); it != m_InstanceAttributeMap.end(); it++) {
+        Json::Value insJson ;
+        Json::Value mJson ;
+        int path = it->first;
+        InstanceAttribute ins = it->second;
+        mJson["plcOath"] = ins.path;
+        mJson["visible"] = ins.visible;
+        mJson["color"] = ins.insColor.Tostring();
+        mJson["matix"] = ins.placeMatrix.Tostring();
+        insJson[IntToString(path)] = mJson;
+        
+        insAttributes = insAttributes + "," + insJson.asString();
+    }
+    
 	//TODO 暂定内容
-	viewJson["clipPlanes"] = "";
+	viewJson["clipPlanes"] = planes;
 	viewJson["connectors"] = "0,0,0";
-	viewJson["insAttributes"] = "";
+	viewJson["insAttributes"] = insAttributes;
     viewJson["PMIs"]= "1,2,3";
     viewJson["notes"]= "1,2,3";
 
 	viewJsonStr = writer.write(viewJson);
-        return viewJsonStr;
-	}
-
+    return viewJsonStr;
+}
+ModelView *ModelView:: fromJson(string value){
+    ModelView *mView = NULL;
+    Json::Reader reader;
+    Json::Value readValue;
+    if (reader.parse(value, readValue))
+//    {
+//        mView = new ModelView();
+//        int mViewId = readValue["id"].asInt();
+//        mView->SetID(mViewId);
+//        string name = readValue["name"].asString();
+//        mView->SetName(name.c_str());
+//        int mType = readValue["usageType"].asInt();
+//        switch (mType) {
+//            case -1:
+//                mView->SetViewType(Undefine);
+//                break;
+//            case 0:
+//                mView->SetViewType(DefaultView);
+//                break;
+//            case 1:
+//                mView->SetViewType(OrignalView);
+//                break;
+//            case 2:
+//                mView->SetViewType(UserView);
+//                break;
+//            default:
+//                break;
+//        }
+//        Json::Value cameraJson = readValue["camera"];
+//        {
+//            CameraNode camera = mView->GetCamera();
+//            camera.SetOrthographic(cameraJson["projectType"].asBool());
+//            cameraJson["origin"] = m_Camera.GetOrigRotateCenter().Tostring();
+//            cameraJson["targetVector"] = m_Camera.GetRight().Tostring();
+//            cameraJson["upVector"] = m_Camera.GetUp().Tostring();
+//            cameraJson["matix"] = m_Camera.GetPlaceMatrix()->ToString();
+//            //TODO 相机暂时没提供以下接口
+//            cameraJson["nearDistance"] = m_Camera.GetNearClip();
+//            cameraJson["farDistance"] = m_Camera.GetFarClip();
+//            cameraJson["focalDistance"] = m_Camera.GetFov();
+//            cameraJson["aspectRatio"] = m_Camera.GetAspectRatio();
+//            //TODO end
+//            cameraJson["pos"] = m_Camera.GetPosition().Tostring();
+//            cameraJson["quat"] = m_Camera.GetDirection().Tostring();
+//        }
+//
+//        vector<string> nfloats = StringHelper::Split(notePos, " ");
+//        if (nfloats.size() == 3) {
+//            float x = StringHelper::StringToFloat(nfloats[0]);
+//            float y = StringHelper::StringToFloat(nfloats[1]);
+//            float z = StringHelper::StringToFloat(nfloats[2]);
+//            note->SetNotePos(Vector3(x, y, z));
+//        }
+//        string textPos = readValue["textsPos"].asString();
+//        vector<string> tfloats = StringHelper::Split(textPos, " ");
+//        if (tfloats.size() == 3) {
+//            float x = StringHelper::StringToFloat(tfloats[0]);
+//            float y = StringHelper::StringToFloat(tfloats[1]);
+//            float z = StringHelper::StringToFloat(tfloats[2]);
+//            note->SetTextsPos(Vector3(x, y, z));
+//        }
+//        string text = readValue["textValue"].asString();
+//        note->SetTextValue(text);
+//        //        note->SetNotePos(.) ;
+//    }
+    return mView;
+}
 //	int ModelView::GetType()
 //	{
 //		return m_Type;

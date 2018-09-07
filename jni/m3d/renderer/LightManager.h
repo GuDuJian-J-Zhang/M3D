@@ -10,7 +10,7 @@ namespace M3D
 
 	};
 	/************************************************************************/
-	/* ¸÷ÖÖÀàĞÍµÄµÆ¹â²ÎÊı»º´æ½á¹¹                                                                     */
+	/* å„ç§ç±»å‹çš„ç¯å…‰å‚æ•°ç¼“å­˜ç»“æ„                                                                     */
 	/************************************************************************/
 	struct DirectionalLightUniforms :public LightUniforms
 	{
@@ -128,7 +128,7 @@ namespace M3D
 
 	};
 	/************************************************************************/
-	/* µÆ¹â¹ÜÀíÀà¡£ÓÃÀ´¹ÜÀíµÆ¹ÜÔöÉ¾£¬¸üĞÂµÆ¹âÊı¾İµÈ                                                                     */
+	/* ç¯å…‰ç®¡ç†ç±»ã€‚ç”¨æ¥ç®¡ç†ç¯ç®¡å¢åˆ ï¼Œæ›´æ–°ç¯å…‰æ•°æ®ç­‰                                                                     */
 	/************************************************************************/
 	class M3D_API LightManager
 	{
@@ -140,7 +140,7 @@ namespace M3D
 		// FullName:  M3D::LightManager::AddLight
 		// Access:    public 
 		// Returns:   void
-		// Qualifier: Ìí¼ÓÖ¸¶¨µÆ¹â
+		// Qualifier: æ·»åŠ æŒ‡å®šç¯å…‰
 		// Parameter: BaseLight * light
 		//************************************
 		void AddLight(BaseLight* light);
@@ -149,7 +149,7 @@ namespace M3D
 		// FullName:  M3D::LightManager::RemoveLight
 		// Access:    public 
 		// Returns:   void
-		// Qualifier: ÒÆ³ıÖ¸¶¨µÆ¹â
+		// Qualifier: ç§»é™¤æŒ‡å®šç¯å…‰
 		// Parameter: BaseLight * light
 		//************************************
 		void RemoveLight(BaseLight* light);
@@ -161,7 +161,7 @@ namespace M3D
 		// FullName:  M3D::LightManager::SetUp
 		// Access:    public 
 		// Returns:   void
-		// Qualifier: ¸üĞÂµÆ¹âÊı¾İ
+		// Qualifier: æ›´æ–°ç¯å…‰æ•°æ®
 		// Parameter: CameraNode * camera
 		//************************************
 		void SetUp(CameraNode*camera);
@@ -171,7 +171,7 @@ namespace M3D
 		// FullName:  M3D::LightManager::DirectionalLightNumber
 		// Access:    public 
 		// Returns:   int
-		// Qualifier: Æ½ĞĞ¹â¸öÊı
+		// Qualifier: å¹³è¡Œå…‰ä¸ªæ•°
 		//************************************
 		int DirectionalLightNumber() const { return m_directionalLightNumber; }
 		void DirectionalLightNumber(int val) { m_directionalLightNumber = val; }
@@ -181,7 +181,7 @@ namespace M3D
 		// FullName:  M3D::LightManager::PointLightNumber
 		// Access:    public 
 		// Returns:   void
-		// Qualifier: µã¹âÔ´¸öÊı
+		// Qualifier: ç‚¹å…‰æºä¸ªæ•°
 		// Parameter: int val
 		//************************************
 		void PointLightNumber(int val) { m_pointLightNumber = val; }
@@ -190,7 +190,7 @@ namespace M3D
 		// FullName:  M3D::LightManager::SpotLightNumber
 		// Access:    public 
 		// Returns:   int
-		// Qualifier: ¾Û¹âµÆ¸öÊı
+		// Qualifier: èšå…‰ç¯ä¸ªæ•°
 		//************************************
 		int SpotLightNumber() const { return m_spotLightNumber; }
 		void SpotLightNumber(int val) { m_spotLightNumber = val; }
@@ -199,7 +199,7 @@ namespace M3D
 		// FullName:  M3D::LightManager::GetState
 		// Access:    public 
 		// Returns:   SceneLightState&
-		// Qualifier: »ñÈ¡µÆ¹â×´Ì¬
+		// Qualifier: è·å–ç¯å…‰çŠ¶æ€
 		//************************************
 		SceneLightState& GetState();
 		//************************************
@@ -207,7 +207,7 @@ namespace M3D
 		// FullName:  M3D::LightManager::GetAllLight
 		// Access:    public 
 		// Returns:   vector<BaseLight*>&
-		// Qualifier: »ñÈ¡ËùÓĞµÆ¹â
+		// Qualifier: è·å–æ‰€æœ‰ç¯å…‰
 		//************************************
 		vector<BaseLight*>& GetAllLight()  { return m_sceneLights; }
 		//************************************
@@ -215,7 +215,7 @@ namespace M3D
 		// FullName:  M3D::LightManager::HemisphereLightNumber
 		// Access:    public 
 		// Returns:   int
-		// Qualifier: °ëÇò¹âÊıÁ¿
+		// Qualifier: åŠçƒå…‰æ•°é‡
 		//************************************
 		int HemisphereLightNumber() const { return m_hemisphereLightNumber; }
 		void HemisphereLightNumber(int val) { m_hemisphereLightNumber = val; }
@@ -227,7 +227,7 @@ namespace M3D
 		// FullName:  M3D::LightManager::GetLightUniform
 		// Access:    private 
 		// Returns:   LightUniforms*
-		// Qualifier: »ñÈ¡µÆ¹âµÄuniform±äÁ¿
+		// Qualifier: è·å–ç¯å…‰çš„uniformå˜é‡
 		// Parameter: BaseLight * light
 		//************************************
 		LightUniforms* GetLightUniform(BaseLight* light);
@@ -236,7 +236,7 @@ namespace M3D
 		// FullName:  M3D::LightManager::RemoveLightUniform
 		// Access:    private 
 		// Returns:   void
-		// Qualifier: ÒÆ³ıµÆ¹âµÄuniform
+		// Qualifier: ç§»é™¤ç¯å…‰çš„uniform
 		// Parameter: BaseLight * light
 		//************************************
 		void RemoveLightUniform(BaseLight* light);

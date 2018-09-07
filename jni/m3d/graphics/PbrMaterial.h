@@ -1,4 +1,4 @@
-#ifndef M3D_PBR_MATERIAL_H_
+﻿#ifndef M3D_PBR_MATERIAL_H_
 #define M3D_PBR_MATERIAL_H_
 #include "m3d/graphics/InnerMaterial.h"
 

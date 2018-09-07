@@ -47,6 +47,7 @@ const extern string BACKGROUNDCOLOR ;
 const extern string SCENEGROUND ;
 
 const extern string HANDLER_GROUPNODE;
+const extern string SCREENUILAYER_GROUPNODE;
 
 const extern string SECTION_GROUP_PATH;
 const extern string NOTE_GROUP_PATH;
@@ -99,6 +100,7 @@ const extern int HANDLER_NODE_VOICEANNOTATION;
 const extern int HANDLER_NODE_TEXTaNNOTATION;
 const extern int HANDLER_NODE_POINT;
 const extern int HANDLER_GROUP_NODE;
+const extern int SCREENLAYER_GROUP_NODE;
 const extern int HANDLER_NODE_ROTATECENTER;
 const extern int HANDLER_NODE_PLAN;
 

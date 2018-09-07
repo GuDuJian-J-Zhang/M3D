@@ -10,6 +10,8 @@
 #define M3D_SECTION_MANAGER_H
 
 #include "m3d/M3D.h"
+#include "m3d/base/Vector3.h"
+#include "../base/Matrix3x4.h"
 
 namespace SVIEW
 {
@@ -20,6 +22,7 @@ namespace M3D
 {
 	class Dragger;
 	class SectionPlane;
+	class TranslateMinusAxisDragger;
 	/**
 	* @class
 	* @brief 默认剖面方向沿X，Y，Z轴
@@ -85,6 +88,15 @@ namespace M3D
 		void SetReversePlane(bool val);
 		void UnBindAllDragger();
 		void SetDraggerPlaneVisible();
+		SectionPlane* GetPlaneById(int sectionPlaneId);
+		list<SectionPlane*> GetPlaneList();
+		bool AddPlane(SectionPlane* plane);
+		bool RemovePlane(SectionPlane* plane);
+		SectionPlane* CreateOneSectionPlane(const Vector3 &normalVector, const Vector3 &point, int planeID);
+		void BindOneSectionDragger(const Vector3 &normalVector, SectionPlane* plane);
+		bool SetDraggerVisiable(int id, bool val);
+		bool UnBindOneDragger(Dragger* dragger);
+		TranslateMinusAxisDragger* GetTranslateDragger(int id);
 	private:
 		bool _enableXY; //!<开启XY平面剖切
 		bool _enableXZ; //!<开启XZ平面剖切
@@ -104,6 +116,9 @@ namespace M3D
 		Dragger* bindRotationDragger;
 
 		SVIEW::View * m_view;//!<当前视图
+
+		list<TranslateMinusAxisDragger*> draggerList;
+
 	};
 
 } /* namespace M3D */

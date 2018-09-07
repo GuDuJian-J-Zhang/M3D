@@ -236,6 +236,46 @@ bool RenderManager::LimitDrawFPS()
 	return ret;
 }
 
+void RenderManager::ResizeHubViewport()
+{
+	CameraNode* camera = this->m_sceneMgr->GetHudCamera();
+
+	if (!camera)
+	{
+		camera = new CameraNode();
+		this->m_sceneMgr->SetHudCamera(camera);
+		camera->SetOrthographic(true);
+
+		BoundingBox uiLayoutBox = this->m_sceneMgr->GetOcTreeWorldBoundingBox();
+		float length = this->m_sceneMgr->GetOcTreeWorldBoundingBox().Length();
+
+		Vector3 center = uiLayoutBox.Center();
+
+		center.m_z += uiLayoutBox.Length() * CAMERA_POSFACTOR;
+
+		camera->SetWorldPosition(center);
+		length = this->m_sceneMgr->GetDefaultFocusLength();
+
+		camera->SetNearClip(0.1);
+		camera->SetFarClip(100);
+
+		camera->SetFov(90);
+		camera->LookAt(uiLayoutBox.Center(), Vector3(0, 1, 0), TS_WORLD);
+	}
+
+	int screenHeight = this->GetWindowHeight();
+	int screenWidth = this->GetWindowWidth();
+
+	Vector3 minPnt(0,0,-10);
+	Vector3 maxPnt(screenWidth,screenHeight,10);
+
+	BoundingBox box(minPnt,maxPnt);
+	this->m_sceneMgr->SetHudLayerBox(box);
+
+	camera->SetViewPort(0, 0, screenWidth, screenHeight);
+	camera->SetOrthoSize(Vector2(screenWidth, screenHeight));
+}
+
 float RenderManager::GetEventFPS()
 {
 	return this->m_evenFPS;
@@ -254,8 +294,6 @@ void RenderManager::RebindUIRenderFBO()
 void RenderManager::Render()
 {
 	GroupNode * groupNode = (GroupNode *) m_sceneMgr->GetSceneRoot();
-//	MutexLock lock(m_mutex);
-//	RenderAction* workRenderAction = this->m_renderActionMgr->GetAction();
 	RenderAction* workRenderAction = this->m_renderAction;
 	if (workRenderAction != NULL)
 	{
@@ -541,9 +579,9 @@ void RenderManager::WindowSizeChanged(int width, int height)
 		SceneNode* rootNode = m_sceneMgr->GetSceneRoot();
 		BackgroundNode* backgroundNode = (BackgroundNode *)rootNode->Search(
 			BACKGROUNDCOLOR);
-	if (backgroundNode != NULL)
-	{
-		backgroundNode->SetBackgroundSize(this->m_iScreenWidth,
+		if (backgroundNode != NULL)
+		{
+			backgroundNode->SetBackgroundSize(this->m_iScreenWidth,
 				this->m_iScreenHeigh);
 		}
 
@@ -551,9 +589,7 @@ void RenderManager::WindowSizeChanged(int width, int height)
 		if (axisNode != NULL)
 		{
 			axisNode->SetViewSize(this->m_iScreenWidth, this->m_iScreenHeigh, 0.25);
-		}
-
-		FPSNode* fpsNode = (FPSNode *)rootNode->Search(FPS_FLAG);
+		}	FPSNode* fpsNode = (FPSNode *)rootNode->Search(FPS_FLAG);
 		if (fpsNode != NULL)
 		{
 			fpsNode->SetSceneHeight(this->m_iScreenHeigh);
@@ -563,8 +599,12 @@ void RenderManager::WindowSizeChanged(int width, int height)
 		{
 			m_renderAction->ResizeFBOs(width, height); //设置FBO大小
 		}
+
+
+		//更改Hud的适口
+		this->ResizeHubViewport();
 	}
- 
+
 	this->m_sceneMgr->UnLock();
 
 	RequestRedraw();

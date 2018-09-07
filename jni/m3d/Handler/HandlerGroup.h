@@ -25,6 +25,8 @@ class RotateCylinderAxisDragger;
 class ScaleAxisDragger;
 class BaseLight;
 class CameraNode;
+class TranslateMinusAxisDragger;
+class TranslateBoxDragger;
 class M3D_API HandlerGroup: public GroupNode
 {
 public:
@@ -66,6 +68,13 @@ public:
      */
     Model* GetSVLTool(const string& toolsKey);
 
+	/**
+	* 得到工具
+	* @param toolsKey
+	* @return
+	*/
+	Model* GetDraggerTip(const string& toolsKey);
+
     /**
      * 添加工具
      * @param model
@@ -78,6 +87,14 @@ public:
      * @param toolsKey
      */
     void RemoveSVLTool(const string& toolsKey);
+
+	bool AddDraggerTip(Model* model, const string& toolsKey);
+
+	/**
+	* 删除工具
+	* @param toolsKey
+	*/
+	void RemoveDraggerTip(const string& toolsKey);
 
 	void HideAllSVLTools();
 
@@ -120,6 +137,10 @@ public:
 	 */
 	TranslateAxisDragger* GetTransformHandler();
 
+	TranslateMinusAxisDragger* GetTransMinusformHandler();
+
+	TranslateMinusAxisDragger* GetSingleTransMinusformHandler();
+
 	RotateCylinderAxisDragger* GetRotateCylinderAxisDragger();
 	ScaleAxisDragger* GetScaleAxisDragger();
 
@@ -127,6 +148,8 @@ public:
 	 *
 	 */
     void Clear();
+
+	M3D::TranslateBoxDragger* GetTranslateBoxDragger();
 
 private:
     /**
@@ -150,14 +173,20 @@ private:
 	SceneManager* m_scene; //!<
 
 	HandlerPoint* m_rotateCenterPoint; //!<
-
+	TranslateMinusAxisDragger* m_TransMinusformHandlerNode;
 	TranslateAxisDragger* m_TransformHandlerNode; //!<
 	RotateCylinderAxisDragger* m_RotateCylinderAxisDragger;
 	ScaleAxisDragger* m_ScaleAxisDragger;
+
+	TranslateBoxDragger* m_translateBoxDragger;
 	map<string,Model*> m_svlTools;
+	map<string, Model*> m_draggerTips;
+
 
 	float m_rotateCenterSize; //!<
 	Vector3 m_rotateCenterPos; //!<
+	list<TranslateMinusAxisDragger*> miusMinusAxisDraggerList;
+
 };
 }
 #endif /*M3D_HANDLERGROUP_H_*/

@@ -1,4 +1,4 @@
-
+﻿
 #include "m3d/graphics/DirectionalLight.h"
 #include "m3d/action/RenderAction.h"
 #include "sview/views/Parameters.h"

@@ -31,7 +31,7 @@ void Section::SetTransform(Matrix3x4 & transform)
 	list<SectionPlane*>::iterator it;
 	for (it = m_planeList.begin(); it != m_planeList.end(); it++) 
 	{
-		(*it)->SetTransform(transform);
+		(*it)->SetDraggerTransform(transform);
 	}
 }
 
@@ -105,7 +105,7 @@ bool Section::AddPlane(SectionPlane* plane)
 
 			//TOOD XULI
 			Matrix3x4 transMatrix = Matrix3x4::IDENTITY;
-			iPlane->SetTransform(transMatrix);
+			iPlane->SetDraggerTransform(transMatrix);
 //		//	TODO
 			float* equation = plane->GetTransformPlaneParam();
 //
@@ -157,7 +157,7 @@ bool Section::AddPlane(SectionPlane* plane)
 	newplane->SetFaceColor(green);
 	newplane->SetEdgeColor(edgeColor);
 	Matrix3x4 transMatrix = Matrix3x4::IDENTITY;
-	newplane->SetTransform(transMatrix);
+	newplane->SetDraggerTransform(transMatrix);
 	this->m_planeList.push_back(newplane);
 
 	return addState;
@@ -283,6 +283,11 @@ SectionPlane* Section::GetPlaneById(int sectionPlaneId)
 		}
 	}
 	return NULL;
+}
+
+list<SectionPlane*> Section::GetSectionPlaneList()
+{
+	return m_planeList;
 }
 
 }

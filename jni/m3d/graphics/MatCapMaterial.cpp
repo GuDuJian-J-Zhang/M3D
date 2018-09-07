@@ -14,6 +14,7 @@ namespace M3D
 		//m_isGammaOutpute = false;
 		//m_normalMapScale = Vector2(1.0, 1.0);
 		//Init();
+		m_materialType = MaterialType_MatCap;
 	}
 
 	MatCapMaterial::~MatCapMaterial()

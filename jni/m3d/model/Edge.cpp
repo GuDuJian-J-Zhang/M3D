@@ -27,7 +27,7 @@ Edge::Edge() :Object()
 	this->SetInitColor(*Color::EdgeDefaultColor);
 	this->SetType(SHAPE_EDGE);
 	m_svlId = OBJID++;
-
+	m_bNeedClip = true;
 	m_IsFirstGetProperties = true;
 }
 
@@ -510,5 +510,13 @@ void Edge::InitProperties()
 	//AddProperty(LOD1PointNumber, IntToString(GetEdgePntCount(1)));
 }
 
+void Edge::SetNeedClip(bool val)
+{
+	m_bNeedClip = val;
+}
 
+bool Edge::GetNeedClip()
+{
+	return m_bNeedClip;
+}
 }

@@ -17,7 +17,7 @@ Selector::~Selector() {
 }
 
 void Selector::Set(IShape* shape) {
-	LOGI("Selector::Set()");
+	//LOGI("Selector::Set()");
 	Clear();
 	Add(shape);
 }
@@ -36,7 +36,7 @@ void Selector::Add(IShape* shape) {
 void Selector::Remove(IShape* shape) {
 	if (shape)
 	{
-		LOGI("BEGIN remove================");
+		//LOGI("BEGIN remove================");
 		shape->SetSelected(false);
 		vector<IShape*>::iterator iter = m_selectList.begin();
 		while (iter != m_selectList.end()) {

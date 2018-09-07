@@ -32,6 +32,9 @@ public:
 	static const char* DraggerVert();
 	static const char* DraggerFrag();
 
+	static const char* DraggerEdgeVert();
+	static const char* DraggerEdgeFrag();
+
 	static const char * ModelBaseVert();
 	static const char * ModelBaseFrag();
 

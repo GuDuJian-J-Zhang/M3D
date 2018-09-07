@@ -123,6 +123,16 @@ public:
 	* @param id
 	*/
 	void ClearSectionPlaneId();
+    /**
+     * 新增剖视平面的字段关联
+     * @param id
+     */
+    void AddSectionPlaneString(string str);
+    /**
+     * 清空剖视平面的字段关联
+     *
+     */
+    void ClearSectionPlaneString();
 	/**
 	 * 设置剖切面剖切方向
 	 * @param direction
@@ -407,7 +417,7 @@ public:
 	}
 //将视图对象值转成JSON数据
 	string toJson();
-    
+    ModelView *fromJson(string value);
     int m_DirectionX; //X剖切方向
     float m_PercentageX; //X剖切比例
     int m_DirectionY; //Y剖切方向
@@ -423,6 +433,7 @@ private:
 	int m_ExplosiveType;
 	float m_ExplosivePercent;
 	vector<int> m_SectionPlaneIDList; //!<
+    vector<string> m_SectionPlaneStringList; //!<
 	bool m_UpDataCamera; //!< 标识是否更新Camera
 	bool m_UpDataModel; //!< 标识是否更新模型的矩阵
 

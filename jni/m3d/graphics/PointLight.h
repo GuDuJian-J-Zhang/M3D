@@ -6,7 +6,7 @@
 namespace M3D
 {
 	/************************************************************************/
-	/* µ„π‚‘¥                                                                     */
+	/* ÁÇπÂÖâÊ∫ê                                                                     */
 	/************************************************************************/
 	class M3D_API PointLight : public BaseLight
 	{
@@ -24,7 +24,7 @@ namespace M3D
 		// FullName:  M3D::PointLight::Decay
 		// Access:    public 
 		// Returns:   float
-		// Qualifier: À•ºı
+		// Qualifier: Ë°∞Âáè
 		//************************************
 		float Decay() const { return m_decay; }
 		void Decay(float val) { m_decay = val; }
@@ -33,7 +33,7 @@ namespace M3D
 		// FullName:  M3D::PointLight::Distance
 		// Access:    public 
 		// Returns:   float
-		// Qualifier: ”∞œÏæ‡¿Î
+		// Qualifier: ÂΩ±ÂìçË∑ùÁ¶ª
 		//************************************
 		float Distance() const { return m_distance; }
 		void Distance(float val) { m_distance = val; }

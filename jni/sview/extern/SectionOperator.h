@@ -1,4 +1,4 @@
-/**@file
+﻿/**@file
  *@brief	剖面动作，完成剖面的添加，位置方向的控制
  *@author	XL
  *@date		2014-1-7

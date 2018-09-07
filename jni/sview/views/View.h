@@ -110,7 +110,8 @@ class M3D_API View: public IView
 public:
 	View();
 	virtual ~View();
-
+	Vector3 getRayIntersectNormal();
+	Vector3 getRayIntersectPos();
 	/**
 	 * 获取选择器
 	 * @return
@@ -392,6 +393,8 @@ public:
 	* @return true表示成功 false表示失败
 	*/
 	virtual bool SetExplosiveView(vector<Model*> arrayModels,int stype, int pos = 100, bool useAnimation = false);
+	
+	virtual bool SetExplosiveViewWithDirection(vector<Model*> arrayModels, int stype, int pos = 100, Vector3 direction = Vector3(0,0,0));
 	/*
 		设置值时，不带旋转的
 	*/
@@ -554,6 +557,8 @@ public:
 	 * @return 空间中的点
 	 */
 	Vector3 GetSelectedPoint(float x, float y, int type, bool inModel=true);
+
+	Vector3 GetUILayerSelectedPoint(float x, float y);
 
 	/**
 	 * @brief 在空间中x，y，z位置创建handler
@@ -1162,6 +1167,7 @@ public:
 	M3D::SectionManager* GetSectionManager();
 	void UpdateAnimationInitTargetObjects(vector<TARGETOBJECTINFO*> &vcObjectInfo);
 	int GetAnimationInitTargetObjectsCount();
+
 	float GetUnitScale();
 private:
 	CTimer m_rotateAndExplosiveTimer;
@@ -1210,7 +1216,7 @@ private:
 	M3D_STATUS ReadFilesSpeedMode(vector<string>& paths);
 
 	void ChechErrorPoint(M3D::Model* model);
-	
+
 public:
 	float m_fUnitScale;
 	void SetUnitScale(float scale);

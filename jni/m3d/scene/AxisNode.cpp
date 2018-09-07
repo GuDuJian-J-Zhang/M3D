@@ -1,4 +1,4 @@
-#include "m3d/scene/AxisNode.h"
+﻿#include "m3d/scene/AxisNode.h"
 #include "m3d/graphics/CameraNode.h"
 #include "sview/views/Parameters.h"
 #include "m3d/action/RenderAction.h"
@@ -2966,8 +2966,8 @@ void AxisNode::FindVisiableObject(RenderAction* renderAction)
 		this->SetAxisPosition(SVIEW::Parameters::Instance()->m_axisPos);
 
 		CameraNode * camera = renderAction->GetCamera();
-		Matrix3 mat = camera->GetRotation().RotationMatrix().Inverse();
-		Quaternion rotateQuat(mat);
+		Quaternion rotateQuat = camera->GetView().Rotation();
+
 		this->SetRotation(rotateQuat);
         if (SVIEW::Parameters::Instance()->m_axisImage) {
             UpdataAxisImages(renderAction);
@@ -3074,7 +3074,7 @@ void AxisNode::UpdataAxisImages(RenderAction* renderAction)
 	//CameraNode * camera = renderAction->GetCamera();
 	//Matrix3x4 modelViewMatrix = camera->GetWorldTransform();
 
-	Matrix3x4 modelViewMatrix = this->GetWorldTransform().Inverse();
+	Matrix3x4 modelViewMatrix = this->GetWorldTransform();
 	if (m_xImage)
 	{
 		m_xImage->UpdateRenderDataByModelViewMatrix(modelViewMatrix);

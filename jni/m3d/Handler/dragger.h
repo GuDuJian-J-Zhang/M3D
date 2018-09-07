@@ -22,7 +22,7 @@ class ScaleUniformCommand;
 class Rotate3DCommand;
 class Dragger;
 
-//????????
+//定义回调函数类型
 #ifdef WIN32
 typedef void(_stdcall M3D_DRAGGERCB)(const int& nCmdType, wstring& strDraggerName);
 #else
@@ -169,12 +169,14 @@ public:
 	M3D::Dragger* GetDragger() const;
 	void SetDragger(M3D::Dragger* val);
 
-	//????????????,????????
+	//在这里更新拖拽器提示信息，可以根据需要重写
 	virtual void UpdateDraggerTip(const MotionCommand& command);
 
 	void UpdteAixsLineTip(const MotionCommand& command);
 
 	void UpdteAixsPlaneTip(const MotionCommand& command);
+	void UpdteRotationTip(const MotionCommand & command);
+	void UpdteScaleTip(const MotionCommand & command);
 private:
 	Dragger* m_dragger;
 
@@ -304,11 +306,11 @@ public:
 		inline const M3D::Color& getPickColor() const { return _pickColor; }
 		bool GetPreSelected() const { return preSelected; }
 		void SetPreSelected(bool val) { preSelected = val; }
-		//?????
+		//拖拽器回调
 		M3D_DRAGGERCB* m_draggerCB;
 		void SetDraggerCB(M3D_DRAGGERCB* draggerCB) { m_draggerCB = draggerCB; }
 		M3D_DRAGGERCB* GetDraggerCB() { return m_draggerCB; }
-		//????????
+		//设置拖拽器的名称
 		void SetDraggerName(wstring strName) { m_strName = strName; }
 		wstring GetDraggerName(){return m_strName;}
 		bool IsMoveModel() const { return m_bMoveModel; }
@@ -344,6 +346,7 @@ protected:
 		M3D::Color     _PreSelectColor;
 
 		Model* _drawModel;
+
 		M3D::Color                       _color;
 		M3D::Color                       _pickColor;
 		wstring		m_strName;

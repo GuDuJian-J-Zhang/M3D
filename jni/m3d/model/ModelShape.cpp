@@ -1,4 +1,4 @@
-#include "m3d/M3D.h"
+﻿#include "m3d/M3D.h"
 #include "m3d/utils/IDCreator.h"
 
 #include "sview/views/Parameters.h"
@@ -660,138 +660,105 @@ namespace M3D
 	{
 		if (this->m_drawDataPrepared)
 		{
+			if (this->GetModel() &&
+				!action->CanPickShape(this->GetModel()->GetType()))
+			{
+				return;
+			}
+
 			if (action->FrustumIntersetWithWorldBox(GetWorldBoundingBox()))
 			{
-				action->AddToFramePickCollection(this->GetModel());
-			}
-		}
-	}
+				int framePickType =action->GetFramePickType();
 
-	bool ModelShape::MergeFace()
-	{
-		if (this->m_drawDataPrepared)
-		{
-			vector<Body*> tmpBodys;
-
-			for (vector<Body*>::iterator ite = m_bodys.begin(); ite != m_bodys.end(); ite++)
-			{
-				Body* body = *ite;
-				if (body)
+				if (m_bodys.size() > 0)
 				{
-					Body* mergeBody = NULL;
-					vector<Face*> faces = body->GetFaces();
-					for (int i = 0; i < faces.size(); i++)
-					{
-						Face* face = faces.at(i);
-						if (face)
-						{
-							Color faceColor = *(face->GetColor());
-							mergeBody = GetBody(tmpBodys, faceColor);
-							if (mergeBody)
-							{
-								break;
-							}
-						}
-					}
+					//通过shape对象显示时的ModelMatrix，更新Model射线
+					action->UpdataFramePickFrustum(this->GetWorldTransform());
 
-					if (mergeBody)
+					if (framePickType == 1)
 					{
-						VertexSet* mergeVertexSet = mergeBody->GetData();
-						VertexSet* vertexSet = body->GetData();
-						std::vector<Vector3>* mergePnts = mergeVertexSet->GetPositionArray();
-						int mergePntCount = mergePnts ? mergePnts->size() : 0;
-						SPolyLine* mergePolyLine = mergeBody->GetPolyLine();
-						SPolyLine* polyLine = body->GetPolyLine();
-						vector<Vector3> points = polyLine ? polyLine->GetPoints() : points;
-						vector<M3D_INDEX_TYPE> indexs = polyLine ? polyLine->GetPntIndex() : indexs;
-						if (mergePolyLine == NULL)
+						for (int i = 0; i < m_bodys.size(); i++)
 						{
-							mergePolyLine = new M3D::SPolyLine(); //构建一个XPolyLine用于存储点数据
-							mergeBody->SetPolyLine(mergePolyLine);
-						}
-						int mergelineCount = mergePolyLine->GetPoints().size();
-						for (int i = 0; i < points.size(); i++)
-						{
-							mergePolyLine->AddPoints(points[i]);
-							mergePolyLine->AddPointsIndex(indexs[i] + mergePntCount);
-						}
-
-						vector<Edge*>* edgeVec = body->GetEdges();
-						for (int i = 0; i < edgeVec->size(); i++)
-						{
-							Edge * edge = edgeVec->at(i);
-							if (edge)
+							Body* subBody = m_bodys[i];
+							if (subBody)
 							{
-								Edge * newEdge = new Edge();
-								RefPolyLine* oldLine = edge->GetLineData();
-								if (oldLine)
+								vector<Face*>& subFaces = subBody->GetFaces();
+								for (int j = 0; j < subFaces.size(); j++)
 								{
-									RefPolyLine * edgeLine = new RefPolyLine(mergePolyLine);
-									edgeLine->SetDataOffset(oldLine->GetDataOffset() + mergelineCount);
-									edgeLine->SetDataLength(oldLine->GetDataLength());
-									//oldLine->Release();
-									newEdge->AddData(edgeLine);
+									Face* subFace = subFaces.at(j);
+									if (subFace)
+									{
+										if (action->CanPickShape(SHAPE_TRIMESH))
+										{
+											Mesh* meshData = (Mesh*)subFace->GetData();
+
+											if (meshData)
+											{
+												action->BeginOnceFramePick();
+												meshData->FramePickFast(action);
+
+												//如果是相交就选中
+												if (action->GetFramePickMatchPntCount() > 0)
+												{
+													action->AddToFramePickCollection(this->GetModel());
+													return;
+												}
+											}
+										}
+									}
 								}
-								mergeBody->AddEdge(newEdge);
 							}
 						}
-						for (int i = 0; i < faces.size(); i++)
-						{
-							Face* face = faces.at(i);
-							if (face)
-							{
-								//mergeBody->AddFace(face);
-								face->AddRef();
-								mergeBody->GetFaces().push_back(face);
-							}
-						}
-						mergeBody->MergeFace();
 					}
-					else
+					else if (framePickType == 2)
 					{
-						Body* newBody = new Body();
-						*newBody = *body;
-						newBody->MergeFace();
-						tmpBodys.push_back(newBody);
+						action->BeginOnceFramePick();
+						for (int i = 0; i < m_bodys.size(); i++)
+						{
+							Body* subBody = m_bodys[i];
+							if (subBody)
+							{
+								vector<Face*>& subFaces = subBody->GetFaces();
+								for (int j = 0; j < subFaces.size(); j++)
+								{
+									Face* subFace = subFaces.at(j);
+									if (subFace)
+									{
+										if (action->CanPickShape(SHAPE_TRIMESH))
+										{
+											Mesh* meshData = (Mesh*)subFace->GetData();
+											if (meshData)
+											{
+												meshData->FramePick(action);
+											}
+										}
+									}
+								}
+							}
+						}
+
+						//如果是相交就选中
+						if (action->GetFramePickMatchPntCount()>0
+							&& action->GetFramePickMatchPntCount() == action->GetOnceFramePickCount())
+						{
+							action->AddToFramePickCollection(this->GetModel());
+							return;
+						}
 					}
 				}
-
-				body->Release();
-				body = NULL;
 			}
-			m_bodys.resize(0);
-			for (int i = 0; i < tmpBodys.size(); i++)
-			{
-				AddBody(tmpBodys.at(i));;
-			}
-			//m_bodys.assign(tmpBodys.begin(), tmpBodys.end());
 		}
-		return true;
 	}
 
-	Body* ModelShape::GetBody(vector<Body*>& bodys, Color& color)
+	void ModelShape::SetNeedClip(bool val)
 	{
-		for (int i = 0; i < bodys.size(); i++)
+		for (size_t i = 0; i < m_bodys.size(); i++)
 		{
-			Body* body = bodys[i];
-			if (body)
+			if (m_bodys[i])
 			{
-				vector<Face*> faces = body->GetFaces();
-				for (int j = 0; j < faces.size(); j++)
-				{
-					Face * face = faces[j];
-					if (face)
-					{
-						Color* faceColor = face->GetColor();
-						if (*faceColor == color)
-						{
-							return body;
-						}
-					}
-				}
+				m_bodys[i]->SetNeedClip(val);
 			}
 		}
-		return NULL;
 	}
 
 	ImageModelShape::ImageModelShape(void) :ModelShape()
@@ -876,6 +843,14 @@ namespace M3D
 		m_image->SetPath(imagePath);
 	}
 
+	string ImageModelShape::GetImagePath()
+	{
+		string strImagePath;
+		if (m_image)
+			strImagePath = m_image->GetPath();
+		return strImagePath;
+	}
+
 	void ImageModelShape::SetImageData(char* imageData, int dataLength)
 	{
 		this->CreateImage();
@@ -923,6 +898,14 @@ namespace M3D
 		{
 			m_imageBoard->SetOrigSize(position, size);
 		}
+	}
+
+	M3D::Vector2 ImageModelShape::GetImageSize()
+	{
+		M3D::Vector2 size;
+		if (m_imageBoard)
+			size = m_imageBoard->GetSize();
+		return size;
 	}
 
 	void ImageModelShape::SetImagePosition(Vector3& position)
@@ -973,6 +956,14 @@ namespace M3D
 		if (this->m_imageBoard)
 		{
 			m_imageBoard->AllowTran(allowTran);
+		}
+	}
+
+	void ImageModelShape::SetFixShowInScreen(bool fixShow)
+	{
+		if (this->m_imageBoard)
+		{
+			m_imageBoard->SetFixShowInScreen(fixShow);
 		}
 	}
 

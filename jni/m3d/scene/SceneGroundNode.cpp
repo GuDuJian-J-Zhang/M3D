@@ -73,7 +73,7 @@ Vector3* SceneGroundNode::GetVertexs()
 	SceneManager * scene = m_renderAction->GetScene();
 	BoundingBox& pBoundingBox = scene->GetSceneBox();
 	Vector3 center = pBoundingBox.Center();
-	float YLength = pBoundingBox.GetYLength();
+	float ZLength = pBoundingBox.GetZLength();
 
 	if(m_vertexs.size() == 0 ||m_box != pBoundingBox)
 	{
@@ -83,16 +83,16 @@ Vector3* SceneGroundNode::GetVertexs()
 		float length = pBoundingBox.Length();
 		Vector3 PX = center + length * Vector3::RIGHT;
 		Vector3 NX = center + length * Vector3::LEFT;
-		Vector3 PZ = center + length * Vector3::FORWARD;
-		Vector3 NZ = center + length * Vector3::BACK;
+		Vector3 PY = center + length * Vector3::UP;
+		Vector3 NY = center + length * Vector3::DOWN;
 
-		m_vertexs.push_back(Vector3(NX.m_x, center.m_y - YLength * 0.51f, NZ.m_z));
+		m_vertexs.push_back(Vector3(NX.m_x, NY.m_z, center.m_z - ZLength * 0.51f));
 
-		m_vertexs.push_back(Vector3(NX.m_x, center.m_y - YLength * 0.51f, PZ.m_z));
+		m_vertexs.push_back(Vector3(NX.m_x, PY.m_z, center.m_z - ZLength * 0.51f));
 
-		m_vertexs.push_back(Vector3(PX.m_x, center.m_y - YLength * 0.51f, NZ.m_z));
+		m_vertexs.push_back(Vector3(PX.m_x, NY.m_z, center.m_z - ZLength * 0.51f));
 
-		m_vertexs.push_back(Vector3(PX.m_x, center.m_y - YLength * 0.51f, PZ.m_z));
+		m_vertexs.push_back(Vector3(PX.m_x, PY.m_z, center.m_z - ZLength * 0.51f));
 	}
 
 	return m_vertexs.data();
@@ -104,13 +104,13 @@ Vector3* SceneGroundNode::GetNormals()
 	{
 		MutexLock lock(m_mutex);
 
-		m_normals.push_back(Vector3(0.0, 1.0,0.0));
+		m_normals.push_back(Vector3(0.0, 0.0,1.0));
 
-		m_normals.push_back(Vector3(0.0, 1.0,0.0));
+		m_normals.push_back(Vector3(0.0, 0.0,1.0));
 
-		m_normals.push_back(Vector3(0.0, 1.0,0.0));
+		m_normals.push_back(Vector3(0.0, 0.0,1.0));
 
-		m_normals.push_back(Vector3(0.0, 1.0,0.0));
+		m_normals.push_back(Vector3(0.0, 0.0,1.0));
 	}
 
 	return m_normals.data();

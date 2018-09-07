@@ -1,4 +1,4 @@
-#include "m3d/model/Body.h"
+﻿#include "m3d/model/Body.h"
 #include "m3d/model/Face.h"
 #include "m3d/model/Edge.h"
 #include "m3d/model/MeshData.h"
@@ -31,7 +31,7 @@ Face::Face():Object()
 	m_FaceExtInfo = NULL;
 	m_drawMesh = NULL;	
 	this->m_svlId = OBJID++;
-	
+	m_bNeedClip = true;
 }
 
 Face::~Face()
@@ -781,6 +781,16 @@ void Face::SetFaceExtInfo()
 	}
 	m_FaceExtInfo->m_InitColor = m_Color;
 	m_FaceExtInfo->m_origHighlight = m_IsHighlight;
+}
+
+void Face::SetNeedClip(bool val)
+{
+	m_bNeedClip = val;
+}
+
+bool Face::GetNeedClip()
+{
+	return m_bNeedClip;
 }
 
 FaceExtInfo::FaceExtInfo()

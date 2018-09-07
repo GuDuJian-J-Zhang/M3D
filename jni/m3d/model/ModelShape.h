@@ -1,4 +1,4 @@
-/**@file
+﻿/**@file
  *@brief
  *@author	XL
  *@date		2014-1-7
@@ -105,8 +105,7 @@ public:
 
 	void MarkDrawDataDirty();
 
-	bool MergeFace();
-	Body* GetBody(vector<Body*>& bodys, Color& color);
+	void SetNeedClip(bool val);
 protected:
 	mutable Matrix4 m_glRenderMatrix;//!< @see ShapeNode
 	//相对于世界坐标的包围盒
@@ -141,6 +140,7 @@ public:
 	virtual void FramePick(RayPickAction * action);
 
 	void SetImagePath(const string& imagePath);
+	string GetImagePath();
 
 	void SetImageData(char* imageData, int dataLength);
 
@@ -153,6 +153,7 @@ public:
 	ImageBoard* GetImageBoard();
 
 	void SetImageSize(Vector3& position,Vector2& size);
+	Vector2 GetImageSize();
 
 	void SetImagePosition(Vector3& position);
 	Vector3 GetImagePosition();
@@ -162,6 +163,8 @@ public:
 	void SetAllowRotate(bool allowRotate);
 
 	void SetAllowTran(bool allowTran);
+
+	void SetFixShowInScreen(bool fixShow);
 
 	void  SetInTopShow(bool allowInTopShow);
 	virtual void ComputeBox();

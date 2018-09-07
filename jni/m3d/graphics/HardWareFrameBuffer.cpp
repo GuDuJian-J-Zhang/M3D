@@ -931,12 +931,12 @@ void HardWareFrameBuffer::AttachTextureToColor()
 		format = GL_RGB;
 		dataType = GL_FLOAT;
 		break;
-	case GL_R32F_EXT:
-		format = GL_RED_EXT;
+	case GL_R32F:
+		format = GL_RED;
 		dataType = GL_FLOAT;
 		break;
-	case  GL_R16F_EXT:
-		format = GL_RED_EXT;
+	case  GL_R16F:
+		format = GL_RED;
 		dataType = GL_FLOAT;
 		break;
 #endif

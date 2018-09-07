@@ -1,4 +1,4 @@
-#include "m3d/extras/modelmanager/AddFileOperation.h"
+﻿#include "m3d/extras/modelmanager/AddFileOperation.h"
 #include "m3d/extras/modelmanager/ModelAssemblyHelper.h"
 
 namespace M3D

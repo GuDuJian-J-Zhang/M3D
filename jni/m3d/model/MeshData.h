@@ -207,6 +207,11 @@ public:
 
 	virtual void RayPick(RayPickAction* action);
 
+	virtual void FramePick(RayPickAction* action);
+
+	virtual void FramePickFast(RayPickAction* action);
+
+
 	/**
 	 * IMeshData virtual fun
 	 */

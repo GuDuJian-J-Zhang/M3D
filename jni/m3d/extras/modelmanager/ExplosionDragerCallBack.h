@@ -19,6 +19,7 @@ namespace M3D
 	public:
 		View * m_view;
 		Vector3 dragTranslation;
+		Vector3 dragTranslationAll;
 		//爆炸类型
 		int explosionType;
 		//选中的模型集合

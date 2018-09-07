@@ -201,4 +201,24 @@ void Translate1DDragger::setupDefaultGeometry()
 	}
 }
 
+void Translate1DDragger::setupDefaultPointGeometry()
+{
+	// Get the line length and direction.
+	M3D::Vector3 lineDir = _projector->getLineEnd() - _projector->getLineStart();
+	string toolsFilePath = SVIEW::Parameters::Instance()->m_appWorkPath + "\\data\\handler\\" + string("AxisHandler.stl");
+	_drawModel = NULL;
+	if (MeshHelper::ReadSingleModel(toolsFilePath, _drawModel))
+	{
+		if (_drawModel) {
+			//int nPlcPath = (int) strtol(plcIdPath, NULL, 16);
+			ShapeNode* shapeNode = new ShapeNode();
+			this->AddChild(shapeNode);
+			shapeNode->SetShape(_drawModel);
+			_drawModel->SetInitHightlight(true);
+			_drawModel->SetUserData(this);
+			_drawModel->Release();
+		}
+	}
+}
+
 }

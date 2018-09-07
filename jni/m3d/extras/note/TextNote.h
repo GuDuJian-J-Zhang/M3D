@@ -1,4 +1,4 @@
-﻿/**@file
+/**@file
  *@brief	测量note类头文件
  *@author   xuli
  *@date		2013-7-10
@@ -46,6 +46,12 @@ public:
 	 * @param pos 位置
 	 */
 	void SetTextsPos(const Vector3& pos);
+    /**
+     * @brief 将对象值转成JSON数据
+     * @param pos 位置
+     */
+    string toJson();
+    TextNote* fromJson(string value);
 private:
 	/**
 	 * @brief 初始化

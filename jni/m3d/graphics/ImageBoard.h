@@ -150,6 +150,19 @@ public:
 
 	bool GetFlipV() const { return m_flipV; }
 	void SetFlipV(bool val) { m_flipV = val; }
+
+
+	/**
+	* @brief 返回图片是否固定在屏幕上面显示
+	* @return 
+	*/
+	bool GetFixShowInScreen() const;
+
+	/**
+	* @brief 设置图片固定在屏幕上面显示
+	*/
+	void SetFixShowInScreen(bool val);
+	Vector2 GetSize();
 private:
     Vector3 m_position;//!<位置
     Vector2 size_;//!<大小
@@ -162,6 +175,8 @@ private:
 	Billboard m_bindBillboard;//!<公告板
 	Texture* m_texture;//!<纹理
 	mutable Mutex m_mutex; //!<线程锁对象
+
+	bool m_fixShowInScreen;//在屏幕上固定位置显示
 
 	bool m_flipV;
 };

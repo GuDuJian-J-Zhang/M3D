@@ -1,4 +1,4 @@
-#include "m3d/utils/Trackball.h"
+﻿#include "m3d/utils/Trackball.h"
 
 #include "m3d/base/MathDefs.h"
 #include "m3d/base/Vector3.h"
@@ -19,6 +19,18 @@ int Trackball::TIMES = 10;
 int Trackball::KEEPINGSTATETIMES = Trackball::TIMES;
 float Trackball::CURRENTMODELSIZE = 1000.0f;
 float Trackball::DrawLimit = 0.0f;
+Trackball* Trackball::instance = NULL;
+
+Trackball* Trackball::Instance()
+{
+	if (Trackball::instance == NULL)
+	{
+		Trackball::instance = new Trackball();
+	}
+
+	return Trackball::instance;
+}
+
 Trackball::Trackball(void)
 {
 	m_iWidth = m_iHeight = 400;
@@ -38,6 +50,8 @@ Trackball::Trackball(void)
 	m_rotateSpeed = 1.5f;
 
 	m_screenDepth = 0.5;
+
+	pCamera = NULL;
 }
 
 Trackball::~Trackball(void)
@@ -131,7 +145,7 @@ void Trackball::TwoPointsStart(float*pos, int n)
 
 	m_PirDistance = TwoPointsDis(pos);
 
-	CameraNode* camera = pSceneManager->GetCamera();
+	CameraNode* camera = GetCamera();
 
 	if (!camera->IsOrthographic())
 	{
@@ -159,7 +173,7 @@ void Trackball::OnePointsMove(float* pos, int n)
 			Trackball::KEEPINGSTATETIMES = Trackball::TIMES;
 			Trackball::MOVESTATE = 1;
 
-			CameraNode* camera = pSceneManager->GetCamera();
+			CameraNode* camera = GetCamera();
 
 			m_cacheCurPointNear  = this->ScreenToDepthVector(currentPnt);
 			m_cachePriPoint = this->ScreenToDepthVector(m_PriPointOneScale);
@@ -194,7 +208,7 @@ void Trackball::OnePointsScale(float* pos, int n)
 
 			Trackball::KEEPINGSTATETIMES = Trackball::TIMES;
 
-			const IntRect& intRect = this->pSceneManager->GetCamera()->GetViewPort().GetRect();
+			const IntRect& intRect = GetCamera()->GetViewPort().GetRect();
 
 			m_cacheCurPointNear == this->ScreenToDepthVector(m_PriPointOneScaleCenter);
 	
@@ -312,7 +326,7 @@ Vector3 Trackball::ScreenToDepthVector(const IntVector2& scrVector)
 	Vector3 depthVector;
 	if (pSceneManager != NULL)
 	{
-		CameraNode* camera = pSceneManager->GetCamera();
+		CameraNode* camera =GetCamera();
 			///乘上camera->GetView()将点转换到摄像机eye坐标系，进行求两次的变化量,由于此处摄像机采用继承的方式实现，没有采用节点挂载的方式
 			//此处的部分变换处理算法，待调整为节点挂载的方式后重构。。 TODO
 		depthVector = camera->GetView()*camera->GetViewPort().ScreenToWorldPoint(scrVector.m_x, scrVector.m_y, m_screenDepth);
@@ -326,7 +340,7 @@ void Trackball::AdjustScaleToMoveVector(const IntVector2& scrVector)
 {
 	if (pSceneManager != NULL)
 	{
-		CameraNode* camera = pSceneManager->GetCamera();
+		CameraNode* camera = GetCamera();
 		float scaleFactor = mvMatrix.scaleFactor;
 
 #ifdef __MOBILE__
@@ -377,6 +391,8 @@ void Trackball::AdjustScaleToMoveVector(const IntVector2& scrVector)
 void Trackball::SetSceneManager(SceneManager* pSceneManager)
 {
 	this->pSceneManager = pSceneManager;
+
+	this->SetCamera(pSceneManager->GetCamera());
 }
 
 

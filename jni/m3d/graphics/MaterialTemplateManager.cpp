@@ -204,14 +204,14 @@ namespace M3D
                                 if(paraValue.IsArray())
                                 {
                                     Color temp;
-
+                                    
                                     temp.m_r = paraValue[0].GetFloat();
                                     temp.m_g = paraValue[1].GetFloat();
                                     temp.m_b = paraValue[2].GetFloat();
                                     temp.m_a = paraValue[3].GetFloat();
                                     
                                     tempData->DiffuseColor(temp);
-                                   
+                                    
                                 }
                             }
                             if(materialNode.HasMember("specularColor"))
@@ -258,8 +258,8 @@ namespace M3D
                                 tempData->Shininess(temp);
                             }
                             
-						}
 
+						}
 						else if (type == MaterialType_Pbr)
 						{
                             materialData = new PhysicalMaterialData;
@@ -371,7 +371,7 @@ namespace M3D
                      PhongMaterialData* tempMateriaData = static_cast<PhongMaterialData*>(data);
                      if (tempMateriaData)
                      {
-
+                         
                          Material* tempMaterial = static_cast<Material*>(ret);
                          if(tempMaterial)
                          {
@@ -392,9 +392,10 @@ namespace M3D
                              tempMaterial->SetShininess(tempMateriaData->Shininess());
                              
                          }
-                        
-
+                         
+                         
                      }
+
 				 }
 				 else if (datetype == MaterialType_Pbr)
 				 {
@@ -407,18 +408,19 @@ namespace M3D
                          {
                              Color tempColor = tempMateriaData->DiffuseColor();
                              tempMaterial->AlbedoColor(tempColor);
-                          
+                             
                              tempColor = tempMateriaData->EmissiveColor();
                              tempMaterial->EmissiveColor(tempColor);
                              
                              tempMaterial->Opacity(tempMateriaData->Opcity());
                              tempMaterial->MetalnessFactor(tempMateriaData->Metallic());
-                            tempMaterial->RougthnessFactor(tempMateriaData->Roughness());
+                             tempMaterial->RougthnessFactor(tempMateriaData->Roughness());
                              
                          }
                          
                          
                      }
+
 				 }
 				 else if (datetype == MaterialType_Shader)
 				 {

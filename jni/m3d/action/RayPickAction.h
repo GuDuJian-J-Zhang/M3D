@@ -23,7 +23,7 @@ namespace M3D
 {
 class SceneManager;
 class CameraNode;
-
+class ModelShape;
 
 class RayPickIntersect
 {
@@ -31,8 +31,9 @@ public:
 	RayPickIntersect()
 	{
 		m_zindex = 0;
-	}
+	}  
 	vector<Vector3> m_IntersectPnts; //!< 存储射线和三角面片交点
+	vector<Vector3> m_IntersectTriglePnts;// !< 存储和射线相交的三角面片法线
 	int m_zindex; //index 越大 优先级越高
 };
 
@@ -72,7 +73,20 @@ private:
 private:
 	Ray m_cameraRay; //!< 经过view变换的ray
 	Ray m_modelRay;  //!< 经过modelview变换后的ray
-	Frustum m_framePickFrustum;//!< 框选拾取椎体
+	Frustum m_framePickCameraFrustum;//!< 框选拾取椎体
+	Frustum m_modelframePickFrustum;  //!< 经过modelview变换后的ray
+
+
+	Ray m_frustumRightTopCameraRay; //!< 经过view变换的ray
+	Ray m_frustumRightBottomCameraRay; //!< 经过view变换的ray
+	Ray m_frustumLeftBottomCameraRay; //!< 经过view变换的ray
+	Ray m_frustumLeftTopcameraRay; //!< 经过view变换的ray
+
+	Ray m_frustumRightTopModelRay;  //!< 经过modelview变换后的ray
+	Ray m_frustumRightBottomModelRay;  //!< 经过modelview变换后的ray
+	Ray m_frustumLeftBottomModelRay;  //!< 经过modelview变换后的ray
+	Ray m_frustumLeftTopModelRay;  //!< 经过modelview变换后的ray
+
 	Ray m_origCameraRay;//!< 没有经过View变换的ray
 
 	Matrix3x4 m_modelMatrix; //!< 模型空间变换矩阵
@@ -206,7 +220,7 @@ public:
 	 * @param scene 场景管理
 	 * @return 距离值
 	 */
-	static float GetScreenDis(const Vector3& pnt1,const Vector3& pnt2,SceneManager* scene);
+	static float GetScreenDis(const Vector3& pnt1,const Vector3& pnt2, CameraNode* camera);
 	/**
 	 * @brief 拾取边界线中的特征点
 	 * @param screenPnt 屏幕坐标
@@ -222,6 +236,18 @@ public:
 	void SetInterctType(int val) { m_interctType = val; }
 	bool GetUseclipPlane() const { return m_useclipPlane; }
 	void SetUseclipPlane(bool val) { m_useclipPlane = val; }
+	SceneManager* GetScene() const { return sceneManager; }
+	Vector2 GetScreentPoint() const { return m_screentPoint; }
+	void SetScreentPoint(Vector2 val) { m_screentPoint = val; }
+
+	void BeginOnceFramePick();
+
+	void IncreaseFramePickPntCount();
+
+	int GetOnceFramePickCount();
+
+	void IncreaseFramePickMatchPntCount();
+	int GetFramePickMatchPntCount();
 public:
 	/**
 	 * @brief 构造函数
@@ -242,20 +268,26 @@ public:
 	 */
 	void AddIntersectPnt(const Vector3& pos);
 
+	void AddIntersectTrianglePnts(const Vector3& normal);
+
 	void UpdataIntersecPnts(Matrix3x4& modelMatrix);
 
 	void UpdateGroupPickPnts();
-
+	Vector3 normal;
 	/**
 	 * @brief 通过模型矩阵，更新模型局部坐标系射线
 	 * @param modelMatrix 模型世界坐标系变换矩阵
 	 */
 	void UpdataModelRay(const Matrix3x4& modelMatrix);
+
+	void UpdataFramePickFrustum(const Matrix3x4& modelMatrix);
 	/**
 	 * @brief 得到最前端拾取对象
 	 * @return 拾取到的对象 NULL 表示没有拾取到
 	 */
 	IShape* GetNearPickShape();
+
+	IShape* GetFarPickShape();
 
 	vector<IShape*>& GetFramePickShapes();
 
@@ -305,6 +337,11 @@ public:
 	///设置框选类型
 	void SetFramePickType(int framePickType);
 
+	int GetFramePickType();
+
+	//满足当前框选条件了
+	bool FitFramePick();
+
 	/**
 	 * @brief 设置射线 根据屏幕坐标点
 	 * @param viewportPoint
@@ -324,6 +361,8 @@ public:
 	*/
 	bool FrustumIntersetWithWorldBox(const BoundingBox& box);
 
+	bool FrustumIntersetWithModel(ModelShape* modelShape);
+
 	void AddToFramePickCollection(IShape* shape);
 
 	/**
@@ -335,6 +374,10 @@ public:
 	 * @return true有交点 false没有交点
 	 */
 	bool IsintersectRayAndTriangle(const Vector3& v0,const Vector3& v1,const Vector3& v2,Vector3& I);
+
+	bool IsintersecFrustumTriangle(const Vector3& v0, const Vector3& v1, const Vector3& v2);
+
+	bool IsPointInFrustum(const Vector3& v0);
 	/**
 	 * @brief 射线是否和线段相交
 	 * @param v0 线段起点
@@ -369,7 +412,7 @@ public:
 	 */
 	void AddShape(IShape* shape,int zIndex = 0);
 
-	void AddFramePickShape(IShape* shape);
+	//void AddFramePickShape(IShape* shape);
 
 	/**
 	 * @brief 得到拾取类型
@@ -444,7 +487,8 @@ public:
 
 	void  BeginPickAsGroup(IShape* shape);
 	void EndPickAsGroup(IShape* shape, int zIndex= 0);
-
+	Vector3 rayIntersectNormal;
+	Vector3 rayIntersectPos;
 private:
 	virtual void OnExecute(SceneNode* node);
 	void Init();
@@ -474,6 +518,12 @@ private:
 
 	bool m_pickAsGrroup; //作为组开始拾取
 	vector<Vector3> m_pickAsGroupIntersectPnts; //!< 存储射线和三角面片交点
+
+	Vector2 m_screentPoint;
+
+	int m_onceFramePickMatchCount; //!< 当前一次框选相交模型数量
+	int m_onceFramePickCount;
+
 };
 }
 

@@ -21,6 +21,7 @@
 #include "m3d/graphics/Material.h"
 #include "m3d/graphics/Texture2D.h"
 #include "m3d/model/Face.h"
+#include "m3d/model/Edge.h"
 #include "m3d/renderer/gl10/GLShapeDrawer.h"
 #include "m3d/graphics/ImageBoard.h"
 #include "m3d/graphics/MeshBoard.h"
@@ -34,7 +35,7 @@
 #include "m3d/ResourceManager.h"
 #include "m3d/scene/FPSNode.h"
 #include "m3d/RenderManager.h"
-#include "m3d/renderer/GL20/GLShapeDrawerHelper.h"
+#include "m3d/renderer/gl20/GLShapeDrawerHelper.h"
 #include "m3d/graphics/DirectionalLight.h"
 #include "m3d/scene/SceneGroundNode.h"
 #include "m3d/graphics/GeometryBuffer.h"
@@ -309,6 +310,22 @@ namespace M3D
 				Vector3 cameraPostion = camera->GetPosition();
 				program->SetUniformValue(CAMERA_POSITION, cameraPostion);
 			}
+		}
+
+		Face* face = dynamic_cast<Face*>(renderable);
+		if (face && face->GetNeedClip())
+		{
+			int enableClips[3];
+			for (int i = 0; i < 3; i++)
+			{
+				enableClips[i] = action->m_enableClip[i];
+			}
+			program->SetUniformValue(FSP_ENABLECLIPS, 3, enableClips);
+		}
+		else
+		{
+			int enableClips[3] = { 0 };
+			program->SetUniformValue(FSP_ENABLECLIPS, 3, enableClips);
 		}
 
 		if (refreshMaterial)
@@ -1781,7 +1798,7 @@ namespace M3D
 				shaderEffect->SetVertexAttribPointer(vertex->m_location, 3, GL_FLOAT, 0, sectionPlane->GetPointArray());
 
 				shaderEffect->SetUniformValue(FSP_DIFFUSE, faceColor);
-				DrawTriNoIndex(36);
+				DrawTriNoIndex(6);
 				shaderEffect->DisableAttributeArray(vertex->m_location);
 				shaderEffect->ReleaseShaderProgram();
 
@@ -1878,7 +1895,7 @@ namespace M3D
 						shaderEffect->SetVertexAttribPointer(vertex->m_location, 3, GL_FLOAT, 0, sectionPlane->GetPointArray());
 						//					shaderEffect->SetVertexAttribPointer(normal->m_location, 3, GL_FLOAT, 0, sectionPlane->GetNormalArray());
 						shaderEffect->SetUniformValue(FSP_DIFFUSE, faceColor);
-						DrawTriNoIndex(36);
+						DrawTriNoIndex(6);
 						shaderEffect->DisableAttributeArray(vertex->m_location);
 						//					shaderEffect->DisableAttributeArray(normal->m_location);
 						shaderEffect->ReleaseShaderProgram();
@@ -2142,13 +2159,13 @@ namespace M3D
 
 				shaderEffect->SetVertexAttribPointer(vertex->m_location, 3, GL_FLOAT, 0, sectionPlane->GetPointArray());
 				shaderEffect->SetUniformValue(FSP_DIFFUSE, faceColor);
-				DrawTriNoIndex(36);
+				DrawTriNoIndex(6);
 				glDisable(GL_BLEND);
 				glDepthMask(GL_TRUE);
 				Color& edgeColor = sectionPlane->GetEdgeColor();
 				shaderEffect->SetVertexAttribPointer(vertex->m_location, 3, GL_FLOAT, 0, sectionPlane->GetLinePointArray());
 				shaderEffect->SetUniformValue(FSP_DIFFUSE, edgeColor);
-				glDrawArrays(GL_LINES, 0, 24);
+				glDrawArrays(GL_LINES, 0, 8);
 				shaderEffect->DisableAttributeArray(vertex->m_location);
 			}
 
@@ -3006,6 +3023,7 @@ namespace M3D
 		// multi-clip planes
 		Vector4 tc[3];
 		int enableClips[3];
+		int disableClips[3] = { 0 };
 		Matrix4 tempMat = gl->GetViewMatrix();
 		for (int i = 0; i < 3; i++)
 		{
@@ -3014,7 +3032,7 @@ namespace M3D
 			enableClips[i] = action->m_enableClip[i];
 		}
 		shaderEffect->SetUniformValue(FSP_CLIPPLANES, 3, tc);
-		shaderEffect->SetUniformValue(FSP_ENABLECLIPS, 3, enableClips);
+		//shaderEffect->SetUniformValue(FSP_ENABLECLIPS, 3, enableClips);
 		ShaderParameter* reverseClipPara = shaderEffect->GetShaderUniformParameter(FSP_REVERSECLIP);
 		shaderEffect->SetUniformValue(reverseClipPara->m_location, (int)action->m_bReverseClip);
 		// LOGI("end use multi-clip planes");
@@ -3040,6 +3058,15 @@ namespace M3D
 		for (; it != RenderStateArray->GetRenderableArray().end(); it++)
 		{
 			Renderable* edgeRenderData = *it;
+			Edge* edge = dynamic_cast<Edge*>(edgeRenderData);
+			if (edge && edge->GetNeedClip())
+			{
+				shaderEffect->SetUniformValue(FSP_ENABLECLIPS, 3, enableClips);
+			}
+			else
+			{
+				shaderEffect->SetUniformValue(FSP_ENABLECLIPS, 3, disableClips);
+			}
 			const Color& edgeColor = edgeRenderData->GetRenderColor();
 			HardWareVertexBuffer* vertexBuffer =
 				edgeRenderData->GetHardWareVertexBuffer();
@@ -3424,6 +3451,55 @@ namespace M3D
 			// multi-clip plane
 			shaderEffect->SetUniformValue(FSP_CLIPPLANES, 3, tc);
 			shaderEffect->SetUniformValue(FSP_ENABLECLIPS, 3, enableClips);
+			ShaderParameter* reverseClipPara = shaderEffect->GetShaderUniformParameter(FSP_REVERSECLIP);
+			shaderEffect->SetUniformValue(reverseClipPara->m_location, (int)action->m_bReverseClip);
+
+			Matrix4 imageTransform = Matrix4::IDENTITY;
+
+			for (int i = 0; i < imageboardArray.size(); i++)
+			{
+				ImageBoard* imageboard = imageboardArray[i];
+				GLShapeDrawer20::DrawImageBoard(imageboard, V, P, imageTransform, shaderEffect, true);
+			}
+
+			shaderEffect->ReleaseShaderProgram();
+		}
+	}
+
+
+	void GLShapeDrawer20::DrawHUBImageQueue(RenderAction * action)
+	{
+		const vector<ImageBoard*>& imageboardArray = action->GetHudImages();
+		if (imageboardArray.size() > 0)
+		{
+			CameraNode* camera = action->GetScene()->GetHudCamera();
+			Matrix4 tempMat = camera->GetView().ToMatrix4();
+			Matrix4 P = camera->GetProjection().Transpose();
+			Matrix4 V = camera->GetView().ToMatrix4().Transpose();
+
+			ShaderManager * shaderManager = action->GetShaderMananger();
+			if (!shaderManager)
+			{
+				return;
+			}
+
+			Vector4 tc[3];
+			int enableClips[3];
+			for (int i = 0; i < 3; i++)
+			{
+				tc[i] = (action->m_clipPlane[i]);
+				tc[i] = tempMat.Inverse().Transpose() * tc[i];
+				enableClips[i] = false;
+			}
+
+			ShaderProgram * shaderEffect = shaderManager->GetEffect(
+				ShaderManager::Image);
+
+			shaderEffect->UseProgram();
+			// multi-clip plane
+			shaderEffect->SetUniformValue(FSP_CLIPPLANES, 3, tc);
+			shaderEffect->SetUniformValue(FSP_ENABLECLIPS, 3, enableClips);
+
 			ShaderParameter* reverseClipPara = shaderEffect->GetShaderUniformParameter(FSP_REVERSECLIP);
 			shaderEffect->SetUniformValue(reverseClipPara->m_location, (int)action->m_bReverseClip);
 
@@ -4796,6 +4872,7 @@ namespace M3D
 
 		GLShapeDrawer20::DrawImageBoardQueue(action);
 		GLShapeDrawer20::DrawUIQueue(action);
+		GLShapeDrawer20::DrawHUBImageQueue(action);
 		GLShapeDrawer20::DrawRenderActionBox(action);
 	}
 
@@ -4879,6 +4956,74 @@ namespace M3D
 		draggerEffect->ReleaseShaderProgram();
 	}
 
+
+	void GLShapeDrawer20::DrawDraggerLinePass(RenderAction * action, RenderQueue * RenderStateArray)
+	{
+		if (RenderStateArray->GetRenderableArray().size() == 0)
+		{
+			return;
+		}
+#ifdef WIN32
+		glLineWidth(1);
+#else
+		glLineWidth(2);
+#endif
+		RenderContext* gl = action->GetGLContext();
+		ShaderManager* shaderMananger = action->GetShaderMananger();
+		ShaderProgram* shaderEffect = shaderMananger->GetEffect(
+			ShaderManager::DraggerEdge);
+
+		shaderEffect->UseProgram();
+		CameraNode* camera = action->GetCamera();
+		Matrix4 projectMatrix = camera->GetProjection().Transpose();
+		Matrix4 viewMatrix = camera->GetView().ToMatrix4().Transpose();
+
+		shaderEffect->SetUniformValue(VSP_VIEWMAT, viewMatrix);
+		shaderEffect->SetUniformValue(VSP_PROJECTIONMAT, projectMatrix);
+
+		vector<Edge*>* edges = NULL;
+		Matrix4 M;
+		//#define DEPTH_EDGE
+
+		ShaderParameter * vertex = shaderEffect->GetShaderAttributeParameter(
+			VSP_POSITION);
+		shaderEffect->EnableAttributeArray(vertex->m_location);
+
+		RenderabelArray::iterator it =
+			RenderStateArray->GetRenderableArray().begin();
+		for (; it != RenderStateArray->GetRenderableArray().end(); it++)
+		{
+			Renderable* edgeRenderData = *it;
+			const Color& edgeColor = edgeRenderData->GetRenderColor();
+			HardWareVertexBuffer* vertexBuffer =
+				edgeRenderData->GetHardWareVertexBuffer();
+			HardWareIndexBuffer * indexBuffer =
+				edgeRenderData->GetHardWareIndexBuffer();
+
+			M = *(edgeRenderData->GetRenderWorldMatrix());
+			Color triColor;
+			triColor = edgeColor;
+			int dataLength = edgeRenderData->GetDataLength();
+			if (dataLength)
+			{
+				shaderEffect->SetVertexAttribPointer(vertex->m_location, 3, GL_FLOAT, 0,
+					(GLvoid *)edgeRenderData->GetVertexPos());
+
+				shaderEffect->SetUniformValue(VSP_MODELMAT, M);
+				shaderEffect->SetUniformValue(VSP_UCOLOR, triColor);
+
+				M3D_OFFSET_TYPE indexArray = edgeRenderData->GetIndexOffset();
+
+				glDrawArrays(GL_LINES, 0, dataLength);
+			}
+
+		}
+
+		shaderEffect->DisableAttributeArray(vertex->m_location);
+		shaderEffect->ReleaseShaderProgram();
+	}
+
+
 	void GLShapeDrawer20::DrawDraggerPass(RenderAction * action)
 	{
 		//关闭剖切操作
@@ -4930,10 +5075,11 @@ namespace M3D
 				//	//LOGE("render in top");
 				//	GLShapeDrawer20::DrawINTOPRenderPassGroup(action, &it->second);
 				//}
-				//else if (renderType == RenderableType::RGT_EDGELINE)
-				//{
-				//	GLShapeDrawer20::DrawEdgesRenderPassGroup(action, &it->second);
-				//}
+				else if (renderType == RenderableType::RGT_EDGELINE)
+				{
+					//GLShapeDrawer20::DrawEdgesRenderPassGroup(action, &it->second);	
+					GLShapeDrawer20::DrawDraggerLinePass(action, &(it->second));
+				}
 				//else if (renderType == RenderableType::RGT_EDGELINEINTOP)
 				//{
 				//	GLShapeDrawer::DrawEdgesInTopRenderPassGroup(action, &it->second);

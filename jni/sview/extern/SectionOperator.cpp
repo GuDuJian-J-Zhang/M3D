@@ -1,4 +1,4 @@
-#include "sview/extern/SectionOperator.h"
+﻿#include "sview/extern/SectionOperator.h"
 #include "m3d/scene/SceneNode.h"
 #include "m3d/scene/GroupNode.h"
 #include "m3d/scene/SectionNode.h"

@@ -22,6 +22,7 @@ namespace M3D
 	class Material;
 	class PbrMaterial;
 	class ShaderMaterial;
+	class MatCapMaterial;
 	class Texture2D;
 	class Image;
 	class BaseMaterial;
@@ -38,6 +39,7 @@ using M3D::Texture2D;
 using M3D::ShaderMaterial;
 using M3D::Image;
 using M3D::BaseMaterial;
+using M3D::MatCapMaterial;
 
 namespace SVIEW
 {
@@ -109,6 +111,7 @@ namespace SVIEW
 
 		bool SavePhoneTexture(Material* phoneMaterial,void* stkMaterial);
 		bool SavePBRTexture(PbrMaterial* pbrMaterial,void* stkMaterial);
+		bool SaveMatCapTexture(MatCapMaterial* matcapMaterial, void* stkMaterial);
 		bool SaveShaderTexture(ShaderMaterial* pbrMaterial, void* stkMaterial);
 
 		/************************************************************************/

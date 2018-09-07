@@ -1,4 +1,4 @@
-/**@file
+﻿/**@file
  *@brief	资源管理类
  *@author	XL
  *@date		2014-1-7
@@ -8,10 +8,10 @@
  */
 #ifndef M3D_RESOURCEMANAGER_H_
 #define M3D_RESOURCEMANAGER_H_
-#include "m3d/graphics/BaseMaterial.h"
+
 #include "m3d/model/Image.h"
 #include "m3d/renderer/RenderContext.h"
-
+#include "m3d/graphics/BaseMaterial.h"
 #include <map>
 
 using std::map;
@@ -170,11 +170,11 @@ public:
 	static  const string AxisYImagePath;
 	static  const string AxisZImagePath;
 
-    Texture* DefaultPBRSpecularTexture() ;
+	Texture* DefaultPBRSpecularTexture() { return defaultPBRSpecularTexture; }
 	void DefaultPBRSpecularTexture(Texture* val) { defaultPBRSpecularTexture = val; }
-    Texture* DefaultPBRDiffuseTexture() ;
+	Texture* DefaultPBRDiffuseTexture() { return defaultPBRDiffuseTexture; }
 	void DefaultPBRDiffuseTexture(Texture* val) { defaultPBRDiffuseTexture = val; }
-    Texture* DefaultPBRLUTTexture() ;
+	Texture* DefaultPBRLUTTexture() { return defaultPBRLUTTexture; }
 	void DefaultPBRLUTTexture(Texture* val) { defaultPBRLUTTexture = val; }
 private:
 	static  const string VoiceImagePath;

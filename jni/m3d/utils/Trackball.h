@@ -35,6 +35,10 @@ public:
 	static int MOVESTATE;
 	static int TIMES;
 
+	static Trackball* Instance();
+
+private:
+	static Trackball* instance;
 public:
 	Trackball(void);
 	virtual ~Trackball(void);
@@ -152,8 +156,10 @@ public:
 
 	SceneManager* pSceneManager;
 
-	ControlInfo mvMatrix;//!< 追踪球，转换得到的三维操作信息
+	CameraNode* GetCamera() { return pCamera; }
+	void SetCamera(CameraNode* val) { pCamera = val; }
 
+	ControlInfo mvMatrix;//!< 追踪球，转换得到的三维操作信息
 private:
 	// previous points
 	IntVector2 m_PriPointOne;//!<一点操作，前一次点
@@ -188,6 +194,8 @@ private:
 	float m_rotateSpeed;//!<旋转速度
 
 	int m_priDownTick;
+
+	CameraNode* pCamera;
 };
 }
 

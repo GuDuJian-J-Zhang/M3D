@@ -101,7 +101,7 @@ namespace M3D
 		CameraNode* camera = action->GetCamera();
 		const IntRect& intRect = camera->GetViewPort().GetRect();
 		m_compute_guard_band = intRect.Width() / 10;
-		//??????????????????fragmentshader
+		//渲染高精度深度，不经过fragmentshader
 		HardWareFrameBuffer& zBuffer = GetHardWareFrameBuffer("zBuffer");
 		zBuffer.ColorAttachmentNumber(0);
 		zBuffer.UseDepthBuffer(true);
@@ -110,7 +110,7 @@ namespace M3D
 #endif
 		zBuffer.SetSize(intRect.Width() , intRect.Height() );
 
-		////????????????μ?Z?
+		////重构相机坐标系下的Z值
 		//GeometryBuffer* texture = NULL;
 		//string key = "cameraspaceZ_texture";
 		//m_cszBuffer = (GeometryBuffer*)action->GetScene()->GetResourceManager()->GetOrCreateTexture(key,
@@ -129,10 +129,12 @@ namespace M3D
 		cameraSpaceMinifyBuffer0.ColorInternalFormat(GL_R32F);
 #endif
 		cameraSpaceMinifyBuffer0.SetSize(intRect.Width(), intRect.Height());
-		for (int i = 0;i<MAX_MIP_LEVEL;++i)
+		RenderContext::OgldevError();
+		for (int i = 1;i<MAX_MIP_LEVEL;++i)
 		{
 			HardWareFrameBuffer& cameraSpaceMinifyBuffer = GetHardWareFrameBuffer("cameraSpaceMinifyBuffer"+IntToString(i));
 			cameraSpaceMinifyBuffer.ColorAttachmentNumber(1);
+			RenderContext::OgldevError();
 			//cameraSpaceMinifyBuffer.OutColorTexture(m_cszBuffer);
 			//cameraSpaceMinifyBuffer.OutColorTextureLevel(i);
 			cameraSpaceMinifyBuffer.UseDepthBuffer(false);
@@ -142,14 +144,14 @@ namespace M3D
 			cameraSpaceMinifyBuffer.SetSize(intRect.Width(), intRect.Height());
 		}
 
-		//??????SAO
+		//渲染原生SAO
 		HardWareFrameBuffer& rawSAOBuffer = GetHardWareFrameBuffer("rawSAOBuffer");
 		rawSAOBuffer.ColorAttachmentNumber(1);
 		rawSAOBuffer.UseDepthBuffer(false);
 		rawSAOBuffer.ColorInternalFormat(GL_RGBA);
 		rawSAOBuffer.SetSize(intRect.Width(), intRect.Height());
 
-		//??????SAO???SAO
+		//模糊原生SAO得到SAO
 		//H
 		HardWareFrameBuffer& blurHorizontalBuffer = this->GetHardWareFrameBuffer("blurHorizontalBuffer");
 		blurHorizontalBuffer.ColorAttachmentNumber(1);
@@ -178,7 +180,7 @@ namespace M3D
 		{
 			return;
 		}
-		//?????
+		//初始化
 		RenderAction* action = this->m_action;
 		RenderContext* gl = action->GetGLContext();
 		CameraNode* camera = action->GetCamera();
@@ -223,7 +225,7 @@ namespace M3D
 			const Color &color = faceRenderData->GetRenderColor();
 			Color red = SVIEW::Parameters::Instance()->m_outlineColor;
 			tempUnifomValueList[FSP_DIFFUSE] = Uniform("Color", &red);
-			//????uniform?
+			//设置uniform值
 			SPHashMap& shaderUniformMap = shaderEffect->GetShaderUniformMap();
 
 			this->SetUniform(shaderEffect, shaderUniformMap, tempUnifomValueList);
@@ -685,51 +687,80 @@ namespace M3D
 		RenderContext* gl = action->GetGLContext();
 		CameraNode* camera = action->GetCamera();
 		const IntRect& intRect = camera->GetViewPort().GetRect();
-		
+		RenderContext::OgldevError();
 		//------------------------------------------depth pass---------------------------------------------
 		HardWareFrameBuffer& modelFbo = this->GetHardWareFrameBuffer("zBuffer");
 		//modelFbo.SetParameters();
 		modelFbo.ReShape();
-
+		RenderContext::OgldevError();
 		modelFbo.Bind();
-		//modelFbo.CheckStatus();
+		RenderContext::OgldevError();
+		modelFbo.CheckStatus();
+		RenderContext::OgldevError();
 		glEnable(GL_DEPTH_TEST);
+		RenderContext::OgldevError();
 		glDepthFunc(GL_LEQUAL);
+		RenderContext::OgldevError();
 		glClearColor(0.0, 0.0, 0.0, 1.0);
+		RenderContext::OgldevError();
 		glClear(GL_DEPTH_BUFFER_BIT);
+		RenderContext::OgldevError();
 		glViewport(intRect.m_left, intRect.m_top, intRect.m_right, intRect.m_bottom);
+		RenderContext::OgldevError();
 		for (int i = 0; i < RenderStateArray.size(); i++) {
 			this->RenderModel(RenderStateArray[i]);
 		}
+		RenderContext::OgldevError();
 		modelFbo.UnBind();
-
+		RenderContext::OgldevError();
 		//----------------------------------------ReconstructorCameraSpaceZ pass------------------------------------------------------
 
 		//----0----
+		RenderContext::OgldevError();
 		HardWareFrameBuffer& cameraSpaceMinifyBuffer0 = this->GetHardWareFrameBuffer("cameraSpaceMinifyBuffer0");		
+		RenderContext::OgldevError();
 		cameraSpaceMinifyBuffer0.ReShape();
+		RenderContext::OgldevError();
 		cameraSpaceMinifyBuffer0.Bind();
-		//modelFbo.CheckStatus();
+		RenderContext::OgldevError();
+		cameraSpaceMinifyBuffer0.CheckStatus();
+		RenderContext::OgldevError();
 		glClearColor(0.0, 0.0, 0.0, 1.0);
+		RenderContext::OgldevError();
 		glClear(GL_COLOR_BUFFER_BIT);
+		RenderContext::OgldevError();
 		glViewport(intRect.m_left, intRect.m_top, intRect.m_right, intRect.m_bottom);
+		RenderContext::OgldevError();
 		RenderCameraSpaceZ();
+		RenderContext::OgldevError();
 		cameraSpaceMinifyBuffer0.UnBind();
+		RenderContext::OgldevError();
 		//---1~4----
-
+		RenderContext::OgldevError();
 		for (int i = 1; i < MAX_MIP_LEVEL; i++)
 		{
 			HardWareFrameBuffer& cameraSpaceMinifyBuffer = this->GetHardWareFrameBuffer("cameraSpaceMinifyBuffer"+IntToString(i));
+			RenderContext::OgldevError();
 			cameraSpaceMinifyBuffer.OutColorTexture((GeometryBuffer*)cameraSpaceMinifyBuffer0.GetColorTarget(0));
+			RenderContext::OgldevError();
 			cameraSpaceMinifyBuffer.OutColorTextureLevel(i);
+			RenderContext::OgldevError();
 			cameraSpaceMinifyBuffer.ReShape();
+			RenderContext::OgldevError();
 			cameraSpaceMinifyBuffer.Bind();
-			//modelFbo.CheckStatus();
+			RenderContext::OgldevError();
+			cameraSpaceMinifyBuffer.CheckStatus();
+			RenderContext::OgldevError();
 			glClearColor(0.0, 0.0, 0.0, 1.0);
+			RenderContext::OgldevError();
 			glClear(GL_COLOR_BUFFER_BIT);
+			RenderContext::OgldevError();
 			glViewport(intRect.m_left, intRect.m_top, intRect.m_right, intRect.m_bottom);
+			RenderContext::OgldevError();
 			RenderCameraSpaceMinifyZ(i-1);
+			RenderContext::OgldevError();
 			cameraSpaceMinifyBuffer.UnBind();
+			RenderContext::OgldevError();
 		}
 
 
@@ -737,8 +768,9 @@ namespace M3D
 		//-------------------------------------------------rawSAO pass----------------------------------------------------------------
 		HardWareFrameBuffer&  saoFbo = this->GetHardWareFrameBuffer("rawSAOBuffer");
 		saoFbo.ReShape();
-		//widthFbo.checkStatus();
+		
 		saoFbo.Bind();
+		saoFbo.CheckStatus();
 		//glEnable(GL_DEPTH_TEST);
 		//glDepthFunc(GL_LEQUAL);
 		glClearColor(0.0, 0.0, 0.0, 1.0);
@@ -746,7 +778,7 @@ namespace M3D
 		glViewport(intRect.m_left, intRect.m_top, intRect.m_right, intRect.m_bottom);
 		this->RenderSAO();
 		saoFbo.UnBind();
-
+		RenderContext::OgldevError();
 		////-------------------------------------------------H blur----------------------------------
 		//HardWareFrameBuffer&  blurHFbo = this->GetHardWareFrameBuffer("blurHorizontalBuffer");
 		//blurHFbo.ReShape();

@@ -132,6 +132,9 @@ public:
 
 	virtual IDTYPE GetCopyObjId();
 	virtual void SetFaceExtInfo();
+
+	void SetNeedClip(bool val);
+	bool GetNeedClip();
 private:
 	static BoundingBox m_globalFaceBox;
 
@@ -148,6 +151,7 @@ private:
 	//ExtendInfoManager* m_ExtInfoMgr;
 	FaceExtInfo* m_FaceExtInfo;	
 	int m_svlId;
+	bool m_bNeedClip;
 };
 }
 

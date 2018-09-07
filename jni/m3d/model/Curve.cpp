@@ -258,9 +258,9 @@ Vector3 RefPolyLine::GetEndPnt()
 	if (m_refLine)
 	{
 		vector<Vector3>& pnts = m_refLine->GetPoints();
-		if (pnts.size() > m_dataOffset + m_dataLength)
+		if (pnts.size() > m_dataOffset + m_dataLength -1)
 		{
-			pnt = pnts.at(m_dataOffset + m_dataLength);
+			pnt = pnts.at(m_dataOffset + m_dataLength-1);
 		}
 	}
 	return pnt;

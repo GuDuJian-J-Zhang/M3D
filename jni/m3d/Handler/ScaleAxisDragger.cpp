@@ -125,6 +125,13 @@ void ScaleAxisDragger::ClearDraggerCallbacks()
 	}
 }
 
+void ScaleAxisDragger::SetScene(M3D::SceneManager * val)
+{
+	_xDragger->SetScene(val);
+	_yDragger->SetScene(val);
+	_zDragger->SetScene(val);
+}
+
 void ScaleAxisDragger::setupDefaultGeometry()
 {
     // Create a line.

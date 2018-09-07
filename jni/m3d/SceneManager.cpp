@@ -77,6 +77,7 @@
 #include "m3d/UI/gui.h"
 #endif //WIN32
 #include "renderer/UniformHelper.h"
+#include "scene/ScreenUILayerGroup.h"
 using namespace SVIEW;
 
 namespace M3D
@@ -126,21 +127,24 @@ namespace M3D
 			this->m_extendinfoMgr = NULL;
 		}
 
-		if (this->m_resourceMgr)
-		{
-			delete this->m_resourceMgr;
-			this->m_resourceMgr = NULL;
-		}
-
 		if (this->m_lightManager)
 		{
 			delete this->m_lightManager;
 			this->m_lightManager = NULL;
 		}
 
+		if (this->m_resourceMgr)
+		{
+			delete this->m_resourceMgr;
+			this->m_resourceMgr = NULL;
+		}
+
+
 		UniformHelper::Clear();
 
 		ReleaseMe(this->m_lightGroup);
+
+		ReleaseMe(this->m_hudCamera);
 	}
 
 	SceneNode * SceneManager::GetSceneRoot(void)
@@ -171,6 +175,8 @@ namespace M3D
 		m_cameraManager = NULL;
 		this->m_lightManager = NULL;
 		this->m_cameraGroup = NULL;
+
+		this->m_hudCamera = NULL;
 #ifdef WIN32
 		this->m_gui = NULL;
 #endif //WIN32		
@@ -968,6 +974,29 @@ namespace M3D
 		//this->m_TrackBall.SetTrackWindow(width, width);
 	}
 
+	IShape* SceneManager::GetFarPickShape(M3D::Ray& ray, int shapeType, int geoType)
+	{
+		MutexLock locked(this->m_mutex);
+		RayPickAction* rayPickAction = new RayPickAction(this);
+		rayPickAction->SetPickShapeType(shapeType);
+		rayPickAction->SetPickGeoType(geoType);
+
+		rayPickAction->SetRay(ray);
+
+		if (!RayOctreeAction(rayPickAction))
+		{
+			//LOGI("setpoint is ok");
+			SceneNode* group = this->m_pSceneRoot;
+			group->Traverse((Action*)rayPickAction);
+		}
+		IShape* shape = rayPickAction->GetFarPickShape();
+
+		delete rayPickAction;
+		rayPickAction = nullptr;
+		
+		return shape;
+	}
+
 	IShape * SceneManager::GetPickShape(M3D::Ray& ray, int shapeType, int geoType)
 	{
 		MutexLock locked(this->m_mutex);
@@ -1002,7 +1031,7 @@ namespace M3D
 
 		return shape;
 	}
-
+	
 	IShape* SceneManager::GetPickShape(float winx, float winY, int shapeType,
 		int geoType)
 	{
@@ -1190,6 +1219,38 @@ IShape* SceneManager::GetPickShape(Vector2& screentPnt, int shapeType, int geoTy
 		return vec;
 	}
 
+	Vector3 SceneManager::GetUILayerPickPoint(float x, float y)
+	{
+		Vector3 vec;
+		Vector2 srcPnt(x, y);
+		RayPickAction* rayPickAction = new RayPickAction(this);
+
+		rayPickAction->SetCamera(this->GetHudCamera());
+
+		rayPickAction->SetPickShapeType(SHAPE_MODEL);
+		rayPickAction->SetPickGeoType(M3D_GEOATTR_TYPE_UNKNOWN);
+		rayPickAction->SetRay(srcPnt);
+
+		Matrix3x4 viewMatrix = rayPickAction->GetCamera()->GetView();
+		const Ray& pickRay = rayPickAction->GetData()->GetCameraRay();
+		Vector3 tCenter;
+		BoundingBox& pBoundingBox = this->GetHudLayerBox();
+		tCenter = pBoundingBox.Center();
+
+		//求射线与（包围盒中心点深度和摄像机方向所确定）平面交点
+		float s = pickRay.m_direction.LengthSquared();
+		float k = (tCenter - pickRay.m_origin).DotProduct((pickRay.m_direction)) * (1 / s);
+		vec = (pickRay.m_direction) * k + pickRay.m_origin;
+
+
+		delete rayPickAction;
+		rayPickAction = NULL;
+
+		this->GetRenderManager()->RequestRedraw();
+
+		return vec;
+	}
+
 	bool SceneManager::GetPickPoint(Ray & ray, Vector3 & pnt, bool inModel)
 	{
 		bool ret = false;
@@ -1255,6 +1316,8 @@ IShape* SceneManager::GetPickShape(Vector2& screentPnt, int shapeType, int geoTy
 		}
 		//this->m_pSceneRoot->Traverse((Action*)rayPickAction);
 		bool state = rayPickAction->GetNearPickPoint(vec);
+		//拿到action中计算出来的法向量
+		rayIntersectNormal = rayPickAction->normal;
 		if (!state && !inModel)
 		{
 			Matrix3x4 viewMatrix = rayPickAction->GetCamera()->GetView();
@@ -1275,17 +1338,20 @@ IShape* SceneManager::GetPickShape(Vector2& screentPnt, int shapeType, int geoTy
 		{
 			ret = true;
 		}
-
+		
 		delete rayPickAction;
 		rayPickAction = NULL;
 
 		this->GetRenderManager()->RequestRedraw();
 
 		pnt = vec;
-
+		
 		return ret;
 	}
-
+	Vector3 SceneManager::GetPickNormal()
+	{
+		return this->rayIntersectNormal;
+	}
 	Handler* SceneManager::CreateHandler(const Vector3& vec, int Type)
 	{
 		return (Handler*) this->CreateShape(vec, Type);
@@ -1476,6 +1542,7 @@ IShape* SceneManager::GetPickShape(Vector2& screentPnt, int shapeType, int geoTy
 	{
 		if (!m_sceneBox.Defined())
 		{
+			m_sceneBox.Clear();
 			CallBackAction* computeBoxAction = new CallBackAction();
 			computeBoxAction->SetActionData(this);
 			//computeBoxAction->SetActionLFun(SceneManager::ComputeBox);
@@ -1919,6 +1986,12 @@ IShape* SceneManager::GetPickShape(Vector2& screentPnt, int shapeType, int geoTy
 		return m_gui;
 	}
 #endif //WIN32
+	M3D::CameraNode* SceneManager::GetHudCamera() const
+	{
+		return m_hudCamera;
+	}
+
+
 	BoundingBox SceneManager::GetOcTreeWorldBoundingBox()
 	{
 		float length = GetSceneBox().Length() / 2;
@@ -1953,6 +2026,60 @@ IShape* SceneManager::GetPickShape(Vector2& screentPnt, int shapeType, int geoTy
 			this->GetLightGroup();
 		}
 		return m_lightManager;
+	}
+
+	ScreenUILayerGroup* SceneManager::GetScreenUILayerGroup()
+	{
+		SceneNode* node = this->m_pSceneRoot->Search(SCREENUILAYER_GROUPNODE);
+
+		if (!node)
+		{
+			ScreenUILayerGroup* screenUILayergroup = new ScreenUILayerGroup(this);
+			node = screenUILayergroup;
+			screenUILayergroup->SetName(SCREENUILAYER_GROUPNODE);
+			((GroupNode*)this->m_pSceneRoot)->AddChild(screenUILayergroup);
+		}
+
+		return (ScreenUILayerGroup*)node;
+	}
+
+	SectionNode * SceneManager::GetSectionNode(int ID)
+	{
+		GroupNode * groupNode = (GroupNode*) this->GetSceneRoot();
+		list<SectionNode*>::iterator iter;
+		for (iter = m_sceneNodeList.begin(); iter != m_sceneNodeList.end(); ++iter)
+		{
+			SectionNode* sectionNode = *iter;
+			if (sectionNode->GetID() == ID)
+			{
+				return sectionNode;
+			}
+		}
+		return nullptr;
+	}
+
+	SectionNode * SceneManager::CreateSingleSectionNode(int ID)
+	{
+		GroupNode * groupNode = (GroupNode*) this->GetSceneRoot();
+		SectionNode* sectionNode = new SectionNode();
+
+		//根据场景的大小默认构造三个按照X，Y，和Z方向的拖拽器
+		sectionNode->SetScene(this);
+		sectionNode->SetName(M3D::SECTION_GROUP_PATH);
+		sectionNode->SetID(ID);
+		groupNode->AddChild(sectionNode);
+
+		//this->m_sectionNode = sectionNode;
+		sectionNode->AddRef();
+
+		AddSectionNode(sectionNode);
+
+		return sectionNode;
+	}
+
+	void SceneManager::AddSectionNode(SectionNode * node)
+	{
+		m_sceneNodeList.push_back(node);
 	}
 
 	void SceneManager::SetUnitScale(float scale)
@@ -2000,7 +2127,7 @@ IShape* SceneManager::GetPickShape(Vector2& screentPnt, int shapeType, int geoTy
 	void SceneManager::Lock()
 	{
 		m_mutex.Acquire();
-		//	this->m_RenderMgr->AllowDraw(false && this->m_TopModel);
+		//this->m_RenderMgr->AllowDraw(false && this->m_TopModel);
 	}
 
 	void SceneManager::UnLock()
@@ -2022,6 +2149,17 @@ IShape* SceneManager::GetPickShape(Vector2& screentPnt, int shapeType, int geoTy
 
 			this->GetRenderManager()->RequestRedraw();
 		}
+	}
+
+	void SceneManager::SetHudCamera(CameraNode* val)
+	{
+		if (val!= m_hudCamera)
+		{
+			ReleaseMe(m_hudCamera);
+		}
+
+		m_hudCamera = val;
+		AddRefMe(m_hudCamera);
 	}
 
 	////************************************

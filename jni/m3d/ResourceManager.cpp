@@ -1,4 +1,4 @@
-#include "m3d/ResourceManager.h"
+﻿#include "m3d/ResourceManager.h"
 
 #include "m3d/M3D.h"
 
@@ -276,151 +276,65 @@ const string ResourceManager::defaultSphereTexPath = "/data/pic/pointo.png";
 
 Texture* ResourceManager::defaultCubeMapTexture = NULL;
 const string ResourceManager::defaultCubeMapTexPath = "/data/pic/";
- Texture*  ResourceManager::DefaultPBRSpecularTexture()
-{
-        if(!defaultPBRSpecularTexture)
-        {
-            //specular
-            string path = Parameters::Instance()->m_appWorkPath
-            + "/data/textures/papermill/specular/";
-            //string names[] = { "right", "left", "top", "bottom", "front", "back" };
-            string names[] = { "0", "1", "2", "3", "4", "5" };
-            vector<string> paths;
-            string textureKey = "";
-            for (int i = 0;i<6;i++)
-            {
-                string name = string("specular_")  + names[i]+ ".jpg";
-                string tempPath = path + name;
-                
-                paths.push_back(tempPath);
-                textureKey += name;
-            }
-            defaultPBRSpecularTexture =  GetOrCreateCubeMappingTexture(textureKey, paths);
-            defaultPBRSpecularTexture->AddRef();
-            defaultPBRSpecularTexture->MipMap(true);
-            defaultPBRSpecularTexture->MinFliter(GL_LINEAR_MIPMAP_LINEAR);
-            defaultPBRSpecularTexture->WrapS(GL_CLAMP_TO_EDGE);
-            defaultPBRSpecularTexture->WrapT(GL_CLAMP_TO_EDGE);
-            defaultPBRSpecularTexture->IsGammaInput(true);
-        }
-    return defaultPBRSpecularTexture;
-}
-    Texture*  ResourceManager::DefaultPBRDiffuseTexture()
-    {
-        if(!defaultPBRDiffuseTexture)
-        {
-            //specular
-            string path = "";
-            path = Parameters::Instance()->m_appWorkPath
-            + "/data/textures/papermill/diffuse/";
-            string names[] = { "0", "1", "2", "3", "4", "5" };
-            vector<string> paths;
-            string textureKey = "";
-            paths.clear();
-            textureKey = "";
-            for (int i = 0; i < 6; i++)
-            {
-                string name = "diffuse_" + names[i] + ".bmp";
-                string tempPath = path + name;
-                
-                paths.push_back(tempPath);
-                textureKey += name;
-            }
-            defaultPBRDiffuseTexture = GetOrCreateCubeMappingTexture(textureKey, paths);
-            defaultPBRDiffuseTexture->AddRef();
-            defaultPBRDiffuseTexture->IsGammaInput(true);
-        }
-        return defaultPBRDiffuseTexture;
-    }
-    Texture*  ResourceManager::DefaultPBRLUTTexture()
-    {
-        if(!defaultPBRLUTTexture)
-        {
-            //specular
-            string path = "";
-            path = Parameters::Instance()->m_appWorkPath
-            + "/data/textures/papermill/";
-            string names[] = { "0", "1", "2", "3", "4", "5" };
-            vector<string> paths;
-            string textureKey = "";
-            paths.clear();
-            textureKey = "";
-            
-            string name = "brdfLUT.png";
-            string tempPath = path + name;
-            textureKey += name;
-            
-            defaultPBRLUTTexture = GetOrCreateTexture(tempPath);
-            defaultPBRLUTTexture->MipMap(false);
-            defaultPBRLUTTexture->WrapS(GL_CLAMP_TO_EDGE);
-            defaultPBRLUTTexture->WrapT(GL_CLAMP_TO_EDGE);
-            defaultPBRLUTTexture->SetImageParameter(TEXTURE_LOAD_RGBA, 0);
-            defaultPBRLUTTexture->AddRef();
-        }
-        return defaultPBRLUTTexture;
-    }
+
 void ResourceManager::GeneratePbrTextures()
 {
-    if(Parameters::Instance()->m_appWorkPath!="")
-    {
-        //specular
-        string path = Parameters::Instance()->m_appWorkPath
-            + "/data/textures/papermill/specular/";
-        //string names[] = { "right", "left", "top", "bottom", "front", "back" };
-        string names[] = { "0", "1", "2", "3", "4", "5" };
-        vector<string> paths;
-        string textureKey = "";
-        for (int i = 0;i<6;i++)
-        {
-            string name = string("specular_")  + names[i]+ ".jpg";
-            string tempPath = path + name;
-            
-            paths.push_back(tempPath);
-            textureKey += name;
-        }
-         defaultPBRSpecularTexture =  GetOrCreateCubeMappingTexture(textureKey, paths);
-         defaultPBRSpecularTexture->AddRef();
-         defaultPBRSpecularTexture->MipMap(true);
-         defaultPBRSpecularTexture->MinFliter(GL_LINEAR_MIPMAP_LINEAR);
-         defaultPBRSpecularTexture->WrapS(GL_CLAMP_TO_EDGE);
-         defaultPBRSpecularTexture->WrapT(GL_CLAMP_TO_EDGE);
-         defaultPBRSpecularTexture->IsGammaInput(true);
-        
-         //diffuse
-         path = Parameters::Instance()->m_appWorkPath
-             + "/data/textures/papermill/diffuse/";
-          paths.clear();
-         textureKey = "";
-         for (int i = 0; i < 6; i++)
-         {
-             string name = "diffuse_" + names[i] + ".bmp";
-             string tempPath = path + name;
+	//specular
+	string path = Parameters::Instance()->m_appWorkPath
+		+ "/data/textures/papermill/specular/";
+	//string names[] = { "right", "left", "top", "bottom", "front", "back" };
+	string names[] = { "0", "1", "2", "3", "4", "5" };
+	vector<string> paths;
+	string textureKey = "";
+	for (int i = 0;i<6;i++)
+	{
+		string name = string("specular_")  + names[i]+ ".jpg";
+		string tempPath = path + name;
+		
+		paths.push_back(tempPath);
+		textureKey += name;
+	}
+	 defaultPBRSpecularTexture =  GetOrCreateCubeMappingTexture(textureKey, paths);
+	 defaultPBRSpecularTexture->AddRef();
+	 defaultPBRSpecularTexture->MipMap(true);
+	 defaultPBRSpecularTexture->MinFliter(GL_LINEAR_MIPMAP_LINEAR);
+	 defaultPBRSpecularTexture->WrapS(GL_CLAMP_TO_EDGE);
+	 defaultPBRSpecularTexture->WrapT(GL_CLAMP_TO_EDGE);
+	 defaultPBRSpecularTexture->IsGammaInput(true);
+	 
+	 //diffuse
+	 path = Parameters::Instance()->m_appWorkPath
+		 + "/data/textures/papermill/diffuse/";
+	  paths.clear();
+	 textureKey = "";
+	 for (int i = 0; i < 6; i++)
+	 {
+		 string name = "diffuse_" + names[i] + ".bmp";
+		 string tempPath = path + name;
 
-             paths.push_back(tempPath);
-             textureKey += name;
-         }
-        defaultPBRDiffuseTexture = GetOrCreateCubeMappingTexture(textureKey, paths);
-        defaultPBRDiffuseTexture->AddRef();
-        defaultPBRDiffuseTexture->IsGammaInput(true);
+		 paths.push_back(tempPath);
+		 textureKey += name;
+	 }
+	defaultPBRDiffuseTexture = GetOrCreateCubeMappingTexture(textureKey, paths);
+	defaultPBRDiffuseTexture->AddRef();
+	defaultPBRDiffuseTexture->IsGammaInput(true);
 
-        path = Parameters::Instance()->m_appWorkPath
-            + "/data/textures/papermill/";
-        paths.clear();
-        textureKey = "";
-        
-        string name = "brdfLUT.png";
-        string tempPath = path + name;
-        textureKey += name;
+	path = Parameters::Instance()->m_appWorkPath
+		+ "/data/textures/papermill/";
+	paths.clear();
+	textureKey = "";
+	
+	string name = "brdfLUT.png";
+	string tempPath = path + name;		 
+	textureKey += name;
 
-        defaultPBRLUTTexture = GetOrCreateTexture(tempPath);
-        defaultPBRLUTTexture->MipMap(false);
-        defaultPBRLUTTexture->WrapS(GL_CLAMP_TO_EDGE);
-        defaultPBRLUTTexture->WrapT(GL_CLAMP_TO_EDGE);
-        defaultPBRLUTTexture->SetImageParameter(TEXTURE_LOAD_RGBA, 0);
-        defaultPBRLUTTexture->AddRef();
-    }
+	defaultPBRLUTTexture = GetOrCreateTexture(tempPath);
+	defaultPBRLUTTexture->MipMap(false);
+	defaultPBRLUTTexture->WrapS(GL_CLAMP_TO_EDGE);
+	defaultPBRLUTTexture->WrapT(GL_CLAMP_TO_EDGE);
+	defaultPBRLUTTexture->SetImageParameter(TEXTURE_LOAD_RGBA, 0);
+	defaultPBRLUTTexture->AddRef();
 }
-
 Texture* ResourceManager::GetDefaultPointTexture(int type)
 {
 	Texture* texture = NULL;
@@ -1219,7 +1133,12 @@ void ResourceManager::ReleaseGLObjects()
 		if (objectId > 0)
 		{
 			glDeleteTextures(1, &objectId);
+			//glFinish();
+			//GLboolean ret;
+			//ret =  glIsTexture(objectId);
+			//GLboolean s= ret;
 		}
+		//glFinish();
 	}
 	this->m_GLTextureObjCache.clear();
 

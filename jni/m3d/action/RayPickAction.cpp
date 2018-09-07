@@ -1,4 +1,4 @@
-#include "m3d/action/RayPickAction.h"
+﻿#include "m3d/action/RayPickAction.h"
 
 #include "m3d/renderer/RenderContext.h"
 #include "m3d/SceneManager.h"
@@ -21,6 +21,7 @@
 #include <float.h>
 #include "m3d/model/Curve.h"
 #include "sview/views/Parameters.h"
+#include "../model/ModelShape.h"
 
 using SVIEW::Parameters;
 
@@ -63,8 +64,8 @@ bool RayPickAction::PickFeaturePnt(Vector2& screenPnt,SceneManager* scene,Vector
 				Vector3 startPnt = worldMatrix*polyLine->GetStartPnt();
 				Vector3 endPnt = worldMatrix*polyLine->GetEndPnt();
 
-				float stratPntDis = RayPickAction::GetScreenDis(featureCoordinate,startPnt,scene);
-				float endPntDis = RayPickAction::GetScreenDis(featureCoordinate,endPnt,scene) ;
+				float stratPntDis = RayPickAction::GetScreenDis(featureCoordinate,startPnt,scene->GetCamera());
+				float endPntDis = RayPickAction::GetScreenDis(featureCoordinate,endPnt, scene->GetCamera()) ;
 
 				if(stratPntDis>0 && stratPntDis < featureRadius)
 				{
@@ -96,7 +97,7 @@ const Ray&  RayPickActionData::GetOrigCameraRay()const
 
 const Frustum&  RayPickActionData::GetFramePickFrustum()const
 {
-	return this->m_framePickFrustum;
+	return this->m_framePickCameraFrustum;
 }
 
 const Ray&  RayPickActionData::GetModelRay()const
@@ -315,6 +316,7 @@ float RayPickAction::GetScreenDis(const Vector3& pnt1,const Vector3& pnt2)
 void RayPickAction::BeginPickAsGroup(IShape* shape)
 {
 	this->state->m_Intersect.m_IntersectPnts.clear();
+	this->state->m_Intersect.m_IntersectTriglePnts.clear();
 	m_pickAsGroupIntersectPnts.clear();
 	this->m_pickAsGrroup = true;
 }
@@ -368,10 +370,21 @@ bool RayPickAction::GetNearPickPoint(Vector3& vec)
 		}
 	}
 	Vector3 t;
+	Vector3 vect;
 	if (pos != m_PickShapesMap.end())
 	{
 		t = pos->second.m_IntersectPnts[pointPos];
 		vec = t;
+		Vector3 tempVector;
+		if ((pointPos * 3 + 1)< pos->second.m_IntersectTriglePnts.size())
+		{
+			Vector3 v0 = pos->second.m_IntersectTriglePnts[pointPos * 3];
+			Vector3 v1 = pos->second.m_IntersectTriglePnts[pointPos * 3+1];
+			Vector3 v2 = pos->second.m_IntersectTriglePnts[pointPos * 3+2];
+			//tvect = Vector3(pos->second.m_IntersectTriglePnts[pointPos * 3 + 1] - pos->second.m_IntersectTriglePnts[pointPos * 3]).Multiply(pos->second.m_IntersectTriglePnts[pointPos * 3 + 2] - pos->second.m_IntersectTriglePnts[pointPos * 3 + 1]);
+			tempVector = (v1 -v0).CrossProduct(v2 - v1);
+			this->normal = tempVector / tempVector.Length();
+		}
 		return true;
 	}
 	return false;
@@ -380,6 +393,47 @@ bool RayPickAction::GetNearPickPoint(Vector3& vec)
 vector<IShape*>& RayPickAction::GetFramePickShapes()
 {
 	return this->m_framePickShapesArrary;
+}
+
+IShape* RayPickAction::GetFarPickShape()
+{
+	float length = 0.0f;
+	IShape* retShape = NULL;
+	map<IShape*, RayPickIntersect >::iterator it;
+	for (it = m_PickShapesMap.begin(); it != m_PickShapesMap.end(); it++)
+	{
+		IShape* shape = it->first;
+		RayPickIntersect& intersects = it->second;
+		vector<Vector3>& vecArray = intersects.m_IntersectPnts;
+		if (!shape)
+		{
+			continue;
+		}
+
+		int pickShapeType = pickTypeFilter.GetPickShapeType();
+		if (pickShapeType == SHAPE_MODEL)
+		{
+			if (shape->GetType() == SHAPE_FACE)
+			{
+				for (size_t i = 0; i < vecArray.size(); i++)
+				{
+					float tmp = (state->m_cameraRay.m_origin - vecArray[i]).Length();
+					if (tmp > length)
+					{
+						length = tmp;
+						retShape = shape;
+					}
+				}
+			}
+		}
+	}
+
+	if (retShape)
+	{
+		Face* face = dynamic_cast<Face*>(retShape);
+		retShape = face->GetBody()->GetModel();
+	}
+	return retShape;
 }
 
 IShape* RayPickAction::GetNearPickShape()
@@ -529,14 +583,14 @@ bool RayPickAction::PointVisiable(const Vector3& point)
 	bool ret = true;
 	if (this->GetUseclipPlane())
 	{
-		Section * tempSection = sceneManager->GetSectionNode()->GetSection();
+		Section * tempSection = GetScene()->GetSectionNode()->GetSection();
 		list<SectionPlane*>* planeList = tempSection->GetPlaneList();
 		for (list<SectionPlane*>::iterator it = planeList->begin(); it != planeList->end(); it++)
 		{
 			float * equation = (*it)->GetTransformPlaneParam();
 			if ((equation[0] * point.m_x + equation[1] * point.m_y + equation[2] * point.m_z + equation[3]) < 0)
 			{
-				ret = false;
+				ret = true;
 				return ret;
 			}
 		}
@@ -584,6 +638,38 @@ bool RayPickAction::IsintersectRayAndTriangle(const Vector3& v0,const Vector3& v
 		}
 	}
 	return false;
+}
+
+bool RayPickAction::IsintersecFrustumTriangle(const Vector3& v0, const Vector3& v1, const Vector3& v2)
+{
+	Vector3 I;
+	//判断Frustum的四条射线是否和三角形相交，首先判断右下角的那条，提高匹配几率
+	if (ISintersectRayAndTriangle(v0, v1, v2, state->m_frustumRightBottomModelRay, I))
+	{
+		return true;
+	}
+
+	if (ISintersectRayAndTriangle(v0, v1, v2, state->m_frustumRightTopModelRay, I))
+	{
+		return true;
+	}
+
+	if (ISintersectRayAndTriangle(v0, v1, v2, state->m_frustumLeftBottomModelRay, I))
+	{
+		return true;
+	}
+
+	if (ISintersectRayAndTriangle(v0, v1, v2, state->m_frustumLeftTopModelRay, I))
+	{
+		return true;
+	}
+
+	return false;
+}
+
+bool RayPickAction::IsPointInFrustum(const Vector3& v0)
+{
+	return (state->m_modelframePickFrustum.IsInside(v0) == INSIDE);
 }
 
 bool RayPickAction::ISintersectRayAndTriangle(float* tri, const Ray&ray, Vector3& I)
@@ -649,6 +735,13 @@ bool RayPickAction::ISintersectRayAndTriangle(float* tri, const Ray&ray, Vector3
 
 	I = v0 * (1 - u - v) + v1 * u + v2 * v;
 
+	Vector3 newDir = I - ray.m_origin;
+
+	if (t < 0)
+	{
+		return false;
+	}
+
 	return true;
 }
 
@@ -713,6 +806,12 @@ bool RayPickAction::ISintersectRayAndTriangle(const Vector3& v0,const Vector3& v
 
 	I = v0 * (1 - u - v) + v1 * u + v2 * v;
 
+	Vector3 newDir = I - ray.m_origin;
+
+	if (t < 0)
+	{
+		return false;
+	}
 	return true;
 }
 
@@ -820,6 +919,7 @@ void RayPickAction::AddShape(IShape* shape, int zIndex)
 	{
 		this->state->m_Intersect.m_zindex = zIndex;
 		int k = this->state->m_Intersect.m_IntersectPnts.size();
+		int j = this->state->m_Intersect.m_IntersectTriglePnts.size();
 		//将所有的点，通过modelMatrix变换到显示时对应的位置
 		if (!this->m_pickAsGrroup)
 		{
@@ -828,6 +928,12 @@ void RayPickAction::AddShape(IShape* shape, int zIndex)
 				Vector3 tempVec = this->state->m_modelMatrix
 					* this->state->m_Intersect.m_IntersectPnts[i];
 				this->state->m_Intersect.m_IntersectPnts[i] = tempVec;
+			}
+			for (int i = 0; i < j; i++)
+			{
+				Vector3 tempVec = this->state->m_modelMatrix
+					* this->state->m_Intersect.m_IntersectTriglePnts[i];
+				this->state->m_Intersect.m_IntersectTriglePnts[i] = tempVec;
 			}
 			//将shape所有的交点，和shape对象的id放入表中，供最后查找离摄像机最近的shape
 			m_PickShapesMap.insert(
@@ -844,6 +950,7 @@ void RayPickAction::AddShape(IShape* shape, int zIndex)
 			}
 		}
 		this->state->m_Intersect.m_IntersectPnts.resize(0);
+		this->state->m_Intersect.m_IntersectTriglePnts.resize(0);
 	}
 }
 
@@ -907,8 +1014,15 @@ void RayPickAction::SetFramePickSection(const Vector2& leftTop, const Vector2& r
 	Vector3 farLeftBottom = viewport.ScreenToWorldPoint(leftBottom, length);
 	Vector3 farLeftTop = viewport.ScreenToWorldPoint(leftTop, length);
 
-	this->GetData()->m_framePickFrustum.Define(nearRightTop, nearRightBottom, nearLeftBottom,
+	this->GetData()->m_framePickCameraFrustum.Define(nearRightTop, nearRightBottom, nearLeftBottom,
 		nearLeftTop, farRightTop, farRightBottom, farLeftBottom, farLeftTop);
+
+
+	//定义视锥的四条射线
+	this->GetData()->m_frustumRightTopCameraRay = Ray(nearRightTop,farRightTop - nearRightTop) ;
+	this->GetData()->m_frustumRightBottomCameraRay = Ray(nearRightBottom, farRightBottom - nearRightBottom);
+	this->GetData()->m_frustumLeftBottomCameraRay = Ray(nearLeftBottom, farLeftBottom - nearLeftBottom);
+	this->GetData()->m_frustumLeftTopcameraRay = Ray(nearLeftTop, farLeftTop - nearLeftTop);
 }
 
 void RayPickAction::SetFramePickType(int framePickType)
@@ -916,10 +1030,15 @@ void RayPickAction::SetFramePickType(int framePickType)
 	this->m_framePickType = framePickType;
 }
 
+int RayPickAction::GetFramePickType()
+{
+	return this->m_framePickType;
+}
+
 void RayPickAction::SetPoint(const Vector2 & screentPoint)
 {
 	this->SetPickAll(false);
-
+	this->SetScreentPoint(screentPoint);
 	CameraNode* camera = GetCamera();
      Ray  temp =camera->GetViewPort().GetScreenRay(screentPoint.m_x,screentPoint.m_y);
 	this->SetRay(temp);
@@ -935,21 +1054,33 @@ bool RayPickAction::FrustumIntersetWithWorldBox(const BoundingBox& box)
 	bool ret = false;
 	if (box.Defined())
 	{
+		if (this->GetData()->m_framePickCameraFrustum.IsInside(box) != OUTSIDE)
+		{
+			ret = true;
+		}
+	}
+	return ret;
+}
+
+bool RayPickAction::FrustumIntersetWithModel(ModelShape* modelShape)
+{
+	bool ret = false;
+	const BoundingBox& box = modelShape->GetWorldBoundingBox();
+	if (this->FrustumIntersetWithWorldBox(box))
+	{
 		if (this->m_framePickType == 1)
 		{
-			if (this->GetData()->m_framePickFrustum.IsInside(box.Center()) == INSIDE)
+			if (this->GetData()->m_framePickCameraFrustum.IsInside(box) != OUTSIDE)
 			{
 				ret = true;
-			}
-		}
-		else if (this->m_framePickType == 2)
-		{
-			if (this->GetData()->m_framePickFrustum.IsInsideFast(box) == INSIDE)
+			}else if (this->m_framePickType == 2)
+			if (this->GetData()->m_framePickCameraFrustum.IsInside(box) == INSIDE)
 			{
 				ret = true;
 			}
 		}
 	}
+
 	return ret;
 }
 
@@ -966,7 +1097,7 @@ void RayPickAction::Init()
 	this->state = new RayPickActionData;
 	this->m_fRadius = 900;
 
-	if(this->sceneManager)
+	if(this->GetScene())
 	{
 		int width = this->GetCamera()->GetViewPort().GetRect().Width();
 
@@ -988,6 +1119,8 @@ void RayPickAction::Init()
 			this->m_fRadius = 600;
 		}
 	}
+	this->m_onceFramePickMatchCount = 0;
+
 	m_pickAsGrroup = false;
 	SetUseclipPlane(true);
 	SetInterctType(0);
@@ -998,8 +1131,8 @@ void RayPickAction::SetScene(SceneManager* pSceneManager)
 {
 	if(pSceneManager!=NULL)
 	{
-		this->sceneManager = pSceneManager;
-		this->SetCamera(this->sceneManager->GetCamera());
+		sceneManager = pSceneManager;
+		this->SetCamera(this->GetScene()->GetCamera());
 	}
 }
 
@@ -1110,12 +1243,12 @@ bool  RayPickAction::RayIntersectBoxPnt(const Ray& ray,const BoundingBox& box,ve
 	return false;
 }
 
-float RayPickAction::GetScreenDis(const Vector3& pnt1,const Vector3& pnt2,SceneManager* scene)
+float RayPickAction::GetScreenDis(const Vector3& pnt1,const Vector3& pnt2,CameraNode* camera)
 {
 	float dis = -1;
-	if(scene)
+	if(camera)
 	{
-		const Viewport& viewport = scene->GetCamera()->GetViewPort();
+		const Viewport& viewport = camera->GetViewPort();
 		//获取点在屏幕上的投影
 		IntVector2 projectPnt1 = viewport.WorldToScreenPoint(pnt1);
 		IntVector2 closestPnt2 = viewport.WorldToScreenPoint(pnt2);
@@ -1134,9 +1267,29 @@ void RayPickAction::UpdataModelRay(const Matrix3x4& modelMatrix)
 	state->m_modelRay = state->m_cameraRay.Transformed(modelMatrixInverse);
 }
 
+void  RayPickAction::UpdataFramePickFrustum(const Matrix3x4& modelMatrix)
+{
+	//this->state->SetModelMatrix(modelMatrix);
+	//求得模型显示时对应的变换矩阵的逆矩阵，通过对射线做逆矩阵变换，能够避免对模型上所有点乘以正矩阵变换
+	this->state->SetModelMatrix(modelMatrix);
+	Matrix3x4 modelMatrixInverse = state->m_modelMatrix.Inverse();
+	state->m_modelframePickFrustum = state->GetFramePickFrustum();
+	state->m_modelframePickFrustum = state->m_modelframePickFrustum.Transformed(modelMatrixInverse);
+
+	//定义视锥的四条射线
+	state->m_frustumRightTopModelRay = this->GetData()->m_frustumRightTopCameraRay.Transformed(modelMatrixInverse);
+	state->m_frustumRightBottomModelRay = this->GetData()->m_frustumRightBottomCameraRay.Transformed(modelMatrixInverse);
+	state->m_frustumLeftBottomModelRay = this->GetData()->m_frustumLeftBottomCameraRay.Transformed(modelMatrixInverse);
+	state->m_frustumLeftTopModelRay = this->GetData()->m_frustumLeftTopcameraRay.Transformed(modelMatrixInverse);
+}
+
 void RayPickAction::AddIntersectPnt(const Vector3& pos)
 {
 	this->state->m_Intersect.m_IntersectPnts.push_back(pos);
+}
+void RayPickAction::AddIntersectTrianglePnts(const Vector3& normal)
+{
+	this->state->m_Intersect.m_IntersectTriglePnts.push_back(normal);
 }
 
 void RayPickAction::UpdataIntersecPnts(Matrix3x4& modelMatrix)
@@ -1188,6 +1341,32 @@ void RayPickAction::SetCamera(CameraNode* camera)
 	this->m_camera = camera;
 }
 
+void RayPickAction::BeginOnceFramePick()
+{
+	this->m_onceFramePickCount = 0;
+	this->m_onceFramePickMatchCount =0;
+}
+
+void RayPickAction::IncreaseFramePickPntCount()
+{
+	this->m_onceFramePickCount++;
+}
+
+int RayPickAction::GetOnceFramePickCount()
+{
+	return this->m_onceFramePickCount;
+}
+
+void RayPickAction::IncreaseFramePickMatchPntCount()
+{
+	this->m_onceFramePickMatchCount++;
+}
+
+int RayPickAction::GetFramePickMatchPntCount()
+{
+	return this->m_onceFramePickMatchCount;
+}
+
 CameraNode* RayPickAction::GetCamera()
 {
 	return this->m_camera;
@@ -1197,4 +1376,5 @@ RayPickActionData* RayPickAction::GetData()
 {
 	return this->state;
 }
+
 }

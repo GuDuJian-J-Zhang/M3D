@@ -5,6 +5,7 @@
 
 #include "m3d/handler/Translate1DDragger.h"
 #include "m3d/handler/Translate2DDragger.h"
+#include "m3d/handler/Translate3DDragger.h"
 #include "m3d/handler/dragger.h"
 
 namespace M3D {
@@ -41,6 +42,8 @@ class M3D_API TranslateAxisDragger:public CompositeDragger
 		Translate2DDragger* _xzDragger;
 		Translate2DDragger* _xyDragger;
 		Translate2DDragger*  _yzDragger;
+
+		Translate3DDragger* _xyzDragger;
 };
 
 

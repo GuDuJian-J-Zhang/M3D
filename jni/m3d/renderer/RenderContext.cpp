@@ -1,4 +1,4 @@
-#include "m3d/model/Line3D.h"
+﻿#include "m3d/model/Line3D.h"
 #include "m3d/base/Vector3.h"
 #include "RenderContext.h"
 #include "m3d/renderer/gl10/GL10Context.h"

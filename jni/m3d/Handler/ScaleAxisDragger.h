@@ -24,6 +24,8 @@ class M3D_API ScaleAxisDragger : public CompositeDragger
 
 
 		virtual void ClearDraggerCallbacks();
+
+		void SetScene(M3D::SceneManager * val);
     protected:
 
         virtual ~ScaleAxisDragger();

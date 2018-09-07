@@ -72,8 +72,6 @@
 #include "animation/SimulationAnimation/CProcess.h"
 #include "animation/SimulationAnimation/ProcessManager.h"
 
-
-
 #include "m3d/model/PolyLine.h"
 #include "Stk_Confige.h"
 #include "m3d/base/Viewport.h"
@@ -98,7 +96,8 @@
 #include "m3d/graphics/DirectionalLight.h"
 #include "m3d/model/Edge.h"
 #include "m3d/base/glue/GlueObj.h"
-using namespace M3D;
+#include "m3d/scene/CameraGroup.h"
+
 #include "m3d/extras/note/ThreeDGesturesNote.h"
 #include "m3d/utils/MemoryHelper.h"
 #include "m3d/model/ModelShape.h"
@@ -113,6 +112,10 @@ using namespace M3D;
 #include "m3d/scene/GroundNode.h"
 #include "m3d/extras/annotation/AnnotationGroup.h"
 #include "m3d/extras/measure/MeasureGroup.h"
+#include "m3d/renderer/gl20/ShaderChunk.h"
+#include <time.h>
+
+using namespace M3D;
 
 #ifdef __MOBILE__
 using NS_SimulationAnimation::CAnimationStepManager;
@@ -126,7 +129,6 @@ using NS_SimulationAnimation::CProcessManager;
 
 namespace SVIEW
 {
-
 	ViewReadListener::ViewReadListener() : ReaderListener()
 	{
 		m_readPercent = 0;
@@ -322,6 +324,8 @@ namespace SVIEW
 		{
 			_sectionManager->Release();
 		}
+
+		ShaderChunk::Clear();
 	 
 		dumpMemoryLeaks();
 	}
@@ -347,8 +351,7 @@ namespace SVIEW
 			m_workTouchHandler = m_TouchEventHandler;
 
 			SceneManager* sceneManager = new SceneManager;
-			SetSceneManager(sceneManager);
-
+			
 			m_Selector = new Selector(sceneManager);
 
 			GroupNode * groupNode = (GroupNode*)sceneManager->GetSceneRoot();
@@ -362,8 +365,10 @@ namespace SVIEW
 			//		camera->SetPosition(M3D::Vector3(0, 0, 20.0f));
 
 			sceneManager->SetCamera(camera);
-			//groupNode->AddChild(camera);
 
+			sceneManager->GetCameraManager()->AddCamera(camera);
+			
+			SetSceneManager(sceneManager);
 			DirectionalLight* dirLight0 = new DirectionalLight();
 			dirLight0->SetType(SHAPE_LIGHT_DIRECTIONAL);
 			//dirLight0->SetName(M3D::MAINDIRTLIGHT);
@@ -439,8 +444,6 @@ namespace SVIEW
 			handlerGroup->SetName(M3D::HANDLER_GROUPNODE);
 
 			//		handlerGroup->GetTransformHandler();
-
-
 					//旋转中心点
 			//		ShapeNode* rotateCenter = new ShapeNode();
 			//		rotateCenter->SetName(M3D::ROTATECENTERNODE);
@@ -461,6 +464,7 @@ namespace SVIEW
 			m_viewModeOribit = false;
 			m_viewModeFreeLook = true;
 			m_viewModeControlLockXY = false;
+
 			LOGI("View::InitializeScene end");
 			//TODO 测试金正金材质模板
 			//MaterialTemplateManager* materialTemplateManager =  this->m_SceneManager->GetResourceManager()->GetMaterialTemplateManager();
@@ -1944,6 +1948,12 @@ namespace SVIEW
 		return vec;
 	}
 
+	Vector3 View::GetUILayerSelectedPoint(float x, float y)
+	{
+		M3D::Vector3 vec = this->GetSceneManager()->GetUILayerPickPoint(x, y);
+		return vec;
+	}
+
 	int View::AddHandle(float x, float y, float z, int type)
 	{
 		return this->GetSceneManager()->AddShape(x, y, z, type);
@@ -1951,7 +1961,6 @@ namespace SVIEW
 
 	void View::RemoveHandle(int id)
 	{
-		//	LOGE("View::RemoveHandle");
 		this->GetSceneManager()->RemoveHandle(id);
 	}
 
@@ -2117,6 +2126,12 @@ namespace SVIEW
 			this->m_SceneManager->UnLock();
 			return;
 		}
+		//老版本设计器中创建的剖面也保存为自定义视图，剖面数据不应执行视图切换处理
+		if (pView->GetSvlUseType() == M3D::ModelView::ViewSvlUseTypeEnum::VIEW_USAGE_USER_CLIPPLANE)
+		{
+			this->m_SceneManager->UnLock();
+			return;
+		}
 		//TODO MergeSimplyM3D
 	    SectionOperator::Clear(this);
 		
@@ -2143,103 +2158,123 @@ namespace SVIEW
 		
 		//	LOGI(
 		// "SceneManager::showModelView allViewCount:%d", curRootModel->GetModelViewList().size());
-
+		if(!isAnni)
+		{
 			//如果需要更新摄像机
-		if (pView->GetUpDataCameraState())
-		{
-			//获得视图中的相机参数
-			const CameraNode &camera = pView->GetCamera();
-
-			//先把摄像机复位下，然后仅设置摄像机位置和旋转和缩放信息
-		//	GetSceneManager()->ResetCamera();
-			//this->ReSetCamera();
-
-			CameraNode *currentCamera = GetSceneManager()->GetCamera();
-
-			Vector3 cameraNewPos = camera.GetPosition();
-
-			currentCamera->SetPosition(cameraNewPos);
-			currentCamera->SetRotation(camera.GetRotation());
-			
-			currentCamera->SetOrthographic(camera.IsOrthographic());
-			if (currentCamera->IsOrthographic())
+			if (pView->GetUpDataCameraState())
 			{
-				currentCamera->SetZoom(currentCamera->GetOrthoSize()/ camera.GetOrthoSize()*camera.GetZoom());
-			}
-			else
-			{
-				//currentCamera->SetZoom(camera.GetZoom());
-				float defaultZoom = m_SceneManager->GetDefaultZoom();
-				currentCamera->SetZoom(defaultZoom);
-			}
+				//获得视图中的相机参数
+				const CameraNode &camera = pView->GetCamera();
 
-			//如果是平行投影，进行显示矫正
-			if (camera.IsOrthographic())
-			{
-				BoundingBox& sceneBox = this->m_SceneManager->GetSceneBox();
-				Vector3 cameraPos = currentCamera->GetPosition();
-				//如果摄像机在模型内部，则进行调整
-				if (sceneBox.IsInside(cameraPos) == INSIDE)
+				//先把摄像机复位下，然后仅设置摄像机位置和旋转和缩放信息
+			//	GetSceneManager()->ResetCamera();
+				//this->ReSetCamera();
+
+				CameraNode *currentCamera = GetSceneManager()->GetCamera();
+
+				Vector3 cameraNewPos = camera.GetPosition();
+
+				currentCamera->SetPosition(cameraNewPos);
+				currentCamera->SetRotation(camera.GetRotation());
+
+				currentCamera->SetOrthographic(camera.IsOrthographic());
+				if (currentCamera->IsOrthographic())
 				{
-					Matrix3 viewMat = currentCamera->GetView().ToMatrix3();
-					Vector3 direction(viewMat.m_m20, viewMat.m_m21, viewMat.m_m22);
-					direction.Normalize();
-					Vector3 newPos = cameraPos + direction * sceneBox.Length();
-					currentCamera->SetWorldPosition(newPos);
+					currentCamera->SetZoom(currentCamera->GetOrthoSize() / camera.GetOrthoSize()*camera.GetZoom());
+				}
+				else
+				{
+					//currentCamera->SetZoom(camera.GetZoom());
+					float defaultZoom = m_SceneManager->GetDefaultZoom();
+					currentCamera->SetZoom(defaultZoom);
+				}
+
+				//如果是平行投影，进行显示矫正
+				if (camera.IsOrthographic())
+				{
+					BoundingBox& sceneBox = this->m_SceneManager->GetSceneBox();
+					Vector3 cameraPos = currentCamera->GetPosition();
+					//如果摄像机在模型内部，则进行调整
+					if (sceneBox.IsInside(cameraPos) == INSIDE)
+					{
+						Matrix3 viewMat = currentCamera->GetView().ToMatrix3();
+						Vector3 direction(viewMat.m_m20, viewMat.m_m21, viewMat.m_m22);
+						direction.Normalize();
+						Vector3 newPos = cameraPos + direction * sceneBox.Length();
+						currentCamera->SetWorldPosition(newPos);
+					}
 				}
 			}
-		}
 
 
-		if (pView->GetUpDataModelState())
-		{
-			int direction = pView->getExplosiveType();
-			float percent = pView->getExplosivePercent();
-
-			this->GetExplosiveView()->SetPercent(this, 0, 0, false);
-			if (direction != -1) {
-				this->GetExplosiveView()->Reset();
-				this->GetExplosiveView()->SetPercent(this, direction, percent, false);
-			}
-			//else
-			//{
-			//	this->GetExplosiveView()->SetPercent(this, 0, 0, false);
-			//}
-			this->GetExplosiveView()->SetExplosivePercent(0);
-			this->GetExplosiveView()->SetExplosiveStyle(NOEXPLOSIVE);
-
-			//TODO:相机设置旋转动画
-
-			//insAtt
-			const map<int, InstanceAttribute>& insAttMap =
-				pView->GetInstanceAttributeMap();
-			for (map<int, InstanceAttribute>::const_iterator it = insAttMap.begin();
-				it != insAttMap.end(); it++)
+			if (pView->GetUpDataModelState())
 			{
-				const InstanceAttribute &curInsAtt = it->second;
+				int direction = pView->getExplosiveType();
+				float percent = pView->getExplosivePercent();
 
-				IShape* shape = this->GetShapeBySVLPath(curInsAtt.path);
-				if (shape && shape->GetType() == SHAPE_MODEL)
+				this->GetExplosiveView()->SetPercent(this, 0, 0, false);
+				if (direction != -1) {
+					this->GetExplosiveView()->Reset();
+					this->GetExplosiveView()->SetPercent(this, direction, percent, false);
+				}
+				//else
+				//{
+				//	this->GetExplosiveView()->SetPercent(this, 0, 0, false);
+				//}
+				this->GetExplosiveView()->SetExplosivePercent(0);
+				this->GetExplosiveView()->SetExplosiveStyle(NOEXPLOSIVE);
+
+				//TODO:相机设置旋转动画
+
+				//insAtt
+				const map<int, InstanceAttribute>& insAttMap =
+					pView->GetInstanceAttributeMap();
+				for (map<int, InstanceAttribute>::const_iterator it = insAttMap.begin();
+					it != insAttMap.end(); it++)
 				{
-					Model *curModel = (Model*)shape;
-					curModel->SetVisible(curInsAtt.visible, false);
-					if (curInsAtt.hasColor)
+					const InstanceAttribute &curInsAtt = it->second;
+
+					IShape* shape = this->GetShapeBySVLPath(curInsAtt.path);
+					if (shape && shape->GetType() == SHAPE_MODEL)
 					{
-						Color tmpColor = curInsAtt.insColor;
-						curModel->SetColor(tmpColor);
-					}
-					ModelShape* shapeNode = curModel->GetModelShape();
-					if (shapeNode)
-					{
-						Matrix3x4& modelTransform = curModel->GetWorldTransform();
+						Model *curModel = (Model*)shape;
+						curModel->SetVisible(curInsAtt.visible, false);
+						if (curInsAtt.hasColor)
+						{
+							Color tmpColor = curInsAtt.insColor;
+							curModel->SetColor(tmpColor);
+						}
+						//ModelShape* shapeNode = curModel->GetModelShape();
+						//if (shapeNode)
+						//{
+						//	Matrix3x4& modelTransform = curModel->GetWorldTransform();
+						//	Matrix3x4 transform = curInsAtt.placeMatrix;
+						//	transform = modelTransform.Inverse()*transform;
+						//	shapeNode->SetWorldMatrix(transform);
+						//}
+
 						Matrix3x4 transform = curInsAtt.placeMatrix;
-						transform = modelTransform.Inverse()*transform;
-						shapeNode->SetWorldMatrix(transform);
+						if ((int)transform.m_m00 == 0 &&
+							(int)transform.m_m01 == 0 &&
+							(int)transform.m_m02 == 0 &&
+							(int)transform.m_m03 == 0 &&
+							(int)transform.m_m10 == 0 &&
+							(int)transform.m_m11 == 0 &&
+							(int)transform.m_m12 == 0 &&
+							(int)transform.m_m13 == 0 &&
+							(int)transform.m_m20 == 0 &&
+							(int)transform.m_m21 == 0 &&
+							(int)transform.m_m22 == 0 &&
+							(int)transform.m_m23 == 0)
+						{
+							continue;
+						}
+						curModel->SetPlaceMatrix(transform);
 					}
 				}
 			}
-		}
 
+		}
 		//	LOGE("SceneManager::showModelView clipPlaneIdList 11" );
 			//设置视图中的剖面为启用
 //
@@ -2459,6 +2494,8 @@ namespace SVIEW
 		//	}
 		this->m_SceneManager->UnLock();
 	}
+	
+
 	/*设置当前视图
 	 *
 	* */
@@ -2629,9 +2666,22 @@ namespace SVIEW
 		}
 
 		//camera
-		newView->SetCamera(*GetSceneManager()->GetCamera());
+		CameraNode* pCurCamera = GetSceneManager()->GetCamera();
+		CameraNode& newViewCamera = (CameraNode&)newView->GetCamera();
+		newViewCamera.SetPosition(pCurCamera->GetPosition());
+		newViewCamera.SetRotation(pCurCamera->GetRotation());
+		newViewCamera.SetZoom(pCurCamera->GetZoom());
+		float fWidth = 1.0f, fHeiht = 1.0f;
+		pCurCamera->GetOrthoSize(&fWidth, &fHeiht);
+		newViewCamera.SetOrthoSize(Vector2(fWidth, fHeiht));
+		newViewCamera.SetOrthographic(pCurCamera->IsOrthographic());
+		newViewCamera.SetAspectRatio(pCurCamera->GetAspectRatio());
+		newViewCamera.SetFov(pCurCamera->GetFov());
+		newViewCamera.SetFarClip(pCurCamera->GetFarClip());
+		newViewCamera.SetNearClip(pCurCamera->GetNearClip());
+		//newView->SetCamera(*GetSceneManager()->GetCamera());
 		newView->SetUpDataCamera(true);
-
+        newView->SetUpDataModel(true);
 		if (newView->GetUpDataModelState())
 		{
 			int direction = GetExplosiveView()->GetExplosiveStyle();
@@ -2691,7 +2741,8 @@ namespace SVIEW
 				ModelShape* modelshape = curModel->GetModelShape();
 				if (modelshape)
 				{
-					Matrix3x4 matrixTran = modelshape->GetWorldTransform();
+					//Matrix3x4 matrixTran = modelshape->GetWorldTransform();
+					Matrix3x4 matrixTran = *curModel->GetPlaceMatrix();
 					ia.placeMatrix = matrixTran.ToMatrix4();
 				}
 				else
@@ -2713,6 +2764,7 @@ namespace SVIEW
 			{
 				Model* topModel = this->GetSceneManager()->GetModel();
 				newView->ClearSectionPlaneId();
+                newView->ClearSectionPlaneString();
 				list<SectionPlane*>* pPlaneList = pSection->GetPlaneList();
 				if(pPlaneList)
 				{
@@ -2725,6 +2777,7 @@ namespace SVIEW
 						if(pPlane->GetEnable())
 						{
 							newView->AddSectionPlaneId(pPlane->GetID());
+                            newView->AddSectionPlaneString(pPlane->toJson());
 							if(!topModel->GetSectionPlane(pPlane->GetID()))
 							{
 								SectionPlane* iPlane = new SectionPlane();
@@ -2809,7 +2862,7 @@ namespace SVIEW
 
 							//在此处填充View中使用的TextNote ID。//TODO
 							vecNoteIds.push_back(pNote->GetID());
-
+                            string jsonStr = pNote->toJson();
 							string noteData = NoteFactory::TextNoteToXMLElement(this->GetSceneManager(), pNote);
 							newView->GetNoteDataList(SHAPE_TEXT_NOTE)->push_back(noteData);
 
@@ -3119,7 +3172,7 @@ namespace SVIEW
 		if (m_pSAManager->HasAnimations())
 		{
 
-			m_pSAManager->SetView(this);
+            m_pSAManager->SetView(this);
 			m_bHasAni = true;
 		}
 		return m_bHasAni;
@@ -3159,7 +3212,7 @@ namespace SVIEW
 
 		if (m_pSAManager->HasAnimations())
 		{
-			m_pSAManager->SetView(this);
+            m_pSAManager->SetView(this);
 			m_bHasAni = true;
 		}
 		else
@@ -3600,6 +3653,13 @@ int View::GetSVLXFileItem(const std::string& i_strFileName, unsigned int& o_bufS
 				SceneManager* scene = this->GetSceneManager();
 				scene->Lock();
 				((SVL2AsynReader*)this->m_Reader)->FillModelMesh(this, singleModel);
+
+				bool checkErrorPoint = SVIEW::Parameters::Instance()->m_IsCheckErrorPoint;
+				if (checkErrorPoint)
+				{
+					this->ChechErrorPoint(singleModel);
+				}
+
 				this->GetSceneManager()->AsynUpdateModelCacheInfo(singleModel, true, false);
 				scene->UnLock();
 			}
@@ -4864,7 +4924,12 @@ int View::GetSVLXFileItem(const std::string& i_strFileName, unsigned int& o_bufS
 	void View::SetSimulationMgr(NS_SimulationAnimation::CSimulationAnimationManager* pSAManager)
 	{
 		this->m_pSAManager = pSAManager;
-		this->m_pSAManager->SetView(this);
+		if (pTDriver == NULL)
+		{
+			pTDriver = new CTickTimer();
+			pTDriver->Init();
+		}
+        this->m_pSAManager->SetView(this);
 	}
 
 	bool View::CloseSceneAnimation()
@@ -4920,7 +4985,11 @@ int View::GetSVLXFileItem(const std::string& i_strFileName, unsigned int& o_bufS
 		//	}
 
 	}
-
+	bool View::SetExplosiveViewWithDirection(vector<Model*> arrayModels,int stype, int pos, Vector3 direction)
+	{
+		this->GetExplosiveView()->setPercentWithDirection(this, arrayModels,stype, pos, direction);
+		return false;
+	}
 	bool View::SetExplosiveView(int stype, int pos, bool useAnimation)
 	{
 		this->GetExplosiveView()->SetPercent(this, stype, pos, useAnimation);
@@ -5333,9 +5402,19 @@ int View::GetSVLXFileItem(const std::string& i_strFileName, unsigned int& o_bufS
 			return 0;
 		return m_pSAManager->GetInitTargetObjectCount();
 	}
+
 	float View::GetUnitScale()
 	{
 		return m_fUnitScale;
+	}
+
+	Vector3 View::getRayIntersectNormal()
+	{
+		return this->GetSceneManager()->rayIntersectNormal;
+	}
+	Vector3 View::getRayIntersectPos()
+	{
+		return this->GetSceneManager()->rayIntersectPos;
 	}
 }
 ///namespace

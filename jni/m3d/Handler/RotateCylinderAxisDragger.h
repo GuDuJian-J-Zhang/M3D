@@ -17,6 +17,8 @@ class M3D_API RotateCylinderAxisDragger :public CompositeDragger
 		RotateCylinderAxisDragger();
         /** Setup default geometry for dragger. */
         void setupDefaultGeometry();
+
+		void SetScene(M3D::SceneManager* val);
     protected:
         virtual ~RotateCylinderAxisDragger();
 		RotateCylinderDragger* _xDragger;

@@ -115,3 +115,10 @@ void RotateCylinderAxisDragger::setupDefaultGeometry()
 	_yDragger->SetPreSelectColor(Color::YELLOW);
 	_zDragger->SetPreSelectColor(Color::YELLOW);
 }
+
+void M3D::RotateCylinderAxisDragger::SetScene(M3D::SceneManager * val)
+{
+	_xDragger->SetScene(val);
+	_yDragger->SetScene(val);
+	_zDragger->SetScene(val);
+}

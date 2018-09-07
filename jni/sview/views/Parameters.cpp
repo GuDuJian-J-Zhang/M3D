@@ -824,7 +824,7 @@ void Parameters::SetDefault() {
     m_axisImage = false;
 	isRecalculateNormal = false;
 	m_vrViewMode = 0;
-	m_IsCheckErrorPoint = false;
+	m_IsCheckErrorPoint = true;
 	//m_isUseFullPath = true;
 	m_IsUseGeoData = true;
 	m_IsUsePmiData = true;

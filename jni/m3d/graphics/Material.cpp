@@ -1,4 +1,4 @@
-#include "m3d/graphics/Material.h"
+﻿#include "m3d/graphics/Material.h"
 
 #include "m3d/ResourceManager.h"
 #include "m3d/graphics/Texture2D.h"

@@ -1,4 +1,4 @@
-/**@file
+﻿/**@file
  *@brief    背景节点
  *@author	XL
  *@date		2014-1-7

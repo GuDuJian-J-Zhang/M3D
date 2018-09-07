@@ -58,6 +58,7 @@ public:
     const static string LightWithTexture;
     const static string Axis;
 	const static string Dragger;
+	const static string DraggerEdge;
 	const static string XRay;
     const static string Image;
     const static string Multilight;

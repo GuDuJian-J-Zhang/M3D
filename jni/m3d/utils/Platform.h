@@ -123,7 +123,7 @@ namespace M3D
 		 *	@attention	无
 		 ****************************************************************************/
 		static std::wstring StringToWString(const std::string& srcStr, const char* srcEncode = "utf8");
-
+ 
 		/****************************************************************************
 		 *	@brief		将Andriod/IOS的wstring转换为string
 		 *	@param[in]	srcStr					wstring类型字符串

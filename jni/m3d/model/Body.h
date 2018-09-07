@@ -181,8 +181,7 @@ public:
 
 	VertexSet* GetData(int lodLevel = 0);
 
-	bool MergeFace();
-	void ResizeMeshIndex(vector<Face*>* faceArray, unsigned int Offset1, unsigned int length1, unsigned int length2, bool value);
+	void SetNeedClip(bool val);
 private:
 	vector<Face*> m_FaceArray;//!<body的所有face列表
 	vector<Edge*> m_EdgeArray;//!<body中所有的边界线

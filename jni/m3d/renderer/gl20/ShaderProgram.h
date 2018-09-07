@@ -49,6 +49,7 @@ enum ShaderMaterialType
 	SMT_Background,    //!< SMT_Background
 	SMT_Axis,          //!< SMT_Axis
 	SMT_Dragger,       //!< SMT_Dragger
+	SMT_DraggerEdge,
 	SMT_XRay,		   //!< SMT_XRay
 	SMT_Edge,          //!< SMT_Edge
 	SMT_PlaneShadow,   //!< SMT_PlaneShadow

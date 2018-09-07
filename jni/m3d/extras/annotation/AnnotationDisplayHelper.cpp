@@ -136,13 +136,13 @@ namespace M3D
 		float rect1EndY = rectEnd.m_y;
 		float deltaLineWidth = lineWidth / 2.0f;
 
-		//????????
+		//创建矩形
 		Rect2D * rect1 = new Rect2D();
 		rect1->SetColor(backColor);
 		rect1->m_start = rectStart;
 		rect1->m_end = rectEnd;
 		shape2DSet->AddShape2D(rect1);
-		//???????????
+		//创建矩形文本
 
 		Texts2D* text1 = new Texts2D;
 		text1->SetColor(fontColor);
@@ -159,7 +159,7 @@ namespace M3D
 		text1->m_texts = str;
 		shape2DSet->AddShape2D(text1);
 
-		//??1
+		//线1
 		Line2D * line1d1 = new Line2D();
 		line1d1->m_blod = lineWidth;
 		line1d1->m_start = Vector2(rect1StartX + deltaLineWidth, rect1StartY);
@@ -167,14 +167,14 @@ namespace M3D
 		line1d1->SetColor(lineColor);
 		shape2DSet->AddShape2D(line1d1);
 
-		//??2
+		//线2
 		Line2D * line1d2 = new Line2D();
 		line1d2->m_blod = lineWidth;
 		line1d2->m_start = Vector2(rect1StartX, rect1StartY + deltaLineWidth);
 		line1d2->m_end = Vector2(rect1EndX, rect1StartY + deltaLineWidth);
 		line1d2->SetColor(lineColor);
 		shape2DSet->AddShape2D(line1d2);
-		//??3
+		//线3
 
 		Line2D * line1d3 = new Line2D();
 		line1d3->m_blod = lineWidth;
@@ -182,7 +182,7 @@ namespace M3D
 		line1d3->m_end = Vector2(rect1EndX, rect1EndY - deltaLineWidth);
 		line1d3->SetColor(lineColor);
 		shape2DSet->AddShape2D(line1d3);
-		//??4
+		//线4
 		Line2D * line1d4 = new Line2D();
 		line1d4->m_blod = lineWidth;
 		line1d4->m_start = Vector2(rect1EndX - deltaLineWidth, rect1StartY);
@@ -200,13 +200,13 @@ namespace M3D
 		float rect1EndX = rectEnd.m_x;
 		float rect1EndY = rectEnd.m_y;
 
-		//????????
+		//创建矩形
 		Rect2D * rect1 = new Rect2D();
 		rect1->SetColor(backColor);
 		rect1->m_start = rectStart;
 		rect1->m_end = rectEnd;
 		shape2DSet->AddShape2D(rect1);
-		//???????????
+		//创建矩形文本
 
 		Texts2D* text1 = new Texts2D;
 		text1->SetColor(fontColor);
@@ -247,17 +247,17 @@ namespace M3D
 		}
 		if (department.compare("") != 0)
 		{
-			string name = iLanguage == 0 ? "????:" : "Department:";
+			string name = iLanguage == 0 ? "部门:" : "Department:";
 			noteStr += name + department + " ";
 		}
 		if (character.compare("") != 0)
 		{
-			string name = iLanguage == 0 ? "???:" : "Character:";
+			string name = iLanguage == 0 ? "角色:" : "Character:";
 			noteStr += name + character + " ";
 		}
 		if (user.compare("") != 0)
 		{
-			string name = iLanguage == 0 ? "???:" : "User:";
+			string name = iLanguage == 0 ? "用户:" : "User:";
 			noteStr += name + user;
 		}
 
@@ -281,24 +281,24 @@ namespace M3D
 		float RectWight = (strLength + 1) * fontSize;
 #ifdef WIN32
 		float ScaleFactor = 1.0f;
-		Vector2 tempStart(0.5, 0.5); //2.5 ?????????
+		Vector2 tempStart(0.5, 0.5); //2.5 为调节因子
 		Vector2 tempEnd(RectWight, fontSize * 3.5 + 1);
 		Vector2 tempStartNoUse(RectWight, fontSize * 3.5 + 1);
-		gluObj->GetMeasureTextFun()(maxStr.c_str(), fontSize, "????", (float*)tempStartNoUse.Data(), (float*)tempEnd.Data());
-		tempEnd.m_y = tempEnd.m_y*rowNumber;// +1.0f;//??????????????
+		gluObj->GetMeasureTextFun()(maxStr.c_str(), fontSize, "楷体", (float*)tempStartNoUse.Data(), (float*)tempEnd.Data());
+		tempEnd.m_y = tempEnd.m_y*rowNumber;// +1.0f;//留出结束空白字符
 		tempEnd.m_y = rowNumber > 1 ? tempEnd.m_y * 0.8 : tempEnd.m_y;
 		tempEnd.m_y += 1.0f;
 		tempEnd.m_x = tempEnd.m_x*0.7f;
 		//tempEnd.m_x = tempEnd.m_x*0.7f*2.0f;
 		//tempStart.m_x = tempEnd.m_x / 2.0f;
 
-		tempEnd.m_x = tempEnd.m_x + 10.0f;//??????????????
+		tempEnd.m_x = tempEnd.m_x + 10.0f;//留出结束空白字符
 		tempStart = tempStart*ScaleFactor;
 		tempEnd = tempEnd*ScaleFactor;
 		RectWight = tempEnd.m_x;
 		fontSize = fontSize* ScaleFactor;
 #else	
-		Vector2 tempStart(1, 1); //2.5 ?????????
+		Vector2 tempStart(1, 1); //2.5 为调节因子
 		Vector2 tempEnd(RectWight, fontSize * 2.5 + 1);
 #endif // WIN32	
 

@@ -118,7 +118,7 @@ void Texture2D::Init()
 	m_image = NULL;
 	this->m_textures[0] = 0;
 	m_isMipMap = true;
-	this->SetImageParameter(TEXTURE_LOAD_RGBA,TEXTURE_FLAG_MIPMAPS);
+	this->SetImageParameter(TEXTURE_LOAD_RGBA,/*TEXTURE_FLAG_MIPMAPS*/0);
 	this->MarkDirty();
 }
 

@@ -4,6 +4,9 @@
 #include "m3d/graphics/HardWareFrameBuffer.h"
 namespace M3D
 {
+	/************************************************************************/
+	/* SAO特效，效果不好，测试用。                                                                */
+	/************************************************************************/
 	class M3D_API SAOEffect :public Effect
 	{
 	public:

@@ -25,7 +25,8 @@ class M3D_API Translate1DDragger : public Dragger
 
         /** Setup default geometry for dragger. */
         void setupDefaultGeometry();
- 
+
+		void setupDefaultPointGeometry();
     protected:
 
         virtual ~Translate1DDragger();

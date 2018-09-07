@@ -64,6 +64,7 @@ bool Scale1DDragger::handle(const PointerInfo& pointer, const  TouchEvent& ea/*,
                     // Generate the motion command.
                     Scale1DCommand* cmd = new Scale1DCommand();
 					cmd->AddRef();
+					cmd->SetRefDragger(this);
                     cmd->setStage(MotionCommand::START);
                     cmd->setLocalToWorldAndWorldToLocal(_projector->getLocalToWorld(),_projector->getWorldToLocal());
 					this->_priProjectedPoint = _startProjectedPoint;
@@ -89,7 +90,7 @@ bool Scale1DDragger::handle(const PointerInfo& pointer, const  TouchEvent& ea/*,
                     // Generate the motion command.
                     Scale1DCommand* cmd = new Scale1DCommand();
 					cmd->AddRef();
-
+					cmd->SetRefDragger(this);
 					Vector3 translateVec3 = projectedPoint - _priProjectedPoint;
 					 
 					double priScale = computeScale(_startProjectedPoint, this->_priProjectedPoint, _scaleCenter);
@@ -134,7 +135,7 @@ bool Scale1DDragger::handle(const PointerInfo& pointer, const  TouchEvent& ea/*,
             {
                 Scale1DCommand* cmd = new Scale1DCommand();
 				cmd->AddRef();
-
+				cmd->SetRefDragger(this);
                 cmd->setStage(MotionCommand::FINISH);
                 cmd->setLocalToWorldAndWorldToLocal(_projector->getLocalToWorld(),_projector->getWorldToLocal());
 

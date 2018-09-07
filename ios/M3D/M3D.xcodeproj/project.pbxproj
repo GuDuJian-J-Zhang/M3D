@@ -249,7 +249,14 @@
 		90944D0920AA715300769916 /* LightGroup.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 90944D0420AA715300769916 /* LightGroup.cpp */; };
 		90944D0A20AA715300769916 /* GroundNode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 90944D0520AA715300769916 /* GroundNode.cpp */; };
 		90944D0B20AA715300769916 /* CameraGroup.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 90944D0720AA715300769916 /* CameraGroup.cpp */; };
+		909736F1213E339900BB468C /* Translate3DDragger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 909736EB213E339700BB468C /* Translate3DDragger.cpp */; };
+		909736F2213E339900BB468C /* TranslateBoxDragger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 909736EC213E339800BB468C /* TranslateBoxDragger.cpp */; };
+		909736F3213E339900BB468C /* TranslateMinusAxisDragger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 909736EF213E339900BB468C /* TranslateMinusAxisDragger.cpp */; };
+		909736F6213E33E500BB468C /* ScreenUILayerGroup.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 909736F5213E33E400BB468C /* ScreenUILayerGroup.cpp */; };
 		90A5D85E21113C3F0015557E /* MeasureDiametre.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 90A5D85C21113C3E0015557E /* MeasureDiametre.cpp */; };
+		90A84FA721369B4000AE230B /* SMaterial.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 90A84FA121369B3F00AE230B /* SMaterial.cpp */; };
+		90A84FA821369B4000AE230B /* SLight.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 90A84FA321369B3F00AE230B /* SLight.cpp */; };
+		90A84FA921369B4000AE230B /* SCamera.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 90A84FA421369B3F00AE230B /* SCamera.cpp */; };
 		90B51C312019CCDA000A5453 /* RotateCylinderDragger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 90B51C0C2019CCD7000A5453 /* RotateCylinderDragger.cpp */; };
 		90B51C322019CCDA000A5453 /* Scale2DDragger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 90B51C0E2019CCD7000A5453 /* Scale2DDragger.cpp */; };
 		90B51C332019CCDA000A5453 /* Scale1DDragger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 90B51C0F2019CCD7000A5453 /* Scale1DDragger.cpp */; };
@@ -264,9 +271,6 @@
 		90B51C3F2019CCDA000A5453 /* Dragger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 90B51C292019CCDA000A5453 /* Dragger.cpp */; };
 		90B51C412019CCDA000A5453 /* Projector.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 90B51C2B2019CCDA000A5453 /* Projector.cpp */; };
 		90B51C422019CCDA000A5453 /* TranslateAxisDragger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 90B51C2D2019CCDA000A5453 /* TranslateAxisDragger.cpp */; };
-		90B51C4C2019D277000A5453 /* SMaterial.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 90B51C462019D277000A5453 /* SMaterial.cpp */; };
-		90B51C4D2019D277000A5453 /* SLight.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 90B51C482019D277000A5453 /* SLight.cpp */; };
-		90B51C4E2019D277000A5453 /* SCamera.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 90B51C492019D277000A5453 /* SCamera.cpp */; };
 		90B51C512019D2B4000A5453 /* DraggerCallbacks.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 90B51C4F2019D2B3000A5453 /* DraggerCallbacks.cpp */; };
 		90B51C542019D2E7000A5453 /* OutlineEffect.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 90B51C532019D2E7000A5453 /* OutlineEffect.cpp */; };
 		90B51C572019D318000A5453 /* SectionNode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 90B51C562019D318000A5453 /* SectionNode.cpp */; };
@@ -993,6 +997,14 @@
 		90944D0620AA715300769916 /* CameraGroup.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CameraGroup.h; sourceTree = "<group>"; };
 		90944D0720AA715300769916 /* CameraGroup.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CameraGroup.cpp; sourceTree = "<group>"; };
 		90944D0820AA715300769916 /* GroundNode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GroundNode.h; sourceTree = "<group>"; };
+		909736EB213E339700BB468C /* Translate3DDragger.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Translate3DDragger.cpp; path = ../Handler/Translate3DDragger.cpp; sourceTree = "<group>"; };
+		909736EC213E339800BB468C /* TranslateBoxDragger.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TranslateBoxDragger.cpp; path = ../Handler/TranslateBoxDragger.cpp; sourceTree = "<group>"; };
+		909736ED213E339800BB468C /* TranslateMinusAxisDragger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TranslateMinusAxisDragger.h; path = ../Handler/TranslateMinusAxisDragger.h; sourceTree = "<group>"; };
+		909736EE213E339800BB468C /* TranslateBoxDragger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TranslateBoxDragger.h; path = ../Handler/TranslateBoxDragger.h; sourceTree = "<group>"; };
+		909736EF213E339900BB468C /* TranslateMinusAxisDragger.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TranslateMinusAxisDragger.cpp; path = ../Handler/TranslateMinusAxisDragger.cpp; sourceTree = "<group>"; };
+		909736F0213E339900BB468C /* Translate3DDragger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Translate3DDragger.h; path = ../Handler/Translate3DDragger.h; sourceTree = "<group>"; };
+		909736F4213E33E400BB468C /* ScreenUILayerGroup.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ScreenUILayerGroup.h; sourceTree = "<group>"; };
+		909736F5213E33E400BB468C /* ScreenUILayerGroup.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ScreenUILayerGroup.cpp; sourceTree = "<group>"; };
 		909BECC11F42A44700B65B9A /* Stk_Feat_Hole.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Stk_Feat_Hole.h; path = ../../Include/SVLLib/Stk_Feat_Hole.h; sourceTree = "<group>"; };
 		909BECC21F42A44700B65B9A /* Stk_Feat_MagneticLine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Stk_Feat_MagneticLine.h; path = ../../Include/SVLLib/Stk_Feat_MagneticLine.h; sourceTree = "<group>"; };
 		909BECC31F42A44700B65B9A /* Stk_Feat_Mark.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Stk_Feat_Mark.h; path = ../../Include/SVLLib/Stk_Feat_Mark.h; sourceTree = "<group>"; };
@@ -1001,6 +1013,12 @@
 		909BECC61F42A44700B65B9A /* Stk_LayerInfosSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Stk_LayerInfosSet.h; path = ../../Include/SVLLib/Stk_LayerInfosSet.h; sourceTree = "<group>"; };
 		90A5D85C21113C3E0015557E /* MeasureDiametre.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MeasureDiametre.cpp; sourceTree = "<group>"; };
 		90A5D85D21113C3F0015557E /* MeasureDiametre.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MeasureDiametre.h; sourceTree = "<group>"; };
+		90A84FA121369B3F00AE230B /* SMaterial.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SMaterial.cpp; sourceTree = "<group>"; };
+		90A84FA221369B3F00AE230B /* SCamera.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCamera.h; sourceTree = "<group>"; };
+		90A84FA321369B3F00AE230B /* SLight.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SLight.cpp; sourceTree = "<group>"; };
+		90A84FA421369B3F00AE230B /* SCamera.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SCamera.cpp; sourceTree = "<group>"; };
+		90A84FA521369B3F00AE230B /* SLight.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SLight.h; sourceTree = "<group>"; };
+		90A84FA621369B3F00AE230B /* SMaterial.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SMaterial.h; sourceTree = "<group>"; };
 		90B51C0B2019CCD7000A5453 /* DraggerManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DraggerManager.h; path = ../Handler/DraggerManager.h; sourceTree = "<group>"; };
 		90B51C0C2019CCD7000A5453 /* RotateCylinderDragger.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RotateCylinderDragger.cpp; path = ../Handler/RotateCylinderDragger.cpp; sourceTree = "<group>"; };
 		90B51C0E2019CCD7000A5453 /* Scale2DDragger.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Scale2DDragger.cpp; path = ../Handler/Scale2DDragger.cpp; sourceTree = "<group>"; };
@@ -1030,12 +1048,6 @@
 		90B51C2E2019CCDA000A5453 /* RotateCylinderDragger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RotateCylinderDragger.h; path = ../Handler/RotateCylinderDragger.h; sourceTree = "<group>"; };
 		90B51C302019CCDA000A5453 /* Translate2DDragger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Translate2DDragger.h; path = ../Handler/Translate2DDragger.h; sourceTree = "<group>"; };
 		90B51C442019D190000A5453 /* AddressMacro.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AddressMacro.h; sourceTree = "<group>"; };
-		90B51C462019D277000A5453 /* SMaterial.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SMaterial.cpp; sourceTree = "<group>"; };
-		90B51C472019D277000A5453 /* SCamera.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCamera.h; sourceTree = "<group>"; };
-		90B51C482019D277000A5453 /* SLight.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SLight.cpp; sourceTree = "<group>"; };
-		90B51C492019D277000A5453 /* SCamera.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SCamera.cpp; sourceTree = "<group>"; };
-		90B51C4A2019D277000A5453 /* SLight.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SLight.h; sourceTree = "<group>"; };
-		90B51C4B2019D277000A5453 /* SMaterial.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SMaterial.h; sourceTree = "<group>"; };
 		90B51C4F2019D2B3000A5453 /* DraggerCallbacks.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DraggerCallbacks.cpp; sourceTree = "<group>"; };
 		90B51C502019D2B4000A5453 /* DraggerCallbacks.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DraggerCallbacks.h; sourceTree = "<group>"; };
 		90B51C522019D2E7000A5453 /* OutlineEffect.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OutlineEffect.h; sourceTree = "<group>"; };
@@ -1607,6 +1619,12 @@
 		658F95281C506DD800A09686 /* handler */ = {
 			isa = PBXGroup;
 			children = (
+				909736EB213E339700BB468C /* Translate3DDragger.cpp */,
+				909736F0213E339900BB468C /* Translate3DDragger.h */,
+				909736EC213E339800BB468C /* TranslateBoxDragger.cpp */,
+				909736EE213E339800BB468C /* TranslateBoxDragger.h */,
+				909736EF213E339900BB468C /* TranslateMinusAxisDragger.cpp */,
+				909736ED213E339800BB468C /* TranslateMinusAxisDragger.h */,
 				90B51C232019CCD9000A5453 /* Command.cpp */,
 				90B51C1C2019CCD8000A5453 /* Command.h */,
 				90B51C292019CCDA000A5453 /* Dragger.cpp */,
@@ -2194,15 +2212,15 @@
 			path = annotation;
 			sourceTree = "<group>";
 		};
-		90B51C452019D277000A5453 /* export */ = {
+		90A84FA021369B3F00AE230B /* export */ = {
 			isa = PBXGroup;
 			children = (
-				90B51C462019D277000A5453 /* SMaterial.cpp */,
-				90B51C472019D277000A5453 /* SCamera.h */,
-				90B51C482019D277000A5453 /* SLight.cpp */,
-				90B51C492019D277000A5453 /* SCamera.cpp */,
-				90B51C4A2019D277000A5453 /* SLight.h */,
-				90B51C4B2019D277000A5453 /* SMaterial.h */,
+				90A84FA121369B3F00AE230B /* SMaterial.cpp */,
+				90A84FA221369B3F00AE230B /* SCamera.h */,
+				90A84FA321369B3F00AE230B /* SLight.cpp */,
+				90A84FA421369B3F00AE230B /* SCamera.cpp */,
+				90A84FA521369B3F00AE230B /* SLight.h */,
+				90A84FA621369B3F00AE230B /* SMaterial.h */,
 			);
 			path = export;
 			sourceTree = "<group>";
@@ -2337,7 +2355,7 @@
 		BD4D244C1A3EB67900E863F7 /* m3d */ = {
 			isa = PBXGroup;
 			children = (
-				90B51C452019D277000A5453 /* export */,
+				90A84FA021369B3F00AE230B /* export */,
 				BD4D24FD1A3EB67900E863F7 /* utils */,
 				901E17CC1D3F588600908B1D /* model */,
 				658F95281C506DD800A09686 /* handler */,
@@ -2446,6 +2464,8 @@
 		BD4D24CF1A3EB67900E863F7 /* scene */ = {
 			isa = PBXGroup;
 			children = (
+				909736F5213E33E400BB468C /* ScreenUILayerGroup.cpp */,
+				909736F4213E33E400BB468C /* ScreenUILayerGroup.h */,
 				90944D0720AA715300769916 /* CameraGroup.cpp */,
 				90944D0620AA715300769916 /* CameraGroup.h */,
 				90944D0520AA715300769916 /* GroundNode.cpp */,
@@ -2960,6 +2980,7 @@
 				901E18091D3F588600908B1D /* Model.cpp in Sources */,
 				65F721631B4645E1002AE45C /* FPSNode.cpp in Sources */,
 				658F94581C50691200A09686 /* GlueObj.cpp in Sources */,
+				909736F6213E33E500BB468C /* ScreenUILayerGroup.cpp in Sources */,
 				658F94551C50691200A09686 /* CameraEvent.cpp in Sources */,
 				1562546E1DC1A6D100969DD5 /* vlist.cpp in Sources */,
 				658F95241C506C9A00A09686 /* RenderContext.cpp in Sources */,
@@ -3037,6 +3058,7 @@
 				6502D6E81B70891900517C24 /* TessCircle.cpp in Sources */,
 				156254691DC1A6D100969DD5 /* stdafx.cpp in Sources */,
 				BD4D25B41A3EB67900E863F7 /* PMICreator.cpp in Sources */,
+				90A84FA721369B4000AE230B /* SMaterial.cpp in Sources */,
 				1562546C1DC1A6D100969DD5 /* UtilityXMLParser.cpp in Sources */,
 				65F721671B4645E1002AE45C /* ShapeNode.cpp in Sources */,
 				BD4D25521A3EB67900E863F7 /* CallBackAction.cpp in Sources */,
@@ -3083,10 +3105,12 @@
 				152A8BD61D6AC8EA00889C67 /* ShapeProperty.cpp in Sources */,
 				8E8816DA1A8F1C1000B3B0AD /* AnimationOperator.cpp in Sources */,
 				90944CE820AA70C500769916 /* SpotLight.cpp in Sources */,
+				909736F1213E339900BB468C /* Translate3DDragger.cpp in Sources */,
 				8E8816DB1A8F1C1000B3B0AD /* BaseAnimation.cpp in Sources */,
 				BD4D25571A3EB67900E863F7 /* Color.cpp in Sources */,
 				BD4D25BC1A3EB67900E863F7 /* tinyxml2.cpp in Sources */,
 				90A5D85E21113C3F0015557E /* MeasureDiametre.cpp in Sources */,
+				909736F3213E339900BB468C /* TranslateMinusAxisDragger.cpp in Sources */,
 				BD4D25A41A3EB67900E863F7 /* IDCreator.cpp in Sources */,
 				65CBC1241C8D48A700946FFF /* Shader.cpp in Sources */,
 				658F951C1C506C9A00A09686 /* GL10Context.cpp in Sources */,
@@ -3103,7 +3127,6 @@
 				908319731F90541B00C325C4 /* ExtendInfoManager.cpp in Sources */,
 				BD4D25B01A3EB67900E863F7 /* Reader.cpp in Sources */,
 				1562545C1DC1A6D100969DD5 /* SAnimation.cpp in Sources */,
-				90B51C4D2019D277000A5453 /* SLight.cpp in Sources */,
 				BD4D25551A3EB67900E863F7 /* RenderAction.cpp in Sources */,
 				90B51C542019D2E7000A5453 /* OutlineEffect.cpp in Sources */,
 				1562545D1DC1A6D100969DD5 /* SBehaviorAction.cpp in Sources */,
@@ -3111,6 +3134,7 @@
 				BD4D25BB1A3EB67900E863F7 /* View.cpp in Sources */,
 				6502D6E71B70891900517C24 /* PMIUtilityLib.cpp in Sources */,
 				8E53EEDA1B05F12A00468E69 /* CommonTouchHandler.cpp in Sources */,
+				909736F2213E339900BB468C /* TranslateBoxDragger.cpp in Sources */,
 				65CBC1261C8D48A700946FFF /* ShaderParameter.cpp in Sources */,
 				90944CCE20AA707000769916 /* AnnotationDisplayHelper.cpp in Sources */,
 				901E18021D3F588600908B1D /* GeoAttribute.cpp in Sources */,
@@ -3135,8 +3159,8 @@
 				65F7214E1B464550002AE45C /* Plane.cpp in Sources */,
 				BD4D25AA1A3EB67900E863F7 /* PerspectiveData.cpp in Sources */,
 				CF4B6AB320C7746D0040939F /* MaterialTemplateManager.cpp in Sources */,
+				90A84FA921369B4000AE230B /* SCamera.cpp in Sources */,
 				CF0591AF21106F9B006F9F25 /* MatCapMaterial.cpp in Sources */,
-				90B51C4E2019D277000A5453 /* SCamera.cpp in Sources */,
 				152A8BD91D6ACAFA00889C67 /* MeshTools.cpp in Sources */,
 				658F94341C5068FB00A09686 /* MeasureCalculateHelper.cpp in Sources */,
 				BD4D258D1A3EB67900E863F7 /* RenderManager.cpp in Sources */,
@@ -3214,7 +3238,6 @@
 				907242A11F5955D20021CB65 /* TessSvlxCircle.cpp in Sources */,
 				9083196A1F9053DA00C325C4 /* animationControlParser.cpp in Sources */,
 				6502D6ED1B708A9000517C24 /* MeshBoard.cpp in Sources */,
-				90B51C4C2019D277000A5453 /* SMaterial.cpp in Sources */,
 				1562545A1DC1A6D100969DD5 /* Mutex.cpp in Sources */,
 				90944CE720AA70C500769916 /* DirectionalLightShadow.cpp in Sources */,
 				90B51C5B2019D336000A5453 /* SectionManager.cpp in Sources */,
@@ -3234,6 +3257,7 @@
 				658F95271C506D9E00A09686 /* Object.cpp in Sources */,
 				65F7240A1B46506F002AE45C /* jsoncpp.cpp in Sources */,
 				8EA722261AEB6AA400A311B5 /* StringHash.cpp in Sources */,
+				90A84FA821369B4000AE230B /* SLight.cpp in Sources */,
 				90B51C382019CCDA000A5453 /* RotateCylinderAxisDragger.cpp in Sources */,
 				8E53EED11B05F0F400468E69 /* MeshHelper.cpp in Sources */,
 				658F95231C506C9A00A09686 /* GLShapeDrawer20.cpp in Sources */,

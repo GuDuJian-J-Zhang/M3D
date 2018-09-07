@@ -129,7 +129,7 @@ void ShapeNode::OnMarkedDirty()
 	if (this->m_shape)
 	{
 		this->m_shape->GetBoundingBox().Clear();
-		if (this->m_shape->GetType() == SHAPE_MODEL)
+		if (this->m_shape->GetType() == SHAPE_MODEL || this->m_shape->GetType() == SHAPE_IMAGE_MODEL)
 		{
 			Model* model = (Model*)this->m_shape;
 			model->SetOrigPlcMatrix(this->GetWorldTransform());

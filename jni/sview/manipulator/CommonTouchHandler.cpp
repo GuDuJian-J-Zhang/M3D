@@ -58,7 +58,7 @@ void CommonTouchHandler::InitCamera(bool useAni/* = true*/)
 		}
 		else
 		{
-			//½«ÉãÏñ»úÒÆ¶¯µ½ºÏÊÊÎ»ÖÃ
+			//Â½Â«Ã‰Ã£ÃÃ±Â»ÃºÃ’Ã†Â¶Â¯ÂµÂ½ÂºÃÃŠÃŠÃŽÂ»Ã–Ãƒ
 			float length = pBoundingBox.Length();
 			Vector3 rotationCenter = camera->GetRotateCenter();
 			Vector3 cameraPos = camera->GetWorldPosition();

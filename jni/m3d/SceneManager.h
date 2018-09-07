@@ -52,6 +52,8 @@ class LightManager;
 class CameraGroup;
 class CameraManager;
 class LightGroup;
+class ScreenUILayerGroup;
+
 #ifdef WIN32
 class GUI;
 #endif // WIN32
@@ -66,7 +68,7 @@ class M3D_API SceneManager
 public:
 	SceneManager(void);
 	virtual ~SceneManager(void);
-
+	vector<Vector3> triglePnts;
 	/**@brief 复位显示到最初加载状态
 	 *
 	 */
@@ -189,6 +191,7 @@ public:
 	IShape* GetPickShape(float winx, float winY, int shapeType, int geoType);
 	IShape* GetPickShape(M3D::Ray& ray, int shapeType, int geoType);
 	IShape* GetPickShape(Vector2& screentPnt, int shapeType, int geoType);
+	IShape* GetFarPickShape(M3D::Ray& ray, int shapeType, int geoType);
 
 	//处理VR菜单事件
 	bool ProcessVREvent();
@@ -235,6 +238,8 @@ public:
 	 * @return 空间中点三维坐标
 	 */
 	Vector3 GetPickPoint(float x, float y, bool inModel = true);
+	Vector3 GetPickNormal();
+	Vector3 GetUILayerPickPoint(float x, float y);
 
 	/**
 	 *
@@ -460,10 +465,27 @@ public:
 	CameraManager * GetCameraManager();
 
 	LightManager* GetLightManager();
+
+	ScreenUILayerGroup* GetScreenUILayerGroup();
+
+	SectionNode* GetSectionNode(int ID); 
+
+	SectionNode* CreateSingleSectionNode(int ID);
+
+	void AddSectionNode(SectionNode* node);
+
 #ifdef WIN32
 	GUI* GetGUI();
 #endif // WIN32
 
+	CameraNode* GetHudCamera() const;
+	void SetHudCamera(CameraNode* val);
+
+	BoundingBox& GetHudLayerBox(){ return m_HudLayerBox; }
+	void SetHudLayerBox(BoundingBox& val) { m_HudLayerBox = val; }
+	//选中的面片焦点及对应的发现
+	Vector3 rayIntersectNormal;
+	Vector3 rayIntersectPos;
 private:
 	void OnRequestUpdateWhenSceneBoxChanged();
 
@@ -546,6 +568,8 @@ private:
 
 	BoundingBox GetFitViewSceneBox();
 
+	list<SectionNode*> m_sceneNodeList;
+
 protected:
 	SceneNode *m_pSceneRoot; //!<场景根节点
 	CameraNode* m_camera; //!<摄像机
@@ -584,6 +608,11 @@ protected:
 	ExtendInfoManager* m_extendinfoMgr; //信息扩展管理器
 
 	bool m_SceneBoxChanged;
+
+	CameraNode* m_hudCamera; //HubCamera
+
+	BoundingBox m_HudLayerBox;
+
 #ifdef WIN32
 
 	GUI* m_gui;

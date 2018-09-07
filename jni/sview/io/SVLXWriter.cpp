@@ -5,7 +5,7 @@
 //  Created by administrator on 15/3/2.
 //  Copyright (c) 2015年 hoteam. All rights reserved.
 //
-#include "m3d/ResourceManager.h"
+
 #include "JsonMacro.h"
 #include "document.h"
 #include "stringbuffer.h"
@@ -44,7 +44,7 @@ using rapidjson::MemoryPoolAllocator;
 #include "m3d/model/Model.h"
 #include "m3d/model/Body.h"
 #include "m3d/utils/FileHelper.h"
-
+#include "m3d/ResourceManager.h"
 #include "m3d/SceneManager.h"
 #include "m3d/RenderManager.h"
 #include "m3d/graphics/PbrMaterial.h"
@@ -68,6 +68,7 @@ using rapidjson::MemoryPoolAllocator;
 #include "m3d/graphics/ShaderMaterial.h"
 #include "m3d/graphics/TextureCube.h"
 #include "m3d/utils/PathHelper.h"
+#include "m3d/graphics/MatCapMaterial.h"
 
 using namespace HoteamSoft::SVLLib;
 namespace SVIEW
@@ -348,7 +349,7 @@ namespace SVIEW
 		pInstance->SetVisible(model->IsVisible());
 
 		Matrix4 instancePlcMatrix = model->GetPlaceMatrix()->ToMatrix4();
-		instancePlcMatrix.Transpose();
+		//instancePlcMatrix.Transpose();
 		pInstance->SetMatrix((float*)instancePlcMatrix.Data());
 
 		//
@@ -1158,6 +1159,47 @@ namespace SVIEW
 		return true;
 	}
 
+	bool SVLXWriter::SaveMatCapTexture(MatCapMaterial* matcapMaterial, void* stkMaterial)
+	{
+		Stk_MaterialPtr& materialPtr = *(Stk_MaterialPtr*)stkMaterial;
+		bool hastexture = false;
+		Texture2D* matcapMap = (Texture2D*)matcapMaterial->MatcapMap();
+
+		if (matcapMap)
+		{
+			HoteamSoft::SVLLib::Stk_TexturePtr texturePtr = HoteamSoft::SVLLib::Stk_TexturePtr::CreateObject();
+			SaveTexture2D(matcapMap, &texturePtr);
+			materialPtr->SetMatcapMap(texturePtr);
+			hastexture = true;
+		}
+
+		{
+			Texture2D* normalMap = static_cast<Texture2D*>(matcapMaterial->GetNormalMap());
+			if (normalMap)
+			{
+				HoteamSoft::SVLLib::Stk_TexturePtr texturePtr = HoteamSoft::SVLLib::Stk_TexturePtr::CreateObject();
+				SaveTexture2D(normalMap, &texturePtr);
+				materialPtr->SetNormalMap(texturePtr);
+				hastexture = true;
+			}
+
+			materialPtr->SetNormalScale(&(matcapMaterial->NormalMapScale().m_x));
+		}
+
+		//if (hastexture)
+		//{
+		//	Vector2 temp;
+		//	temp = matcapMaterial->GetUvTranslate();
+		//	materialPtr->SetUvTranslate(&(temp.m_x));
+		//	temp = matcapMaterial->GetUvScale();
+		//	materialPtr->SetUvScale(&(temp.m_x));
+
+		//	materialPtr->SetUvRotate(matcapMaterial->GetUvRotate());
+		//}
+
+		return true;
+	}
+
 	bool SVLXWriter::SaveShaderTexture(ShaderMaterial* pbrMaterial, void* stkMaterial)
 	{
 		Stk_MaterialPtr& materialPtr = *(Stk_MaterialPtr*)stkMaterial;
@@ -1275,6 +1317,24 @@ namespace SVIEW
 						materialPtr->SetClearCoatRoughness(temp->ClearCoatRoughness());
 					}
 					SavePBRTexture(temp, &materialPtr);
+				}
+				break;
+				case MaterialType_MatCap:
+				{
+					float fColor[3];
+					Color color;
+					MatCapMaterial* phongMaterial = ((MatCapMaterial*)material);
+	
+					//Diffuse
+					color = phongMaterial->GetDiffuse();
+					fColor[0] = color.m_r;
+					fColor[1] = color.m_g;
+					fColor[2] = color.m_b;
+					materialPtr->SetDiffuseColor(fColor);
+					materialPtr->SetTransparency(((Material*)material)->Opacity());
+					//materialPtr->set
+
+					SaveMatCapTexture(phongMaterial, &materialPtr);
 				}
 				break;
 				case 101:

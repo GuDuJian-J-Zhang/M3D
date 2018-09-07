@@ -104,7 +104,6 @@ private:
 	 */
 	bool SetParamValueToXML(XMLDocument* doc, const char* paramName,
 			const char* value);
-
 public:
 	static const string TRUE_VALUE;//!<真
 	static const string FALSE_VALUE;//!<假

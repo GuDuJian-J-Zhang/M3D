@@ -39,7 +39,13 @@ TranslateAxisDragger::TranslateAxisDragger():CompositeDragger()
 	 _yzDragger->AddRef();
 	 _yzDragger->SetDraggerName(L"YZAxis");
 	 AddChild(_yzDragger);
-	 addDragger(_yzDragger);
+	  addDragger(_yzDragger);
+
+	 _xyzDragger = new Translate3DDragger();
+	 _xyzDragger->AddRef();
+	 _xyzDragger->SetDraggerName(L"XYZAxis");
+	 AddChild(_xyzDragger);
+	 addDragger(_xyzDragger);
  
     setParentDragger(getParentDragger());
 }
@@ -52,6 +58,7 @@ TranslateAxisDragger::~TranslateAxisDragger()
 	ReleaseMe(_xzDragger);
 	ReleaseMe(_xyDragger);
 	ReleaseMe(_yzDragger);
+	ReleaseMe(_xyzDragger);
 }
 
 
@@ -116,6 +123,8 @@ void TranslateAxisDragger::setupDefaultGeometry()
 	_xzDragger->setupDefaultGeometry();
 	_xyDragger->setupDefaultGeometry();
 	_yzDragger->setupDefaultGeometry();
+
+	_xyzDragger->setupDefaultGeometry();
     // Rotate X-axis dragger appropriately.
     {
         M3D::Quaternion rotation(M3D::Vector3(0.0f, 0.0f, 1.0f), M3D::Vector3(1.0f, 0.0f, 0.0f));
@@ -141,6 +150,8 @@ void TranslateAxisDragger::setupDefaultGeometry()
 	_xyDragger->setColor(M3D::Color(0.0f, 1.0f, 0.0f, AxisAlpha));
 	_yzDragger->setColor(M3D::Color(0.0f, 0.0f, 1.0f, AxisAlpha));
 
+	_xyzDragger->setColor(M3D::Color(0.0f, 0.0f, 1.0f, AxisAlpha));
+
 	_xDragger->setPickColor(Color::YELLOW);
 	_yDragger->setPickColor(Color::YELLOW);
 	_zDragger->setPickColor(Color::YELLOW);
@@ -153,9 +164,13 @@ void TranslateAxisDragger::setupDefaultGeometry()
 	_xyDragger->setPickColor(Color::YELLOW);
 	_yzDragger->setPickColor(Color::YELLOW);
 
+	_xyzDragger->setPickColor(Color::YELLOW);
+
 	_xzDragger->SetPreSelectColor(Color::YELLOW);
 	_xyDragger->SetPreSelectColor(Color::YELLOW);
 	_yzDragger->SetPreSelectColor(Color::YELLOW);
+
+	_xyzDragger->SetPreSelectColor(Color::YELLOW);
 }
 
 void M3D::TranslateAxisDragger::SetXAxisVisible(bool val)
@@ -198,4 +213,6 @@ void M3D::TranslateAxisDragger::SetScene(M3D::SceneManager* val)
 	_xzDragger->SetScene(val);
 	_xyDragger->SetScene(val);
 	_yzDragger->SetScene(val);
+
+	_xyzDragger->SetScene(val);
 }

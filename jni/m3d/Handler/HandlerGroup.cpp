@@ -1,4 +1,4 @@
-﻿#include "m3d/handler/HandlerGroup.h"
+#include "m3d/handler/HandlerGroup.h"
 
 #include "m3d/graphics/cameranode.h"
 #include "m3d/handler/HandlerPoint.h"
@@ -11,9 +11,11 @@
 #include "m3d/handler/dragger.h"
 #include "m3d/handler/Translate1DDragger.h"
 #include "m3d/handler/TranslateAxisDragger.h"
+#include "m3d/handler/TranslateMinusAxisDragger.h"
 #include "RotateCylinderAxisDragger.h"
 #include "ScaleAxisDragger.h"
 #include "../action/RenderAction.h"
+#include "TranslateBoxDragger.h"
 
 namespace M3D
 {
@@ -46,9 +48,11 @@ void HandlerGroup::Initialize()
 {
 	m_rotateCenterPoint = NULL;
     m_rotateCenterSize=1.0f;
-    m_TransformHandlerNode = NULL;
+	m_TransformHandlerNode = NULL;
+	m_TransMinusformHandlerNode = NULL;
 	m_RotateCylinderAxisDragger = NULL;
 	m_ScaleAxisDragger = NULL;
+	m_translateBoxDragger = NULL;
 }
 
 void HandlerGroup::Clear()
@@ -56,6 +60,8 @@ void HandlerGroup::Clear()
 	ReleaseMe(m_TransformHandlerNode);
 	ReleaseMe(m_RotateCylinderAxisDragger);
 	ReleaseMe(m_ScaleAxisDragger);
+	ReleaseMe(m_TransMinusformHandlerNode);
+	ReleaseMe(m_translateBoxDragger);
 	this->RemoveAllTools();
     this->RemoveRotateCenter();
     this->DeleteAllChildren();
@@ -149,6 +155,19 @@ void HandlerGroup::RemoveRotateCenterHandler(HandlerPoint* rotateCenter,
 
 void HandlerGroup::RayPick(RayPickAction * action)
 {
+	if (this->m_translateBoxDragger)
+	{
+		CameraNode* currentCamera = this->m_scene->GetCamera();
+
+		CameraNode* hudCamera = this->m_scene->GetHudCamera();
+
+		this->m_scene->SetHudCamera(hudCamera);
+
+		this->m_translateBoxDragger->RayPick(action);
+ 
+		this->m_scene->SetCamera(currentCamera);
+	}
+
 	GroupNode::RayPick(action);
 
 	//遍历工具的显示
@@ -174,10 +193,40 @@ void HandlerGroup::Traverse(Action* action)
 
 void HandlerGroup::HandleDragger(TouchEvent& touchEvent)
 {
+	if (!touchEvent.getHandled() && this->m_translateBoxDragger && m_translateBoxDragger->IsVisible())
+	{
+		CameraNode* currentCamera = this->m_scene->GetCamera();
+
+		CameraNode* hudCamera = this->m_scene->GetHudCamera();
+
+		this->m_scene->SetCamera(hudCamera);
+
+		Dragger* dragger = m_translateBoxDragger;
+		dragger->handle(touchEvent);
+
+		this->m_scene->SetCamera(currentCamera);
+	}
+ 
 	if (!touchEvent.getHandled()&&this->m_TransformHandlerNode && m_TransformHandlerNode->IsVisible())
 	{
 		Dragger* dragger = m_TransformHandlerNode;
 		dragger->handle(touchEvent);
+	}
+	if (!touchEvent.getHandled() && this->m_TransMinusformHandlerNode && m_TransMinusformHandlerNode->IsVisible())
+	{
+		Dragger* dragger = m_TransMinusformHandlerNode;
+		dragger->handle(touchEvent);
+	}
+
+	list<TranslateMinusAxisDragger*>::iterator iter;
+	for (iter = miusMinusAxisDraggerList.begin(); iter != miusMinusAxisDraggerList.end(); ++iter)
+	{
+		TranslateMinusAxisDragger* childDragger = *iter;
+		if (!touchEvent.getHandled() && childDragger && childDragger->IsVisible())
+		{
+			Dragger* dragger = childDragger;
+			dragger->handle(touchEvent);
+		}
 	}
 
 	if (!touchEvent.getHandled()&&this->m_RotateCylinderAxisDragger && m_RotateCylinderAxisDragger->IsVisible())
@@ -185,6 +234,8 @@ void HandlerGroup::HandleDragger(TouchEvent& touchEvent)
 		Dragger* dragger = m_RotateCylinderAxisDragger;
 		dragger->handle(touchEvent);
 	}
+
+
 	if (!touchEvent.getHandled() && this->m_ScaleAxisDragger && m_ScaleAxisDragger->IsVisible())
 	{
 		Dragger* dragger = m_ScaleAxisDragger;
@@ -210,6 +261,42 @@ void HandlerGroup::FindVisiableObject(RenderAction* renderAction)
 		Vector3 OldscaleVec3 = m_TransformHandlerNode->GetOrigScale();
 		OldscaleVec3 *= scaleVec3;
 		m_TransformHandlerNode->SetScale(OldscaleVec3);
+	}
+	if (m_TransMinusformHandlerNode && m_TransMinusformHandlerNode->IsVisible())
+	{
+		if (renderAction->GetSceneBoxChanged() || m_TransMinusformHandlerNode->GetNeedScale())
+		{
+			Vector2 size = ShapeHelper::GetCommonSize(renderAction->GetScene(), Vector2(scaleFactor, scaleFactor));
+			m_TransMinusformHandlerNode->SetOrigScale(Vector3(size.m_x, size.m_x, size.m_x));
+			m_TransMinusformHandlerNode->SetNeedScale(false);
+		}
+		Vector3 position = m_TransMinusformHandlerNode->GetWorldTransform()* Vector3(0, 0, 0);
+		float scale = Billboard::GetFitShowScale(renderAction, position) / 0.4f;
+		Vector3 scaleVec3(scale, scale, scale);
+		Vector3 OldscaleVec3 = m_TransMinusformHandlerNode->GetOrigScale();
+		OldscaleVec3 *= scaleVec3;
+		m_TransMinusformHandlerNode->SetScale(OldscaleVec3);
+	}
+
+	list<TranslateMinusAxisDragger*>::iterator iter;
+	for (iter = miusMinusAxisDraggerList.begin(); iter != miusMinusAxisDraggerList.end(); ++iter)
+	{
+		TranslateMinusAxisDragger* dragger = *iter;
+		if (dragger && dragger->IsVisible())
+		{
+			if (renderAction->GetSceneBoxChanged() || dragger->GetNeedScale())
+			{
+				Vector2 size = ShapeHelper::GetCommonSize(renderAction->GetScene(), Vector2(scaleFactor, scaleFactor));
+				dragger->SetOrigScale(Vector3(size.m_x, size.m_x, size.m_x));
+				dragger->SetNeedScale(false);
+			}
+			Vector3 position = dragger->GetWorldTransform()* Vector3(0, 0, 0);
+			float scale = Billboard::GetFitShowScale(renderAction, position) / 0.4f;
+			Vector3 scaleVec3(scale, scale, scale);
+			Vector3 OldscaleVec3 = dragger->GetOrigScale();
+			OldscaleVec3 *= scaleVec3;
+			dragger->SetScale(OldscaleVec3);
+		}
 	}
 
 	if (m_RotateCylinderAxisDragger && m_RotateCylinderAxisDragger->IsVisible() )
@@ -249,8 +336,22 @@ void HandlerGroup::FindVisiableObject(RenderAction* renderAction)
 	renderAction->SetWorkingRenderQueueGroup(draggerRenderQueue);
 
 	GroupNode::FindVisiableObject(renderAction);
-	renderAction->SetWorkingRenderQueueGroup(currentRenderQueue);
 
+	//遍历DraggerTips
+	if (!this->m_draggerTips.empty())
+	{
+		map<string, Model*>::iterator it = this->m_draggerTips.begin();
+		while (it != this->m_draggerTips.end())
+		{
+			Model* model = it->second;
+			if (model->IsVisible())
+			{
+				model->FindVisiableObject(renderAction);
+			}
+			it++;
+		}
+	}
+	renderAction->SetWorkingRenderQueueGroup(currentRenderQueue);
 
 	//遍历工具的显示
 	if (!this->m_svlTools.empty())
@@ -262,11 +363,22 @@ void HandlerGroup::FindVisiableObject(RenderAction* renderAction)
 			if (model->IsVisible())
 			{
 				model->FindVisiableObject(renderAction);
+				//如果是固定屏幕显示的图片
 			}
 			it++;
 		}
 	}
 	renderAction->SetHandlerGroupNode(this);
+
+
+	//放到HudIamges组里面去显示
+	int priRenderImageQueueIndex = renderAction->GetCurrentRenderImageQueueIndex();
+	renderAction->SetCurrentRenderImageQueueIndex(2);
+	if (this->m_translateBoxDragger && this->m_translateBoxDragger->IsVisible())
+	{
+		m_translateBoxDragger->FindVisiableObject(renderAction);
+	}
+	renderAction->SetCurrentRenderImageQueueIndex(priRenderImageQueueIndex);
 }
 
 Model* HandlerGroup::GetSVLTool(const string& toolsKey)
@@ -280,6 +392,19 @@ Model* HandlerGroup::GetSVLTool(const string& toolsKey)
 
 	return toolsModel;
 }
+
+Model* HandlerGroup::GetDraggerTip(const string& toolsKey)
+{
+	Model* toolsModel = NULL;
+
+	if (this->m_draggerTips.find(toolsKey) != this->m_draggerTips.end())
+	{
+		toolsModel = this->m_draggerTips.find(toolsKey)->second;
+	}
+
+	return toolsModel;
+}
+
 
 bool  HandlerGroup::AddSVLTool(Model* model, const string& toolsKey)
 {
@@ -316,6 +441,33 @@ void HandlerGroup::RemoveSVLTool(const string& toolsKey)
 		this->m_svlTools.erase(it);
 	}
 }
+
+
+bool  HandlerGroup::AddDraggerTip(Model* model, const string& toolsKey)
+{
+	bool addState = false;
+	map<string, Model*>::iterator it = this->m_draggerTips.find(toolsKey);
+	if (it == this->m_draggerTips.end() && model)
+	{
+		this->m_draggerTips.insert(pair<string, Model*>(toolsKey, model));
+		model->AddRef();
+		//加入场景中	 
+		addState = true;
+	}
+	return addState;
+}
+
+void HandlerGroup::RemoveDraggerTip(const string& toolsKey)
+{
+	map<string, Model*>::iterator it = this->m_draggerTips.find(toolsKey);
+	if (it != this->m_draggerTips.end())
+	{
+		Model* model = it->second;
+		model->Release();
+		this->m_draggerTips.erase(it);
+	}
+}
+
 void HandlerGroup::ShowSVLTool(const string& toolsKey)
 {
 	map<string, Model*>::iterator it = this->m_svlTools.find(toolsKey);
@@ -404,6 +556,47 @@ HandlerPoint* HandlerGroup::GetRotateCenter()
 {
 	return m_rotateCenterPoint;
 }
+
+TranslateMinusAxisDragger* HandlerGroup::GetTransMinusformHandler()
+{
+	if (m_TransMinusformHandlerNode == NULL)
+	{
+		m_TransMinusformHandlerNode = new TranslateMinusAxisDragger();
+		m_TransMinusformHandlerNode->setupDefaultGeometry();
+		m_TransMinusformHandlerNode->AddRef();
+		m_TransMinusformHandlerNode->SetScene(m_scene);
+		this->AddChild(m_TransMinusformHandlerNode);
+	}
+
+	return m_TransMinusformHandlerNode;
+}
+
+M3D::TranslateBoxDragger* HandlerGroup::GetTranslateBoxDragger()
+{
+	if (m_translateBoxDragger == NULL)
+	{
+		m_translateBoxDragger = new TranslateBoxDragger();
+		m_translateBoxDragger->setupDefaultGeometry();
+		m_translateBoxDragger->AddRef();
+		m_translateBoxDragger->SetScene(m_scene);
+		//this->AddChild(m_translateBoxDragger);
+	}
+
+	return m_translateBoxDragger;
+}
+
+
+TranslateMinusAxisDragger * HandlerGroup::GetSingleTransMinusformHandler()
+{
+	TranslateMinusAxisDragger* transMinusformHandlerNode = new TranslateMinusAxisDragger();
+	transMinusformHandlerNode->setupDefaultGeometry();
+	transMinusformHandlerNode->AddRef();
+	transMinusformHandlerNode->SetScene(m_scene);
+	this->AddChild(transMinusformHandlerNode);
+	miusMinusAxisDraggerList.push_back(transMinusformHandlerNode);
+	return transMinusformHandlerNode;
+}
+
 
 TranslateAxisDragger* HandlerGroup::GetTransformHandler()
 {

@@ -1,4 +1,4 @@
-#include "m3d/action/RayPickAction.h"
+﻿#include "m3d/action/RayPickAction.h"
 
 #include "SView/views/Parameters.h"
 
@@ -891,7 +891,8 @@ void Mesh::RayPick(RayPickAction* action)
 			}
  
 			int v0,v1,v2;
-
+			float min = INT_MAX;
+			float tempLength = 0;
 			for (int i = 0; i < indexCount/3; i++)
 			{
 				v0 = tempIndex[i*3];
@@ -900,6 +901,9 @@ void Mesh::RayPick(RayPickAction* action)
 				if (action->IsintersectRayAndTriangle(pntArray[v0],pntArray[v1],pntArray[v2],intersectPos))
 				{
 					action->AddIntersectPnt(intersectPos);
+					action->AddIntersectTrianglePnts(pntArray[v0]);
+					action->AddIntersectTrianglePnts(pntArray[v1]);
+					action->AddIntersectTrianglePnts(pntArray[v2]);
 				}
 			}
 
@@ -946,6 +950,275 @@ void Mesh::RayPick(RayPickAction* action)
 		}
 	}
 }
+
+void Mesh::FramePickFast(RayPickAction* action)
+{
+	//if (action->Intersect(GetBoundingBox()))
+	{
+		Vector3 intersectPos;
+		bool useIndex = this->m_refMesh->IsUseIndex();
+		int count = 0;
+
+		if (useIndex)
+		{ //使用索引
+			int indexCount = this->m_dataLength;
+			count = indexCount;
+
+			HardWareVertexBuffer* vertexBuffer = this->m_refMesh->GetHardWareVertexBuffer();
+			Vector3* pntArray = NULL;
+			if (vertexBuffer && vertexBuffer->BufferType() == GPUObject::DISK_CACHE)
+			{
+				Vector3* vertexData = (Vector3*)vertexBuffer->Bind();
+				pntArray = vertexData;
+			}
+			else
+			{
+				pntArray = this->m_refMesh->GetPositionArray()->data();
+			}
+
+			HardWareIndexBuffer* indexBuffer = this->m_refMesh->GetHardWareIndexBuffer();
+			M3D_INDEX_TYPE* tempIndex = NULL;
+			if (indexBuffer && indexBuffer->BufferType() == GPUObject::DISK_CACHE)
+			{
+				M3D_INDEX_TYPE* vertexData = (M3D_INDEX_TYPE*)indexBuffer->Bind();
+				tempIndex = vertexData + this->m_dataOffset;
+			}
+			else
+			{
+				tempIndex = this->m_refMesh->GetIndexArray()->data()
+					+ this->m_dataOffset;
+			}
+
+			int v0, v1, v2;
+
+			for (int i = 0; i < indexCount / 3; i++)
+			{
+				v0 = tempIndex[i * 3];
+				v1 = tempIndex[i * 3 + 1];
+				v2 = tempIndex[i * 3 + 2];
+
+				action->IncreaseFramePickPntCount();
+				if (action->IsPointInFrustum(pntArray[v0]))
+				{
+					action->IncreaseFramePickMatchPntCount();
+				}
+
+				action->IncreaseFramePickPntCount();
+				if (action->IsPointInFrustum(pntArray[v1]))
+				{
+					action->IncreaseFramePickMatchPntCount();
+				}
+
+				action->IncreaseFramePickPntCount();
+				if (action->IsPointInFrustum(pntArray[v2]))
+				{
+					action->IncreaseFramePickMatchPntCount();
+				}
+
+				if (action->GetFramePickMatchPntCount()>0)
+				{
+					return;
+				}
+				else
+				{
+					if (action->IsintersecFrustumTriangle(pntArray[v0], pntArray[v1], pntArray[v2]))
+					{
+						action->IncreaseFramePickMatchPntCount();
+					}
+				}
+			}
+
+			if (indexBuffer && indexBuffer->BufferType() == GPUObject::DISK_CACHE)
+			{
+				indexBuffer->UnBind();
+			}
+
+			if (vertexBuffer && vertexBuffer->BufferType() == GPUObject::DISK_CACHE)
+			{
+				vertexBuffer->UnBind();
+			}
+
+		}
+		else
+		{ //不使用索引
+			count = this->m_dataLength;
+
+			HardWareVertexBuffer* vertexBuffer = this->m_refMesh->GetHardWareVertexBuffer();
+			Vector3* triData = NULL;
+			if (vertexBuffer && vertexBuffer->BufferType() == GPUObject::DISK_CACHE)
+			{
+				Vector3* vertexData = (Vector3*)vertexBuffer->Bind();
+				triData = vertexData + this->m_dataOffset;
+			}
+			else
+			{
+				triData = this->m_refMesh->GetPositionArray()->data()
+					+ this->m_dataOffset;
+			}
+
+			for (int i = 0; i < count / 3; i++)
+			{
+				action->IncreaseFramePickPntCount();
+				if (action->IsPointInFrustum(triData[i * 3]))
+				{
+					action->IncreaseFramePickMatchPntCount();
+				}
+
+				action->IncreaseFramePickPntCount();
+				if (action->IsPointInFrustum(triData[i * 3 + 1]))
+				{
+					action->IncreaseFramePickMatchPntCount();
+				}
+
+				action->IncreaseFramePickPntCount();
+				if (action->IsPointInFrustum(triData[i * 3 + 2]))
+				{
+					action->IncreaseFramePickMatchPntCount();
+				}
+				
+				if (action->GetFramePickMatchPntCount() > 0)
+				{
+					return;
+				}
+				else
+				{
+					if (action->IsintersecFrustumTriangle(triData[i * 3], triData[i * 3 + 1], triData[i * 3 + 2]))
+					{
+						action->IncreaseFramePickMatchPntCount();
+					}
+				}
+			}
+
+			if (vertexBuffer && vertexBuffer->BufferType() == GPUObject::DISK_CACHE)
+			{
+				vertexBuffer->UnBind();
+			}
+		}
+	}
+}
+
+void Mesh::FramePick(RayPickAction* action)
+{
+	//if (action->Intersect(GetBoundingBox()))
+	{
+		Vector3 intersectPos;
+		bool useIndex = this->m_refMesh->IsUseIndex();
+		int count = 0;
+
+		if (useIndex)
+		{ //使用索引
+			int indexCount = this->m_dataLength;
+			count = indexCount;
+
+			HardWareVertexBuffer* vertexBuffer = this->m_refMesh->GetHardWareVertexBuffer();
+			Vector3* pntArray = NULL;
+			if (vertexBuffer && vertexBuffer->BufferType() == GPUObject::DISK_CACHE)
+			{
+				Vector3* vertexData = (Vector3*)vertexBuffer->Bind();
+				pntArray = vertexData;
+			}
+			else
+			{
+				pntArray = this->m_refMesh->GetPositionArray()->data();
+			}
+
+			HardWareIndexBuffer* indexBuffer = this->m_refMesh->GetHardWareIndexBuffer();
+			M3D_INDEX_TYPE* tempIndex = NULL;
+			if (indexBuffer && indexBuffer->BufferType() == GPUObject::DISK_CACHE)
+			{
+				M3D_INDEX_TYPE* vertexData = (M3D_INDEX_TYPE*)indexBuffer->Bind();
+				tempIndex = vertexData + this->m_dataOffset;
+			}
+			else
+			{
+				tempIndex = this->m_refMesh->GetIndexArray()->data()
+					+ this->m_dataOffset;
+			}
+
+			int v0, v1, v2;
+
+			for (int i = 0; i < indexCount / 3; i++)
+			{
+				v0 = tempIndex[i * 3];
+				v1 = tempIndex[i * 3 + 1];
+				v2 = tempIndex[i * 3 + 2];
+
+				action->IncreaseFramePickPntCount();
+				if (action->IsPointInFrustum(pntArray[v0]))
+				{
+					action->IncreaseFramePickMatchPntCount();
+				}
+
+				action->IncreaseFramePickPntCount();
+				if (action->IsPointInFrustum(pntArray[v1]))
+				{
+					action->IncreaseFramePickMatchPntCount();
+				}
+
+				action->IncreaseFramePickPntCount();
+				if (action->IsPointInFrustum(pntArray[v2]))
+				{
+					action->IncreaseFramePickMatchPntCount();
+				}
+			}
+
+			if (indexBuffer && indexBuffer->BufferType() == GPUObject::DISK_CACHE)
+			{
+				indexBuffer->UnBind();
+			}
+
+			if (vertexBuffer && vertexBuffer->BufferType() == GPUObject::DISK_CACHE)
+			{
+				vertexBuffer->UnBind();
+			}
+
+		}
+		else
+		{ //不使用索引
+			count = this->m_dataLength;
+
+			HardWareVertexBuffer* vertexBuffer = this->m_refMesh->GetHardWareVertexBuffer();
+			Vector3* triData = NULL;
+			if (vertexBuffer && vertexBuffer->BufferType() == GPUObject::DISK_CACHE)
+			{
+				Vector3* vertexData = (Vector3*)vertexBuffer->Bind();
+				triData = vertexData + this->m_dataOffset;
+			}
+			else
+			{
+				triData = this->m_refMesh->GetPositionArray()->data()
+					+ this->m_dataOffset;
+			}
+
+			for (int i = 0; i < count / 3; i++)
+			{
+				action->IncreaseFramePickPntCount();
+				if (action->IsPointInFrustum(triData[i * 3]))
+				{
+					action->IncreaseFramePickMatchPntCount();
+				}
+
+				action->IncreaseFramePickPntCount();
+				if (action->IsPointInFrustum(triData[i * 3 + 1]))
+				{
+					action->IncreaseFramePickMatchPntCount();
+				}
+
+				action->IncreaseFramePickPntCount();
+				if (action->IsPointInFrustum(triData[i * 3 + 2]))
+				{
+					action->IncreaseFramePickMatchPntCount();
+				}
+			}
+
+			if (vertexBuffer && vertexBuffer->BufferType() == GPUObject::DISK_CACHE)
+			{
+				vertexBuffer->UnBind();
+			}
+		}
+	}
+}
+
 ///IMeshData virtual fun
 void Mesh::Clear()
 {

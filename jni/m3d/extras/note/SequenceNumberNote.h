@@ -42,7 +42,12 @@ public:
 	 * @param pos 位置
 	 */
 	void SetTextsPos(const Vector3& pos);
-
+    /**
+     * @brief 将对象值转成JSON数据
+     * @param pos 位置
+     */
+    string toJson();
+    SequenceNumberNote* fromJson(string value);
 private:
 	/**
 	 * @brief 初始化

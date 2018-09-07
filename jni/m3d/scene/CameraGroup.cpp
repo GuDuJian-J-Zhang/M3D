@@ -93,6 +93,9 @@ void CameraManager::AddCamera(CameraNode* camera)
 				return;
 			}
 		}
+
+		camera->SetSceneManager(this->GetSceneManager());
+
 		AddRefMe(camera);
 		this->m_sceneManager->AsynUpdateModelCacheInfo(camera, true);
 		m_sceneCameras.push_back(camera);

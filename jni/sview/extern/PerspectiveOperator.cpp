@@ -173,6 +173,40 @@ namespace M3D
 			CreatePerspectiveAnimation(PerspectiveData::DEFAULT_MVMATRIX,
 				m_bAllowRotate, m_bAllowTran, m_bAllowScale);
 			break;
+		case PerspectiveData::BACKISOME:
+			CreatePerspectiveAnimation(PerspectiveData::BACKISOME_MVMATRIX,
+				m_bAllowRotate, m_bAllowTran, m_bAllowScale);
+			break;
+
+		case PerspectiveData::UPFRONTLEFT:
+			CreatePerspectiveAnimation(PerspectiveData::UPFRONTLEFT_MVMATRIX,
+				m_bAllowRotate, m_bAllowTran, m_bAllowScale);
+			break;
+
+		case PerspectiveData::UPBEHINDRIGHT:
+			CreatePerspectiveAnimation(PerspectiveData::UPBEHINDRIGHT_MVMATRIX,
+				m_bAllowRotate, m_bAllowTran, m_bAllowScale);
+			break;
+
+		case PerspectiveData::UPBEHINDLEFT:
+			CreatePerspectiveAnimation(PerspectiveData::UPBEHINDLEFT_MVMATRIX,
+				m_bAllowRotate, m_bAllowTran, m_bAllowScale);
+			break;
+
+		case PerspectiveData::DOWNFRONTRIGHT:
+			CreatePerspectiveAnimation(PerspectiveData::DOWNFRONTRIGHT_MVMATRIX,
+				m_bAllowRotate, m_bAllowTran, m_bAllowScale);
+			break;
+
+		case PerspectiveData::DOWNFRONTLEFT:
+			CreatePerspectiveAnimation(PerspectiveData::DOWNFRONTLEFT_MVMATRIX,
+				m_bAllowRotate, m_bAllowTran, m_bAllowScale);
+			break;
+
+		case PerspectiveData::DOWNBEHINDRIGHT:
+			CreatePerspectiveAnimation(PerspectiveData::DOWNBEHINDRIGHT_MVMATRIX,
+				m_bAllowRotate, m_bAllowTran, m_bAllowScale);
+			break;
 		default:
 			break;
 		}

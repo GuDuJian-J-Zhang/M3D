@@ -4,7 +4,6 @@
  *  Created on: 2015-6-18
  *      Author: bing
  */
-#include "m3d/ResourceManager.h"
 #include "JsonMacro.h"
 #include "document.h"
 #include "stringbuffer.h"
@@ -29,13 +28,15 @@ using rapidjson::MemoryPoolAllocator;
 #include "SVLLib/Stk_View.h"
 #include "SVLLib/Stk_PlaneEntity.h"
 #include "SVLLib/Stk_Define.h"
+#include "SVLLib/Stk_LineSet.h"
+#include "SVLLib/Stk_CurveEntity.h"
 #include "sview/PMIAnalysis/SVLXPMICreator.h"
 #include "writer.h"
 
 #include "SVL2AsynReader.h"
 
 #include "sview/views/View.h"
-
+#include "m3d/ResourceManager.h"
 #include "m3d/SceneManager.h"
 #include "m3d/utils/Platform.h"
 #include "m3d/utils/MeshHelper.h"
@@ -181,6 +182,8 @@ namespace SVIEW {
 		if (docPtr)
 		{		//释放Model
 			(*docPtr)->UnloadModel();
+			//释放线集-yhp-20180830
+			//(*docPtr)->UnloadLine();
 			delete docPtr;
 			LOGI("AsynReader ok");
 			m_svl2Doc = NULL;
@@ -750,6 +753,141 @@ namespace SVIEW {
 		}
 	}
 
+	void SVL2AsynReader::FillLineSetDrawData(Model* i_model, void* i_stkModelPtr)
+	{
+		Stk_ModelPtr stkModelPtr = *(Stk_ModelPtr*)i_stkModelPtr;
+		if (stkModelPtr.isNull())
+		{
+			return;
+		}
+		Model* tgroup = dynamic_cast<Model*>(i_model);
+		ModelShape* tShapeNode = tgroup->GetModelShape();
+		if (tShapeNode == NULL)
+		{
+			return;
+		}
+		//获取线集数据
+		map<int, Stk_LineSetPtr> mapStkLinsetPtr = stkModelPtr->GetAllLineSet();
+		map<int, Stk_LineSetPtr>::iterator it;
+		for (it= mapStkLinsetPtr.begin(); it != mapStkLinsetPtr.end(); it++)
+		{
+			Stk_LineSetPtr stkLineSetPtr = it->second;
+			if (stkLineSetPtr.isNull())
+			{
+				continue;
+			}
+			vector<Stk_CurveEntityPtr> vecCurveEntity = stkLineSetPtr->GetAllLines();
+			if (vecCurveEntity.size() == 0)
+			{
+				continue;
+			}
+			//创建Body
+			Body* pBody = new Body();
+			pBody->AddRef();
+			SPolyLine* bodyPolyLine = new SPolyLine();
+			pBody->SetPolyLine(bodyPolyLine);
+			for (int lineIndex = 0; lineIndex < vecCurveEntity.size(); lineIndex++)
+			{
+				Stk_CurveEntityPtr curLinePtr = vecCurveEntity.at(lineIndex);
+				RefPolyLine * edgeLine = new RefPolyLine(bodyPolyLine);
+				if (FillCurve(curLinePtr, edgeLine, bodyPolyLine))
+				{
+					Edge* edge = new Edge();
+					//设置线的显隐状态
+					edge->SetOrigVisible(true);
+					STK_RGBA32 lineClr = curLinePtr->GetColor();
+					Color edgeLineColor(lineClr.Red, lineClr.Green, lineClr.Blue,
+						1 - lineClr.Alpha);
+					edge->SetColor(edgeLineColor);
+					edge->AddData(edgeLine, 0);
+					pBody->AddEdge(edge);
+				}
+				else
+				{
+					//不存在显示数据，释放空间
+					edgeLine->Release();
+				}
+			}
+			tShapeNode->AddBody(pBody);
+			pBody->Release();
+			tgroup->SetDrawDataPrepared(true);
+		}
+	}
+
+	bool SVL2AsynReader::FillCurve(Stk_CurveEntityPtr curCurve, RefPolyLine * edgeLine, SPolyLine * polyLine)
+	{
+		bool ret = false;
+		switch (curCurve->GetCurveType())
+		{
+		case CURVE_TYPE_UNKNOWN:
+			break;
+		case CURVE_TYPE_POLYLINE:
+		{
+			Stk_PolyLinePtr curPolyLine = Stk_PolyLinePtr::DynamicCast(curCurve);
+
+			const vector<STK_PNT32>& pnts = curPolyLine->GetPoints();
+
+			edgeLine->SetDataOffset(polyLine->GetPoints().size());
+			unsigned int dataLength = pnts.size();
+			edgeLine->SetDataLength(2 * (dataLength - 1));
+
+			if (dataLength >= 2)
+			{
+				//为了实现线合并的显示效果，按照下面这种方法存储边界线顶点
+				//首先加入第一个点
+				polyLine->AddPoints(Vector3(pnts[0].X, pnts[0].Y, pnts[0].Z));
+				//加入中间部分点
+				for (int j = 1; j < dataLength - 1; j++)
+				{
+					Vector3 pnt(pnts[j].X, pnts[j].Y, pnts[j].Z);
+					//中间的点，每个点要添加两次
+					polyLine->AddPoints(pnt);
+					polyLine->AddPoints(pnt);
+				}
+				//在加入最后一个点
+				polyLine->AddPoints(
+					Vector3(pnts[dataLength - 1].X, pnts[dataLength - 1].Y,
+						pnts[dataLength - 1].Z));
+				ret = true;
+			}
+			break;
+		}
+		case CURVE_TYPE_ELLIPSE:
+			break;
+		case CURVE_TYPE_LINE:
+		{
+			Stk_LinePtr stk_line = Stk_LinePtr::DynamicCast(curCurve);
+
+			STK_PNT32 startPnt = stk_line->GetStartPoint();
+			STK_PNT32 endPnt = stk_line->GetEndPoint();
+
+			edgeLine->SetDataOffset(polyLine->GetPoints().size());
+			unsigned int dataLength = 2;
+			edgeLine->SetDataLength(2 * (dataLength - 1));
+
+			if (dataLength >= 2)
+			{
+				//为了实现线合并的显示效果，按照下面这种方法存储边界线顶点
+				//首先加入第一个点
+				polyLine->AddPoints(Vector3(startPnt.X, startPnt.Y, startPnt.Z));
+				//加入中间部分点
+				//在加入最后一个点
+				polyLine->AddPoints(
+					Vector3(endPnt.X, endPnt.Y, endPnt.Z));
+				ret = true;
+			}
+			break;
+		}
+		case CURVE_TYPE_NURBSCURVE:
+			break;
+		case CURVE_TYPE_HYPERBOLA:
+			break;
+		case CURVE_TYPE_PARABOLA:
+			break;
+		}
+		return ret;
+	}
+
 	void SVL2AsynReader::FillModelDrawData(Model* model, void* pstk_NodePtr)
 	{
 		Stk_ModelPtr stkPart = *(Stk_ModelPtr*)pstk_NodePtr;
@@ -945,6 +1083,8 @@ namespace SVIEW {
 			}
 			stkPart->UnloadLOD1Mesh(); 
 		}
+		//读取线集-yhp-20180830
+		//FillLineSetDrawData(model, pstk_NodePtr);
 	}
 
 	void SVL2AsynReader::LoadAttribute(Model* model, string & path ,View *m_view)
@@ -1402,9 +1542,7 @@ namespace SVIEW {
 		m_view->GetSceneManager()->GetRenderManager()->SetGlobalEffect(effectName);
  
 //        this->LoadFileInfo();
-        (*m_svl2Doc)->LoadFileInfo();
-        m_instanceCount = (*m_svl2Doc)->GetLoadInf()->GetInstanceCount();
-		SetPercent(0.4f);
+		SetPercent(0.4f);			
 		if (SVIEW::Parameters::Instance()->GetLoadExternInfo())
 		{
 			STK_CHAR* dataBuffer = NULL;
@@ -1479,6 +1617,8 @@ namespace SVIEW {
 		//加载Model
 		(*m_svl2Doc)->LoadModel();
 		LOGI("svllib load Model  end");
+		//加载线集-yhp-20180830
+		//(*m_svl2Doc)->LoadLine();
 
 		if (SVIEW::Parameters::Instance()->m_IsUsePmiData)
 		{
@@ -2173,7 +2313,21 @@ namespace SVIEW {
 
 				}
 				//获取normalMap 
-				//TODO
+				{
+					HoteamSoft::SVLLib::Stk_TexturePtr normalTexture = materialPtr->GetNormalMap();
+					if (normalTexture.isNotNull())
+					{
+						Texture2D * normalMapping = static_cast<Texture2D*> (GetTexture2D(&normalTexture));
+						tempMaterial->SetNormalMap(normalMapping);
+						//hasTexture = true;
+					}
+					Vector2  xyScale;
+					materialPtr->GetNormalScale(&xyScale.m_x);
+					if (xyScale.m_x > 0.0 && xyScale.m_y > 0.0)
+					{
+						tempMaterial->NormalMapScale(xyScale);
+					}
+				}
 				//获取发光贴图
 				//TODO
 				//获取...
@@ -2407,10 +2561,13 @@ namespace SVIEW {
         this->m_view->SetInterBackgroundState(false);
 		m_view->KeepBackgroundState();
 		m_view->KeepViewModeState();
-        Stk_DocumentPtr* m_svl2Doc = (Stk_DocumentPtr*)this->m_svl2Doc;
-		int numModel = (*m_svl2Doc)->GetLoadInf()->GetModelCount();
+		Stk_DocumentPtr* m_svl2Doc = (Stk_DocumentPtr*)this->m_svl2Doc;
+		(*m_svl2Doc)->LoadFileInfo();
+		Stk_LoadInf* infoFilePtr = (*m_svl2Doc)->GetLoadInf()/*Stk_LoadInf::GetInstance()*/;
+		m_instanceCount = infoFilePtr->GetInstanceCount();
+		int numModel = infoFilePtr->GetModelCount();
 		//背景信息
-		Stk_LoadInf* infoFilePtr = (*m_svl2Doc)->GetLoadInf();
+		
 		int type = infoFilePtr->GetBackgroundType();
 		int style = infoFilePtr->GetBackgroundStyle();
 		if (type == 1)//颜色
@@ -2515,7 +2672,7 @@ namespace SVIEW {
 			this->m_view->SetBackgroundUseImage(false);
 			this->m_view->SetBackgroundUseSkyBox(false);
 		}*/
-#if 0
+
 		{
 			unsigned int infoSize = 0;
 			char * infoptr = nullptr;
@@ -2544,7 +2701,6 @@ namespace SVIEW {
 
 				//			LOGI(infoptr);
 				Document infoDoc;
-                realSrc += "";
 				infoDoc.Parse(realSrc.c_str());
 				Value::MemberIterator rootIt = infoDoc.FindMember("info");
 				if (rootIt != infoDoc.MemberEnd() && rootIt->value.IsObject())
@@ -2737,7 +2893,7 @@ namespace SVIEW {
 				}
 			}
 		}
-#endif
+
 	}
  
 	void  SVL2AsynReader::ClearPartsMap()
@@ -2812,8 +2968,17 @@ namespace SVIEW {
 
 				float boxData[6] = { 0 };
 				stkModel->GetBoundingBox(boxData, 6);
-				BoundingBox modelBox = BoundingBox(Vector3(boxData[0], boxData[1], boxData[2]), Vector3(boxData[3], boxData[4], boxData[5]));
-				tShapeNode->SetBoundingBox(modelBox);
+				static float checkLimint = 9.0e+5f;
+				if (!IsNaN(boxData[0]) && Abs(boxData[0])<checkLimint
+					&&Abs(boxData[1])<checkLimint
+					&&Abs(boxData[2])<checkLimint
+					&&Abs(boxData[3])<checkLimint
+					&&Abs(boxData[4])<checkLimint
+					&&Abs(boxData[5])<checkLimint)
+				{
+					BoundingBox modelBox = BoundingBox(Vector3(boxData[0], boxData[1], boxData[2]), Vector3(boxData[3], boxData[4], boxData[5]));
+					tShapeNode->SetBoundingBox(modelBox);
+				}
 			}
 		}
 	}
@@ -3595,9 +3760,9 @@ namespace SVIEW {
 		}
 
 		//保存当前折线
-		PolyLine *pLine = new PolyLine();
+		/*PolyLine *pLine = new PolyLine();
 		pLine->SetBuffer(vertexBuf.size(), tmpVertexBuf, indexNum, tmpIndexBuf);
-		pPMIData->m_Lines.push_back(pLine);
+		pPMIData->m_Lines.push_back(pLine);*/
 
 		delete[] tmpVertexBuf;
 		delete[] tmpIndexBuf;
@@ -4141,7 +4306,7 @@ namespace SVIEW {
 			//		pView->setHasClippingPlan(viewHasClipPlan);
 			pView->SetSvlUseType(pViewData->GetUsageType());
 			pView->SetViewType(ModelView::OrignalView); //svl中的视图都做为原始视图
-			if (viewIsActivated)
+			if (viewIsActivated && viewType!=HoteamSoft::SVLLib::VIEW_USAGE_USER_CLIPPLANE)
 			{
 				pView->SetIsInitView(true);
 			}
@@ -4229,6 +4394,7 @@ namespace SVIEW {
 			//获取剖面信息
 			const vector<Stk_PlaneEntityPtr>& allPlaneList =
 				pViewData->GetAllPlaneEntity();
+            LOGE("allPlaneList %d",allPlaneList.size());
 			for (int j = 0; j < allPlaneList.size(); j++) {
 
 				Stk_ClipPlanePtr pPlaneSurfaceData = Stk_ClipPlanePtr::DynamicCast(allPlaneList[j]);
@@ -4370,6 +4536,7 @@ namespace SVIEW {
      @return
      */
     string SVL2AsynReader::RemoveExcess(string& strStream){
+        printf("strStreamstrStream 0 : %s",strStream.c_str());
         int index = 0;
         if( !strStream.empty())
         {
@@ -4400,6 +4567,7 @@ namespace SVIEW {
         {
             strStream.replace(index, 1, " ");
         }
+        printf("strStreamstrStream 1 : %s",strStream.c_str());
         return strStream;
     }
 }

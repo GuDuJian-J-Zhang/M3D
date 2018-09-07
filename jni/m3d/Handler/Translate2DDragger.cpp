@@ -1,7 +1,7 @@
 
 
-#include "m3d/handler/Translate2DDragger.h"
-#include "m3d/handler/Command.h"
+#include "m3d/Handler/Translate2DDragger.h"
+#include "m3d/Handler/Command.h"
 #include "sview/views/Parameters.h"
 #include "../utils/MeshHelper.h"
 #include "../scene/ShapeNode.h"
@@ -56,6 +56,7 @@ bool Translate2DDragger::handle(const PointerInfo& pointer, const  TouchEvent& e
                     cmd->setReferencePoint(_startProjectedPoint);
                     cmd->setLocalToWorldAndWorldToLocal(_projector->getLocalToWorld(),_projector->getWorldToLocal());
 
+					cmd->SetRefDragger(this);
                     // Dispatch command.
                     dispatch(*cmd);
 					cmd->Release();
@@ -80,6 +81,8 @@ bool Translate2DDragger::handle(const PointerInfo& pointer, const  TouchEvent& e
                     TranslateInPlaneCommand* cmd = new TranslateInPlaneCommand(_projector->getPlane());
 					cmd->AddRef();
 
+					cmd->SetRefDragger(this);
+
                     cmd->setStage(MotionCommand::MOVE);
                     cmd->setLocalToWorldAndWorldToLocal(_projector->getLocalToWorld(),_projector->getWorldToLocal());
                     cmd->setTranslation(projectedPoint - _startProjectedPoint);
@@ -103,6 +106,7 @@ bool Translate2DDragger::handle(const PointerInfo& pointer, const  TouchEvent& e
                 cmd->setReferencePoint(_startProjectedPoint);
                 cmd->setLocalToWorldAndWorldToLocal(_projector->getLocalToWorld(),_projector->getWorldToLocal());
 
+				cmd->SetRefDragger(this);
                 // Dispatch command.
                 dispatch(*cmd);
 				cmd->Release();
@@ -215,6 +219,30 @@ void Translate2DDragger::setupDefaultGeometry()
 	}
     
     //addChild(xform);
+}
+
+void Translate2DDragger::setupDefaultImageGeometry()
+{
+	string signImagePath = SVIEW::Parameters::Instance()->m_appWorkPath + "\\data\\pic\\" + string("pointo.png");
+	_drawModel = NULL;
+
+	ImageModel* imageBoard = new ImageModel();
+	imageBoard->SetImagePath(signImagePath);
+
+	imageBoard->SetAllowRotate(true);
+	imageBoard->SetAllowScall(true);
+	imageBoard->SetAllowTran(true);
+    Vector3 temp3 = Vector3(0, 0, 0);
+    Vector2 temp2 = Vector2(20, 20);
+	imageBoard->SetImageSize(temp3, temp2);
+	_drawModel = imageBoard;
+	if (_drawModel) {
+		ShapeNode* shapeNode = new ShapeNode();
+		this->AddChild(shapeNode);
+		_drawModel->SetInitHightlight(true);
+		shapeNode->SetShape(_drawModel);
+		_drawModel->SetUserData(this);
+	}
 }
 
 }

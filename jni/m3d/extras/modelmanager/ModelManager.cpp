@@ -11,14 +11,14 @@
 #include "m3d/utils/ShapeHelper.h"
 #include "m3d/ResourceManager.h"
 #include "m3d/SceneManager.h"
-#include "m3d/scenemanager.h"
+#include "m3d/SceneManager.h"
 #include "sview/io/Reader.h"
 #include "sview/io/Writer.h"
 #include "sview/utils/ViewHelper.h"
 #include "m3d/extras/modelmanager/ModelManager.h"
 #include "m3d/scene/ShapeNode.h"
 #include "m3d/scene/GroupNode.h"
-#include "m3d/Utils/FileHelper.h"
+#include "m3d/utils/FileHelper.h"
 #include "m3d/model/Body.h"
 #include "m3d/model/ShapeSet.h"
 #include "m3d/extras/OperationHistoryManager.h"
@@ -28,9 +28,9 @@
 #include "m3d/extras/modelmanager/AddFileOperation.h"
 #include "m3d/extras/modelmanager/RenameOperation.h"
 #include "m3d/extras/modelmanager/ReplaceModelOperation.h"
-#include "m3d/handler/TranslateAxisDragger.h"
-#include "m3d/handler/RotateCylinderAxisDragger.h"
-#include "m3d/handler/ScaleAxisDragger.h"
+#include "m3d/Handler/TranslateAxisDragger.h"
+#include "m3d/Handler/RotateCylinderAxisDragger.h"
+#include "m3d/Handler/ScaleAxisDragger.h"
 #include "m3d/extras/modelmanager/DraggerCallbacks.h"
 #include "m3d/utils/IDCreator.h"
 
@@ -187,6 +187,7 @@ void ModelManager::InitNewModel(Model* model)
 	int iID = IDCreator::Instance()->GetSVLIDOffset().Code();
 	model->SetInstanceID(iID + 1);
 	model->SetSVLId(iID + 1);
+	model->SetProtoTypeId(iID + 1);
     SVLGlobalID temp(iID + 1);
 	IDCreator::Instance()->UpdateSVLID(temp);
 }

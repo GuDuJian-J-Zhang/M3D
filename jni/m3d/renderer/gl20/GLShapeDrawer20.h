@@ -167,6 +167,8 @@ public:
 
 	static void DrawUIQueue(RenderAction * action);
 
+	static void DrawHUBImageQueue(RenderAction * action);
+
 	static void DrawShapeBox(BoundingBox& box, bool isSelected, ShaderParameter * vertex, ShaderProgram * shaderEffect,
 			Matrix4 & modelMat);
 
@@ -235,6 +237,8 @@ public:
 	static void DrawPhongPass(RenderAction* action);
 
 	static void DrawBasePass(RenderAction * action, RenderQueue * RenderStateArray);
+	
+	static void DrawDraggerLinePass(RenderAction * action, RenderQueue * RenderStateArray);
 
 	/**
 	*绘制拖拽器

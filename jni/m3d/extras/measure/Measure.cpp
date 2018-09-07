@@ -21,6 +21,7 @@ const  int Measure::MEASURE_TYPE_LINE_FACE_ANGLE = 52; ///直线与平面之间�
 
 const  int Measure::MEASURE_TYPE_CRICLE_DIAMETRE = 60; //!<圆直径
 const  int Measure::MEASURE_TYPE_CRICLE_RADIUS = 61;  //!<圆半径
+
 const   int Measure::MEASURE_TYPE_PNT_COORD = 100; ///点的坐标值
 const   int Measure::MEASURE_TYPE_LINE_LENGTH = 101 ; ///边线的长度
 const   int Measure::MEASURE_TYPE_CRICLE_PROPERTY = 102 ; ///圆或圆弧的弧长、直径（半径）、圆心

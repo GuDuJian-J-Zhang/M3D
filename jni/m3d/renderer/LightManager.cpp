@@ -1,4 +1,4 @@
-#include "m3d/renderer/LightManager.h"
+﻿#include "m3d/renderer/LightManager.h"
 #include "m3d/SceneManager.h"
 #include "m3d/scene/GroupNode.h"
 #include "m3d/scene/SceneNode.h"

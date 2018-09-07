@@ -4,7 +4,7 @@
 namespace M3D
 {
 	/************************************************************************/
-	/* 半球光源                                                                     */
+	/* 鍗婄悆鍏夋簮                                                                     */
 	/************************************************************************/
 	class M3D_API HemisphereLight : public BaseLight
 	{
@@ -16,7 +16,7 @@ namespace M3D
 		// FullName:  M3D::HemisphereLight::GroundColor
 		// Access:    public 
 		// Returns:   Color&
-		// Qualifier: 地面颜色设置
+		// Qualifier: 鍦伴潰棰滆壊璁剧疆
 		//************************************
 		Color& GroundColor() { return m_groundColor; }
 		void GroundColor(Color val) { m_groundColor = val; }

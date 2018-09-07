@@ -25,6 +25,9 @@ class M3D_API Translate2DDragger : public Dragger
 
         /** Setup default geometry for dragger. */
         void setupDefaultGeometry();
+
+		void setupDefaultImageGeometry();
+
  
     protected:
 

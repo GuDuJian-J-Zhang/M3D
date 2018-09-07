@@ -16,6 +16,7 @@ namespace M3D
 		m_bFixed = false;
 		m_Id = OBJID++;
 		m_fgap = 0;
+		m_CreateID = m_Id;
 		SetType(SHAPE_ANNOTATION_NOTE);
 	}
 	Annotation::~Annotation()
@@ -234,5 +235,15 @@ namespace M3D
 	Color* Annotation::GetFrameColor()
 	{
 		return &m_FrameColor;
+	}
+
+	IDTYPE Annotation::GetCreateID()
+	{
+		return m_CreateID;
+	}
+
+	void Annotation::SetCreateID(IDTYPE createID)
+	{
+		m_CreateID = createID;
 	}
 }

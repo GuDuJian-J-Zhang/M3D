@@ -87,6 +87,7 @@ public:
 	bool GetShowPlaneRect() const;
 	void SetShowPlaneRect(bool val);
 	SectionPlane* GetPlaneById(int sectionPlaneId);
+	list<SectionPlane*> GetSectionPlaneList();
 private:
 //	Model* m_Model;
 
