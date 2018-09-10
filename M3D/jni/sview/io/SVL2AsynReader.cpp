@@ -1,4 +1,4 @@
-﻿/*
+/*
  * SVL2Reader.cpp
  *
  *  Created on: 2015-6-18
@@ -4386,7 +4386,7 @@ namespace SVIEW {
 
 				pView->SetCamera(cameraInfo);
 				pView->SetUpDataCamera(true);
-
+                pView->SetUpDataModel(true);
 				READER_LOGI(
 					"viewId:%d ref cameraId:%d", pView->GetID(), cameraInfo.GetID());
 			}

@@ -878,7 +878,7 @@ public:
 	 * 获取动画xml数据
 	 * @return
 	 */
-	virtual string GetAnimationXMLData();
+	virtual string& GetAnimationXMLData();
 
 	/**
 	 * 设置动画xml数据

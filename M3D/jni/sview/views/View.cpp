@@ -2133,32 +2133,32 @@ namespace SVIEW
 			return;
 		}
 		//TODO MergeSimplyM3D
-	    SectionOperator::Clear(this);
+//        SectionOperator::Clear(this);
 		
-		if(pView->GetSectionPlaneDirection() != 0)
-		{
-            if (pView->GetSectionPlanePercentage() == 0 || pView->GetSectionPlanePercentage() == -1) {
-                this->GetSceneManager()->GetSectionNode()->GetSection()->SetIsShowCappingPlane(false);
-                Parameters::Instance()->m_showSection = false;
-            } else {
-                SectionOperator::Show(this, 1001, pView->GetSectionPlaneDirection(), pView->GetSectionPlanePercentage(), pView->GetShowClipSectionPlane(), pView->GetShowSectionCappingPlane(), pView->IsReverseClipping());
-                this->GetSceneManager()->GetSectionNode()->GetSection()->SetIsShowCappingPlane(pView->GetShowSectionCappingPlane());
-                this->GetSceneManager()->GetSectionNode()->GetSection()->SetIsReverseClipping(pView->IsReverseClipping());
-                Parameters::Instance()->m_showSection = pView->GetShowClipSectionPlane();
-            }
-			
-        }else{
-            SetMultiClipPlane(pView->m_DirectionX, pView->m_DirectionY, pView->m_DirectionZ, pView->m_PercentageX, pView->m_PercentageY, pView->m_PercentageZ, pView->GetShowClipSectionPlane(), pView->GetShowSectionCappingPlane(), pView->IsReverseClipping());
-            this->GetSceneManager()->GetSectionNode()->GetSection()->SetIsShowCappingPlane(pView->GetShowSectionCappingPlane());
-            this->GetSceneManager()->GetSectionNode()->GetSection()->SetIsReverseClipping(pView->IsReverseClipping());
-            Parameters::Instance()->m_showSection = pView->GetShowClipSectionPlane();
-        }
+//        if(pView->GetSectionPlaneDirection() != 0)
+//        {
+//            if (pView->GetSectionPlanePercentage() == 0 || pView->GetSectionPlanePercentage() == -1) {
+//                this->GetSceneManager()->GetSectionNode()->GetSection()->SetIsShowCappingPlane(false);
+//                Parameters::Instance()->m_showSection = false;
+//            } else {
+//                SectionOperator::Show(this, 1001, pView->GetSectionPlaneDirection(), pView->GetSectionPlanePercentage(), pView->GetShowClipSectionPlane(), pView->GetShowSectionCappingPlane(), pView->IsReverseClipping());
+//                this->GetSceneManager()->GetSectionNode()->GetSection()->SetIsShowCappingPlane(pView->GetShowSectionCappingPlane());
+//                this->GetSceneManager()->GetSectionNode()->GetSection()->SetIsReverseClipping(pView->IsReverseClipping());
+//                Parameters::Instance()->m_showSection = pView->GetShowClipSectionPlane();
+//            }
+//
+//        }else{
+//            SetMultiClipPlane(pView->m_DirectionX, pView->m_DirectionY, pView->m_DirectionZ, pView->m_PercentageX, pView->m_PercentageY, pView->m_PercentageZ, pView->GetShowClipSectionPlane(), pView->GetShowSectionCappingPlane(), pView->IsReverseClipping());
+//            this->GetSceneManager()->GetSectionNode()->GetSection()->SetIsShowCappingPlane(pView->GetShowSectionCappingPlane());
+//            this->GetSceneManager()->GetSectionNode()->GetSection()->SetIsReverseClipping(pView->IsReverseClipping());
+//            Parameters::Instance()->m_showSection = pView->GetShowClipSectionPlane();
+//        }
 
 //        this->GetExplosiveView()->SetPercentWithoutRestore(this, -1, 0, false);
 		
 		//	LOGI(
 		// "SceneManager::showModelView allViewCount:%d", curRootModel->GetModelViewList().size());
-		if(!isAnni)
+		if(isAnni)
 		{
 			//如果需要更新摄像机
 			if (pView->GetUpDataCameraState())
@@ -2209,20 +2209,20 @@ namespace SVIEW
 
 			if (pView->GetUpDataModelState())
 			{
-				int direction = pView->getExplosiveType();
-				float percent = pView->getExplosivePercent();
-
-				this->GetExplosiveView()->SetPercent(this, 0, 0, false);
-				if (direction != -1) {
-					this->GetExplosiveView()->Reset();
-					this->GetExplosiveView()->SetPercent(this, direction, percent, false);
-				}
-				//else
-				//{
-				//	this->GetExplosiveView()->SetPercent(this, 0, 0, false);
-				//}
-				this->GetExplosiveView()->SetExplosivePercent(0);
-				this->GetExplosiveView()->SetExplosiveStyle(NOEXPLOSIVE);
+//                int direction = pView->getExplosiveType();
+//                float percent = pView->getExplosivePercent();
+//
+//                this->GetExplosiveView()->SetPercent(this, 0, 0, false);
+//                if (direction != -1) {
+//                    this->GetExplosiveView()->Reset();
+//                    this->GetExplosiveView()->SetPercent(this, direction, percent, false);
+//                }
+//                //else
+//                //{
+//                //    this->GetExplosiveView()->SetPercent(this, 0, 0, false);
+//                //}
+//                this->GetExplosiveView()->SetExplosivePercent(0);
+//                this->GetExplosiveView()->SetExplosiveStyle(NOEXPLOSIVE);
 
 				//TODO:相机设置旋转动画
 
@@ -4047,9 +4047,9 @@ int View::GetSVLXFileItem(const std::string& i_strFileName, unsigned int& o_bufS
 		return m_isAnimationPlayCamera;
 	}
 
-	string View::GetAnimationXMLData()
+	string& View::GetAnimationXMLData()
 	{
-		return m_AnimationXMLData;
+		return this->m_AnimationXMLData;
 	}
 
 	void View::SetAnimationXMLData(const string& xmlData)

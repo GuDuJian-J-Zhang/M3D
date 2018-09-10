@@ -95,7 +95,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "304"
             endingLineNumber = "304"
-            landmarkName = "ModelView::GetNoteDataList(SHAPETYPE key)"
+            landmarkName = "ModelView::SetNoteDataList(SHAPETYPE key, vector&lt;string&gt;&amp; noteDataList)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -560,6 +560,22 @@
             startingLineNumber = "1156"
             endingLineNumber = "1156"
             landmarkName = "XmlSceneSerializer::LoadAllModelView(vector&lt;ModelView*&gt;* pOutViewList)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "../../jni/sview/io/SVLXWriter.cpp"
+            timestampString = "558082637.901727"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "282"
+            endingLineNumber = "282"
+            landmarkName = "SVLXWriter::WriteSavedModels(View * view,const string&amp; srcFilePath, const string &amp; targetPath)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
