@@ -28,7 +28,7 @@
 #include "m3d/renderer/GLESHead.h"
 #include "m3d/renderer/gl10/GLShapeDrawer.h"
 #include "m3d/action/RenderAction.h"
-#include "m3d/action/CallbackAction.h"
+#include "m3d/action/CallBackAction.h"
 #include "m3d/graphics/Renderable.h"
 #include "sview/views/Parameters.h"
 #include "m3d/scene/Octree.h"

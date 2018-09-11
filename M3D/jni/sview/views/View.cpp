@@ -2158,7 +2158,7 @@ namespace SVIEW
 		
 		//	LOGI(
 		// "SceneManager::showModelView allViewCount:%d", curRootModel->GetModelViewList().size());
-		if(!isAnni)
+		if(isAnni)
 		{
 			//如果需要更新摄像机
 			if (pView->GetUpDataCameraState())
