@@ -20,8 +20,8 @@
 #endif
 
 using namespace std;
-//namespace NS_SimulationAnimation
-//{
+namespace NS_SimulationAnimation
+{
 	/// Construct. Does not start the thread yet.
 	TimerThread::TimerThread() :Thread(),
 		m_second(0), m_microsecond(0), m_keep(false)
@@ -194,6 +194,6 @@ using namespace std;
 		return gettimeofday(tp, tzp);
 #endif
 	}
-//}
+}
 
 

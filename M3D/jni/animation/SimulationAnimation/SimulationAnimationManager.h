@@ -263,8 +263,7 @@ public:
   	*/
 	void Serialize_InitTargetObject(CUtilityXMLGenerator *xmlgen);
 
-	View* GetView();
-	void SetView(View* view);
+	CAnimationCallBack* GetAnimationCallBack();
 
 	/************************************************************************/
 	/* 功能：
@@ -347,8 +346,6 @@ protected:
 	float				m_fPlaySpeed;							/*!< Play speed. */
 
 	struct vlist_s *	m_InitTargetObjectList;					/*!< A pointer to init target object list. */
-
-	View* view;
 
 };
 SA_NAMESPACE_END

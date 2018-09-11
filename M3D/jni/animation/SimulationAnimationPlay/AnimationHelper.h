@@ -70,14 +70,14 @@ public:
 
 	//根据当前view的宽高比调整缩放比例
 	static void AdjustCameraZoom(CameraNode* camera,float aniWidth,float aniHeight,
-			float aniZoom, float& zoom);
+			float aniZoom, float& zoom, View* view);
 
 	//ViewPort
 	static void GetViewSize(float& outWidth,float& outHeight,View* view);
 
 	static void SetCameraRotate(const Quaternion& rotation,CameraNode* camera);
 	static void SetCameraPosition(const Vector3& movement,CameraNode* camera);
-	static void SetCameraZoom(float zoom,CameraNode* camera);
+	static void SetCameraZoom(float zoom,CameraNode* camera, View* view);
 
 	//PMI----------------------
 	static PMIData* GetPMI(unsigned long pmiId,View* view);

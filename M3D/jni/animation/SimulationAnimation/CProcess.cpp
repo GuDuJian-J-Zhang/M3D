@@ -1,4 +1,4 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "CProcess.h"
 #include "../SimulationCommon/UtilityXMLParser.h"
 #include "../SimulationCommon/UtilityTextParser.h"
@@ -1032,7 +1032,7 @@ void CProcess::UpdateView(bool bUpdateModel/* = true*/, bool bUpdateCam/* = fals
 		{
 			if (bUpdateModel)
 			{
-				pSAManager->GetAnimationPlayApi()->SetTargetState(vecTargetObjectInfo, pSAManager->GetView());
+				pSAManager->GetAnimationPlayApi()->SetTargetState(vecTargetObjectInfo);
 			}
 		}
 

@@ -1,4 +1,4 @@
-﻿// All Rights Reserved. Copyright (C) 2014 HOTEAMSOFT, Ltd
+// All Rights Reserved. Copyright (C) 2014 HOTEAMSOFT, Ltd
 /****************************************************************************
  *	@file		Group.h 
  *
@@ -19,7 +19,7 @@ class CGroupManager;
 class CGroupItem;
 namespace tinyxml2
 {
-	class XMLElement;
+    class XMLElement;
 }
 
 class SA_API CGroup
@@ -63,7 +63,7 @@ public:
 	/*****************************************************************
 	//写入文件
 	********************************************************************/
-	void WriteToFile(tinyxml2::XMLElement *pGroupEle);
+    void WriteToFile(tinyxml2::XMLElement *pGroupEle);
 	/*****************************************************************
 	//得到位置
 	********************************************************************/

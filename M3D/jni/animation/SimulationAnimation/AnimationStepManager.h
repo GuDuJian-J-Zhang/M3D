@@ -183,7 +183,7 @@ public:
 	/*! End play camera change animation between current view camera state and target process camera state. */
 	void EndChangeCamera();
 	/*! Get camera change CSBehaviorAction. */
-	CSBehaviorAction* GetBehaviorActionChgCam(){ return m_pBehaviorActionChgCam;};
+	CSBehaviorAction* GetBehaviorActionChgCam();
 	/*! Set camera change animation time. 
 	\param fSecond: The camera change animation play time(fSecond> 0) */
 	void SetChgCamTime(float fSecond = 1.0f);

@@ -2,18 +2,14 @@
 #define _H_ANIMATIONPLAYAPI_H
 #include <stdlib.h>
 #include <vector>
-#include "m3d/M3D.h"
+#include "../SimulationCommon/SATools.h"
 #include "../SimulationCommon/TypeDef.h"
 #include "../SimulationCommon/Animation_def.h"
 #include "AnimationCallBack.h"
 using namespace std;
-namespace SVIEW
-{
-class View;
-}
-using SVIEW::View;
 
-class M3D_API AnimationPlayApi
+
+class SA_API AnimationPlayApi
 {
 public:
 	AnimationPlayApi();
@@ -21,64 +17,58 @@ public:
 	static void plcPathConvert1(const char *oldPlcPath, char *newPlcPath,
 			bool bPre = true);
 
-	void getModelPlcMtx(const char* plcIdPath, float fMtxAA[4][4], View* view);
-	void setModelPlcMtx(const char* plcIdPath, const float fMtxAA[4][4],
-			View* view);
-	void getCamera(const char* plcIdPath, float fScale[3], float fMtxAA[4][4],
-			View* view);
+	void getModelPlcMtx(const char* plcIdPath, float fMtxAA[4][4]);
+	void setModelPlcMtx(const char* plcIdPath, const float fMtxAA[4][4]);
+	void getCamera(const char* plcIdPath, float fScale[3], float fMtxAA[4][4]);
 	void setCamera(const char* plcIdPath, const float fScale[3],
-			const float fMtxAA[4][4], View* view);
-	void getCameraTargetPnt(const char* plcIdPath, float fTargetPnt[3],
-			View* view);
+			const float fMtxAA[4][4]);
+	void getCameraFocal(float& fFocal);
+	void getCameraTargetPnt(const char* plcIdPath, float fTargetPnt[3]);
 	bool Play(const INT type, const char* plcIdPath, const float fPivot[3],
-			const float fMtxAA[4][4], View* view);
+			const float fMtxAA[4][4]);
 	bool PlayCamera(const char* plcIdPath, const INT type,
-			const float fPivot[3], const float fMtxAA[4][4], const INT iCamType,
-			View* view);
+			const float fPivot[3], const float fMtxAA[4][4], const INT iCamType);
 	bool PlayVisible(const char* plcIdPath, const char* name, const bool bOnOff,
-			const float fTran, View* view);
+			const float fTran);
 	bool PlayColor(const char* plcIdPath, const char* name,
-			const float fColor[3], View* view);
+			const float fColor[3]);
 	bool PlayAnimationImage(const char* plcIdPath, const char* name,
-			const float fPos[3], const float fScale[3], const bool bOnOffFlg,
-			View* view);
-	void updateView(void* pBehaviorManager, View* view);
-	void playBegin(View* view);
-	void playEnd(View* view);
+			const float fPos[3], const float fScale[3], const bool bOnOffFlg);
+	void updateView(void* pBehaviorManager);
+	void playBegin(void* pBehaviorManager);
+	void playEnd(void* pBehaviorManager);
 	void PlayClipPlane(const int type, const char* plcIdPath, const char* name,
-			const float fNormal[3], const float fPos[3], const bool bOnOff,
-			View* view);
-	bool Collision(const char* plcIdPath, View* view);
-	void InitColisionData(View* view);
-	void ClearColisionData(View* view);
-	void SetTargetState(vector<PTARGETOBJECTINFO>& vecTarget, View* view);
+			const float fNormal[3], const float fPos[3], const bool bOnOff);
+	bool Collision(const char* plcIdPath);
+	void InitColisionData();
+	void ClearColisionData();
+	void SetTargetState(vector<PTARGETOBJECTINFO>& vecTarget);
 
 	void CalculatelTanslationMtx(const char* plcIdPath, const float fPivot[3],
-			float fMtxAA[4][4], View* view);
+			float fMtxAA[4][4]);
 	void CalculatelRotationMtx(const char* plcIdPath, const float fPivot[3],
-			float fMtxAA[4][4], View* view);
+			float fMtxAA[4][4]);
 	void modelTanslation(const char* plcIdPath, const float fPivot[3],
-			const float fMtxAA[4][4], View* view);
+			const float fMtxAA[4][4]);
 	void modelRotation(const char* plcIdPath, const float fPivot[3],
-			const float fMtxAA[4][4], View* view);
+			const float fMtxAA[4][4]);
 	void cameraTranslation(const char* plcIdPath, const float fPivot[3],
-			const float fMtxAA[4][4], View* view);
+			const float fMtxAA[4][4]);
 	void cameraRotation(const char* plcIdPath, const float fPivot[3],
-			const float fMtxAA[4][4], View* view);
+			const float fMtxAA[4][4]);
 	void cameraScale(const char* plcIdPath, const float fPivot[3],
-			const float fMtxAA[4][4], const INT iCamType, View* view);
-//	float GetFocalDistance1(const char* plcIdPath, View* view);
+			const float fMtxAA[4][4], const INT iCamType);
+//	float GetFocalDistance1(const char* plcIdPath);
 	void CamaraTargetPntToPosition(const char* plcIdPath,
 			const float dTarget[3], const float fRotMatrix[4][4],
-			float dPosition[3], View* view);
+			float dPosition[3]);
 	void CamaraPositionToTargetPnt(const char* plcIdPath,
 			const float fPosition[3], const float fRotMatrix[4][4],
-			float fTarget[3], View* view);
+			float fTarget[3]);
 
-	void SetCameraState(const PTARGETOBJECTINFO& cameraInfo, View* view);
-	void SetObjectState(const PTARGETOBJECTINFO& cameraInfo, View* view);
-	void SetPMIState(const PTARGETOBJECTINFO& cameraInfo, View* view);
-	void PlayToolAnimation(int nType, const char* plcIdPath, const char* strToolPath, const char* strParentPath,View* view);
+	void PlayToolAnimation(int nType, const char* plcIdPath, const char* strToolPath, const char* strParentPath);
+
+	void LockView(bool bLock);
 
 private:
 	float m_CamaraMtx[4][4];

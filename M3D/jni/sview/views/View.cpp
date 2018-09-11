@@ -71,6 +71,9 @@
 #include "animation/SimulationAnimation/AnimationStepManager.h"
 #include "animation/SimulationAnimation/CProcess.h"
 #include "animation/SimulationAnimation/ProcessManager.h"
+#include "animation/SimulationAnimation/AnimationAPI.h"
+
+
 
 #include "m3d/model/PolyLine.h"
 #include "Stk_Confige.h"
@@ -112,6 +115,7 @@
 #include "m3d/scene/GroundNode.h"
 #include "m3d/extras/annotation/AnnotationGroup.h"
 #include "m3d/extras/measure/MeasureGroup.h"
+#include "animation/SimulationAnimationPlay/AnimationCallBackFunction.h"
 #include "m3d/renderer/gl20/ShaderChunk.h"
 #include <time.h>
 
@@ -241,6 +245,9 @@ namespace SVIEW
 		_sectionManager = NULL;
 		//郑煤机项目 初始缩放比例
 		m_fUnitScale = 1.0f;
+		m_pAnimationCallBackFunction = new CAnimationCallBackFunction(this);
+
+		this->m_modelSelectedCB = NULL;
 	}
 
 	View::~View()
@@ -323,6 +330,11 @@ namespace SVIEW
 		if (_sectionManager)
 		{
 			_sectionManager->Release();
+		}
+		if (m_pAnimationCallBackFunction)
+		{
+			delete m_pAnimationCallBackFunction;
+			m_pAnimationCallBackFunction = NULL;
 		}
 
 		ShaderChunk::Clear();
@@ -2275,6 +2287,10 @@ namespace SVIEW
 			}
 
 		}
+		else
+		{
+			ShowModelViewAnimation(pView);
+		}
 		//	LOGE("SceneManager::showModelView clipPlaneIdList 11" );
 			//设置视图中的剖面为启用
 //
@@ -2494,7 +2510,280 @@ namespace SVIEW
 		//	}
 		this->m_SceneManager->UnLock();
 	}
-	
+
+	void View::ShowModelViewAnimation(ModelView *pView)
+	{
+		if (!pView)
+			return;
+		int iCurrentBehaviorActionID = m_pSAManager->GetCurSAID();
+		NS_SimulationAnimation::CSBehaviorAction* pChgViewBehaviorAction = m_pSAManager->GetAnimationStepManager()->GetBehaviorActionChgCam();
+		
+		if (!pChgViewBehaviorAction)
+		{
+			return;
+		}
+		
+		pChgViewBehaviorAction->DeleteAllAnimations();
+		CAnimationAPI* pAnimationAPI = CAnimationAPI::GetInstance();
+		bool bTempShowRecUI = pAnimationAPI->m_bShowRecUI;
+		//int iTempNumAutoKeyFrame = pAnimationAPI->m_numAutoKeyFrame;
+		//pAnimationAPI->m_numAutoKeyFrame = 5;
+		pAnimationAPI->m_bShowRecUI = true;
+		//如果需要更新摄像机
+		if (pView->GetUpDataCameraState())
+		{
+			//获得视图中的相机参数
+			const CameraNode &camera = pView->GetCamera();
+			CameraNode *currentCamera = GetSceneManager()->GetCamera();
+
+			currentCamera->SetOrthographic(camera.IsOrthographic());
+
+			BoundingBox& sceneBox = this->m_SceneManager->GetSceneBox();
+			Vector3 center = sceneBox.Center();
+			
+			float fFlocalDistance = sceneBox.Size().Length()* 0.8f;
+			Vector3 curCamPos = currentCamera->GetPosition();
+			Quaternion curCamRotaion = currentCamera->GetRotation();
+			Matrix4 curCamMatrix(curCamPos,curCamRotaion,1.0f);
+			Vector3 curDirection(-curCamMatrix.m_m02, -curCamMatrix.m_m12, -curCamMatrix.m_m22);
+			curCamPos = curCamPos.Add(curDirection.Multiply(fFlocalDistance));
+			//curCamMatrix.SetTranslation(curCamPos);
+			curCamMatrix = curCamMatrix.Transpose();
+
+			float fCenter[3];
+			fCenter[0] = center.m_x;
+			fCenter[1] = center.m_y;
+			fCenter[2] = center.m_z;
+
+
+			float fCurMatrix[4][4];
+			float fCurScale = 1.0f;
+			float fCurInitWind[2];
+
+			fCurMatrix[0][0] = curCamMatrix.m_m00;
+			fCurMatrix[0][1] = curCamMatrix.m_m01;
+			fCurMatrix[0][2] = curCamMatrix.m_m02;
+			fCurMatrix[0][3] = curCamMatrix.m_m03;
+			fCurMatrix[1][0] = curCamMatrix.m_m10;
+			fCurMatrix[1][1] = curCamMatrix.m_m11;
+			fCurMatrix[1][2] = curCamMatrix.m_m12;
+			fCurMatrix[1][3] = curCamMatrix.m_m13;
+			fCurMatrix[2][0] = curCamMatrix.m_m20;
+			fCurMatrix[2][1] = curCamMatrix.m_m21;
+			fCurMatrix[2][2] = curCamMatrix.m_m22;
+			fCurMatrix[2][3] = curCamMatrix.m_m23;
+			fCurMatrix[3][3] = curCamMatrix.m_m33;
+			fCurMatrix[3][0] = curCamPos.m_x;
+			fCurMatrix[3][1] = curCamPos.m_y;
+			fCurMatrix[3][2] = curCamPos.m_z;
+
+			float fCurOrthoSize = currentCamera->GetOrthoSize();
+			if (currentCamera->IsOrthographic())
+			{
+				fCurScale = currentCamera->GetZoom();
+				fCurInitWind[0] = fCurOrthoSize* currentCamera->GetAspectRatio();
+				fCurInitWind[1] = fCurOrthoSize;
+			}
+			else
+			{
+				double fHeightAngle = 1.0;
+				fCurInitWind[1] = (float)(fFlocalDistance * 2.0 * tan(fHeightAngle / 2.0));
+				fCurInitWind[0] = fCurInitWind[1]* currentCamera->GetAspectRatio()/* * (cameraOrthoSize.m_x / cameraOrthoSize.m_y)*/;
+				fCurScale = 1.0f;
+			}
+
+			pAnimationAPI->RecCamera(fCenter, fCurMatrix, fCurScale, fCurInitWind, true, pChgViewBehaviorAction);
+
+			
+			//目标状态
+			Vector3 newCamPos = camera.GetPosition();
+			Quaternion newCamRotaion = camera.GetRotation();
+			Matrix4 newCamMatrix(newCamPos, newCamRotaion, 1.0f);
+
+			Vector3 direction(-newCamMatrix.m_m02, -newCamMatrix.m_m12, -newCamMatrix.m_m22);
+			newCamPos = newCamPos.Add(direction.Multiply(sceneBox.Size().Length()* 0.8f));
+			//newCamMatrix.SetTranslation(newCamPos);
+			newCamMatrix = newCamMatrix.Transpose();
+			float fNewMatrix[4][4];
+			float fNewScale = 1.0f;
+			float fNewInitWind[2];
+			fNewMatrix[0][0] = newCamMatrix.m_m00;
+			fNewMatrix[0][1] = newCamMatrix.m_m01;
+			fNewMatrix[0][2] = newCamMatrix.m_m02;
+			fNewMatrix[0][3] = newCamMatrix.m_m03;
+			fNewMatrix[1][0] = newCamMatrix.m_m10;
+			fNewMatrix[1][1] = newCamMatrix.m_m11;
+			fNewMatrix[1][2] = newCamMatrix.m_m12;
+			fNewMatrix[1][3] = newCamMatrix.m_m13;
+			fNewMatrix[2][0] = newCamMatrix.m_m20;
+			fNewMatrix[2][1] = newCamMatrix.m_m21;
+			fNewMatrix[2][2] = newCamMatrix.m_m22;
+			fNewMatrix[2][3] = newCamMatrix.m_m23;
+			fNewMatrix[3][3] = newCamMatrix.m_m33;
+			fNewMatrix[3][0] = newCamPos.m_x;
+			fNewMatrix[3][1] = newCamPos.m_y;
+			fNewMatrix[3][2] = newCamPos.m_z;
+
+			float fNewOrthoSize = camera.GetOrthoSize();
+			if (currentCamera->IsOrthographic())
+			{
+				fNewScale = camera.GetZoom();
+				fNewInitWind[0] = fNewOrthoSize*camera.GetAspectRatio();
+				fNewInitWind[1] = fNewOrthoSize;
+
+				//调整缩放
+				float dx = fNewInitWind[0] / fCurInitWind[0];
+				float dy = fNewInitWind[1] / fCurInitWind[1];
+				if (dx > dy)
+				{
+					fNewScale = fNewScale / dx;
+				}
+				else
+				{
+					fNewScale = fNewScale / dy;
+				}
+				fNewInitWind[0] = fCurInitWind[0];
+				fNewInitWind[1] = fCurInitWind[1];
+			}
+			else
+			{
+				fNewScale = camera.GetZoom();
+				//透视投影切换视图不用考虑缩放，只要摄像机的位置和方向正确即可
+				fNewInitWind[0] = fCurInitWind[0];//fNewOrthoSize/ fNewScale*camera.GetAspectRatio();
+				fNewInitWind[1] = fCurInitWind[1];//fNewOrthoSize/ fNewScale;
+				fNewScale = 1.0f;
+			}
+			
+			pAnimationAPI->RecCamera(fCenter, fNewMatrix, fNewScale, fNewInitWind, true, pChgViewBehaviorAction);
+		}
+
+		//更新零件状态
+		if (pView->GetUpDataModelState())
+		{
+			this->GetExplosiveView()->SetExplosivePercent(0);
+			this->GetExplosiveView()->SetExplosiveStyle(NOEXPLOSIVE);
+
+			//if (pChgViewBehaviorAction->GetCurrentTick() != 0)
+			//	pChgViewBehaviorAction->SetCurrentTick(pChgViewBehaviorAction->GetCurrentTick() + 10);
+			//insAtt
+			const map<int, InstanceAttribute>& insAttMap =
+				pView->GetInstanceAttributeMap();
+
+			
+			Vector3 boxCenter = Vector3::ZERO;
+
+			VStringArray aInsPlcPath;
+			VStringArray aInsName;
+			VHPointArray aInsStartTranslate;
+			VHPointArray aInsEndTranslate;
+			VHQuatArray aInsStartRotaion;
+			VHQuatArray aInsEndRotaion;
+			VHPointArray aInsCenter;
+			char plcID[1024];
+			for (map<int, InstanceAttribute>::const_iterator it = insAttMap.begin();
+				it != insAttMap.end(); it++)
+			{
+				const InstanceAttribute &curInsAtt = it->second;
+
+				IShape* shape = this->GetShapeBySVLPath(curInsAtt.path);
+				if (shape && shape->GetType() == SHAPE_MODEL)
+				{
+					Model *pModel = (Model*)shape;
+					if (pModel == NULL)
+						continue;
+
+					//颜色和显隐藏不使用动画效果
+					pModel->SetVisible(curInsAtt.visible, false);
+					if (curInsAtt.hasColor)
+					{
+						Color tmpColor = curInsAtt.insColor;
+						pModel->SetColor(tmpColor);
+					}
+
+					string strPlcID, saPlcID, strObjName;
+					Matrix3x4 plcMatrix;
+					Vector3 trans;
+					Quaternion rot;
+
+					AniPoint hCenter;
+					AniPoint hPoint;
+					AniQuat hQuat;
+
+					plcMatrix = *pModel->GetPlaceMatrix();
+					Matrix3x4 transform = curInsAtt.placeMatrix;
+					if ((int)transform.m_m00 == 0 &&
+						(int)transform.m_m01 == 0 &&
+						(int)transform.m_m02 == 0 &&
+						(int)transform.m_m03 == 0 &&
+						(int)transform.m_m10 == 0 &&
+						(int)transform.m_m11 == 0 &&
+						(int)transform.m_m12 == 0 &&
+						(int)transform.m_m13 == 0 &&
+						(int)transform.m_m20 == 0 &&
+						(int)transform.m_m21 == 0 &&
+						(int)transform.m_m22 == 0 &&
+						(int)transform.m_m23 == 0)
+					{
+						continue;
+					}
+
+					//如果没有变化，不需要生成动画
+					if(plcMatrix.Equals(transform))
+						continue;
+
+					strPlcID = pModel->GetPlcPath();
+					pAnimationAPI->ConvertPlcPathToSAPlcPath(strPlcID.c_str(), plcID, 16, 0);
+					saPlcID = plcID;
+					aInsPlcPath.Append(saPlcID);
+
+					strObjName = pModel->GetName();
+					aInsName.Append(strObjName);
+
+					Vector3 privot = pModel->GetBoundingBox().Center();
+					hCenter.x = boxCenter.m_x;
+					hCenter.y = boxCenter.m_y;
+					hCenter.z = boxCenter.m_z;
+					aInsCenter.Append(hCenter);
+;
+					trans = plcMatrix.Translation();
+					rot = plcMatrix.Rotation();
+					hPoint.x = trans.m_x;
+					hPoint.y = trans.m_y;
+					hPoint.z = trans.m_z;
+					hQuat.x = rot.m_x;
+					hQuat.y = rot.m_y;
+					hQuat.z = rot.m_z;
+					hQuat.w = rot.m_w;
+					aInsStartTranslate.Append(hPoint);
+					aInsStartRotaion.Append(hQuat);
+
+					trans = transform.Translation();
+					rot = transform.Rotation();
+					hPoint.x = trans.m_x;
+					hPoint.y = trans.m_y;
+					hPoint.z = trans.m_z;
+					hQuat.x = rot.m_x;
+					hQuat.y = rot.m_y;
+					hQuat.z = rot.m_z;
+					hQuat.w = rot.m_w;
+					aInsEndTranslate.Append(hPoint);
+					aInsEndRotaion.Append(hQuat);
+					
+				}
+			}
+			if (aInsPlcPath.Size() <= 0)
+				return;
+
+			//动画录制
+
+			pAnimationAPI->RecInsPosRot(aInsPlcPath, aInsName, aInsStartTranslate, aInsEndTranslate, aInsStartRotaion, aInsEndRotaion, aInsCenter, true, false, pChgViewBehaviorAction);
+		}
+		pAnimationAPI->m_bShowRecUI = bTempShowRecUI;
+		//pAnimationAPI->m_numAutoKeyFrame = iTempNumAutoKeyFrame;
+		pChgViewBehaviorAction->SetCurrentTick(0);
+		pChgViewBehaviorAction->Continue();
+		m_pSAManager->SetCurSAByID(iCurrentBehaviorActionID);
+	}
 
 	/*设置当前视图
 	 *
@@ -3170,7 +3459,8 @@ namespace SVIEW
 		if (m_pSAManager->HasAnimations())
 		{
 
-            m_pSAManager->SetView(this);
+			//m_pSAManager->SetView(this);
+			InitAinmationPlayCB();
 			m_bHasAni = true;
 		}
 		return m_bHasAni;
@@ -3210,7 +3500,8 @@ namespace SVIEW
 
 		if (m_pSAManager->HasAnimations())
 		{
-            m_pSAManager->SetView(this);
+			//m_pSAManager->SetView(this);
+			InitAinmationPlayCB();
 			m_bHasAni = true;
 		}
 		else
@@ -4928,7 +5219,8 @@ int View::GetSVLXFileItem(const std::string& i_strFileName, unsigned int& o_bufS
 			pTDriver = new CTickTimer();
 			pTDriver->Init();
 		}
-        this->m_pSAManager->SetView(this);
+		//this->m_pSAManager->SetView(this);
+		InitAinmationPlayCB();
 	}
 
 	bool View::CloseSceneAnimation()
@@ -5407,6 +5699,35 @@ int View::GetSVLXFileItem(const std::string& i_strFileName, unsigned int& o_bufS
 		return m_fUnitScale;
 	}
 
+
+	void View::InitAinmationPlayCB()
+	{
+		if (m_pAnimationCallBackFunction)
+		{
+			m_pAnimationCallBackFunction->InitAinmationPlayCB();
+		}
+	}
+
+	void View::SetModelSelectedCB(ModelSelectedCB* modelSelectedCB)
+	{
+		this->m_modelSelectedCB = modelSelectedCB;
+	}
+
+	void View::NotifyModelSected(M3D::IShape* shape, bool selected)
+	{
+		if (this->m_modelSelectedCB)
+		{
+			if (shape)
+			{
+				this->m_modelSelectedCB(shape->GetID(), selected);
+			}
+			else
+			{
+				this->m_modelSelectedCB(-1, selected);
+			}
+		}
+	}
+
 	Vector3 View::getRayIntersectNormal()
 	{
 		return this->GetSceneManager()->rayIntersectNormal;
@@ -5414,6 +5735,10 @@ int View::GetSVLXFileItem(const std::string& i_strFileName, unsigned int& o_bufS
 	Vector3 View::getRayIntersectPos()
 	{
 		return this->GetSceneManager()->rayIntersectPos;
+	}
+	
+	void View::updateScreenBox() {
+		this->GetSceneManager()->GetSceneBox().Clear();
 	}
 }
 ///namespace

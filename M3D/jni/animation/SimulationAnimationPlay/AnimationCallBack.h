@@ -3,129 +3,321 @@
 *	@file
 *		CAnimationCallBack.h
 *	@brief
-*		CAnimationCallBack åŠ¨ç”»æ’­æ”¾å›è°ƒå‡½æ•°ç±»çš„æ¥å£å£°æ˜
+*		CAnimationCallBack ¶¯»­²¥·Å»Øµ÷º¯ÊıÀàµÄ½Ó¿ÚÉùÃ÷
 *	@par
 *	add by qinyp on 2018-03-29
 **********************************************************************************/
 #ifndef _H_ANIMATIONCALLBACK_H_
 #define _H_ANIMATIONCALLBACK_H_
-#include 	"m3d/M3D.h"
 
-#ifdef WIN32
-//æ›´æ–°è§†å›¾å›è°ƒå‡½æ•°
-typedef void(_stdcall UpdateViewCB) (void* pBehaviorAction);
-//å¼€å§‹æ’­æ”¾å›è°ƒå‡½æ•°
-typedef void(_stdcall PlayBeginCB) ();
-//è®¾ç½®è§†å£å†…å„å¯¹è±¡çš„çŠ¶æ€
-typedef void(_stdcall SetTargetStateCB) (void* targetList);
-#else
-//æ›´æ–°è§†å›¾å›è°ƒå‡½æ•°
-typedef void( UpdateViewCB) (void* pBehaviorAction);
-//å¼€å§‹æ’­æ”¾å›è°ƒå‡½æ•°
-typedef void( PlayBeginCB) ();
-//è®¾ç½®è§†å£å†…å„å¯¹è±¡çš„çŠ¶æ€
-typedef void( SetTargetStateCB) (void* targetList);
-#endif
-class M3D_API CAnimationCallBack
+#include <stdlib.h>
+#include <vector>
+#include "../SimulationCommon/SATools.h"
+#include "../SimulationCommon/Animation_def.h"
+
+//#ifdef WIN32
+//typedef void(_stdcall *GetModelPlcMtxCB) (const char plcIdPath[SA_BUFFER_SIZE_BIG], float matrix[4][4], void* pInstance);
+//typedef void(_stdcall *SetModelPlcMtxCB) (const char plcIdPath[SA_BUFFER_SIZE_BIG],const float matrix[4][4], void* pInstance);
+//typedef void(_stdcall *GetCameraCB) (const char plcIdPath[SA_BUFFER_SIZE_BIG],float scale[3],float matrix[4][4], void* pInstance);
+//typedef void(_stdcall *SetCameraCB)(const char plcIdPath[SA_BUFFER_SIZE_BIG],const float scale[3],const float matrix[4][4], void* pInstance);
+//typedef void(_stdcall *GetCameraFocalCB)(float& fPosTargetDistance, void* pInstance);
+//typedef void(_stdcall *GetCameraTargetPntCB)(const char plcIdPath[SA_BUFFER_SIZE_BIG],float targetPnt[3], void* pInstance);
+//typedef void(_stdcall *PlayVisibleCB)(const char plcIdPath[SA_BUFFER_SIZE_BIG], const char name[SA_BUFFER_SIZE_BIG], bool bOnOff, float fTran, void* pInstance);
+//typedef void(_stdcall *PlayColorCB)(const char plcIdPath[SA_BUFFER_SIZE_BIG], const char name[SA_BUFFER_SIZE_BIG], const float fColor[3], void* pInstance);
+//typedef void(_stdcall *PlaySoundCB)(const char plcIdPath[SA_BUFFER_SIZE_BIG], bool bPlayFlg,float fTime, void* pInstance);
+//typedef void(_stdcall *PlayImageCB)(const char plcIdPath[SA_BUFFER_SIZE_BIG], const char name[SA_BUFFER_SIZE_BIG], const float fPos[3], const float fScale[3], bool bOnOffFlg, void* pInstance);
+//typedef void(_stdcall *PlayClipPlaneCB)(const char plcIdPath[SA_BUFFER_SIZE_BIG], const char name[SA_BUFFER_SIZE_BIG], const float fNormal[3], const float fPos[3], bool bOnOff, void* pInstance);
+//typedef void(_stdcall *PlayToolCB)(int nType, const char plcIdPath[SA_BUFFER_SIZE_BIG], const char strToolPath[SA_BUFFER_SIZE_BIG], const char strParentPath[SA_BUFFER_SIZE_BIG], void* pInstance);
+//
+////¸üĞÂÊÓÍ¼»Øµ÷º¯Êı
+//typedef void(_stdcall *UpdateViewCB) (void* pBehaviorAction, void* pInstance);
+////¿ªÊ¼²¥·Å»Øµ÷º¯Êı
+//typedef void(_stdcall *PlayBeginCB) (void* pBehaviorAction, void* pInstance);
+////²¥·Å½áÊø»Øµ÷º¯Êı
+//typedef void(_stdcall *PlayEndCB) (void* pBehaviorAction, void* pInstance);
+//
+////ÉèÖÃÊÓ¿ÚÄÚ¸÷¶ÔÏóµÄ×´Ì¬
+//typedef void(_stdcall *SetTargetStateCB) (void* targetList, void* pInstance);
+//
+////Ëø¶¨ÊÓÍ¼»Øµ÷º¯Êı
+//typedef void(_stdcall *LockViewCB) (bool bLock, void* pInstance);
+//#else
+typedef void( *GetModelPlcMtxCB) (const char plcIdPath[SA_BUFFER_SIZE_BIG], float matrix[4][4], void* pInstance);
+typedef void( *SetModelPlcMtxCB) (const char plcIdPath[SA_BUFFER_SIZE_BIG],const float matrix[4][4], void* pInstance);
+typedef void( *GetCameraCB) (const char plcIdPath[SA_BUFFER_SIZE_BIG],float scale[3],float matrix[4][4], void* pInstance);
+typedef void( *SetCameraCB)(const char plcIdPath[SA_BUFFER_SIZE_BIG],const float scale[3],const float matrix[4][4], void* pInstance);
+typedef void( *GetCameraFocalCB)(float& fPosTargetDistance, void* pInstance);
+typedef void( *GetCameraTargetPntCB)(const char plcIdPath[SA_BUFFER_SIZE_BIG],float targetPnt[3], void* pInstance);
+typedef void( *PlayVisibleCB)(const char plcIdPath[SA_BUFFER_SIZE_BIG], const char name[SA_BUFFER_SIZE_BIG], bool bOnOff, float fTran, void* pInstance);
+typedef void( *PlayColorCB)(const char plcIdPath[SA_BUFFER_SIZE_BIG], const char name[SA_BUFFER_SIZE_BIG], const float fColor[3], void* pInstance);
+typedef void( *PlaySoundCB)(const char plcIdPath[SA_BUFFER_SIZE_BIG], bool bPlayFlg,float fTime, void* pInstance);
+typedef void( *PlayImageCB)(const char plcIdPath[SA_BUFFER_SIZE_BIG], const char name[SA_BUFFER_SIZE_BIG], const float fPos[3], const float fScale[3], bool bOnOffFlg, void* pInstance);
+typedef void( *PlayClipPlaneCB)(const char plcIdPath[SA_BUFFER_SIZE_BIG], const char name[SA_BUFFER_SIZE_BIG], const float fNormal[3], const float fPos[3], bool bOnOff, void* pInstance);
+typedef void( *PlayToolCB)(int nType, const char plcIdPath[SA_BUFFER_SIZE_BIG], const char strToolPath[SA_BUFFER_SIZE_BIG], const char strParentPath[SA_BUFFER_SIZE_BIG], void* pInstance);
+
+//¸üĞÂÊÓÍ¼»Øµ÷º¯Êı
+typedef void( *UpdateViewCB) (void* pBehaviorAction, void* pInstance);
+//¿ªÊ¼²¥·Å»Øµ÷º¯Êı
+typedef void( *PlayBeginCB) (void* pBehaviorAction, void* pInstance);
+//²¥·Å½áÊø»Øµ÷º¯Êı
+typedef void( *PlayEndCB) (void* pBehaviorAction, void* pInstance);
+
+//ÉèÖÃÊÓ¿ÚÄÚ¸÷¶ÔÏóµÄ×´Ì¬
+typedef void( *SetTargetStateCB) (void* targetList, void* pInstance);
+
+//Ëø¶¨ÊÓÍ¼»Øµ÷º¯Êı
+typedef void( *LockViewCB) (bool bLock, void* pInstance);
+//#endif
+//Tobject:µ÷ÓÃ¶ÔÏóµÄÀàĞÍ£¬Tparam»Øµ÷º¯Êı²ÎÊıµÄÀàĞÍ
+template<typename Tfun>
+struct  AnimationDelegate
+{
+	AnimationDelegate(void *pInstance, Tfun pFun)
+	{
+		m_pInstance = pInstance;
+		m_pCbFun = pFun;
+	}
+
+	Tfun       m_pCbFun;     //»Øµ÷º¯ÊıÖ¸Õë  
+	void*   m_pInstance; //µ÷ÓÃ¶ÔÏó  
+};
+
+class SA_API CAnimationCallBack
 {
 public:
 	CAnimationCallBack();
 	~CAnimationCallBack();
 private:
-	std::vector<UpdateViewCB*> m_vecUpdateViewCB;
-	std::vector<PlayBeginCB*> m_vecPlayBeginCB;
-	std::vector<SetTargetStateCB*> m_vecSetTargetStateCB;
+	//¸üĞÂ×´Ì¬µÄ»Øµ÷º¯Êı
+	std::vector<AnimationDelegate<UpdateViewCB> > m_vecUpdateViewCB;
+	//¿ªÊ¼²¥·Å»Øµ÷º¯Êı
+	std::vector<AnimationDelegate<PlayBeginCB> > m_vecPlayBeginCB;
+	//½áÊø²¥·Å»Øµ÷º¯Êı
+	std::vector<AnimationDelegate<PlayEndCB> > m_vecPlayEndCB;
+
+	//Ëø¶¨ÊÓÍ¼»Øµ÷º¯Êı
+	std::vector<AnimationDelegate<LockViewCB> > m_vecLockViewCB;
+	
+	//ÉèÖÃ¶ÔÏó×´Ì¬»Øµ÷º¯Êı
+	std::vector<AnimationDelegate<SetTargetStateCB> > m_vecSetTargetStateCB;
+
+	//»ñÈ¡ÅäÖÃ¾ØÕó»Øµ÷º¯Êı
+	std::vector<AnimationDelegate<GetModelPlcMtxCB> > m_vecGetModelPlcMtxCB;
+
+	//ÉèÖÃÅäÖÃ¾ØÕó»Øµ÷º¯Êı
+	std::vector<AnimationDelegate<SetModelPlcMtxCB> > m_vecSetModelPlcMtxCB;
+
+	//»ñÈ¡ÉãÏñ»ú×´Ì¬»Øµ÷º¯Êı
+	std::vector<AnimationDelegate<GetCameraCB> > m_vecGetCameraCB;
+
+	//ÉèÖÃÉãÏñ»ú×´Ì¬»Øµ÷º¯Êı
+	std::vector<AnimationDelegate<SetCameraCB> > m_vecSetCameraCB;
+
+	//»ñÈ¡ÉãÏñ»úÄ¿±êµã¾àÀë»Øµ÷º¯Êı
+	std::vector<AnimationDelegate<GetCameraFocalCB> > m_vecGetCameraFocalCB;
+
+	//»ñÈ¡ÉãÏñ»úÄ¿±êµã»Øµ÷º¯Êı
+	std::vector<AnimationDelegate<GetCameraTargetPntCB> > m_vecGetCameraTargetPntCB;
+
+	//ÉèÖÃÏÔÊ¾Òş²Ø»Øµ÷º¯Êı
+	std::vector<AnimationDelegate<PlayVisibleCB> > m_vecPlayVisibleCB;
+
+	//ÉèÖÃÑÕÉ«»Øµ÷º¯Êı
+	std::vector<AnimationDelegate<PlayColorCB> > m_vecPlayColorCB;
+
+	//²¥·ÅÍ¼Æ¬»Øµ÷º¯Êı
+	std::vector<AnimationDelegate<PlayImageCB> > m_vecPlayImageCB;
+
+	//²¥·ÅÆÊÃæ»Øµ÷º¯Êı
+	std::vector<AnimationDelegate<PlayClipPlaneCB> > m_vecPlayClipPlaneCB;
+	
+	//¹¤¾ß»Øµ÷º¯Êı
+	std::vector<AnimationDelegate<PlayToolCB> > m_vecPlayToolCB;
 public:
 	/*****************************************************************
-	å‡½æ•°å	ï¼šAddUpdateViewCB
-	åŠŸèƒ½	ï¼šæ·»åŠ æ›´æ–°è§†å›¾å›è°ƒå‡½æ•°
-	å‚æ•°	ï¼š
-	UpdateViewCB* UpdateViewCBï¼Œå›è°ƒå‡½æ•°æŒ‡é’ˆ
-	è¿”å›å€¼	ï¼švoid
-	æ›´æ–°å†å²ï¼š
-	åˆ›å»ºï¼š2018-03-29 qinyp
+	º¯ÊıÃû	£ºAddUpdateViewCB
+	¹¦ÄÜ	£ºÌí¼Ó¸üĞÂÊÓÍ¼»Øµ÷º¯Êı
+	²ÎÊı	£º
+	UpdateViewCB UpdateViewCB£¬»Øµ÷º¯ÊıÖ¸Õë
+	·µ»ØÖµ	£ºvoid
+	¸üĞÂÀúÊ·£º
+	´´½¨£º2018-03-29 qinyp
 	*****************************************************************/
-	void AddUpdateViewCB(UpdateViewCB* pUpdateViewCB);
+	void AddUpdateViewCB(UpdateViewCB pUpdateViewCB,void* pInstance );
 	/*****************************************************************
-	å‡½æ•°å	ï¼šRemoveUpdateViewCB
-	åŠŸèƒ½	ï¼šåˆ é™¤æ›´æ–°ç•Œé¢å›è°ƒå‡½æ•°
-	å‚æ•°	ï¼š
-	UpdateViewCB* UpdateViewCBï¼Œå›è°ƒå‡½æ•°æŒ‡é’ˆ
-	è¿”å›å€¼	ï¼švoid
-	æ›´æ–°å†å²ï¼š
-	åˆ›å»ºï¼š2018-03-29 qinyp
+	º¯ÊıÃû	£ºRemoveUpdateViewCB
+	¹¦ÄÜ	£ºÉ¾³ı¸üĞÂ½çÃæ»Øµ÷º¯Êı
+	²ÎÊı	£º
+	UpdateViewCB UpdateViewCB£¬»Øµ÷º¯ÊıÖ¸Õë
+	·µ»ØÖµ	£ºvoid
+	¸üĞÂÀúÊ·£º
+	´´½¨£º2018-03-29 qinyp
 	*****************************************************************/
-	void RemoveUpdateViewCB(UpdateViewCB* pUpdateViewCB);
+	void RemoveUpdateViewCB(UpdateViewCB pUpdateViewCB, void* pInstance );
 	/*****************************************************************
-	å‡½æ•°å	ï¼šInvokeUpdateViewCB
-	åŠŸèƒ½	ï¼šæ‰§è¡Œæ›´æ–°ç•Œé¢å›è°ƒå‡½æ•°
-	å‚æ•°	ï¼š
-	pBehaviorActionï¼Œæ®µåŠ¨ç”»
-	è¿”å›å€¼	ï¼švoid
-	æ›´æ–°å†å²ï¼š
-	åˆ›å»ºï¼š2018-03-29 qinyp
+	º¯ÊıÃû	£ºInvokeUpdateViewCB
+	¹¦ÄÜ	£ºÖ´ĞĞ¸üĞÂ½çÃæ»Øµ÷º¯Êı
+	²ÎÊı	£º
+	pBehaviorAction£¬¶Î¶¯»­
+	·µ»ØÖµ	£ºvoid
+	¸üĞÂÀúÊ·£º
+	´´½¨£º2018-03-29 qinyp
 	*****************************************************************/
 	void InvokeUpdateViewCB(void* pBehaviorAction);
 	/*****************************************************************
-	å‡½æ•°å	ï¼šAddPlayBeginCB
-	åŠŸèƒ½	ï¼šæ·»åŠ åŠ¨ç”»å¼€å§‹æ’­æ”¾å›è°ƒå‡½æ•°
-	å‚æ•°	ï¼š
-	PlayBeginCB* PlayBeginCBï¼Œå›è°ƒå‡½æ•°æŒ‡é’ˆ
-	è¿”å›å€¼	ï¼švoid
-	æ›´æ–°å†å²ï¼š
-	åˆ›å»ºï¼š2018-03-29 qinyp
+	º¯ÊıÃû	£ºAddPlayBeginCB
+	¹¦ÄÜ	£ºÌí¼Ó¶¯»­¿ªÊ¼²¥·Å»Øµ÷º¯Êı
+	²ÎÊı	£º
+	PlayBeginCB PlayBeginCB£¬»Øµ÷º¯ÊıÖ¸Õë
+	·µ»ØÖµ	£ºvoid
+	¸üĞÂÀúÊ·£º
+	´´½¨£º2018-03-29 qinyp
 	*****************************************************************/
-	void AddPlayBeginCB(PlayBeginCB* pPlayBeginCB);
+	void AddPlayBeginCB(PlayBeginCB pPlayBeginCB, void* pInstance );
 	/*****************************************************************
-	å‡½æ•°å	ï¼šRemovePlayBeginCB
-	åŠŸèƒ½	ï¼šåˆ é™¤åŠ¨ç”»å¼€å§‹æ’­æ”¾å›è°ƒå‡½æ•°
-	å‚æ•°	ï¼š
-	PlayBeginCB* PlayBeginCBï¼Œå›è°ƒå‡½æ•°æŒ‡é’ˆ
-	è¿”å›å€¼	ï¼švoid
-	æ›´æ–°å†å²ï¼š
-	åˆ›å»ºï¼š2018-03-29 qinyp
+	º¯ÊıÃû	£ºRemovePlayBeginCB
+	¹¦ÄÜ	£ºÉ¾³ı¶¯»­¿ªÊ¼²¥·Å»Øµ÷º¯Êı
+	²ÎÊı	£º
+	PlayBeginCB PlayBeginCB£¬»Øµ÷º¯ÊıÖ¸Õë
+	·µ»ØÖµ	£ºvoid
+	¸üĞÂÀúÊ·£º
+	´´½¨£º2018-03-29 qinyp
 	*****************************************************************/
-	void RemovePlayBeginCB(PlayBeginCB* pPlayBeginCB);
+	void RemovePlayBeginCB(PlayBeginCB pPlayBeginCB, void* pInstance );
 	/*****************************************************************
-	å‡½æ•°å	ï¼šInvokePlayBeginCB
-	åŠŸèƒ½	ï¼šæ‰§è¡Œå¼€å§‹æ’­æ”¾åŠ¨ç”»å›è°ƒå‡½æ•°
-	å‚æ•°	ï¼š
+	º¯ÊıÃû	£ºInvokePlayBeginCB
+	¹¦ÄÜ	£ºÖ´ĞĞ¿ªÊ¼²¥·Å¶¯»­»Øµ÷º¯Êı
+	²ÎÊı	£º
 	
-	è¿”å›å€¼	ï¼švoid
-	æ›´æ–°å†å²ï¼š
-	åˆ›å»ºï¼š2018-03-29 qinyp
+	·µ»ØÖµ	£ºvoid
+	¸üĞÂÀúÊ·£º
+	´´½¨£º2018-03-29 qinyp
 	*****************************************************************/
-	void InvokePlayBeginCB();
+	void InvokePlayBeginCB(void* pBehaviorAction);
+	
+	//Ìí¼Ó½áÊø²¥·Å»Øµ÷º¯Êı
+	void AddPlayEndCB(PlayEndCB pPlayEndCB, void* pInstance );
+	//É¾³ı½áÊø²¥·Å»Øµ÷»Øµ÷º¯Êı
+	void RemovePlayEndCB(PlayEndCB pPlayEndCB, void* pInstance );
+	//µ÷ÓÃ½áÊø²¥·Å»Øµ÷»Øµ÷º¯Êı
+	void InvokePlayEndCB(void* pBehaviorAction);
+
+	//Ìí¼ÓËø¶¨ÊÓÍ¼»Øµ÷º¯Êı
+	void AddLockViewCB(LockViewCB pLockViewCB, void* pInstance );
+	//É¾³ıËø¶¨ÊÓÍ¼»Øµ÷»Øµ÷º¯Êı
+	void RemoveLockViewCB(LockViewCB pLockViewCB, void* pInstance );
+	//µ÷ÓÃËø¶¨ÊÓÍ¼»Øµ÷»Øµ÷º¯Êı
+	void InvokeLockViewCB(bool bLock);
+	
+	
 	/*****************************************************************
-	å‡½æ•°å	ï¼šAddSetTargetStateCB
-	åŠŸèƒ½	ï¼šæ·»åŠ è®¾ç½®è§†å£å„å¯¹è±¡çŠ¶æ€å›è°ƒå‡½æ•°
-	å‚æ•°	ï¼š
-	SetTargetStateCB* pSetTargetStateCBï¼Œå›è°ƒå‡½æ•°æŒ‡é’ˆ
-	è¿”å›å€¼	ï¼švoid
-	æ›´æ–°å†å²ï¼š
-	åˆ›å»ºï¼š2018-04-05 qinyp
+	º¯ÊıÃû	£ºAddSetTargetStateCB
+	¹¦ÄÜ	£ºÌí¼ÓÉèÖÃÊÓ¿Ú¸÷¶ÔÏó×´Ì¬»Øµ÷º¯Êı
+	²ÎÊı	£º
+	SetTargetStateCB pSetTargetStateCB£¬»Øµ÷º¯ÊıÖ¸Õë
+	·µ»ØÖµ	£ºvoid
+	¸üĞÂÀúÊ·£º
+	´´½¨£º2018-04-05 qinyp
 	*****************************************************************/
-	void AddSetTargetStateCB(SetTargetStateCB* pSetTargetStateCB);
+	void AddSetTargetStateCB(SetTargetStateCB pSetTargetStateCB, void* pInstance );
 	/*****************************************************************
-	å‡½æ•°å	ï¼šRemoveSetTargetStateCB
-	åŠŸèƒ½	ï¼šåˆ é™¤è®¾ç½®è§†å£å„å¯¹è±¡çŠ¶æ€å›è°ƒå‡½æ•°
-	å‚æ•°	ï¼š
-	SetTargetStateCB* pSetTargetStateCBï¼Œå›è°ƒå‡½æ•°æŒ‡é’ˆ
-	è¿”å›å€¼	ï¼švoid
-	æ›´æ–°å†å²ï¼š
-	åˆ›å»ºï¼š2018-04-05 qinyp
+	º¯ÊıÃû	£ºRemoveSetTargetStateCB
+	¹¦ÄÜ	£ºÉ¾³ıÉèÖÃÊÓ¿Ú¸÷¶ÔÏó×´Ì¬»Øµ÷º¯Êı
+	²ÎÊı	£º
+	SetTargetStateCB pSetTargetStateCB£¬»Øµ÷º¯ÊıÖ¸Õë
+	·µ»ØÖµ	£ºvoid
+	¸üĞÂÀúÊ·£º
+	´´½¨£º2018-04-05 qinyp
 	*****************************************************************/
-	void RemoveSetTargetStateCB(SetTargetStateCB* pSetTargetStateCB);
+	void RemoveSetTargetStateCB(SetTargetStateCB pSetTargetStateCB, void* pInstance );
 	/*****************************************************************
-	å‡½æ•°å	ï¼šInvokeSetTargetStateCB
-	åŠŸèƒ½	ï¼šæ‰§è¡Œè®¾ç½®è§†å£å„å¯¹è±¡çŠ¶æ€å›è°ƒå‡½æ•°
-	å‚æ•°	ï¼š
-	pï¼Œæ®µåŠ¨ç”»
-	è¿”å›å€¼	ï¼švoid
-	æ›´æ–°å†å²ï¼š
-	åˆ›å»ºï¼š2018-04-05 qinyp
+	º¯ÊıÃû	£ºInvokeSetTargetStateCB
+	¹¦ÄÜ	£ºÖ´ĞĞÉèÖÃÊÓ¿Ú¸÷¶ÔÏó×´Ì¬»Øµ÷º¯Êı
+	²ÎÊı	£º
+	p£¬¶Î¶¯»­
+	·µ»ØÖµ	£ºvoid
+	¸üĞÂÀúÊ·£º
+	´´½¨£º2018-04-05 qinyp
 	*****************************************************************/
 	void InvokeSetTargetStateCB(void* pTargetList);
+	
+	//Ìí¼Ó»ñÈ¡ÅäÖÃ¾ØÕó»Øµ÷º¯Êı
+	void AddGetModelPlcMtxCB(GetModelPlcMtxCB pGetModelPlcMtxCB, void* pInstance );
+	//É¾³ı»ñÈ¡ÅäÖÃ¾ØÕó»Øµ÷º¯Êı
+	void RemoveGetModelPlcMtxCB(GetModelPlcMtxCB pGetModelPlcMtxCB, void* pInstance );
+	//µ÷ÓÃ»ñÈ¡ÅäÖÃ¾ØÕó»Øµ÷º¯Êı
+	void InvokeGetModelPlcMtxCB(const char plcIdPath[SA_BUFFER_SIZE_SMALL],float matrix[4][4]);
+
+	//Ìí¼ÓÉèÖÃÅäÖÃ¾ØÕó»Øµ÷º¯Êı
+	void AddSetModelPlcMtxCB(SetModelPlcMtxCB pSetModelPlcMtxCB, void* pInstance );
+	//É¾³ıÉèÖÃÅäÖÃ¾ØÕó»Øµ÷º¯Êı
+	void RemoveSetModelPlcMtxCB(SetModelPlcMtxCB pSetModelPlcMtxCB, void* pInstance );
+	//µ÷ÓÃÉèÖÃÅäÖÃ¾ØÕó»Øµ÷º¯Êı
+	void InvokeSetModelPlcMtxCB(const char plcIdPath[SA_BUFFER_SIZE_SMALL],const float matrix[4][4]);
+
+	//Ìí¼Ó»ñÈ¡ÉãÏñ»ú×´Ì¬»Øµ÷º¯Êı
+	void AddGetCameraCB(GetCameraCB pGetCameraCB, void* pInstance );
+	//É¾³ı»ñÈ¡ÉãÏñ»ú×´Ì¬»Øµ÷º¯Êı
+	void RemoveGetCameraCB(GetCameraCB pGetCameraCB, void* pInstance );
+	//µ÷ÓÃ»ñÈ¡ÉãÏñ»ú×´Ì¬»Øµ÷º¯Êı
+	void InvokeGetCameraCB(const char plcIdPath[SA_BUFFER_SIZE_SMALL],float scale[3],float matrix[4][4]);
+
+	//Ìí¼ÓÉèÖÃÉãÏñ»ú×´Ì¬»Øµ÷º¯Êı
+	void AddSetCameraCB(SetCameraCB pSetCameraCB, void* pInstance );
+	//É¾³ıÉèÖÃÉãÏñ»ú×´Ì¬»Øµ÷º¯Êı
+	void RemoveSetCameraCB(SetCameraCB pSetCameraCB, void* pInstance );
+	//µ÷ÓÃÉèÖÃÉãÏñ»ú×´Ì¬»Øµ÷º¯Êı
+	void InvokeSetCameraCB(const char plcIdPath[SA_BUFFER_SIZE_SMALL],const float scale[3],const float matrix[4][4]);
+
+	//Ìí¼Ó»ñÈ¡ÉãÏñ»úÄ¿±êµã¾àÀë»Øµ÷º¯Êı
+	void AddGetCameraFocalCB(GetCameraFocalCB pGetCameraFocalCB, void* pInstance );
+	//É¾³ı»ñÈ¡ÉãÏñ»úÄ¿±êµã¾àÀë»Øµ÷º¯Êı
+	void RemoveGetCameraFocalCB(GetCameraFocalCB pGetCameraFocalCB, void* pInstance);
+	//µ÷ÓÃ»ñÈ¡ÉãÏñ»úÄ¿±êµã¾àÀë»Øµ÷º¯Êı
+	void InvokeGetCameraFocalCB( float& fPosTargetDistance);
+
+	//Ìí¼Ó»ñÈ¡ÉãÏñ»úÄ¿±êµã»Øµ÷º¯Êı
+	void AddGetCameraTargetPntCB(GetCameraTargetPntCB pGetCameraTargetPntCB, void* pInstance);
+	//É¾³ı»ñÈ¡ÉãÏñ»úÄ¿±êµã»Øµ÷º¯Êı
+	void RemoveGetCameraTargetPntCB(GetCameraTargetPntCB pGetCameraTargetPntCB, void* pInstance);
+	//µ÷ÓÃ»ñÈ¡ÉãÏñ»úÄ¿±êµã»Øµ÷º¯Êı
+	void InvokeGetCameraTargetPntCB(const char plcIdPath[SA_BUFFER_SIZE_SMALL],float targetPnt[3]);
+
+	//Ìí¼ÓÉèÖÃÏÔÊ¾Òş²Ø»Øµ÷º¯Êı
+	void AddPlayVisibleCB(PlayVisibleCB pPlayVisibleCB, void* pInstance);
+	//É¾³ıÉèÖÃÏÔÊ¾Òş²Ø»Øµ÷º¯Êı
+	void RemovePlayVisibleCB(PlayVisibleCB pPlayVisibleCB, void* pInstance);
+	//µ÷ÓÃÉèÖÃÏÔÊ¾Òş²Ø»Øµ÷º¯Êı
+	void InvokePlayVisibleCB(const char plcIdPath[SA_BUFFER_SIZE_SMALL], const char name[SA_BUFFER_SIZE_SMALL], bool bOnOff, float fTran);
+
+	//Ìí¼ÓÉèÖÃÑÕÉ«»Øµ÷º¯Êı
+	void AddPlayColorCB(PlayColorCB pPlayColorCB, void* pInstance);
+	//É¾³ıÉèÖÃÑÕÉ«»Øµ÷º¯Êı
+	void RemovePlayColorCB(PlayColorCB pPlayColorCB, void* pInstance);
+	//µ÷ÓÃÉèÖÃÑÕÉ«»Øµ÷º¯Êı
+	void InvokePlayColorCB(const char plcIdPath[SA_BUFFER_SIZE_SMALL], const char name[SA_BUFFER_SIZE_SMALL], const float fColor[3]);
+
+	//Ìí¼ÓÍ¼Æ¬²¥·Å»Øµ÷º¯Êı
+	void AddPlayImageCB(PlayImageCB pPlayImageCB, void* pInstance);
+	//É¾³ıÍ¼Æ¬²¥·Å»Øµ÷º¯Êı
+	void RemovePlayImageCB(PlayImageCB pPlayImageCB, void* pInstance);
+	//µ÷ÓÃÍ¼Æ¬²¥·Å»Øµ÷º¯Êı
+	void InvokePlayImageCB(const char plcIdPath[SA_BUFFER_SIZE_SMALL], const char name[SA_BUFFER_SIZE_SMALL], const float fPos[3], const float fScale[3], bool bOnOffFlg);
+
+	//Ìí¼ÓÆÊÃæ²¥·Å»Øµ÷º¯Êı
+	void AddPlayClipPlaneCB(PlayClipPlaneCB pPlayClipPlaneCB, void* pInstance);
+	//É¾³ıÆÊÃæ²¥·Å»Øµ÷º¯Êı
+	void RemovePlayClipPlaneCB(PlayClipPlaneCB pPlayClipPlaneCB, void* pInstance);
+	//µ÷ÓÃÆÊÃæ²¥·Å»Øµ÷º¯Êı
+	void InvokePlayClipPlaneCB(const char plcIdPath[SA_BUFFER_SIZE_SMALL], const char name[SA_BUFFER_SIZE_SMALL], const float fPos[3], const float fScale[3], bool bOnOffFlg);
+	
+	//Ìí¼Ó¹¤¾ß²¥·Å»Øµ÷º¯Êı
+	void AddPlayToolCB(PlayToolCB pPlayToolCB, void* pInstance);
+	//É¾³ı¹¤¾ß²¥·Å»Øµ÷º¯Êı
+	void RemovePlayToolCB(PlayToolCB pPlayToolCB, void* pInstance);
+	//µ÷ÓÃ¹¤¾ß²¥·Å»Øµ÷º¯Êı
+	void InvokePlayToolCB(int nType, const char plcIdPath[SA_BUFFER_SIZE_SMALL], const char strToolPath[SA_BUFFER_SIZE_SMALL], const char strParentPath[SA_BUFFER_SIZE_SMALL]);
+	
 };
 
 #endif //_H_ANIMATIONCALLBACK_H_

@@ -32,12 +32,14 @@
 
 #include "../SimulationCommon/SATools.h"
 #include "SADefine.h"
-#include "Mutex.h"
+
 
 //SA_NAMESPACE_BEGIN
 class CTimerClient;
 class CTickTimer;
-
+namespace NS_SimulationAnimation {
+	class Mutex;
+}
 /****************************************************************************
 *	动画时钟信息处理类
 ****************************************************************************/

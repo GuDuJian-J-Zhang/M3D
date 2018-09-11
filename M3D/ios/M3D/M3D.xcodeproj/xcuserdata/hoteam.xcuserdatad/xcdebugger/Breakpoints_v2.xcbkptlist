@@ -239,7 +239,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "1173"
             endingLineNumber = "1173"
-            landmarkName = "CSBehaviorAction::Tick( float request_time, float actual_time )"
+            landmarkName = "CSBehaviorAction::GetFreeName()"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -527,7 +527,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "4840"
             endingLineNumber = "4840"
-            landmarkName = "View::SetShapeStates(const string&amp; value)"
+            landmarkName = "View::GetAnimationDisState(ControlInfo&amp; controlInfo)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>

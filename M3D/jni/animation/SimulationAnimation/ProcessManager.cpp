@@ -1,11 +1,9 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "ProcessManager.h"
 #include "../SimulationCommon/UtilityXMLParser.h"
 #include "../SimulationCommon/vlist.h"
 #include "AnimationStepManager.h"
 #include "../../Utility.h"
-#include <cstdlib>
-#include <typeinfo>
 
 SA_NAMESPACE_BEGIN
 

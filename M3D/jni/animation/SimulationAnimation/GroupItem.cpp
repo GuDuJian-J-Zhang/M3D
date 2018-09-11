@@ -1,4 +1,4 @@
-﻿// All Rights Reserved. Copyright (C) 2014 HOTEAMSOFT, Ltd
+// All Rights Reserved. Copyright (C) 2014 HOTEAMSOFT, Ltd
 /****************************************************************************
  *	@file		GroupItem.cpp 
  *
@@ -7,7 +7,7 @@
  *	@par	历史:
  *		2016-04-08 Create by hhw
 ****************************************************************************/
-#include "StdAfx.h"
+#include "stdafx.h"
 #include "tinyxml/tinyxml2.h"
 #include "GroupItem.h"
 #include "GroupManager.h"

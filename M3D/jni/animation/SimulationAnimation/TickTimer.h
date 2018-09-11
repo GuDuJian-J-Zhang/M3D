@@ -1,14 +1,14 @@
 ﻿#ifndef __CTDRIVER_H__
 #define __CTDRIVER_H__
 #include "TimerManager.h"
-#include "m3d/base/CTimer.h"
-using M3D::CTimer;
+#include "CTimer.h"
 
 /*! 
     This class delivers timer ticks which are intended to be used by a platform/GUI independent timer service.
 */
 
 //SA_NAMESPACE_BEGIN
+
 class SA_API CTickTimer
 {
 // Construction
@@ -28,7 +28,7 @@ public:
 
 protected:
 
-    static CTimer m_timer;
+    static NS_SimulationAnimation::CTimer m_timer;
 	static int     m_milliseconds;  //!< amount of time to tick
 
     //static void timerTimeout(union sigval sig);

@@ -407,8 +407,6 @@ public:
 	}
 //将视图对象值转成JSON数据
 	string toJson();
-	//将JSON数据值转成视图对象值
-//	ModelView:: fromJson(string modelViewJson);
     
     int m_DirectionX; //X剖切方向
     float m_PercentageX; //X剖切比例

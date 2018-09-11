@@ -53,9 +53,11 @@ using namespace M3D;
 namespace NS_SimulationAnimation
 {
 	class CSimulationAnimationManager;
+	class CSBehaviorAction;
 }
 using NS_SimulationAnimation::CSimulationAnimationManager;
 class CTickTimer;
+class CAnimationCallBackFunction;
 
 typedef map<string, MovedMatrixInfo> SceneState;
 
@@ -98,6 +100,12 @@ private:
 
     
 typedef void (*RefreshFun)(void* instanceClass);
+#ifdef WIN32
+    typedef void(_stdcall ModelSelectedCB)(int dwModelID,bool selected);
+#else
+    typedef void(ModelSelectedCB)(int dwModelID,bool selected);
+#endif
+
 
 /**@class View
  * @brief View类  负责和上层的交互操作
@@ -1169,6 +1177,14 @@ public:
 	int GetAnimationInitTargetObjectsCount();
 
 	float GetUnitScale();
+	void InitAinmationPlayCB();
+
+	void SetModelSelectedCB(ModelSelectedCB* modelSelectedCB);
+
+	void NotifyModelSected(M3D::IShape* shape, bool selected);
+
+	void updateScreenBox();
+
 private:
 	CTimer m_rotateAndExplosiveTimer;
 	static void * RotateAndExplosiveTask(void * data);
@@ -1216,6 +1232,8 @@ private:
 	M3D_STATUS ReadFilesSpeedMode(vector<string>& paths);
 
 	void ChechErrorPoint(M3D::Model* model);
+
+	void ShowModelViewAnimation(ModelView *pView);
 
 public:
 	float m_fUnitScale;
@@ -1269,7 +1287,7 @@ private:
     
     int m_curDrawMode;//!<当前绘制模式：0=实体、1=半透明、2=网格、3=线框
 
-	string m_AnimationXMLData ;//!<动画数据
+	string m_AnimationXMLData;//!<动画数据
 
     void* m_RefreshCallBackClassInstance;//!<刷新回调类的实例
 
@@ -1317,6 +1335,10 @@ private:
 	BoundingBox m_firstReadBox;
 
 	GroundNode * m_groundNode;//!<地面节点
+	CAnimationCallBackFunction* m_pAnimationCallBackFunction;//!<动画播放回退处理回退函数类
+
+
+	ModelSelectedCB* m_modelSelectedCB; //模型选中回调函数，
 };
 
 } ///namespace

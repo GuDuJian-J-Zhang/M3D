@@ -1,4 +1,4 @@
-﻿// All Rights Reserved. Copyright (C) 2014 HOTEAMSOFT, Ltd
+// All Rights Reserved. Copyright (C) 2014 HOTEAMSOFT, Ltd
 /****************************************************************************
  *	@file		GroupItem.h 
  *

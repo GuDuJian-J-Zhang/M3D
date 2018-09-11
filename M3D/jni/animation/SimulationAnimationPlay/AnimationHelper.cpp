@@ -1,4 +1,4 @@
-#include "animation/SimulationAnimationPlay/AnimationHelper.h"
+﻿#include "animation/SimulationAnimationPlay/AnimationHelper.h"
 
 #include "m3d/model/Model.h"
 #include "m3d/model/PMIData.h"
@@ -220,13 +220,26 @@ void AnimationHelper::GetCameraZoom(CameraNode* camera, float& zoom)
 }
 
 void AnimationHelper::AdjustCameraZoom(CameraNode* camera, float aniWidth,
-		float aniHeight, float aniZoom, float& zoom)
+		float aniHeight, float aniZoom, float& zoom, View* view)
 {
 	float width = 1, height = 1;
 
 	if (camera != NULL)
 	{
-		camera->GetOrthoSize(&width, &height);
+		if (camera->IsOrthographic())
+		{
+			camera->GetOrthoSize(&width, &height);
+		}
+		else
+		{
+			camera->GetOrthoSize(&width, &height);
+			float fAspectRatio = width / height;
+			float fHeightAngle = 1.0;
+			float fDefaultFocusLength = 1.0f;
+			GetCameraFocal(view, fDefaultFocusLength);
+			height = (float)(fDefaultFocusLength * 2.0 * tan(fHeightAngle / 2.0));
+			width = height * fAspectRatio;
+		}
 	}
 
 	float dx = aniWidth / width;
@@ -267,11 +280,29 @@ void AnimationHelper::SetCameraPosition(const Vector3& position,
 	}
 }
 
-void AnimationHelper::SetCameraZoom(float zoom, CameraNode* camera)
+void AnimationHelper::SetCameraZoom(float zoom, CameraNode* camera, View* view)
 {
 	if (camera != NULL)
 	{
-		camera->SetZoom(zoom);
+		if (camera->IsOrthographic())
+		{
+			camera->SetZoom(zoom);
+		}
+		else
+		{
+			Vector3 cameraPosition = camera->GetPosition();
+			float fPosTargetDistance = 1.0;
+			GetCameraFocal(view ,fPosTargetDistance);
+			Matrix3x4 camMatrix = Matrix3x4::IDENTITY;
+			GetCameraTransform(camera, camMatrix);
+			Vector3 direction(-camMatrix.m_m02, -camMatrix.m_m12, -camMatrix.m_m22);
+			Vector3 cameraTarget = cameraPosition.Add(direction.Multiply(fPosTargetDistance));;
+
+			float fNewFocusLength = fPosTargetDistance/zoom;
+			cameraPosition = cameraTarget.Sub(direction.Multiply(fNewFocusLength));
+			AnimationHelper::SetCameraPosition(cameraPosition, camera);
+			camera->SetZoom(1.0f);
+		}
 	}
 }
 

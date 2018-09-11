@@ -4276,25 +4276,31 @@ namespace SVIEW {
 
 			wstring viewName = pViewData->GetName();
 			bool viewIsActivated = pViewData->IsActivated();
-			HoteamSoft::SVLLib::StkViewUsageEnum viewType = pViewData->GetUsageType();
-			switch (viewType)
-			{
-			case HoteamSoft::SVLLib::VIEW_USAGE_GENERAL_VIEW:
-			case HoteamSoft::SVLLib::VIEW_USAGE_SV_USER_VIEW:
-			case HoteamSoft::SVLLib::VIEW_USAGE_SV_USER_CLIPVIEW:
-			case HoteamSoft::SVLLib::VIEW_USAGE_PROE_BASE_VIEW:
-			case HoteamSoft::SVLLib::VIEW_USAGE_PROE_USER_VIEW:
-				//go ahead
-
-				break;
-			default:
-				//			continue;
-				break;
-			}
+			
 
 			ModelView * pView = new ModelView(); // Stk_View(pProtoType->GetID());
 												 //获取视图基本信息
 			int oldId = pViewData->GetID();
+            HoteamSoft::SVLLib::StkViewUsageEnum viewType = pViewData->GetUsageType();
+            switch (viewType)
+            {
+                case HoteamSoft::SVLLib::VIEW_USAGE_GENERAL_VIEW:
+                    pView->SetViewType(ModelView::DefaultView);
+                case HoteamSoft::SVLLib::VIEW_USAGE_SV_USER_VIEW:
+                    pView->SetViewType(ModelView::UserView);
+                case HoteamSoft::SVLLib::VIEW_USAGE_SV_USER_CLIPVIEW:
+                    pView->SetViewType(ModelView::UserView);
+                case HoteamSoft::SVLLib::VIEW_USAGE_PROE_BASE_VIEW:
+                    pView->SetViewType(ModelView::DefaultView);
+                case HoteamSoft::SVLLib::VIEW_USAGE_PROE_USER_VIEW:
+                    pView->SetViewType(ModelView::UserView);
+                    //go ahead
+                    
+                    break;
+                default:
+                    //            continue;
+                    break;
+            }
 			int viewID = i + 1; //pViewData->GetID();
 			READER_LOGI("ViewId:%d new:%d", oldId, viewID);
 
@@ -4305,7 +4311,7 @@ namespace SVIEW {
 			//pView->setEnable(viewIsActivated);
 			//		pView->setHasClippingPlan(viewHasClipPlan);
 			pView->SetSvlUseType(pViewData->GetUsageType());
-			pView->SetViewType(ModelView::OrignalView); //svl中的视图都做为原始视图
+			
 			if (viewIsActivated && viewType!=HoteamSoft::SVLLib::VIEW_USAGE_USER_CLIPPLANE)
 			{
 				pView->SetIsInitView(true);
@@ -4535,7 +4541,6 @@ namespace SVIEW {
      @return
      */
     string SVL2AsynReader::RemoveExcess(string& strStream){
-        printf("strStreamstrStream 0 : %s",strStream.c_str());
         int index = 0;
         if( !strStream.empty())
         {
@@ -4566,7 +4571,6 @@ namespace SVIEW {
         {
             strStream.replace(index, 1, " ");
         }
-        printf("strStreamstrStream 1 : %s",strStream.c_str());
         return strStream;
     }
 }

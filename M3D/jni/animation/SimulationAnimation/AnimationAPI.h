@@ -183,7 +183,7 @@ public:
 	int RecColorWinkMaxTimes(const float fDelay);
 	bool RecVisibleWink(const char* strPlcID, const char* strObjName, bool bVisible, int iTimes, float fDelay, CSAnimation* pFolderAnimation = NULL);
 	//摄像机录制接口
-	bool RecCamera(float pivot[3], float fMtxAA[4][4], float fScale, float fIntWind[2],bool bUseAutoKey = false);
+	bool RecCamera(float pivot[3], float fMtxAA[4][4], float fScale, float fIntWind[2], bool bUseAutoKey = false,CSBehaviorAction* pBehaviorAction = NULL);
 	//录制局部放大接口
 	bool RecZoom(const char* strZoomId,const char* strObjName, float fMtxAA[4][4], float fScale, float fIntWind[2],bool bVisible,bool bRelaceVisible = true);
 	//录制声音接口

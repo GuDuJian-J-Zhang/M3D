@@ -23,8 +23,16 @@ using M3D::Thread;
 #endif
 
 # define MILLISECONDS 1000
-//namespace NS_SimulationAnimation
-//{
+namespace NS_SimulationAnimation
+{
+#ifdef _WIN32
+	class SA_API timeval {
+	public:
+		long tv_sec;
+		long tv_usec;
+	};
+#endif
+
 	/**
 	* 定时器回调函数
 	* @param
@@ -131,5 +139,5 @@ using M3D::Thread;
 	private:
 		TimerThread* m_timerThread;//!< 定时器线程函数
 	};
-//}
+}
 #endif /* CTIMER_H_ */

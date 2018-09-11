@@ -33,6 +33,7 @@
 #include "SimulationAnimationManager.h"
 #include "AnimationSound.h"
 #include "m3d/utils/Platform.h"
+#include "Mutex.h"
 
 SA_NAMESPACE_BEGIN
 
@@ -522,6 +523,7 @@ CSBehaviorAction::CSBehaviorAction(int ID, int tps, int delay,const char *name, 
 
 	//GetAnimationPlayApi() = new AnimationPlayApi();
 	m_pSimulationAnimationManager = NULL;
+	m_mutex = new Mutex();
  }
 
 CSBehaviorAction::~CSBehaviorAction()
@@ -537,6 +539,16 @@ CSBehaviorAction::~CSBehaviorAction()
 	//	delete GetAnimationPlayApi();
 	//	GetAnimationPlayApi() = NULL;
 	//}
+	if(m_pSimulationAnimationManager)
+	{
+		vlist_remove((vlist_s*)m_pSimulationAnimationManager->GetBehaviorActionList(), this);
+		m_pSimulationAnimationManager = NULL;
+	}
+	if (m_mutex)
+	{
+		delete m_mutex;
+		m_mutex = NULL;
+	}
 }
 
 
@@ -546,7 +558,7 @@ bool CSBehaviorAction::Transfer(INT type,const char* plcIdPath, const float fPiv
 	{
 		if (IsPlayPosRot() && GetAnimationPlayApi())
 		{
-        	GetAnimationPlayApi()->Play(type,plcIdPath, fPivot, fMtxAA,GetView());
+        	GetAnimationPlayApi()->Play(type,plcIdPath, fPivot, fMtxAA);
 		}
 		
 	}
@@ -565,7 +577,7 @@ bool CSBehaviorAction::TransferVisible(const char* plcIdPath, const char* name,b
 		if (GetAnimationPlayApi() && 
 			((strstr(plcIdPath,"ZOOM")==NULL && IsPlayVisible()) || ( strstr(plcIdPath,"ZOOM") && IsCameraPlay())) )
 		{
-    		GetAnimationPlayApi()->PlayVisible(plcIdPath, name, bOnOff,fTran,GetView());
+    		GetAnimationPlayApi()->PlayVisible(plcIdPath, name, bOnOff,fTran);
 		}
 	}
     catch(...)
@@ -585,7 +597,7 @@ bool CSBehaviorAction::TransferColor(const char* plcIdPath, const char* name,con
 	{
 		if (IsPlayColor() && GetAnimationPlayApi())
 		{
-			GetAnimationPlayApi()->PlayColor(plcIdPath, name, fColor,GetView());
+			GetAnimationPlayApi()->PlayColor(plcIdPath, name, fColor);
 		}
 
 	}
@@ -623,7 +635,7 @@ bool CSBehaviorAction::TransferImage(const char* plcIdPath, const char* name, co
 	{
 		if(GetAnimationPlayApi())	//正在播放动画...
 		{
-			GetAnimationPlayApi()->PlayAnimationImage(plcIdPath, name, fImgPos, fImgScaleFactor, bOnOffFlg,GetView());
+			GetAnimationPlayApi()->PlayAnimationImage(plcIdPath, name, fImgPos, fImgScaleFactor, bOnOffFlg);
 		}
 
 	}
@@ -641,7 +653,7 @@ bool CSBehaviorAction::TransferCamera(const char* plcIdPath,INT TrfType, const f
 	{
 		if(IsCameraPlay() && GetAnimationPlayApi())
 		{
-			GetAnimationPlayApi()->PlayCamera(plcIdPath, TrfType, fPivot, fMtxAA,iCamType,GetView());
+			GetAnimationPlayApi()->PlayCamera(plcIdPath, TrfType, fPivot, fMtxAA,iCamType);
 		}
 	}
     catch (...)
@@ -661,7 +673,7 @@ bool CSBehaviorAction::TransferClipPlane(INT type,const char* plcIdPath, const c
 	{
 		if (IsPlayClip() && GetAnimationPlayApi())
 		{
-			GetAnimationPlayApi()->PlayClipPlane(type,plcIdPath, name, fNormal, fPos, bOnOff,GetView());
+			GetAnimationPlayApi()->PlayClipPlane(type,plcIdPath, name, fNormal, fPos, bOnOff);
 		}
 	}
 	catch (...)
@@ -808,9 +820,9 @@ void CSBehaviorAction::Continue()
 	{
 		if(IsPlayCollision())
 		{
-			GetAnimationPlayApi()->InitColisionData(GetView());
+			GetAnimationPlayApi()->InitColisionData();
 		}
-		GetAnimationPlayApi()->playBegin(GetView());
+		GetAnimationPlayApi()->playBegin(this);
 	}
 	
 	m_bPlaybackIsInterrupted = false;
@@ -835,9 +847,9 @@ void CSBehaviorAction::ContinueReverse()
 	{
 		if(IsPlayCollision())
 		{
-			GetAnimationPlayApi()->InitColisionData(GetView());
+			GetAnimationPlayApi()->InitColisionData();
 		}
-		GetAnimationPlayApi()->playBegin(GetView());
+		GetAnimationPlayApi()->playBegin(this);
 	}
 
 	m_bPlaybackIsInterrupted = false;
@@ -868,7 +880,7 @@ void CSBehaviorAction::Stop(bool bPlaybackIsInterrupted/* = false*/)
 
 		m_bPlaying = false;
 		m_bCameraUpdated = false;
-		GetAnimationPlayApi()->playEnd(GetView());
+		GetAnimationPlayApi()->playEnd(this);
 		SetReversePlay(false);
 	}
 }
@@ -1171,10 +1183,9 @@ int CSBehaviorAction::GetFreeName()
 bool CSBehaviorAction::Tick( float request_time, float actual_time )
 {
 	m_PreTick = m_CurrentTick;
-    SVIEW::View* view = GetView();
-    if(view)
+    if(GetAnimationPlayApi())
     {
-        view->Lock();
+		GetAnimationPlayApi()->LockView(true);
     }
     
 	if(!m_bReversePlay)
@@ -1201,10 +1212,10 @@ bool CSBehaviorAction::Tick( float request_time, float actual_time )
 					m_pSimulationAnimationManager->GetAnimationStepManager()->PlayFinishCB(this);
 				}
                 
-                if(view)
-                {
-                    view->UnLock();
-                }
+				if (GetAnimationPlayApi())
+				{
+					GetAnimationPlayApi()->LockView(false);
+				}
 				
 				return true;
 			}
@@ -1241,10 +1252,10 @@ bool CSBehaviorAction::Tick( float request_time, float actual_time )
 					m_pSimulationAnimationManager->GetAnimationStepManager()->PlayFinishCB(this);
 				}
                 
-                if(view)
-                {
-                    view->UnLock();
-                }
+				if (GetAnimationPlayApi())
+				{
+					GetAnimationPlayApi()->LockView(false);
+				}
 				
 				return true;
 			}
@@ -1262,10 +1273,10 @@ bool CSBehaviorAction::Tick( float request_time, float actual_time )
 	//else
     ExecuteAnimations(GetCurrentTick(),-1);
     
-    if(view)
-    {
-        view->UnLock();
-    }
+	if (GetAnimationPlayApi())
+	{
+		GetAnimationPlayApi()->LockView(false);
+	}
     
   	return true;
 
@@ -1280,13 +1291,13 @@ void CSBehaviorAction::Reset()
 }
 void CSBehaviorAction::Lock()
 {
-    m_mutex.Acquire();
+    m_mutex->Acquire();
 }
 
 void CSBehaviorAction::UnLock()
 {
 //    pthread_mutex_unlock(m_Mutex);
-    m_mutex.Release();
+    m_mutex->Release();
 }
  
 void CSBehaviorAction::ExecuteAnimations(float currentframe, float startframe)
@@ -1318,7 +1329,7 @@ void CSBehaviorAction::ExecuteAnimations(float currentframe, float startframe)
 	    vlist_remove(m_ScheduledAnimationList,temp);
 	END_LIST_ITERATION(deletionlist);
 	delete_vlist(deletionlist);
-	CSBehaviorAction::UnLock();
+	
 
 	if(GetAnimationPlayApi())
 	{
@@ -1329,7 +1340,7 @@ void CSBehaviorAction::ExecuteAnimations(float currentframe, float startframe)
 			{
 				if(!IsPlaying())
 				{
-					GetAnimationPlayApi()->InitColisionData(GetView());
+					GetAnimationPlayApi()->InitColisionData();
 				}
 				bool bCollisionFound = false;
 				START_LIST_ITERATION(STargetObject, m_TargetObjectList);
@@ -1356,8 +1367,9 @@ void CSBehaviorAction::ExecuteAnimations(float currentframe, float startframe)
 			}
 		}
 
-		GetAnimationPlayApi()->updateView(this,GetView());
+		GetAnimationPlayApi()->updateView(this);
 	}
+	CSBehaviorAction::UnLock();
 }
 
 CSAnimation * CSBehaviorAction::FindAnimation(const char *target, const char *interpolatortype,bool bFirstInterpolator)
@@ -1438,7 +1450,7 @@ bool CSBehaviorAction::IsAnimation(const CSAnimation *pAnimation)
 
 void CSBehaviorAction::DeleteAllAnimations()
 {
-
+	CSBehaviorAction::Lock();
 	if (IsPlaying())
 		Stop();	
 
@@ -1469,6 +1481,7 @@ void CSBehaviorAction::DeleteAllAnimations()
 	m_FirstTick = 0;
 	m_fPlayBeginTick = 0;
 	m_fPlayEndTick = 0;
+	CSBehaviorAction::UnLock();
 }
 
 bool CSBehaviorAction::DeleteAnimation(CSAnimation *animation)
@@ -1573,7 +1586,7 @@ bool CSBehaviorAction::DeleteAnimation(CSAnimation *animation)
 		//清空干涉信息
 		if(IsPlayCollision())
 		{
-			GetAnimationPlayApi()->ClearColisionData(GetView());
+			GetAnimationPlayApi()->ClearColisionData();
 		}
 	}
 	return bRet;
@@ -2305,7 +2318,7 @@ bool CSBehaviorAction::EvaluateCollision(STargetObject* pTargetObject)
 	strcpy(plcIdPath, pTargetObject->GetResolvedPath());
 	if(GetAnimationPlayApi())
 	{
-		bCollisionFound = GetAnimationPlayApi()->Collision(plcIdPath,GetView());
+		bCollisionFound = GetAnimationPlayApi()->Collision(plcIdPath);
 	}
 
 	return bCollisionFound;;
@@ -2397,23 +2410,10 @@ bool  CSBehaviorAction::TransferTool(int nType, const char* plcIdPath, const cha
 {
 	if(GetAnimationPlayApi())	//正在播放动画...
 	{
-		GetAnimationPlayApi()->PlayToolAnimation(nType, plcIdPath, strToolPath, strParentPath,GetView());
+		GetAnimationPlayApi()->PlayToolAnimation(nType, plcIdPath, strToolPath, strParentPath);
 	}
 	// 表示更新
 	return true;
-}
-
-
-View* CSBehaviorAction::GetView()
-{
-	if(GetSimulationAnimationManager())
-	{
-		return GetSimulationAnimationManager()->GetView();
-	}
-	else
-	{
-		return NULL;
-	}
 }
 
 CSBehaviorAction* NS_SimulationAnimation::CSBehaviorAction::Clone()

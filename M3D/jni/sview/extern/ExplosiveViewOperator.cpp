@@ -1,4 +1,4 @@
-﻿#include <stdlib.h>
+#include <stdlib.h>
 //#include <unistd.h>
 
 #include "Utility.h"
@@ -564,7 +564,8 @@ void ExplosiveViewOperator::AwayFromCenterCallback(void* data, Model* node)
 					{
 						Matrix3x4 origMatrix ;
 						(origMatrix).MultiTranslate(mov);
-						shapeNode->SetWorldMatrix(origMatrix);
+                        shapeNode->SetWorldMatrix(origMatrix);
+//                        node->SetPlaceMatrix(origMatrix);
 					}
 
 				}

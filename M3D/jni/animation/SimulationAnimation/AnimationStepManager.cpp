@@ -1074,7 +1074,7 @@ void CAnimationStepManager::Stop()
 	{
 		m_pSA->StopAll();
 	}
-	m_pSA->SetReversePlay(false);
+	//m_pSA->SetReversePlay(false);
 
 	//清除场景切换动画
 	EndChangeCamera();
@@ -1300,8 +1300,8 @@ bool CAnimationStepManager::StartChangeCamera(CProcess* pCurProcess,bool bAnimat
 			float fCurScale[3] = {1.0};
 			float fCurMtxAA[4][4];
 			float fCurTarget[3] = {0};
-			pAnimationPlayApi->getCamera(strPlcID,fCurScale, fCurMtxAA, m_pSA->GetView());
-			pAnimationPlayApi->getCameraTargetPnt(strPlcID,fCurTarget,m_pSA->GetView());
+			pAnimationPlayApi->getCamera(strPlcID,fCurScale, fCurMtxAA);
+			pAnimationPlayApi->getCameraTargetPnt(strPlcID,fCurTarget);
 
 			fCurMtxAA[3][0] = fCurTarget[0];
 			fCurMtxAA[3][1] = fCurTarget[1];
@@ -1391,6 +1391,18 @@ void CAnimationStepManager::EndChangeCamera()
 		}
 		//m_pBehaviorActionChgCam = NULL;
 	}
+}
+
+NS_SimulationAnimation::CSBehaviorAction* NS_SimulationAnimation::CAnimationStepManager::GetBehaviorActionChgCam()
+{
+	if(!m_pBehaviorActionChgCam)
+	{
+		int nCurrentBehaviorActionId = m_pSA->GetCurSAID();
+		int nBehaviorActionId = m_pSA->RegisterBehaviorActionID();
+		m_pBehaviorActionChgCam = m_pSA->AddSimAni(nBehaviorActionId);
+		m_pSA->SetCurSAByID(nCurrentBehaviorActionId);
+	}
+	return m_pBehaviorActionChgCam;
 }
 
 void CAnimationStepManager::SetChgCamTime(float fSecond/* = 1.0f*/)

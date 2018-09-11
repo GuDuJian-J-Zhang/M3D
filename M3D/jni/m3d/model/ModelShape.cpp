@@ -1,4 +1,4 @@
-﻿#include "m3d/M3D.h"
+#include "m3d/M3D.h"
 #include "m3d/utils/IDCreator.h"
 
 #include "sview/views/Parameters.h"

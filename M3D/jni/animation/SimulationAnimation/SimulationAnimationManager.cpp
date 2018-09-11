@@ -209,9 +209,7 @@ void CSimulationAnimationManager::DeleteSimAni( CSBehaviorAction *pbehaviorManag
 				m_CurSAID = -1;
 			}
 		}
-
 		vlist_remove(m_BehaviorActionList, pbehaviorManager);
-		pbehaviorManager->SetSimulationAnimationManager(NULL);
 		pbehaviorManager->Release();
 	}
 }
@@ -223,7 +221,6 @@ void CSimulationAnimationManager::DeleteAllSimAni()
 		{
 			temp->Stop();
 		}
-		temp->SetSimulationAnimationManager(NULL);
 		temp->Release();
 	END_LIST_ITERATION(m_BehaviorActionList)
 
@@ -309,11 +306,6 @@ void CSimulationAnimationManager::ProcessXMLData( const char *buffer )
 	xp.SetTagCallback("InstanceCreateInterpolator", CSInterpolatorInstanceCreate::XMLCallback, this);
 	xp.ProcessXMLData();
 
-	if (isCreateSABuffer)
-	{
-		delete[] pSABuffer;
-	}
-
 	VersionConvert_1_To_2_1();
 
 	//如果动画文件中没有动画，创建默认的动画管理器
@@ -358,7 +350,10 @@ void CSimulationAnimationManager::ProcessXMLData( const char *buffer )
 			pProcessManager->SetCurProcessByID(pProcess->GetID(),false);
 		}
 	}
-
+//    if (isCreateSABuffer)
+//    {
+//        delete[] pSABuffer;
+//    }
 }
 
 
@@ -1017,27 +1012,30 @@ void CSimulationAnimationManager::ClearData()
 {
 	if(m_pAnimationStepManager)
 	{
+		if (m_pAnimationStepManager->IsPlaying())
+		{
+			//解决多线程正在播放动画时，清除动画崩溃问题。没有想到更好的办法，暂时这么解决
+			m_pAnimationStepManager->Stop();
+			Thread::Sleep(500);
+		}
+
 		delete m_pAnimationStepManager;
 		m_pAnimationStepManager = NULL;
 	}
-
+	
 	DeleteAllSimAni();
 	DeleteAllInitTargetObject();
 
 	if(m_pAnimationPlayApi)
 	{
 		//清除上次干涉的临时数据
-		m_pAnimationPlayApi->ClearColisionData(view);
+		m_pAnimationPlayApi->ClearColisionData();
 	}
 }
 
-View* CSimulationAnimationManager::GetView()
+CAnimationCallBack* CSimulationAnimationManager::GetAnimationCallBack()
 {
-	return this->view;
-}
-void CSimulationAnimationManager::SetView(View* view)
-{
-	this->view = view;
+	return m_pAnimationPlayApi->m_pAnimationCB;
 }
 
 void CSimulationAnimationManager::SetCameraPlay(bool bCameraPlay)

@@ -489,7 +489,7 @@ void FileHelper::copy_folder(const char* source_path,const char *destination_pat
 			
 		if ((fp = fopen(filePath.c_str(), "rb")) == NULL)
 		{
-			assert(false);
+//            assert(false);
 			return false;
 		}
 

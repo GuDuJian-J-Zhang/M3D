@@ -223,6 +223,7 @@
 		908AF3C91F71180D00714948 /* SVL1ToSVL2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 908AF3C21F71180D00714948 /* SVL1ToSVL2.cpp */; };
 		908AF3CA1F71180D00714948 /* SVLVersionConvertIF.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 908AF3C41F71180D00714948 /* SVLVersionConvertIF.cpp */; };
 		908AF3CB1F71180D00714948 /* SVLXWriter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 908AF3C61F71180D00714948 /* SVLXWriter.cpp */; };
+		909354142146132800F0363A /* AnimationCallBackFunction.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 909354132146132800F0363A /* AnimationCallBackFunction.cpp */; };
 		90944CC120AA705700769916 /* Any.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 90944CBF20AA705700769916 /* Any.cpp */; };
 		90944CC220AA705700769916 /* Holder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 90944CC020AA705700769916 /* Holder.cpp */; };
 		90944CCC20AA707000769916 /* AnnotationGroup.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 90944CC520AA707000769916 /* AnnotationGroup.cpp */; };
@@ -945,6 +946,8 @@
 		908AF3C51F71180D00714948 /* SVLVersionConvertIF.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SVLVersionConvertIF.h; sourceTree = "<group>"; };
 		908AF3C61F71180D00714948 /* SVLXWriter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SVLXWriter.cpp; sourceTree = "<group>"; };
 		908AF3C71F71180D00714948 /* SVLXWriter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SVLXWriter.h; sourceTree = "<group>"; };
+		909354122146132800F0363A /* AnimationCallBackFunction.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AnimationCallBackFunction.h; sourceTree = "<group>"; };
+		909354132146132800F0363A /* AnimationCallBackFunction.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AnimationCallBackFunction.cpp; sourceTree = "<group>"; };
 		90944CBD20AA705600769916 /* Holder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Holder.h; sourceTree = "<group>"; };
 		90944CBE20AA705600769916 /* Any.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Any.h; sourceTree = "<group>"; };
 		90944CBF20AA705700769916 /* Any.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Any.cpp; sourceTree = "<group>"; };
@@ -1380,6 +1383,8 @@
 		156254341DC1A6D100969DD5 /* SimulationAnimationPlay */ = {
 			isa = PBXGroup;
 			children = (
+				909354132146132800F0363A /* AnimationCallBackFunction.cpp */,
+				909354122146132800F0363A /* AnimationCallBackFunction.h */,
 				907D45EA20B2A6C200679DE4 /* AnimationCallBack.cpp */,
 				907D45E920B2A6C200679DE4 /* AnimationCallBack.h */,
 				156254351DC1A6D100969DD5 /* AnimationHelper.cpp */,
@@ -3011,6 +3016,7 @@
 				658F94411C5068FB00A09686 /* VoiceNote.cpp in Sources */,
 				BD4D25511A3EB67900E863F7 /* Action.cpp in Sources */,
 				901AE1C41CD8377B001F921A /* SceneGroundNode.cpp in Sources */,
+				909354142146132800F0363A /* AnimationCallBackFunction.cpp in Sources */,
 				658F94391C5068FB00A09686 /* ModelManager.cpp in Sources */,
 				65F721611B4645E1002AE45C /* AxisNode.cpp in Sources */,
 				908319721F90541B00C325C4 /* IShape.cpp in Sources */,

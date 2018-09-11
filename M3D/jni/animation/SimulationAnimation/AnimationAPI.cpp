@@ -6,7 +6,7 @@
  *
  *	@par	历史:
  *		2014/09/26	created by yhp
-****************************************************************************/
+ ***********************************************"stdafx.h"*******************/
 #include "StdAfx.h"
 #include <sstream>
 #include "../SimulationCommon/SAUtility.h"
@@ -1309,7 +1309,7 @@ bool CAnimationAPI::RecInsPosRotFollowPath(VStringArray& aInsPlcPath,
 	return true;
 }
 
-bool CAnimationAPI::RecCamera(float pivot[3], float fMtxAA[4][4], float fScale, float fIntWind[2],bool bUseAutoKey)
+bool CAnimationAPI::RecCamera(float pivot[3], float fMtxAA[4][4], float fScale, float fIntWind[2], bool bUseAutoKey,CSBehaviorAction* pBehaviorAction/* = NULL*/)
 {
 	//录制视口场景
 	CHAR strPlcID[SA_BUFFER_SIZE_SMALL] = {0};
@@ -1317,12 +1317,16 @@ bool CAnimationAPI::RecCamera(float pivot[3], float fMtxAA[4][4], float fScale, 
 	CSAnimation *animation = NULL;
 	AniPoint pntCenterPnt(pivot[0],pivot[1],pivot[2]);
 
-	if(!GetCurBehaviorAction())
+	if (!pBehaviorAction)
+	{
+		pBehaviorAction = GetCurBehaviorAction();
+	}
+	if(!pBehaviorAction)
 	{
 		return false;
 	}
 
-	if(GetCurBehaviorAction()->IsPlaying())
+	if(pBehaviorAction->IsPlaying())
 	{
 		return false;
 	}
@@ -1331,9 +1335,9 @@ bool CAnimationAPI::RecCamera(float pivot[3], float fMtxAA[4][4], float fScale, 
 	std::string strTmp = IDS_STRING_CAMERA;
 	strcpy(strObjName, strTmp.c_str());
 
-	if(!(animation = GetCurBehaviorAction()->FindAnimation(strPlcID,INTERPOLATOR_POS)))
+	if(!(animation = pBehaviorAction->FindAnimation(strPlcID,INTERPOLATOR_POS)))
 	{
-		animation = CSACommonAPI::AddAnimation(GetCurBehaviorAction(),strObjName,strPlcID,&pntCenterPnt,NULL);
+		animation = CSACommonAPI::AddAnimation(pBehaviorAction,strObjName,strPlcID,&pntCenterPnt,NULL);
 	}
 
 	if(animation == NULL)
@@ -1401,18 +1405,18 @@ bool CAnimationAPI::RecCamera(float pivot[3], float fMtxAA[4][4], float fScale, 
 				return false;
 			}
 
-		if((int)GetCurBehaviorAction()->GetCurrentTick() <= animation->GetLastTick())
+		if((int)pBehaviorAction->GetCurrentTick() <= animation->GetLastTick())
 		{
-			GetCurBehaviorAction()->SetCurrentTick(animation->GetLastTick() + m_numAutoKeyFrame);
+			pBehaviorAction->SetCurrentTick(animation->GetLastTick() + m_numAutoKeyFrame);
 		}
 		else
 		{
-			animation->DuplicateNextOrPrevious(GetCurBehaviorAction()->GetCurrentTick(),false);
-			GetCurBehaviorAction()->SetCurrentTick(animation->GetLastTick() + m_numAutoKeyFrame);
+			animation->DuplicateNextOrPrevious(pBehaviorAction->GetCurrentTick(),false);
+			pBehaviorAction->SetCurrentTick(animation->GetLastTick() + m_numAutoKeyFrame);
 		}
 	}
 
-	CSACommonAPI::AddCameraKeyframe(GetCurBehaviorAction(),animation,GetCurBehaviorAction()->GetCurrentTick(),pntCenterPnt,pntPos,hQuat,pntScale,m_blinear);
+	CSACommonAPI::AddCameraKeyframe(pBehaviorAction,animation, pBehaviorAction->GetCurrentTick(),pntCenterPnt,pntPos,hQuat,pntScale,m_blinear);
 
 	if(m_pRecCB)
 	{

@@ -25,6 +25,7 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 //SA_NAMESPACE_BEGIN
+using namespace NS_SimulationAnimation;
 
 int CTickTimer::m_milliseconds = 50000;
 CTimer CTickTimer::m_timer;
