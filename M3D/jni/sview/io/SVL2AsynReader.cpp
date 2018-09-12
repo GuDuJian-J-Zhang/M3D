@@ -1553,6 +1553,15 @@ namespace SVIEW {
 			{
 				SetXMLAnimationData(dataBuffer);
 			}
+            //批注
+            STK_CHAR* _dataBuffer = NULL;
+            unsigned int _bufSize = 0;
+            string strName = ".annotation";// FileHelper::GetFileName(FileHelper::GetUnionStylePath(thePath));
+            (*m_svl2Doc)->GetSVLXFileItem(strName, _bufSize, &_dataBuffer);
+            if (_dataBuffer != NULL)
+            {
+                ParseAnnotation(_dataBuffer);
+            }
 		}
 
 		string strSourceFormat = (*m_svl2Doc)->GetLoadInf()->getSourceFormat();
@@ -4525,6 +4534,11 @@ namespace SVIEW {
 
 		return TRUE;
 	}
+    void SVL2AsynReader::ParseAnnotation(const string& value){
+        if (m_view) {
+            m_view->ParseAnnotation(value);
+        }
+    }
     void SVL2AsynReader::FillModelVisible(Model* model)
     {
         model->SetOrigVisible(model->IsVisible(),false);

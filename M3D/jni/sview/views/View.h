@@ -1184,7 +1184,10 @@ public:
 	void NotifyModelSected(M3D::IShape* shape, bool selected);
 
 	void updateScreenBox();
-
+    
+    //批注数据解析
+    void ParseAnnotation(const string& value);
+    
 private:
 	CTimer m_rotateAndExplosiveTimer;
 	static void * RotateAndExplosiveTask(void * data);
