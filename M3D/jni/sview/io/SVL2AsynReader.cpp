@@ -4291,6 +4291,7 @@ namespace SVIEW {
 												 //获取视图基本信息
 			int oldId = pViewData->GetID();
             HoteamSoft::SVLLib::StkViewUsageEnum viewType = pViewData->GetUsageType();
+            pView->SetSvlUseType(pViewData->GetUsageType());
             switch (viewType)
             {
                 case HoteamSoft::SVLLib::VIEW_USAGE_GENERAL_VIEW:
