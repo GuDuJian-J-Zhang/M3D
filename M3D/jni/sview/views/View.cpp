@@ -5740,5 +5740,19 @@ int View::GetSVLXFileItem(const std::string& i_strFileName, unsigned int& o_bufS
 	void View::updateScreenBox() {
 		this->GetSceneManager()->GetSceneBox().Clear();
 	}
+    //批注数据解析
+    void View::ParseAnnotation(const string& value){
+        Json::Reader reader;
+        Json::Value annosValue;
+        Json::Value retJson;
+        
+        if (reader.parse(value.c_str(), annosValue))
+        {
+            string annoValue = annosValue["annotations"].asString();
+            if (reader.parse(annoValue.c_str(), retJson)) {
+                retJson.begin();
+            }
+        }
+    }
 }
 ///namespace

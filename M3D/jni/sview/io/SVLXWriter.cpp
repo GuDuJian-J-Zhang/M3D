@@ -55,7 +55,12 @@ using rapidjson::MemoryPoolAllocator;
 #include "m3d/model/Edge.h"
 #include "m3d/model/GeoAttribute.h"
 #include "m3d/model/ShapeProperty.h"
-
+#include "m3d/extras/note/NoteGroup.h"
+#include "m3d/extras/annotation/AnnotationGroup.h"
+#include "m3d/scene/ShapeNode.h"
+#include "m3d/extras/note/TextNote.h"
+#include "m3d/extras/note/SequenceNumberNote.h"
+#include "m3d/extras/note/ThreeDGesturesNote.h"
 
 #include "m3d/base/json/json.h"
 #include "m3d/base/json/forwards.h"
@@ -274,6 +279,13 @@ namespace SVIEW
 		SaveLights(strPreViewFilePath + strPreViewFileName);
 		m_pDoc->AddSVLXFileItem(strPreViewFileName);*/
 
+        //批注
+        string strNoteName = strSaveFileName;
+         strNoteName.append(".annotation");
+         string strNotePath = strSVLXOutFilePath;
+         SaveAnnotations(strNotePath + strNoteName);
+         m_pDoc->AddSVLXFileItem(strNoteName);
+        
 		//保存视图
 		SaveView();
 		SaveAttribute();
@@ -860,7 +872,238 @@ namespace SVIEW
 
 		return writeSate;
 	}
-
+    int SVLXWriter::SaveAnnotations(const string& destFilePath)
+    {
+        int writeSate = 0;
+        
+        Json::Value root;
+        Json::FastWriter writer;
+        Json::Value jsonNotes;
+        SceneManager* scene = this->m_View->GetSceneManager();
+        NoteGroup* noteGroup = scene->GetNoteGroup();
+        int index = 0;
+        if (noteGroup->Size() > 0)
+        {
+            LOGI("begin update textnote by current scene");
+            int noteCount = noteGroup->Size();
+            LOGI("noteCount %d", noteCount);
+            
+            for (int i = 0; i < noteCount; i++)
+            {
+                SceneNode* node = noteGroup->GetChild(i);
+                if (node && node->GetType() == SHAPE_NODE)
+                {
+                    ShapeNode* shapeNode = (ShapeNode*)node;
+                    IShape* shape = shapeNode->GetShape();
+                    if(!(node->IsVisible()) || !shape|| !(shape->IsVisible()))
+                        continue;
+                    
+                    if (shape->GetType() == SHAPE_TEXT_NOTE)
+                    {
+                        Json::Value tjson;
+                        TextNote* pNote = (TextNote *)shape;
+                        tjson["createID"] = pNote->GetID();
+                        tjson["type"] = 0;
+                        tjson["text"] = pNote->GetTextValue();
+                        tjson["leaderLine"] = true;
+                        tjson["envelope"] = true;
+                        tjson["stub"] = true;
+                        tjson["fixed"] = false;
+                        
+                        Json::Value frameColor;
+                        frameColor.append(0.0);
+                        frameColor.append(0.0);
+                        frameColor.append(0.0);
+                        frameColor.append(1.0);
+                        tjson["frameColor"] = frameColor;
+                        
+                        Json::Value fillColor;
+                        fillColor.append(1.0);
+                        fillColor.append(1.0);
+                        fillColor.append(1.0);
+                        fillColor.append(1.0);
+                        tjson["fillColor"] = fillColor;
+                        
+                        Json::Value textPosjson;
+                        Vector3 tPos = pNote->GetTextsPos();
+                        textPosjson.append(tPos.m_x);
+                        textPosjson.append(tPos.m_y);
+                        textPosjson.append(tPos.m_z);
+                        tjson["annotationPos"] = textPosjson;
+                        
+                        Json::Value notePosjson;
+                        Vector3 nPos = pNote->GetNotePos();
+                        notePosjson.append(nPos.m_x);
+                        notePosjson.append(nPos.m_y);
+                        notePosjson.append(nPos.m_z);
+                        tjson["centerPos"] = notePosjson;
+                        
+                        jsonNotes[index] = tjson;
+                        index++;
+                    }
+                    else if (shape->GetType() == SHAPE_VOICE_NOTE)
+                    {
+                        LOGI("UpdateViewByCurrentScene::SHAPE_VOICE_NOTE");
+//                        VoiceNote* pNote = (VoiceNote *)shape;
+                        
+                    }
+                    else if (shape->GetType() == SHAPE_SEQUENCE_NUMBER_NOTE)
+                    {
+                        LOGI("UpdateViewByCurrentScene::SHAPE_SEQUENCE_NUMBER_NOTE");
+                        SequenceNumberNote* pNote = (SequenceNumberNote *)shape;
+                        Json::Value tjson;
+                        tjson["createID"] = pNote->GetID();
+                        tjson["type"] = 2;
+                        tjson["text"] = pNote->GetTextValue();
+                        tjson["leaderLine"] = true;
+                        tjson["envelope"] = true;
+                        tjson["stub"] = true;
+                        tjson["fixed"] = false;
+                        
+                        Json::Value frameColor;
+                        frameColor.append(0.0);
+                        frameColor.append(0.0);
+                        frameColor.append(0.0);
+                        frameColor.append(1.0);
+                        tjson["frameColor"] = frameColor;
+                        
+                        Json::Value fillColor;
+                        fillColor.append(1.0);
+                        fillColor.append(1.0);
+                        fillColor.append(1.0);
+                        fillColor.append(1.0);
+                        tjson["fillColor"] = fillColor;
+                        
+                        Json::Value textPosjson;
+                        Vector3 tPos = pNote->GetTextsPos();
+                        textPosjson.append(tPos.m_x);
+                        textPosjson.append(tPos.m_y);
+                        textPosjson.append(tPos.m_z);
+                        tjson["annotationPos"] = textPosjson;
+                        
+                        Json::Value notePosjson;
+                        Vector3 nPos = pNote->GetNotePos();
+                        notePosjson.append(nPos.m_x);
+                        notePosjson.append(nPos.m_y);
+                        notePosjson.append(nPos.m_z);
+                        tjson["centerPos"] = notePosjson;
+                        
+                        jsonNotes[index] = tjson;
+                        index++;
+                    }
+                    else if (shape->GetType() == SHAPE_THREED_GESTURE_NOTE)
+                    {
+                        LOGI("UpdateViewByCurrentScene::SHAPE_THREED_GESTURE_NOTE");
+                        ThreeDGesturesNote* pNote = (ThreeDGesturesNote *)shape;
+                        
+                        //在此处填充View中使用的TextNote ID。//TODO
+                    }
+                    
+                }
+            }
+        }
+        
+        //文本批注
+        AnnotationGroup* pAnnotationGroup = scene->GetAnnotationGroup();
+        if (pAnnotationGroup && pAnnotationGroup->Size() > 0)
+        {
+            int iAnnotationCount = pAnnotationGroup->Size();
+            for (int i = 0; i < iAnnotationCount; i++)
+            {
+                SceneNode* node = pAnnotationGroup->GetChild(i);
+                if (node && node->GetType() == SHAPE_NODE)
+                {
+                    ShapeNode* shapeNode = (ShapeNode*)node;
+                    IShape* shape = shapeNode->GetShape();
+                    if (shape && node->IsVisible() && shape->IsVisible())
+                    {
+                        
+                    }
+                }
+            }
+        }
+        root["annotations"] = jsonNotes;
+        string outJsonNotes = writer.write(root);
+        
+        writeSate = FileHelper::SaveFileAssAscii(outJsonNotes,destFilePath);
+        
+        return writeSate;
+    }
+    int SVLXWriter::SaveMeasures(const string& destFilePath)
+    {
+        int writeSate = 0;
+        
+        Json::Value root;
+        Json::FastWriter writer;
+        Json::Value jsonLights;
+        SceneManager* scene = this->m_View->GetSceneManager();
+        LightManager* lightMgr = scene->GetLightManager();
+        
+        vector<BaseLight*>& alllights = lightMgr->GetAllLight();
+        for (int i = 0;i<alllights.size();i++)
+        {
+            BaseLight* baseLight = alllights.at(i);
+            Json::Value jsonBaseLight;
+            jsonBaseLight["id"] = baseLight->GetID();
+            jsonBaseLight["name"]= baseLight->GetName();
+            jsonBaseLight["Intensity"] =baseLight->GetIntensity();
+            
+            Color lightColor = baseLight->GetLightColor();
+            Json::Value jsonBaseLightColor;
+            jsonBaseLightColor[0] = lightColor.m_r;
+            jsonBaseLightColor[1] = lightColor.m_g;
+            jsonBaseLightColor[2] = lightColor.m_b;
+            jsonBaseLightColor[3] = lightColor.m_a;
+            
+            jsonBaseLight["lightColor"] = jsonBaseLightColor;
+            
+            jsonBaseLight["castShadow"] = baseLight->CastShadow();
+            jsonBaseLight["showSimpleSign"] = baseLight->GetShowSimpleSign();
+            jsonBaseLight["showAllSign"] = baseLight->GetShowAllSign();
+            
+            jsonBaseLight["type"] = baseLight->GetLightSourceType();
+            
+            if (baseLight->GetLightSourceType() == LightType::LightType_Directional)
+            {
+                
+            }
+            else if (baseLight->GetLightSourceType() == LightType::LightType_Point)
+            {
+                PointLight* pointLight = static_cast<PointLight*>(baseLight);
+                jsonBaseLight["decay"] = pointLight->Decay();
+                jsonBaseLight["distance"] = pointLight->Distance();
+            }
+            else if (baseLight->GetLightSourceType() == LightType::LightType_Spot)
+            {
+                SpotLight* pointLight = static_cast<SpotLight*>(baseLight);
+                jsonBaseLight["decay"] = pointLight->Decay();
+                jsonBaseLight["distance"] = pointLight->Distance();
+                jsonBaseLight["angle"] = pointLight->Angle();
+                jsonBaseLight["penumbra"] = pointLight->Penumbra();
+            }
+            else if (baseLight->GetLightSourceType() == LightType::LightType_Hemisphere)
+            {
+                HemisphereLight* pointLight = static_cast<HemisphereLight*>(baseLight);
+                Json::Value jsonBaseLightColor;
+                
+                Color lightColor = pointLight->GroundColor();
+                jsonBaseLightColor[0] = lightColor.m_r;
+                jsonBaseLightColor[1] = lightColor.m_g;
+                jsonBaseLightColor[2] = lightColor.m_b;
+                jsonBaseLightColor[3] = lightColor.m_a;
+                
+                //地面颜色
+                jsonBaseLight["groundColor"] = jsonBaseLightColor;
+            }
+            jsonLights[i] = jsonBaseLight;
+        }
+        
+        string outJsonLights = writer.write(jsonLights);
+        
+        writeSate = FileHelper::SaveFileAssAscii(outJsonLights,destFilePath);
+        
+        return writeSate;
+    }
 
 	int SVLXWriter::WriteMaterials(const string& destFilePath)
 	{

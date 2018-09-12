@@ -59,7 +59,10 @@ namespace SVIEW
         virtual int SaveTo(View* view,const string& srcPath,const string &targetPath);
 
 		int SaveLights(const string& destFilePath);
-
+        //保存测量
+        int SaveMeasures(const string& destFilePath);
+        //保存批注
+        int SaveAnnotations(const string& destFilePath);
 		int WriteMaterials(const string& destFilePath);
 
 		virtual int SaveToByIncrease(View* view, const string& tempPath, const string &strsrcPath, const string &strsrcName);

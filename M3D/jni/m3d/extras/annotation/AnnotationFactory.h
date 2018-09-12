@@ -64,6 +64,7 @@ namespace M3D
 		* @return ³É¹¦ true Ê§°Ü false
 		*/
 		static IDTYPE CreateTmpPoint(Vector2& screenPnt, int ShapId, SceneManager* scene);
+        
 	public:
 		AnnotationFactory();
 		~AnnotationFactory();
