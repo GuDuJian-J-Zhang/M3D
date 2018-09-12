@@ -1,4 +1,5 @@
 ﻿#include "stdafx.h"
+#include <typeinfo>
 #include "ProcessManager.h"
 #include "../SimulationCommon/UtilityXMLParser.h"
 #include "../SimulationCommon/vlist.h"
