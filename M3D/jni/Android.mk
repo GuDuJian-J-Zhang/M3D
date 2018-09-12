@@ -115,6 +115,7 @@ LOCAL_SRC_FILES +=\
  		animation\AnimationControl\animationNode.cpp\
  		animation\SimulationAnimation\AnimationSound.cpp\
  		animation\SimulationAnimation\AnimationStepManager.cpp\
+ 		animation\SimulationAnimation\AnimationAPI.cpp\
  		animation\SimulationAnimation\CProcess.cpp\
  		animation\SimulationAnimation\Group.cpp\
  		animation\SimulationAnimation\GroupItem.cpp\
@@ -130,6 +131,7 @@ LOCAL_SRC_FILES +=\
  		animation\SimulationAnimation\stdafx.cpp\
  		animation\SimulationAnimation\STimeline.cpp\
 		 animation\SimulationAnimation\TickTimer.cpp\
+		 animation\SimulationAnimation\CTimer.cpp \
 		 animation\SimulationAnimation\TimerManager.cpp\
 		animation\SimulationCommon\MatrixOperation.cpp\
  		animation\SimulationCommon\SATools.cpp\
@@ -142,6 +144,7 @@ LOCAL_SRC_FILES +=\
 	animation\SimulationAnimationPlay\AnimationHelper.cpp \
     animation\SimulationAnimationPlay\AnimationPlayApi.cpp \
     animation\SimulationAnimationPlay\AnimationCallBack.cpp\
+    animation\SimulationAnimationPlay\AnimationCallBackFunction.cpp\
     m3d\ResourceManager.cpp \
     m3d\action\Action.cpp \
     m3d\action\CallBackAction.cpp \
