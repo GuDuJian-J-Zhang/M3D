@@ -2414,7 +2414,7 @@ namespace SVIEW
 				int iNoteCount = 0;
 				vector<int> vecNoteList = pView->GetNoteList();
 				iNoteCount = vecNoteList.size();
-				for (int i = 0; i < vecNoteList.size(); i++)
+				for (int i = 0; i < iNoteCount; i++)
 				{
 					int iNoteID = vecNoteList[i];
 					for (int j = 0; j < pNoteGroup->Size(); j++)
@@ -2422,9 +2422,11 @@ namespace SVIEW
 						SceneNode* pNode = pNoteGroup->GetChild(j);
 						if (!pNode)
 							continue;
-						if (iNoteID == pNode->GetID())
+                        IShape* pShape = ((ShapeNode*)pNode)->GetShape();
+                        if (pShape && iNoteID == pShape->GetID())
 						{
-							pNode->SetVisible(true);
+                            pNode->SetVisible(true);
+							pShape->SetVisible(true);
 							break;
 						}
 					}
@@ -2500,6 +2502,7 @@ namespace SVIEW
 					}
 				}
 			}
+            this->m_SceneManager->GetRenderManager()->RequestRedraw();
 		}
 
 		//	//允许动画
@@ -6086,6 +6089,8 @@ int View::GetSVLXFileItem(const std::string& i_strFileName, unsigned int& o_bufS
         Json::Value json;
         Json::Value retJson;
         SceneManager *scene = GetSceneManager();
+        //清空
+        scene->GetNoteGroup()->DeleteAllChildren();
         if (reader.parse(value.c_str(), json))
         {
             retJson = json["annotations"];
@@ -6094,6 +6099,7 @@ int View::GetSVLXFileItem(const std::string& i_strFileName, unsigned int& o_bufS
                 for (int i = 0; i < iSize; i++) {
                     Json::Value annoValue = retJson[i];
                     int type = annoValue["type"].asInt();
+                    int _id = annoValue["createID"].asInt();
                     switch (type) {
                         case 0://基本-文本
                         {

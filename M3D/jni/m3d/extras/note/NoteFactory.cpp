@@ -1113,63 +1113,168 @@ Note* NoteFactory::CreateTextNoteFromXMLElement(SceneManager* scene, const strin
 
 Note* NoteFactory::CreateTextNoteFromJSON(SceneManager* scene, const string& JSONValue)
 {
-	Note* textNote = NULL;
+	TextNote* note = NULL;
     if (JSONValue.length()==0) {
-        return textNote;
+        return note;
     }
     //创建指向点的文本批注
-    textNote = new TextNote();
+    note = new TextNote();
     Json::Reader reader;
     Json::Value Value;
     if (reader.parse(JSONValue.c_str(), Value))
     {
-        textNote->SetID(Value["createID"].asInt());
-        textNote->SetType(SHAPE_TEXT_NOTE);
-        textNote->SetVisible(false);
+        note->SetID(Value["createID"].asInt());
+        note->SetType(SHAPE_TEXT_NOTE);
+        note->SetVisible(false);
         string text = Value["text"].asString();
-        textNote->SetTextValue(text);
-        Vector3 tPos = Vector3(Value["annotationPos"][0].asFloat(), Value["annotationPos"][1].asFloat(), Value["annotationPos"][2].asFloat());
-        ((TextNote *)textNote)->SetTextsPos(tPos);
+        Vector3 anchorCoordiante = Vector3(Value["annotationPos"][0].asFloat(), Value["annotationPos"][1].asFloat(), Value["annotationPos"][2].asFloat());
         
-        Vector3 nPos = Vector3(Value["centerPos"][0].asFloat(), Value["centerPos"][1].asFloat(), Value["centerPos"][2].asFloat());
-        ((TextNote *)textNote)->SetNotePos(nPos);
+        Vector3 fCoordiante = Vector3(Value["centerPos"][0].asFloat(), Value["centerPos"][1].asFloat(), Value["centerPos"][2].asFloat());
+
+        note->SetNotePos(fCoordiante);
+        {
+            note->SetTextsPos(anchorCoordiante);
+            //构造显示文本
+            string lengthstr = text;
+            //根据整个场景包围盒的大小来确定文字的大小
+            float fontSize = scene->GetSceneBox().Length() / 20;
+            
+            Point * point1 = new Point(fCoordiante);
+            point1->SetDrawType(1);
+            point1->SetSize(0.8);
+            
+            Point * point2 = new Point(anchorCoordiante); //为用到，暂留
+            point2->SetDrawType(1);
+            point2->SetSize(0.8);
+            
+            Vector2 screenPnt = scene->GetCamera()->WorldToScreenPoint(anchorCoordiante);
+            Ray cameraRay = scene->GetCamera()->GetViewPort().GetScreenRay(screenPnt.m_x, screenPnt.m_y);
+            Plane projPlane(cameraRay.GetDirection(), fCoordiante);
+            
+            Vector3 pntInPlane = projPlane.Project(anchorCoordiante); //得到文本点到平面的投影点
+            
+            //构造线
+            Line3D* line1 = new Line3D(fCoordiante, pntInPlane);
+            Color line1Color = Color(0.03, 0.38, 0.73);
+            line1->SetColor(line1Color);
+            line1->SetName("TextImageLeader");
+            
+            note->SetTextsPos(pntInPlane); //将原始文本点变为其在camera平面的投影点
+            
+            vector<Texts2D*> temptext;
+            Texts2D *title = new Texts2D;
+            title->m_size = 14;
+            title->m_texts = "内容";
+            temptext.push_back(title);
+            
+            Texts2D *content = new Texts2D;
+            content->m_size = 14.0f;
+            content->m_texts = lengthstr;
+            temptext.push_back(content);
+            
+            ImageBoard * imageBroad = MeasureDisplayHelper::createNoteTextsImageN(scene, temptext, pntInPlane);
+            
+            //将线加入测量对象中
+            note->AddLine(line1);
+            note->AddImage(imageBroad);
+            note->AddPoint(point1);
+            
+            
+            ComText* ct = new ComText();
+            CText* t = new CText;
+            
+            t->SetText(text);
+            //t->SetCharWidthHeight(content->m_size ,content->m_size );
+            ct->AddCText(t);
+            note->m_ComTexts.push_back(ct);
+            
+            note->SetFrontShow(false); //是否前端显示
+        }
     }
-	if (textNote)
+	if (note)
 	{
-		AddNoteToScene(scene, textNote);
+		AddNoteToScene(scene, note);
 	}
 
-	return textNote;
+	return note;
 }
 Note* NoteFactory::CreateSequenceNoteFromJSON(SceneManager* scene, const string& JSONValue)
 {
-    Note* seqNote = NULL;
+    SequenceNumberNote* note = NULL;
     if (JSONValue.length()==0) {
-        return seqNote;
+        return note;
     }
     //创建指向点的文本批注
-    seqNote = new SequenceNumberNote();
+    note = new SequenceNumberNote();
     Json::Reader reader;
     Json::Value Value;
     if (reader.parse(JSONValue.c_str(), Value))
     {
-        seqNote->SetID(Value["createID"].asInt());
-        seqNote->SetType(SHAPE_SEQUENCE_NUMBER_NOTE);
-        seqNote->SetVisible(false);
+        note->SetID(Value["createID"].asInt());
+        note->SetType(SHAPE_SEQUENCE_NUMBER_NOTE);
+        note->SetVisible(false);
         string text = Value["text"].asString();
-        seqNote->SetTextValue(text);
-        Vector3 tPos = Vector3(Value["annotationPos"][0].asFloat(), Value["annotationPos"][1].asFloat(), Value["annotationPos"][2].asFloat());
-        ((SequenceNumberNote *)seqNote)->SetTextsPos(tPos);
+        Vector3 anchorCoordiante = Vector3(Value["annotationPos"][0].asFloat(), Value["annotationPos"][1].asFloat(), Value["annotationPos"][2].asFloat());
         
-        Vector3 nPos = Vector3(Value["centerPos"][0].asFloat(), Value["centerPos"][1].asFloat(), Value["centerPos"][2].asFloat());
-        ((SequenceNumberNote *)seqNote)->SetNotePos(nPos);
+        Vector3 fCoordiante = Vector3(Value["centerPos"][0].asFloat(), Value["centerPos"][1].asFloat(), Value["centerPos"][2].asFloat());
+        
+        note->SetNotePos(fCoordiante);
+        {
+            note->SetTextsPos(anchorCoordiante);
+            //构造显示文本
+            string lengthstr = text;
+            //根据整个场景包围盒的大小来确定文字的大小
+            float fontSize = scene->GetSceneBox().Length() / 20;
+            
+            Point * point1 = new Point(fCoordiante);
+            point1->SetDrawType(1);
+            point1->SetSize(0.8);
+            
+            Point * point2 = new Point(anchorCoordiante); //为用到，暂留
+            point2->SetDrawType(1);
+            point2->SetSize(0.8);
+            
+            Vector2 screenPnt = scene->GetCamera()->WorldToScreenPoint(anchorCoordiante);
+            Ray cameraRay = scene->GetCamera()->GetViewPort().GetScreenRay(screenPnt.m_x, screenPnt.m_y);
+            Plane projPlane(cameraRay.GetDirection(), fCoordiante);
+            Vector3 pntInPlane = projPlane.Project(anchorCoordiante); //得到文本点到平面的投影点
+            
+            //构造线
+            Line3D* line1 = new Line3D(fCoordiante, pntInPlane);
+            Color line1Color = Color(0.03, 0.38, 0.73);
+            line1->SetColor(line1Color);
+            line1->SetName("SequenceNumberImageLeader");
+            
+            note->SetTextsPos(pntInPlane); //将原始文本点变为其在camera平面的投影点
+            
+            Texts2D* temptext = new Texts2D;
+            temptext->m_size = 14.0f;
+            temptext->m_texts = lengthstr;
+            
+            ImageBoard * imageBroad = MeasureDisplayHelper::CreateSequenceNumberImage(scene, temptext, pntInPlane);
+            
+            //将线加入测量对象中
+            note->AddLine(line1);
+            note->AddImage(imageBroad);
+            note->AddPoint(point1);
+            
+            ComText* ct = new ComText();
+            CText* t = new CText;
+            
+            t->SetText(text);
+            //t->SetCharWidthHeight(content->m_size ,content->m_size );
+            ct->AddCText(t);
+            note->m_ComTexts.push_back(ct);
+            
+            note->SetFrontShow(false); //是否前端显示
+        }
     }
-    if (seqNote)
+    if (note)
     {
-        AddNoteToScene(scene, seqNote);
+        AddNoteToScene(scene, note);
     }
     
-    return seqNote;
+    return note;
 }
 string NoteFactory::TextNoteToXMLElement(SceneManager* scene, TextNote* textNote)
 {

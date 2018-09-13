@@ -527,7 +527,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "4840"
             endingLineNumber = "4840"
-            landmarkName = "View::GetBackgroundUseSkyBox()"
+            landmarkName = "View::SetBackgroundUseSkyBox(bool useSkyBox)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -624,6 +624,38 @@
             startingLineNumber = "1747"
             endingLineNumber = "1747"
             landmarkName = "SVLXWriter::SaveUserDefineViews(Model* pModel)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "../../jni/sview/views/View.cpp"
+            timestampString = "558516885.977161"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "6103"
+            endingLineNumber = "6103"
+            landmarkName = "View::ParseAnnotation(const string&amp; value)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "../../jni/m3d/scene/SceneNode.cpp"
+            timestampString = "558517929.760546"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "76"
+            endingLineNumber = "76"
+            landmarkName = "SceneNode::SetID(long id)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
