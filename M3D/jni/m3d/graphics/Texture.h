@@ -187,7 +187,7 @@ public:
 	virtual void GenerateMipMap();
 	void NeedUpdate();
 
-
+	bool Equals(Texture* texture);
 protected:
 	void Init();
 

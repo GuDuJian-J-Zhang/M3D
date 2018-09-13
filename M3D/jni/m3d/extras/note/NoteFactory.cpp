@@ -1,4 +1,4 @@
-﻿#include "m3d/extras/note/NoteFactory.h"
+#include "m3d/extras/note/NoteFactory.h"
 
 #include "m3d/sceneManager.h"
 #include "m3d/RenderManager.h"
@@ -9,6 +9,7 @@
 #include "m3d/base/color.h"
 #include "m3d/model/line3d.h"
 #include "m3d/model/point.h"
+#include "m3d/base/json/json.h"
 
 #include "m3d/extras/note/TextNote.h"
 #include "m3d/extras/note/VoiceNote.h"
@@ -1113,7 +1114,26 @@ Note* NoteFactory::CreateTextNoteFromXMLElement(SceneManager* scene, const strin
 Note* NoteFactory::CreateTextNoteFromJSON(SceneManager* scene, const string& JSONValue)
 {
 	Note* textNote = NULL;
-
+    if (JSONValue.length()==0) {
+        return textNote;
+    }
+    //创建指向点的文本批注
+    textNote = new TextNote();
+    Json::Reader reader;
+    Json::Value Value;
+    if (reader.parse(JSONValue.c_str(), Value))
+    {
+        textNote->SetID(Value["createID"].asInt());
+        textNote->SetType(SHAPE_TEXT_NOTE);
+        textNote->SetVisible(false);
+        string text = Value["text"].asString();
+        textNote->SetTextValue(text);
+        Vector3 tPos = Vector3(Value["annotationPos"][0].asFloat(), Value["annotationPos"][1].asFloat(), Value["annotationPos"][2].asFloat());
+        ((TextNote *)textNote)->SetTextsPos(tPos);
+        
+        Vector3 nPos = Vector3(Value["centerPos"][0].asFloat(), Value["centerPos"][1].asFloat(), Value["centerPos"][2].asFloat());
+        ((TextNote *)textNote)->SetNotePos(nPos);
+    }
 	if (textNote)
 	{
 		AddNoteToScene(scene, textNote);
@@ -1121,7 +1141,36 @@ Note* NoteFactory::CreateTextNoteFromJSON(SceneManager* scene, const string& JSO
 
 	return textNote;
 }
-
+Note* NoteFactory::CreateSequenceNoteFromJSON(SceneManager* scene, const string& JSONValue)
+{
+    Note* seqNote = NULL;
+    if (JSONValue.length()==0) {
+        return seqNote;
+    }
+    //创建指向点的文本批注
+    seqNote = new SequenceNumberNote();
+    Json::Reader reader;
+    Json::Value Value;
+    if (reader.parse(JSONValue.c_str(), Value))
+    {
+        seqNote->SetID(Value["createID"].asInt());
+        seqNote->SetType(SHAPE_SEQUENCE_NUMBER_NOTE);
+        seqNote->SetVisible(false);
+        string text = Value["text"].asString();
+        seqNote->SetTextValue(text);
+        Vector3 tPos = Vector3(Value["annotationPos"][0].asFloat(), Value["annotationPos"][1].asFloat(), Value["annotationPos"][2].asFloat());
+        ((SequenceNumberNote *)seqNote)->SetTextsPos(tPos);
+        
+        Vector3 nPos = Vector3(Value["centerPos"][0].asFloat(), Value["centerPos"][1].asFloat(), Value["centerPos"][2].asFloat());
+        ((SequenceNumberNote *)seqNote)->SetNotePos(nPos);
+    }
+    if (seqNote)
+    {
+        AddNoteToScene(scene, seqNote);
+    }
+    
+    return seqNote;
+}
 string NoteFactory::TextNoteToXMLElement(SceneManager* scene, TextNote* textNote)
 {
 	LOGI("begin serialize");

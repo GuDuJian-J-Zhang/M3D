@@ -71,14 +71,13 @@ namespace M3D
 		this->ResetThreePlaneSection();
 	}
 
-	SectionPlane* SectionManager::CreateOneSectionPlane(const Vector3 &normalVector, const Vector3 &point, int planeID)
+	SectionPlane* SectionManager::CreateOneSectionPlane(const Vector3 &normalVector, const Vector3 &point)
 	{
 		SectionPlane* outPlane = new SectionPlane();
 		outPlane->AddRef();
-		outPlane->SetID(planeID);
 		Section* pSection = m_view->GetSceneManager()->GetSectionNode()->GetSection();
-		//Section* pSection = m_view->GetSceneManager()->CreateSingleSectionNode(planeID)->GetSection();
 
+		//设置之前剖面隐藏
 		list<SectionPlane*> planeList = pSection->GetSectionPlaneList();
 		if (planeList.size() > 0)
 		{
@@ -94,19 +93,24 @@ namespace M3D
 			}
 		}
 
-		pSection->AddPlane(outPlane);
-		outPlane->Release();
-
-		SectionPlane* onePlane = pSection->GetPlaneById(planeID);
 		float D = -(normalVector.DotProduct(point));
-		bool val = true;
-		if (onePlane)
-		{
-			onePlane->SetPlaneParam(normalVector.m_x, normalVector.m_y, normalVector.m_z, D);
-			onePlane->SetEnable(val);
-			BindOneSectionDragger(normalVector, onePlane);
-		}
-		return onePlane;
+		outPlane->SetPlaneParam(normalVector.m_x, normalVector.m_y, normalVector.m_z, D);
+		outPlane->SetEnable(true);
+
+		pSection->AddNewPlane(outPlane);
+		BindOneSectionDragger(normalVector, outPlane);
+		//outPlane->Release();
+
+		//SectionPlane* onePlane = pSection->GetPlaneById(outPlane->GetID());
+		//float D = -(normalVector.DotProduct(point));
+		//bool val = true;
+		//if (onePlane)
+		//{
+		//	onePlane->SetPlaneParam(normalVector.m_x, normalVector.m_y, normalVector.m_z, D);
+		//	onePlane->SetEnable(val);
+		//	BindOneSectionDragger(normalVector, onePlane);
+		//}
+		return outPlane;
 	}
 
 	void SectionManager::BindOneSectionDragger(const Vector3 &normalVector, SectionPlane* plane)
@@ -119,7 +123,7 @@ namespace M3D
 		{
 			translateAixsDragger = m_view->GetSceneManager()->GetHandlerGroup()->GetSingleTransMinusformHandler();
 			translateAixsDragger->SetName("OneSectionAxisDragger");
-			translateAixsDragger->SetVisible(true);
+			translateAixsDragger->SetVisible(false);
 			translateAixsDragger->SetNeedScale(true);
 			translateAixsDragger->SetWorldPosition(plane->GetCenterPointArray());
 			translateAixsDragger->SetOrientation(normalVector);
@@ -137,7 +141,6 @@ namespace M3D
 			draggerCallback->Release();
 			//scetionNode->MarkDirty();
 		}
-		translateAixsDragger->SetVisible(true);
 		m_view->GetSceneManager()->UnLock();
 	}
 

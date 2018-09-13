@@ -9,6 +9,7 @@ namespace M3D
 	class Texture;
 	class ResourceManager;
 	/**
+	* 
 	* 绘制背景颜色，支持颜色绘制和图片绘制两种方式
 	*/
 	class M3D_API GroundNode : public SceneNode
@@ -45,15 +46,27 @@ namespace M3D
 		*/
 		Vector3* GetVertexs();
 
+		Vector2* GetCoords();
+
 		void SetResourceManager(ResourceManager * resMgr);
 
 		int GetPointsNumber();
 
+		inline CameraNode * GetMirrorCamera() const {
+
+			return m_mirrorCamera;
+		};
+
+		inline Vector3 GetCenter() const {
+
+			return m_center;
+		};
 	protected:
 		//	virtual void FinalRelease(void); // Container.h
 		void Initial();
 
 		vector<Vector3> points; //!<
+		vector<Vector2> coords; //!<
 		vector<Color> colors; //!<背景绘制所需纹理坐标
 
 	private:
@@ -62,7 +75,8 @@ namespace M3D
 		int m_divisions;
 		bool m_isDirty;
 		Vector3 m_center;
-
+		
+		CameraNode * m_mirrorCamera; 
 	};
 }
 #endif // BACKGROUNDCOLORNODE_H

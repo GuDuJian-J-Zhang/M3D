@@ -686,7 +686,8 @@ namespace M3D
 								for (int j = 0; j < subFaces.size(); j++)
 								{
 									Face* subFace = subFaces.at(j);
-									if (subFace)
+
+									if (subFace && subFace->Selectable())
 									{
 										if (action->CanPickShape(SHAPE_TRIMESH))
 										{
@@ -757,6 +758,17 @@ namespace M3D
 			if (m_bodys[i])
 			{
 				m_bodys[i]->SetNeedClip(val);
+			}
+		}
+	}
+
+	void ModelShape::Selectable(bool isBlur)
+	{
+		for (size_t i = 0; i < m_bodys.size(); i++)
+		{
+			if (m_bodys[i])
+			{
+				m_bodys[i]->Selectable(isBlur);
 			}
 		}
 	}

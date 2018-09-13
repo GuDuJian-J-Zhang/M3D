@@ -527,7 +527,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "4840"
             endingLineNumber = "4840"
-            landmarkName = "View::GetAnimationDisState(ControlInfo&amp; controlInfo)"
+            landmarkName = "View::GetBackgroundUseSkyBox()"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -576,6 +576,54 @@
             startingLineNumber = "283"
             endingLineNumber = "283"
             landmarkName = "SVLXWriter::WriteSavedModels(View * view,const string&amp; srcFilePath, const string &amp; targetPath)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "../../jni/sview/views/View.cpp"
+            timestampString = "558493530.802084"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "2173"
+            endingLineNumber = "2173"
+            landmarkName = "View::ShowModelView(int viewId, bool isAnni)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "../../jni/sview/io/SVLXWriter.cpp"
+            timestampString = "558497534.774873"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "1868"
+            endingLineNumber = "1868"
+            landmarkName = "SVLXWriter::UpdateSVLXFile()"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "../../jni/sview/io/SVLXWriter.cpp"
+            timestampString = "558497627.2615809"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "1747"
+            endingLineNumber = "1747"
+            landmarkName = "SVLXWriter::SaveUserDefineViews(Model* pModel)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>

@@ -111,6 +111,8 @@ public:
 	virtual std::string GetName();
 	virtual void SetName(const std::string& value);
 	virtual Color* GetInitColor();
+	void Selectable(bool selectable);
+	bool Selectable();
 
 	virtual void SetSceneNode(SceneNode* node);
 	virtual SceneNode* GetSceneNode();
@@ -142,6 +144,7 @@ private:
 	bool m_visible;
 	bool m_IsHighlight;
 	bool m_IsSelect; ///是否选中
+	bool m_selectable;
 	IDTYPE m_Id; ///编号
 	Mesh* m_drawCache; //!<渲染时使用的Mesh
 	Mesh* m_drawMesh; //!<渲染时使用的Mesh

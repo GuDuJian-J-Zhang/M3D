@@ -55,7 +55,7 @@ public:
 	 * @return
 	 */
 	bool AddPlane(SectionPlane* plane);
-
+	bool AddNewPlane(SectionPlane* plane);
 	/**
 	 * 移除平面
 	 * @param plane

@@ -153,6 +153,26 @@ Dragger* DraggerManager::BindExplosionStdDragger(vector<Model*> models, int expl
 
 	return explosioinAixsDragger;
 }
+
+/*指示器拖拽器*/
+
+Dragger* DraggerManager::BindIndicatorDragger(Vector3 direction, Vector3 pos) 
+{
+	TranslateMinusAxisDragger* minusAxisDragger = NULL;
+	if (m_view)
+	{
+
+		minusAxisDragger = m_view->GetSceneManager()->GetHandlerGroup()->GetTransMinusformHandler();
+		minusAxisDragger->SetName("TranslateMinusAxisDragger");
+		minusAxisDragger->SetVisible(true);
+		minusAxisDragger->SetMinusXAxisVisible(false);
+		minusAxisDragger->SetWorldPosition(pos);
+		minusAxisDragger->SetOrientation(direction);
+		return minusAxisDragger;
+	}
+    return NULL;
+}
+
 /*
 爆炸拖拽器的绑定:指定拖拽器方向
 */
@@ -300,7 +320,7 @@ Dragger* DraggerManager::BindExplosionAxisDragger(vector<Model*> models,int expl
 	
 }
 
-bool DraggerManager::MoveExplosionFreedomDragger(Dragger* dragger, Vector3 direction, Vector3 pos) {
+bool DraggerManager::MoveIndicatorDragger(Dragger* dragger, Vector3 direction, Vector3 pos) {
 
 	if (dragger) 
 	{

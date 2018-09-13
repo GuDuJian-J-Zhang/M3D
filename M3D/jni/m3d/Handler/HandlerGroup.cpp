@@ -222,10 +222,13 @@ void HandlerGroup::HandleDragger(TouchEvent& touchEvent)
 	for (iter = miusMinusAxisDraggerList.begin(); iter != miusMinusAxisDraggerList.end(); ++iter)
 	{
 		TranslateMinusAxisDragger* childDragger = *iter;
-		if (!touchEvent.getHandled() && childDragger && childDragger->IsVisible())
+		if (!touchEvent.getHandled() && childDragger)// && childDragger->IsVisible())
 		{
-			Dragger* dragger = childDragger;
-			dragger->handle(touchEvent);
+			if (!childDragger->handle(touchEvent))
+			{
+				Dragger* dragger = childDragger;
+				dragger->handle(touchEvent);
+			}
 		}
 	}
 
@@ -588,12 +591,17 @@ M3D::TranslateBoxDragger* HandlerGroup::GetTranslateBoxDragger()
 
 TranslateMinusAxisDragger * HandlerGroup::GetSingleTransMinusformHandler()
 {
-	TranslateMinusAxisDragger* transMinusformHandlerNode = new TranslateMinusAxisDragger();
-	transMinusformHandlerNode->setupDefaultGeometry();
-	transMinusformHandlerNode->AddRef();
-	transMinusformHandlerNode->SetScene(m_scene);
-	this->AddChild(transMinusformHandlerNode);
+	if (m_TransMinusformHandlerNode == NULL)
+	{
+		m_TransMinusformHandlerNode = new TranslateMinusAxisDragger();
+		m_TransMinusformHandlerNode->setupDefaultGeometry();
+		m_TransMinusformHandlerNode->AddRef();
+		m_TransMinusformHandlerNode->SetScene(m_scene);
+		this->AddChild(m_TransMinusformHandlerNode);
+	}
+	TranslateMinusAxisDragger* transMinusformHandlerNode = m_TransMinusformHandlerNode;
 	miusMinusAxisDraggerList.push_back(transMinusformHandlerNode);
+	m_TransMinusformHandlerNode = nullptr;
 	return transMinusformHandlerNode;
 }
 

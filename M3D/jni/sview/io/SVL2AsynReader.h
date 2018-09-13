@@ -258,7 +258,6 @@ private:
 	int m_fileBufferLength;
 	bool m_mergeface;//是否进行合并面操作
 	string m_xmlAnimatinData;//!<存储svl内部读取的动画文件
-	string m_annotationData;//!<存储文件中批注文件
     
 	map<int,BaseMaterial*> m_protoTypeMaterialCache;
 	map<int, Color> m_protoTypeColorCache;	

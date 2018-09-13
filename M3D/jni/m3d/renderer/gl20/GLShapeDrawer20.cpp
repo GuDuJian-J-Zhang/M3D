@@ -2132,13 +2132,13 @@ namespace M3D
 
 			// multi-clip plane
 			Vector4 tc[3];
-			int enableClips[3];
+			int enableClips[3] = { 0 };
 			Matrix4 tempMat = camera->GetView().ToMatrix4();
 			for (int i = 0; i < 3; i++)
 			{
 				tc[i] = (action->m_clipPlane[i]);
 				tc[i] = tempMat.Inverse().Transpose() * tc[i];
-				enableClips[i] = action->m_enableClip[i];
+				//enableClips[i] = action->m_enableClip[i];
 			}
 			shaderEffect->SetUniformValue(FSP_CLIPPLANES, 3, tc);
 			if (sectionPlane->GetID() == 1001)

@@ -224,6 +224,10 @@ public:
 	virtual void ResetAlpha();
 	virtual float GetAlpha();
 	virtual bool IsSelected() const;
+
+	void Selectable(bool selectable,bool reSub = false);
+	bool Selectable();
+
 	virtual void SetBox(const BoundingBox& box);
 	virtual bool IsVisible();
 	virtual bool IsOrigVisible();
@@ -422,6 +426,12 @@ public:
 	*/
 	virtual ModelView* GetModleView(int viewId);
 
+	/**
+	* 插入一个视图
+	* @param iIndex 索引
+	* @param view
+	*/
+	void InsertModelView(int iIndex, ModelView* view);
 	/**
 	* 新增一个视图
 	* @param view
@@ -628,6 +638,7 @@ private:
 	protected:
 		bool m_IsSelect; //!<是否选中
 		bool m_Visible; //!<是否显示
+		bool m_selectable; 
 
 		IDTYPE  m_Id; //!<编号
 		SModelFileInfo* m_fileInfo; 

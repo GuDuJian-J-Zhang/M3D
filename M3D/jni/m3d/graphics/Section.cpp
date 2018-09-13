@@ -9,7 +9,7 @@ namespace M3D
 {
 
 Section::Section(void) :
-		Shape(),m_isShowCappingPlane(false)
+		Shape(),m_isShowCappingPlane(false), m_isReverseClipping(false)
 {
 	///默认关闭盖面
 //	this->SetVisible(false);
@@ -80,6 +80,42 @@ void Section::FindVisiableObject(RenderAction* renderAction)
 	}
 }
 
+bool Section::AddNewPlane(SectionPlane* plane)
+{
+	MutexLock lock(m_mutex);
+	bool addState = true;
+
+	if (!plane)
+	{
+		return false;
+	}
+	Color green(0.50f, 0.50f, 0.0f, 0.1f);
+	Color edgeColor(0.7f, 0.7f, 0.70f, 1.0f);
+
+	//SectionPlane *newplane = new SectionPlane();
+
+	//plane->Copy(plane);
+	plane->SetSceneBox(m_drawBoxSize);
+	plane->UpdateDrawData();
+	plane->SetFaceColor(green);
+	plane->SetEdgeColor(edgeColor);
+	////TODO
+
+	float* equation = plane->GetEquation();
+	Vector3 normal(equation[0], equation[1], equation[2]);
+	Plane projectPlane(normal, equation[3]);
+	BoundingBox box = m_drawBoxSize.Projected(projectPlane);
+	////SECTION TODO
+	plane->SetDrawPlane(box);
+	plane->SetFaceColor(green);
+	plane->SetEdgeColor(edgeColor);
+	Matrix3x4 transMatrix = Matrix3x4::IDENTITY;
+	plane->SetDraggerTransform(transMatrix);
+	this->m_planeList.push_back(plane);
+
+	return addState;
+}
+
 bool Section::AddPlane(SectionPlane* plane)
 {
 	MutexLock lock(m_mutex);
@@ -133,7 +169,7 @@ bool Section::AddPlane(SectionPlane* plane)
 		}
 	}
 
-	if(this->m_planeList.size()>=3)
+	if (this->m_planeList.size() >= 3)
 	{
 		delete *(this->m_planeList.begin());
 		this->m_planeList.erase(this->m_planeList.begin());

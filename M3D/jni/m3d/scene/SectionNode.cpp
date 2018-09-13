@@ -73,7 +73,7 @@ void SectionNode::RayPick(RayPickAction * action)
 		for (list<SectionPlane*>::iterator it = planeList->begin(); it != planeList->end(); it++)
 		{
 			SectionPlane* plane = *it;
-			if (plane)
+			if (plane && plane->GetEnable())
 			{
 				plane->RayPick(action);
 			}

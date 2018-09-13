@@ -88,12 +88,12 @@ public:
 	bool SetPercent(View* view,vector<Model*> arrayModels, int style, float percent = 100.0f,
 		bool useAnimation = true);
 	bool setPercentWithDirection(View* view, vector<Model*> arrayModels, int style, float percent = 100.0f, Vector3 director =Vector3(0,0,0));
+
 	//不带复位的
 	bool SetPercentWithoutRestore(View* view, int style, float percent = 100.0f,
 		bool useAnimation = true);
 	bool Close(View* view);
 
-	void addAuxiliaryLine();
 	/**
 	 * 将模型拆解，并排列
 	 * @param shapeList 模型列表
@@ -138,6 +138,7 @@ public:
 	 * @param level
 	 */
 	void SetExplosiveStyle(int style);
+	void SetExplosiveMinus(int minus);
 	void Reset();
 	bool AddNoteToScene(Vector3 start, Vector3 end);
 private:
@@ -180,11 +181,13 @@ private:
 	 * @param matrix
 	 */
 	void AddMatrix(Model* nodeAddr, const NodeState& nodeState);
-
+	float m_explosiveAllValue;
 private:
 	View* m_view;
 	int m_explosiveStyle; //当前作用的爆炸图类型
+	int m_explosiveMinus;
 	float m_explosivePercent; //爆炸力度
+	
 	bool m_isUseAnimation;
 
 	bool m_isFirstOpen;

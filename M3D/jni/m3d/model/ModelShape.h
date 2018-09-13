@@ -106,6 +106,8 @@ public:
 	void MarkDrawDataDirty();
 
 	void SetNeedClip(bool val);
+
+	void Selectable(bool selectable);
 protected:
 	mutable Matrix4 m_glRenderMatrix;//!< @see ShapeNode
 	//相对于世界坐标的包围盒

@@ -3267,7 +3267,346 @@ namespace SVIEW
 			//LOGI("Set note id end");
 		//	delete action;
 
-			LOGI("View::UpdateViewByCurrentScene end.");
+			//LOGI("View::UpdateViewByCurrentScene end.");
+		ret = true;
+	RET: return ret;
+
+	}
+
+	bool View::UpdateSpecialViewByCurrentScene(ModelView* newView)
+	{
+		//LOGI("View::UpdateViewByCurrentScene begin %d",newView);
+		bool ret = false;
+		if (!newView)
+		{
+			return ret;
+		}
+
+		//camera
+		//CameraNode* pCurCamera = GetSceneManager()->GetCamera();
+		//CameraNode& newViewCamera = (CameraNode&)newView->GetCamera();
+		//newViewCamera.SetPosition(pCurCamera->GetPosition());
+		//newViewCamera.SetRotation(pCurCamera->GetRotation());
+		//newViewCamera.SetZoom(pCurCamera->GetZoom());
+		//float fWidth = 1.0f, fHeiht = 1.0f;
+		//pCurCamera->GetOrthoSize(&fWidth, &fHeiht);
+		//newViewCamera.SetOrthoSize(Vector2(fWidth, fHeiht));
+		//newViewCamera.SetOrthographic(pCurCamera->IsOrthographic());
+		//newViewCamera.SetAspectRatio(pCurCamera->GetAspectRatio());
+		//newViewCamera.SetFov(pCurCamera->GetFov());
+		//newViewCamera.SetFarClip(pCurCamera->GetFarClip());
+		//newViewCamera.SetNearClip(pCurCamera->GetNearClip());
+		////newView->SetCamera(*GetSceneManager()->GetCamera());
+		//newView->SetUpDataCamera(true);
+
+		if (newView->GetUpDataModelState())
+		{
+			int direction = GetExplosiveView()->GetExplosiveStyle();
+			float percent = GetExplosiveView()->GetExplosivePercent();
+			newView->setExplosiveType(direction);
+			newView->setExplosivePercent(percent * 50);
+
+			//LOGI("UpVector:%s",outStr);
+			//       LOGI("ZoomFactor:%f",GetSceneManager()->GetCamera()->GetZoom());
+			//        LOGI("Orthographic:%d",GetSceneManager()->GetCamera()->IsOrthographic());
+			//        LOGI("NearClip:%f",GetSceneManager()->GetCamera()->GetNearClip());
+			//        LOGI("FarClip:%f",GetSceneManager()->GetCamera()->GetFarClip());
+			//        LOGI("FOV:%f",GetSceneManager()->GetCamera()->GetFov());
+
+			//insAtt
+			map<int, InstanceAttribute> insAttMap;
+
+			vector<Model*> allSubModels;
+			//Model* topModel = this->GetSceneManager()->GetModel();
+
+			std::vector<IShape*>modelVector = this->m_Selector->GetAll();
+			//allSubModels.push_back(topModel);
+			//topModel->GetAllSubModels(allSubModels);
+
+			for (int i = 0; i < modelVector.size(); i++) 
+			{
+				if (modelVector[i]->GetType() == SHAPETYPE::SHAPE_MODEL)
+				{
+					Model *curModel = (Model*)modelVector[i];
+
+					InstanceAttribute ia;
+					ia.id = curModel->GetInstatnceID();
+					ia.materialId = -1;
+					ia.visible = curModel->IsVisible();
+					//如果存在于颜色修改列表中则保存
+					//map<string, Model*>::iterator tmpIt = m_ColorChangedModelMap.find(
+					//	curModel->GetPlcPath());
+					//if (tmpIt != m_ColorChangedModelMap.end())
+					//{
+					//	ia.hasColor = true;
+					//	ia.insColor = *curModel->GetColor();
+					//}
+					//else
+					//{
+					//	ia.hasColor = false;
+					//	ia.insColor = Color::GRAY;
+					//}
+					Color* pColor = curModel->GetColor();
+					if (pColor)
+					{
+						ia.hasColor = true;
+						ia.insColor = *curModel->GetColor();
+					}
+					else
+					{
+						ia.hasColor = false;
+						ia.insColor = Color::GRAY;
+					}
+
+					ia.path = PathHelper::GetSVLPath(curModel);
+
+					ModelShape* modelshape = curModel->GetModelShape();
+					if (modelshape)
+					{
+						//Matrix3x4 matrixTran = modelshape->GetWorldTransform();
+						Matrix3x4 matrixTran = *curModel->GetPlaceMatrix();
+						ia.placeMatrix = matrixTran.ToMatrix4();
+					}
+					else
+					{
+						ia.placeMatrix = Matrix4::IDENTITY;
+					}
+
+					insAttMap.insert(pair<int, InstanceAttribute>(ia.id, ia));
+				}
+				else
+				{
+					continue;
+				}
+
+			}
+
+			newView->SetInstanceAttributeMap(insAttMap);
+		}
+
+		//记录场景中的剖面ID
+		if (this->GetSceneManager()->GetSectionNode())
+		{
+			Section* pSection = this->GetSceneManager()->GetSectionNode()->GetSection();
+			if (pSection)
+			{
+				Model* topModel = this->GetSceneManager()->GetModel();
+				newView->ClearSectionPlaneId();
+				list<SectionPlane*>* pPlaneList = pSection->GetPlaneList();
+				if (pPlaneList)
+				{
+					list<SectionPlane*>::iterator it;
+					for (it = pPlaneList->begin(); it != pPlaneList->end(); it++)
+					{
+						SectionPlane* pPlane = *it;
+						if (!pPlane)
+							continue;
+						if (pPlane->GetEnable())
+						{
+							newView->AddSectionPlaneId(pPlane->GetID());
+							if (!topModel->GetSectionPlane(pPlane->GetID()))
+							{
+								SectionPlane* iPlane = new SectionPlane();
+								iPlane->Copy(pPlane);
+								topModel->AddSectionPlane(iPlane);
+							}
+						}
+					}
+				}
+			}
+		}
+
+		//note id
+		//	if (this->GetModel()->m_ShapeList.size() > 0)
+		//	{
+		//		for (int i = 0; i < this->GetModel()->m_ShapeList.size(); i++)
+		//		{
+		//			Shape *pShape = this->GetModel()->m_ShapeList.at(i);
+		//			if (pShape->GetType() == SHAPE_NOTE)
+		//			{
+		//				Note *pNote = (Note*) pShape;
+		//				//LOGI("curNoteID:%d",pNote->GetID());
+		//				newView->AddNoteId(pNote->GetID());
+		//			}
+		//		}
+		//	}
+
+		if (newView->GetUpDataModelState())
+		{
+			Model* topModel = this->GetSceneManager()->GetModel();
+			//设置与视图关联的PMI
+			vector<int> vecPMIIds;
+			map<int, PMIData*>* pmis = topModel->GetPMIs();
+			if (pmis != NULL && pmis->size() > 0)
+			{
+				for (map<int, PMIData*>::iterator itPMI = pmis->begin();
+					itPMI != pmis->end(); itPMI++)
+				{
+					if (!(*itPMI).second)
+						continue;
+					if ((*itPMI).second->IsVisible())
+					{
+						vecPMIIds.push_back((*itPMI).second->GetID());
+					}
+				}
+			}
+			newView->SetPMIIds(vecPMIIds);
+
+
+			/*--------------------------------------------------------------------------------*/
+			newView->ClearNoteDataList();
+			vector<int> vecNoteIds;
+
+			NoteGroup* noteGroup = this->GetSceneManager()->GetNoteGroup();
+			LOGI("UpdateViewByCurrentScene::SHAPE_TEXT_NOTE");
+			//vector<string> *noteDataList = newView->GetNoteDataList(SHAPE_TEXT_NOTE);//TODO 需不需要清空？
+			//	assert(noteDataList != NULL);
+			//	noteDataList->clear();
+			//vector<string> noteDataList;
+			//noteDataList.clear();
+
+			if (noteGroup->Size() > 0)
+			{
+				LOGI("begin update textnote by current scene");
+				int noteCount = noteGroup->Size();
+				LOGI("noteCount %d", noteCount);
+
+				for (int i = 0; i < noteCount; i++)
+				{
+					SceneNode* node = noteGroup->GetChild(i);
+					if (node && node->GetType() == SHAPE_NODE)
+					{
+						ShapeNode* shapeNode = (ShapeNode*)node;
+						IShape* shape = shapeNode->GetShape();
+						if (!(node->IsVisible()) || !shape || !(shape->IsVisible()))
+							continue;
+
+						if (shape->GetType() == SHAPE_TEXT_NOTE)
+						{
+
+							TextNote* pNote = (TextNote *)shape;
+
+							//在此处填充View中使用的TextNote ID。//TODO
+							vecNoteIds.push_back(pNote->GetID());
+
+							string noteData = NoteFactory::TextNoteToXMLElement(this->GetSceneManager(), pNote);
+							newView->GetNoteDataList(SHAPE_TEXT_NOTE)->push_back(noteData);
+
+						}
+						else if (shape->GetType() == SHAPE_VOICE_NOTE)
+						{
+							LOGI("UpdateViewByCurrentScene::SHAPE_VOICE_NOTE");
+							VoiceNote* pNote = (VoiceNote *)shape;
+
+							//在此处填充View中使用的TextNote ID。//TODO
+							vecNoteIds.push_back(pNote->GetID());
+
+							string noteData = NoteFactory::VoiceNoteToXMLElement(this->GetSceneManager(), pNote);
+							newView->GetNoteDataList(SHAPE_VOICE_NOTE)->push_back(noteData);
+						}
+						else if (shape->GetType() == SHAPE_SEQUENCE_NUMBER_NOTE)
+						{
+							LOGI("UpdateViewByCurrentScene::SHAPE_SEQUENCE_NUMBER_NOTE");
+							SequenceNumberNote* pNote = (SequenceNumberNote *)shape;
+
+							//在此处填充View中使用的TextNote ID。//TODO
+							vecNoteIds.push_back(pNote->GetID());
+
+							string noteData = NoteFactory::SequenceNoteToXMLElement(this->GetSceneManager(), pNote);
+							newView->GetNoteDataList(SHAPE_SEQUENCE_NUMBER_NOTE)->push_back(noteData);
+						}
+						else if (shape->GetType() == SHAPE_THREED_GESTURE_NOTE)
+						{
+							LOGI("UpdateViewByCurrentScene::SHAPE_THREED_GESTURE_NOTE");
+							ThreeDGesturesNote* pNote = (ThreeDGesturesNote *)shape;
+
+							//在此处填充View中使用的TextNote ID。//TODO
+							vecNoteIds.push_back(pNote->GetID());
+
+							string noteData = NoteFactory::ThreeDGestureNoteToXMLElement(this->GetSceneManager(), pNote);
+							newView->GetNoteDataList(SHAPE_THREED_GESTURE_NOTE)->push_back(noteData);
+						}
+
+					}
+				}
+			}
+
+			//文本批注
+			//AnnotationGroup* pAnnotationGroup = this->GetSceneManager()->GetAnnotationGroup();
+			//if (pAnnotationGroup && pAnnotationGroup->Size() > 0)
+			//{
+			//	int iAnnotationCount = pAnnotationGroup->Size();
+			//	for (int i = 0; i < iAnnotationCount; i++)
+			//	{
+			//		SceneNode* node = pAnnotationGroup->GetChild(i);
+			//		if (node && node->GetType() == SHAPE_NODE)
+			//		{
+			//			ShapeNode* shapeNode = (ShapeNode*)node;
+			//			IShape* shape = shapeNode->GetShape();
+			//			if (shape && node->IsVisible() && shape->IsVisible())
+			//			{
+			//				vecNoteIds.push_back(shape->GetID());
+			//			}
+			//		}
+			//	}
+			//}
+
+			//测量批注
+			//MeasureGroup* pMeasureGroup = this->GetSceneManager()->GetMeasureGroup();
+			//if (pMeasureGroup && pMeasureGroup->Size() > 0)
+			//{
+			//	int iMeasureCount = pMeasureGroup->Size();
+			//	for (int i = 0; i < iMeasureCount; i++)
+			//	{
+			//		SceneNode* node = pMeasureGroup->GetChild(i);
+			//		if (node && node->GetType() == SHAPE_NODE)
+			//		{
+			//			ShapeNode* shapeNode = (ShapeNode*)node;
+			//			IShape* shape = shapeNode->GetShape();
+			//			if (shape && node->IsVisible() && shape->IsVisible())
+			//			{
+			//				vecNoteIds.push_back(shape->GetID());
+			//			}
+			//		}
+			//	}
+			//}
+
+			newView->SetNoteIds(vecNoteIds);
+		}
+
+		LOGI("voice note number = %d", newView->GetNoteDataList(SHAPE_VOICE_NOTE)->size());
+
+		LOGI("end update textnote by current scene");
+
+		//TODO MERGEToMobile
+		if (SectionOperator::Instance != NULL) {
+			///sectionPlane
+			int direction = SectionOperator::Instance->m_Direction;
+			float percentage = 100 * SectionOperator::Instance->m_fPercentage; //
+			int directionX = SectionOperator::Instance->m_DirectionX;
+			float percentageX = SectionOperator::Instance->m_fPercentageX; //
+			int directionY = SectionOperator::Instance->m_DirectionY;
+			float percentageY = SectionOperator::Instance->m_fPercentageY; //
+			int directionZ = SectionOperator::Instance->m_DirectionZ;
+			float percentageZ = SectionOperator::Instance->m_fPercentageZ; //
+			bool showCutPlane = SVIEW::Parameters::Instance()->m_showSection;
+			bool isCappingPlane =
+				this->GetSceneManager()->GetSectionNode()->GetSection()->IsShowCappingPlane();
+			bool isReverse = this->GetSceneManager()->GetSectionNode()->GetSection()->IsReverseClipping();
+			newView->SetSectionPlaneDirection(direction);
+			newView->SetSectionPlanePercentage(percentage);
+			newView->SetSectionPlaneDirectionAndPercentage(directionX, directionY, directionZ, percentageX, percentageY, percentageZ);
+			newView->SetShowClipSectionPlane(showCutPlane);
+			newView->SetShowSectionCappingPlane(isCappingPlane);
+			newView->SetReverseClipping(isReverse);
+		}
+
+		/*-----------------------------------------------------------------------------*/
+
+		//LOGI("Set note id end");
+		//	delete action;
+
+		//LOGI("View::UpdateViewByCurrentScene end.");
 		ret = true;
 	RET: return ret;
 
@@ -5743,14 +6082,37 @@ int View::GetSVLXFileItem(const std::string& i_strFileName, unsigned int& o_bufS
     //批注数据解析
     void View::ParseAnnotation(const string& value){
         Json::Reader reader;
-        Json::Value annosValue;
+        Json::FastWriter writer;
+        Json::Value json;
         Json::Value retJson;
-        
-        if (reader.parse(value.c_str(), annosValue))
+        SceneManager *scene = GetSceneManager();
+        if (reader.parse(value.c_str(), json))
         {
-            string annoValue = annosValue["annotations"].asString();
-            if (reader.parse(annoValue.c_str(), retJson)) {
-                retJson.begin();
+            retJson = json["annotations"];
+            if (retJson.isArray()){
+                int iSize = retJson.size();
+                for (int i = 0; i < iSize; i++) {
+                    Json::Value annoValue = retJson[i];
+                    int type = annoValue["type"].asInt();
+                    switch (type) {
+                        case 0://基本-文本
+                        {
+                            string jsonValue = writer.write(annoValue);
+                            Note *pNode = NoteFactory::CreateTextNoteFromJSON(scene, jsonValue);
+                        }
+                            break;
+                        case 1://零组件
+                            break;
+                        case 2://序号
+                        {
+                            string jsonValue = writer.write(annoValue);
+                            Note *pNode = NoteFactory::CreateSequenceNoteFromJSON(scene, jsonValue);
+                        }
+                            break;
+                        default:
+                            break;
+                    }
+                }
             }
         }
     }

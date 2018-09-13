@@ -61,6 +61,8 @@ public:
 	virtual void SetColor(const Color &color);
 	virtual void SetColor(const Color& color, bool reSub);
 	virtual void ResetAlpha();
+	void Selectable(bool selectable);
+	bool Selectable();
 	virtual Color* GetDrawColor();
 	virtual Color* GetColor();
 	virtual float GetAlpha();
@@ -117,6 +119,7 @@ private:
 	///1级TriMeshData	
 	bool m_visible;	
 	bool m_IsHighlight;
+	bool m_selectable;
 	RefPolyLine * m_lineSet;
 	mutable Color m_Color; ///颜色
 	bool m_IsSelect; ///是否选中

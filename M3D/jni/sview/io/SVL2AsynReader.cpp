@@ -4295,12 +4295,16 @@ namespace SVIEW {
             {
                 case HoteamSoft::SVLLib::VIEW_USAGE_GENERAL_VIEW:
                     pView->SetViewType(ModelView::DefaultView);
+                    break;
                 case HoteamSoft::SVLLib::VIEW_USAGE_SV_USER_VIEW:
                     pView->SetViewType(ModelView::UserView);
+                    break;
                 case HoteamSoft::SVLLib::VIEW_USAGE_SV_USER_CLIPVIEW:
                     pView->SetViewType(ModelView::UserView);
+                    break;
                 case HoteamSoft::SVLLib::VIEW_USAGE_PROE_BASE_VIEW:
                     pView->SetViewType(ModelView::DefaultView);
+                    break;
                 case HoteamSoft::SVLLib::VIEW_USAGE_PROE_USER_VIEW:
                     pView->SetViewType(ModelView::UserView);
                     //go ahead

@@ -206,6 +206,7 @@ public:
      * @return ture表示成功
      */
      bool UpdateViewByCurrentScene(ModelView *modelView);
+	 bool UpdateSpecialViewByCurrentScene(ModelView *modelView);
 
      /**
       * 获取默认模型视图，如果不存在，则创建一个

@@ -3,6 +3,12 @@
 #include "m3d/handler/TranslateMinusAxisDragger.h"
 #include "../scene/ShapeNode.h"
 #include "m3d/base/Vector3.h"
+#include "m3d/SceneManager.h"
+#include "m3d/scene/ShapeNode.h"
+#include "m3d/scene/SectionNode.h"
+#include "m3d/graphics/Section.h"
+#include "m3d/graphics/SectionPlane.h"
+#include "m3d/action/RayPickAction.h"
 
 using namespace M3D;
 
@@ -114,3 +120,60 @@ void M3D::TranslateMinusAxisDragger::SetScene(M3D::SceneManager* val)
 	_nxDragger->SetScene(val);
 }
 
+bool M3D::TranslateMinusAxisDragger::handle(const TouchEvent& ea)
+{
+	if (ea.getHandled()) return false;
+	SVIEW::View* view = ea.GetView();
+	if (!view) return false;
+
+	bool handled = false;
+	//if (_draggerActive)
+	{
+		switch (ea.getEventType())
+		{
+		case TouchEvent::PUSH:
+		{
+			_pointer.reset();
+			IShape* selectedShape = _scene->GetPickShape(ea.getX(), ea.getY(), SHAPE_MODEL, 0);
+			SectionPlane* section = dynamic_cast<SectionPlane*>(selectedShape);
+			if (section && section->GetID() == GetID())
+			{
+				CameraNode *rootCamera = view->GetSceneManager()->GetCamera();
+				_pointer.setCamera(rootCamera);
+				_pointer.setMousePosition(ea.getX(), ea.getY());
+
+				_xDragger->handle(_pointer, ea);
+				_xDragger->setDraggerActive(true);
+				handled = true;
+			}
+		}
+		case TouchEvent::DRAG:
+		case TouchEvent::RELEASE:
+		{
+			if (_xDragger->getDraggerActive())//(_draggerActive)
+			{
+				//_pointer._hitIter = _pointer._hitList.begin();
+				_pointer.setMousePosition(ea.getX(), ea.getY());
+
+				_xDragger->handle(_pointer, ea);
+
+				handled = true;
+			}
+			break;
+		}
+		default:
+			break;
+		}
+
+		if ((_xDragger->getDraggerActive()) && ea.getEventType() == TouchEvent::RELEASE)
+		{
+			_xDragger->setDraggerActive(false);
+			_pointer.reset();
+		}
+	}
+	if (handled)
+	{
+		ea.setHandled(handled);
+	}
+	return handled;
+}

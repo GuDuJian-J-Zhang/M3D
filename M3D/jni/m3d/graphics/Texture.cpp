@@ -161,6 +161,21 @@ void Texture::NeedUpdate()
 	MarkDirty();
 }
 
+bool Texture::Equals(Texture* texture)
+{
+	if (this->GetPath() == "" && texture->GetPath() == ""
+		&& this->GetImage() == NULL && texture->GetImage() == NULL)
+	{
+		return true;
+	}
+
+	if (this->GetPath() != texture->GetPath() || this->GetImage() != texture->GetImage())
+	{
+		return false;
+	}
+
+	return true;
+}
 
 }
 

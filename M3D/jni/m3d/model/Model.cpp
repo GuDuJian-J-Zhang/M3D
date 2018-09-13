@@ -92,6 +92,7 @@ Model::Model(void):Object()
 	m_InstanceID = 0;
 	m_svlId = OBJID++;
 	m_ProtoTypeID = -1;
+	this->m_selectable = true;
 	this->SetFileInfo(NULL);
 
 	this->MarkDirty();
@@ -791,7 +792,7 @@ void Model::SetVisible(bool visible, bool relSub)
  
 void Model::RayPick(RayPickAction* action)
 {
-	if (!this->IsVisible() || !this->RendreVisible() || !action->CanPickShape(this->GetType()))
+	if (!this->IsVisible() || !this->RendreVisible() || !action->CanPickShape(this->GetType())|| !this->m_selectable)
 	{
 		return;
 	}
@@ -809,7 +810,7 @@ void Model::RayPick(RayPickAction* action)
 
 void Model::FramePick(RayPickAction* action)
 {
-	if (!this->IsVisible() || !this->RendreVisible() /*|| !action->CanPickShape(this->GetType())*/)
+	if (!this->IsVisible() || !this->RendreVisible() || !this->m_selectable)
 	{
 		return;
 	}
@@ -1016,6 +1017,29 @@ bool Model::IsSelected() const
 	return m_IsSelect;
 }
 
+void  Model::Selectable(bool selectable, bool reSub)
+{
+	m_selectable = selectable;
+
+	if (this->m_modelShape)
+	{
+		this->m_modelShape->Selectable(selectable);
+	}
+
+	if (reSub)
+	{
+		for (int i = 0; i < m_SubModelArray.size(); i++)
+		{
+			m_SubModelArray[i]->Selectable(selectable, reSub);
+		}
+	}
+}
+ 
+
+bool Model::Selectable()
+{
+	return m_selectable;
+}
 
 void Model::SetBox(const BoundingBox& box)
 {
@@ -1379,6 +1403,51 @@ ModelView* Model::GetModleView(int viewId)
 		}
 	}
 	return pView;
+}
+
+void Model::InsertModelView(int iIndex, ModelView* view)
+{
+	bool exist = false;
+	if (this->m_ExtInfoMgr)
+	{
+		vector<ModelView*>* pVecViews = m_ExtInfoMgr->GetModelView(m_Id);
+		vector<ModelView*>::iterator ite;
+		if (pVecViews)
+		{
+			for (ite = pVecViews->begin(); ite != pVecViews->end(); ite++)
+			{
+				if ((*ite)->GetID() == view->GetID())
+				{
+					exist = true;
+					break;
+				}
+			}
+		}
+		else
+		{
+			m_ExtInfoMgr->AddModelView(m_Id, vector<ModelView*>());
+			pVecViews = m_ExtInfoMgr->GetModelView(m_Id);
+		}
+		if (!exist ||
+			*ite != view)
+		{
+			if (exist)
+			{
+				(*ite)->Release();
+				pVecViews->erase(ite);
+			}
+			view->AddRef();
+			if (iIndex >= 0 && iIndex <= (int)pVecViews->size() - 1)
+			{
+				ite = pVecViews->begin() + iIndex;
+				pVecViews->insert(ite, view);
+			}
+			else
+			{
+				pVecViews->push_back(view);
+			}
+		}
+	}
 }
 
 void Model::AddModelView(ModelView* view)
