@@ -48,8 +48,9 @@ public:
 	 Dragger* BindExplosionDragger(vector<Model*> models, int explosionType);
 	 Dragger* BindExplosionDragger(vector<Model*> models, int explosionType, Vector3 vect);
 	 Dragger* BindExplosionFreedomDragger(vector<Model*> models, int explosionType, Vector3 direction, Vector3 pos);
+	 Dragger* BindIndicatorDragger(Vector3 direction, Vector3 pos);
 	 //用于预选的dragger的移动操作
-	 bool MoveExplosionFreedomDragger(Dragger* dragger,Vector3 direction,Vector3 pos);
+	 bool MoveIndicatorDragger(Dragger* dragger,Vector3 direction,Vector3 pos);
 	 Dragger* BindDragger(vector<Model*> models, int drggerType, bool bGloal = true);
 	 bool UnBindDragger(Dragger* dragger);
 

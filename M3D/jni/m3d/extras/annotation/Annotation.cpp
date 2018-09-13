@@ -73,8 +73,11 @@ namespace M3D
 	{ 
 		SetVisiableObject(renderAction);
 
-		AnnotationFactory::ModifyPntAnnotation(this, renderAction);
-		renderAction->PrepareRenderAnnotation(this);
+		if (IsVisible())
+		{
+			AnnotationFactory::ModifyPntAnnotation(this, renderAction);
+			renderAction->PrepareRenderAnnotation(this);
+		}
 	}
 
 	BoundingBox   Annotation::GetComTextsBox()

@@ -37,6 +37,9 @@ public:
 			unsigned int reuse_texture_ID,
 			unsigned int flags);
 
+	static GLuint CreateRGBATexture(GLubyte * image,
+		unsigned int width,
+		unsigned int height);
 	/**
 	 * 从内存中加载纹理
 	 * @param buffer

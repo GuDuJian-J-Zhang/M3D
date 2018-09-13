@@ -1,4 +1,4 @@
-﻿/**@file
+/**@file
  *@brief
  *@author	XL
  *@date		2015-7-7
@@ -108,6 +108,13 @@ public:
 	 * @return 返回批注 失败 为NULL
 	 */
 	static Note* CreateTextNoteFromJSON(SceneManager* scene, const string& JSONValue);
+    /**
+     * @brief 从Json串中创建
+     * @param scene 场景
+     * @param JSONValue Json字符串
+     * @return 返回批注 失败 为NULL
+     */
+    static Note* CreateSequenceNoteFromJSON(SceneManager* scene, const string& JSONValue);
 	/**
 	 * @brief 将文本批注转化为XML字符串
 	 * @param scene 场景

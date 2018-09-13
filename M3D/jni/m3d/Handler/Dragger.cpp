@@ -75,6 +75,7 @@ namespace M3D {
 		_farPoint(M3D::Vector3()),
 		_eyeDir(M3D::Vector3(0, 0, 1))
 	{
+		m_camera = nullptr;
 		// _hitIter = _hitList.begin();
 	}
 

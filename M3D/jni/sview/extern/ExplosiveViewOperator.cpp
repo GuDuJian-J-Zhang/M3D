@@ -75,8 +75,17 @@ bool ExplosiveViewOperator::setPercentWithDirection(View* view, vector<Model*> a
 		this->m_view = view;
 		this->m_isUseAnimation = true;
 		this->explosiveDirection = direction;
-		this->CacheSelectMatrixState(arrayModels);
-		ProcressAwayFromCenter(arrayModels);
+		if (arrayModels.size() == 0)
+		{
+			this->CacheMatrixState();
+			ProcressAwayFromCenter();
+		}
+		else if (arrayModels.size() > 0)
+		{
+			this->CacheSelectMatrixState(arrayModels);
+			ProcressAwayFromCenter(arrayModels);
+		}
+		
 	}
 	return setExplosiveState;
 }
@@ -87,12 +96,16 @@ bool ExplosiveViewOperator::SetPercent(View* view, vector<Model*> arrayModels, i
 	bool setExplosiveState = false;
 	this->explosiveDirection = Vector3(0,0,0);
 	//LOGE("SetPercent m_explosiveStyle: %d style: %d", m_explosiveStyle, style);
-	if (style != this->m_explosiveStyle || percent != this->m_explosivePercent)
+	if (this->m_explosiveStyle != style)
 	{
 		this->m_explosiveStyle = style;
+		this->m_explosivePercent = 0;
+	}
+	if (percent != this->m_explosivePercent)
+	{
 		this->m_isSelector = true;
 		
-		this->m_explosivePercent = percent / 50.0f;
+		this->m_explosivePercent = percent / 50.0f + this->m_explosivePercent;
 		this->m_view = view;
 		this->m_isUseAnimation = useAnimation;
 
@@ -109,10 +122,14 @@ bool ExplosiveViewOperator::SetPercent(View* view, int style, float percent,
 	bool setExplosiveState = false;
 	this->explosiveDirection = Vector3(0, 0, 0);
 	//LOGE("SetPercent m_explosiveStyle: %d style: %d", m_explosiveStyle, style);
-	if (style != this->m_explosiveStyle || percent != this->m_explosivePercent)
+	if (this->m_explosiveStyle != style)
 	{
 		this->m_explosiveStyle = style;
-
+		this->m_explosivePercent = 0;
+		this->m_explosiveAllValue = 0;
+	}
+	if (percent != this->m_explosivePercent)
+	{
 		if ((this->m_isFirstOpen || this->m_isSelector))
 		{
 			this->Reset();
@@ -126,6 +143,7 @@ bool ExplosiveViewOperator::SetPercent(View* view, int style, float percent,
 		}
 	
 		this->m_explosivePercent = percent/50.0f;
+		this->m_explosiveAllValue = m_explosiveAllValue + this->m_explosivePercent;
 		this->m_view = view;
 		this->m_isUseAnimation = useAnimation;
 
@@ -337,8 +355,6 @@ bool ExplosiveViewOperator::ProcressAwayFromCenter()
 		delete explosiveAction;
 
 		view->GetSceneManager()->RequestUpdateWhenSceneBoxChanged();
-		BoundingBox box = view->GetSceneManager()->GetSceneBox();
-		
 		//LOGE("ProcressAwayFromCenter step3");
 		
 	}
@@ -412,7 +428,7 @@ void ExplosiveViewOperator::AwayFromCenterCallback(void* data, Model* node)
 				else if (explosiveViewOperator->m_explosiveStyle
 					== AWAYFROMCENTER_X)
 				{ //X direction
-					if (explosiveViewOperator->GetExplosivePercent() >= 0)
+					if (explosiveViewOperator->m_explosiveAllValue >= 0)
 					{
 						center = explosiveViewOperator->m_TopNodeFront;
 					}
@@ -427,7 +443,7 @@ void ExplosiveViewOperator::AwayFromCenterCallback(void* data, Model* node)
 				else if (explosiveViewOperator->m_explosiveStyle
 					== AWAYFROMCENTER_Y) //Y direction
 				{
-					if (explosiveViewOperator->GetExplosivePercent() >= 0)
+					if (explosiveViewOperator->m_explosiveAllValue >= 0)
 					{
 						center = explosiveViewOperator->m_TopNodeLeft;
 					}
@@ -441,7 +457,7 @@ void ExplosiveViewOperator::AwayFromCenterCallback(void* data, Model* node)
 				else if (explosiveViewOperator->m_explosiveStyle
 					== AWAYFROMCENTER_Z) //Z direction
 				{
-					if (explosiveViewOperator->GetExplosivePercent() >= 0)
+					if (explosiveViewOperator->m_explosiveAllValue >= 0)
 					{
 						center = explosiveViewOperator->m_TopNodeBottom;
 					}
@@ -500,7 +516,7 @@ void ExplosiveViewOperator::AwayFromCenterCallback(void* data, Model* node)
 					disPos = tModelMatrix.Inverse() * disPos;
 					center = tModelMatrix.Inverse() * center;
 					//未指向爆炸方向，根据标准爆炸轴爆炸的功能
-					if (explosiveViewOperator->m_explosivePercent >= 0)
+					if (explosiveViewOperator->m_explosiveAllValue >= 0)
 					{
 						mov = (disPos - center)* explosiveViewOperator->m_explosivePercent;
 					}
@@ -615,9 +631,7 @@ void ExplosiveViewOperator::CacheSelectMatrixState(vector<Model*> arrayModels)
 			this->m_TopNodeBehind = (maxPos + Vector3(maxPos.m_x, minPos.m_y, minPos.m_z))*0.5f;
 			this->m_TopNodeRight = (maxPos + Vector3(minPos.m_x, maxPos.m_y, minPos.m_z)*0.5f);
 			this->m_TopNodeLeft = (minPos + Vector3(maxPos.m_x, minPos.m_y, maxPos.m_z))*0.5f;
-		}
 
-		{
 			this->p000 = Vector3(minPos.m_x,minPos.m_y,minPos.m_z);
 			this->p001 = Vector3(minPos.m_x, minPos.m_y, maxPos.m_z);
 			this->p010 = Vector3(minPos.m_x, maxPos.m_y, minPos.m_z);
@@ -927,5 +941,9 @@ void ExplosiveViewOperator::SetExplosiveStyle(int style)
 	m_explosiveStyle = style;
 }
 
+void ExplosiveViewOperator::SetExplosiveMinus(int minus)
+{
+	m_explosiveMinus = minus;
+}
 }
 

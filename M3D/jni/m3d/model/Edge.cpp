@@ -29,10 +29,12 @@ Edge::Edge() :Object()
 	m_svlId = OBJID++;
 	m_bNeedClip = true;
 	m_IsFirstGetProperties = true;
+	this->m_selectable = true;
 }
 
 Edge::Edge(const Edge& orig)
 {
+	this->m_selectable = true;
 	*this = orig;
 }
 
@@ -70,6 +72,7 @@ Edge& Edge::operator=(const Edge& orig)
 		this->m_IsSelect = orig.m_IsSelect;
 		this->m_visible = orig.m_visible;
 		this->m_IsHighlight = orig.m_IsHighlight;
+		this->m_selectable = orig.m_selectable;
 	}
 	return *this;
 }
@@ -166,6 +169,18 @@ void Edge::ResetAlpha()
 {
 	this->m_Color.m_a = 1.0f;
 }
+
+void Edge::Selectable(bool selectable)
+{
+	m_selectable = selectable;
+}
+
+
+bool Edge::Selectable()
+{
+	return this->m_selectable;
+}
+
 
 void Edge::SetVisible(bool visible, bool relSub)
 {
@@ -437,7 +452,7 @@ GeometryAttribute* Edge::GetGeoAttribute()
 
 void Edge::RayPick(RayPickAction* action)
 {
-	if (!this->IsVisible() || !action->CanPickShape(this->GetType()))
+	if (!this->IsVisible() || !this->m_selectable || !action->CanPickShape(this->GetType()))
 	{
 		return;
 	}

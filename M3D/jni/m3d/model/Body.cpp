@@ -329,6 +329,21 @@ void Body::SetVisible(bool visible)
 	m_isDrawDataDirty = true;
 }
 
+void Body::Selectable(bool selectable)
+{
+	for (int i = 0; i < this->m_FaceArray.size(); i++)
+	{
+		this->m_FaceArray[i]->Selectable(selectable);
+	}
+
+	for (int i = 0; i < this->m_EdgeArray.size(); i++)
+	{
+		this->m_EdgeArray[i]->Selectable(selectable);
+	}
+
+	m_isDrawDataDirty = true;
+}
+
 SHAPETYPE Body::GetType(void)
 {
 	return SHAPETYPE::SHAPE_BODY;
@@ -589,10 +604,7 @@ void Body::FindVisiableObject(RenderAction* renderAction)
 			renderAction->PrepareRenderEdges(edge);
 		}
 	}
-
-
-	
-
+ 
 	renderAction->FinishMergeFace();
 	renderAction->FinishMergeEdge();
 }

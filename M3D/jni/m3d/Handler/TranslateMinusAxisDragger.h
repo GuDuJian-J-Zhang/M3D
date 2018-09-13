@@ -25,6 +25,7 @@ namespace M3D {
 		//µ•÷·∑ΩœÚ
 		void SetOrientation(int orientation);
 		void SetOrientation(Vector3 dir);
+		bool handle(const TouchEvent& ea);
 	protected:
 		virtual ~TranslateMinusAxisDragger();
 		Translate1DDragger* _xDragger;

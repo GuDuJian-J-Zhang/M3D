@@ -19,7 +19,6 @@
 namespace M3D
 {
 
-int SectionPlane::m_MaxId = 0;
 void SectionPlane::Init()
 {
 #ifdef NOCLOTH
@@ -32,8 +31,6 @@ void SectionPlane::Init()
 }
 SectionPlane::SectionPlane():Model()
 {
-
-	this->m_Id = m_MaxId++;
 	m_GLClipPlaneID = -1;
 	m_Enable = false;
 
@@ -46,7 +43,6 @@ SectionPlane::SectionPlane():Model()
 
 SectionPlane::SectionPlane(const Point3D& origin, const Point3D& normal,const Point3D& uDir,const Point3D& vDir)
 {
-	this->m_Id = m_MaxId++;
 	m_GLClipPlaneID = -1;
 	m_Enable = false;
 	m_Origin = origin;
@@ -60,7 +56,6 @@ SectionPlane::SectionPlane(const Point3D& origin, const Point3D& normal,const Po
 
 SectionPlane::SectionPlane(const Point3D& origin, const Point3D& normal)
 {
-	this->m_Id = m_MaxId++;
 	m_GLClipPlaneID = -1;
 	m_Enable = false;
 	m_Origin = origin;
@@ -83,6 +78,11 @@ SectionPlane::~SectionPlane()
 	}
 #endif
 }
+SHAPETYPE SectionPlane::GetType(void)
+{
+	return SHAPETYPE::SHAPE_SECTION;
+}
+
 
 Point3D SectionPlane::GetInsectPnt(const Point3D& origin, const Point3D& dir)
 {
@@ -251,10 +251,27 @@ void SectionPlane::UpdateDrawData()
 		//找到原始平面上面一点
 		Vector3 pntInPlane = projectPlane.Project(m_sceneBox.Center());
 
+		float right = normal.DotProduct(Vector3::RIGHT);
+		float up = normal.DotProduct(Vector3::UP);
+		float forward = normal.DotProduct(Vector3::FORWARD);
+		
+		Vector3 direction;
+		if (forward <= right && forward <= up)
+		{
+			direction = Vector3::FORWARD;
+		}
+		else if (right <= forward && right <= up)
+		{
+			direction = Vector3::RIGHT;
+		}
+		else
+		{
+			direction = Vector3::UP;
+		}
 		//找到过此点的XY平面
-		Plane XYPlane(Vector3::FORWARD, pntInPlane);
+		Plane XYPlane(direction, pntInPlane);
 
-		Quaternion deltaRot(Vector3::FORWARD,projectPlane.m_normal);
+		Quaternion deltaRot(direction,projectPlane.m_normal);
 
 		BoundingBox m_box = m_sceneBox.Projected(XYPlane);
 
@@ -273,15 +290,38 @@ void SectionPlane::UpdateDrawData()
 			m_edgePoints.clear();///边界线顶点
 			vector<float> pnts;
 			m_box.GetTriangleArray(pnts);
-		    Vector3 projMin = m_box.m_min;
-		    Vector3 projMax = Vector3(m_box.m_max.m_x, m_box.m_max.m_y,m_box.m_min.m_z);
+		    
 
 			//仅仅显示包围盒的最底面
 		    Vector3 vertices[4];
-		    vertices[0] = projMin;
-			vertices[1] = Vector3(projMin.m_x, projMax.m_y, projMin.m_z);
-			vertices[2] = Vector3(projMax.m_x, projMin.m_y, projMin.m_z);		   
-		    vertices[3] = Vector3(projMax.m_x, projMax.m_y, projMin.m_z);
+			if (direction == Vector3::FORWARD)
+			{
+				Vector3 projMin = m_box.m_min;
+				Vector3 projMax = Vector3(m_box.m_max.m_x, m_box.m_max.m_y, m_box.m_min.m_z);
+				vertices[0] = projMin;
+				vertices[1] = Vector3(projMin.m_x, projMax.m_y, projMin.m_z);
+				vertices[2] = Vector3(projMax.m_x, projMin.m_y, projMin.m_z);
+				vertices[3] = Vector3(projMax.m_x, projMax.m_y, projMin.m_z);
+			}
+			else if (direction == Vector3::RIGHT)
+			{
+				Vector3 projMin = m_box.m_min;
+				Vector3 projMax = Vector3(m_box.m_min.m_x, m_box.m_max.m_y, m_box.m_max.m_z);
+				vertices[0] = projMin;
+				vertices[1] = Vector3(projMin.m_x, projMin.m_y, projMax.m_z);
+				vertices[2] = Vector3(projMin.m_x, projMax.m_y, projMin.m_z);
+				vertices[3] = Vector3(projMin.m_x, projMax.m_y, projMax.m_z);
+			}
+			else if (direction == Vector3::UP)
+			{
+				Vector3 projMin = m_box.m_min;
+				Vector3 projMax = Vector3(m_box.m_max.m_x, m_box.m_min.m_y, m_box.m_max.m_z);
+				vertices[0] = projMin;
+				vertices[1] = Vector3(projMax.m_x, projMin.m_y, projMin.m_z);
+				vertices[2] = Vector3(projMin.m_x, projMin.m_y, projMax.m_z);
+				vertices[3] = Vector3(projMax.m_x, projMin.m_y, projMax.m_z);
+			}
+		    
 
 			//先将标准的面移动到远点，然后旋转，旋转完成之后平移到新的剖切位置
 			Matrix3x4 transformMaxtix;
@@ -289,14 +329,14 @@ void SectionPlane::UpdateDrawData()
 			Matrix3x4 rotationMatrix = deltaRot.RotationMatrix();
 			transformMaxtix = transformMaxtix*rotationMatrix;
 			transformMaxtix.MultiTranslate(m_box.Center().Nagative());
+			transformMaxtix.LeftMultiTranslate(normal.Normalized()*0.001);
 			for (int i = 0; i < 4; i++)
 			{
 				vertices[i] = transformMaxtix*vertices[i];
 			}
 
 			//获取面的中心点
-			Vector3 center = (vertices[0] + vertices[1] + vertices[2] + vertices[3]) * 0.25;
-			m_tempCenter = center;
+			m_tempCenter = (vertices[0] + vertices[3]) * 0.5;
 
 			Vector3 normals[3];
 			m_points.push_back(vertices[0]);m_points.push_back(vertices[1]);m_points.push_back(vertices[2]);
@@ -363,6 +403,7 @@ void SectionPlane::SetEnable(bool flag)
 void SectionPlane::SetID(int id)
 {
 	m_Id = id;
+	m_createId = id;
 }
 
 bool SectionPlane::GetEnable()
@@ -471,16 +512,59 @@ float* SectionPlane::GetTransformPlaneParam()
 
 void SectionPlane::RayPick(RayPickAction* action)
 {
-	if (!this->IsVisible() || !this->RendreVisible())
-	{
-		return;
-	}
+	Ray ray = action->GetData()->GetCameraRay();
+	Matrix3x4 modelMatrixInverse = GetWorldTransform().Inverse();
+	ray = ray.Transformed(modelMatrixInverse);
 
 	action->BeginPickAsGroup(this);
 
-	Model::RayPick(action);
+	Vector3* triData = m_points.data();
+	Vector3 intersectPos;
+	bool bInner = false;
+	for (int i = 0; i < m_points.size() / 3; i++)
+	{
+		if (RayPickAction::ISintersectRayAndTriangle(triData[i * 3], triData[i * 3 + 1], triData[i * 3 + 2], ray, intersectPos))
+		{
+			//intersectPos = GetWorldTransform()*intersectPos;
+			action->AddIntersectPnt(intersectPos);
+			bInner = true;
+		}
+	}
+	if (bInner)
+	{
+		action->UpdateGroupPickPnts();
+		action->EndPickAsGroup(this);
+		//action->AddShape(this);
+	}
+}
 
-	action->EndPickAsGroup(this, 1);
+bool SectionPlane::Intersect(Ray& ray, Vector3& intersectPnt)
+{
+	bool ret = false;
+	Matrix3x4 modelMatrixInverse = GetWorldTransform().Inverse();
+	Ray cameraRay = ray.Transformed(modelMatrixInverse);
+
+	Vector3* triData = m_points.data();
+	for (int i = 0; i < m_points.size() / 3; i++)
+	{
+		if (RayPickAction::ISintersectRayAndTriangle(triData[i * 3], triData[i * 3 + 1], triData[i * 3 + 2], cameraRay, intersectPnt))
+		{
+			intersectPnt = GetWorldTransform()*intersectPnt;
+			ret = true;
+			break;
+		}
+	}
+	return ret;
+}
+
+void SectionPlane::SetCreateId(IDTYPE id)
+{
+	m_createId = id;
+}
+
+IDTYPE SectionPlane::GetCreateId()
+{
+	return m_createId;
 }
 
 }

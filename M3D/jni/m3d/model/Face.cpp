@@ -32,6 +32,7 @@ Face::Face():Object()
 	m_drawMesh = NULL;	
 	this->m_svlId = OBJID++;
 	m_bNeedClip = true;
+	this->Selectable(true);
 }
 
 Face::~Face()
@@ -86,6 +87,7 @@ Face::Face(const Face& orig)
 	m_FaceExtInfo = NULL;
 	m_drawMesh = NULL;
 	this->m_svlId = OBJID++;
+	this->m_selectable = true;
 	*this = orig;
 }
 
@@ -104,7 +106,8 @@ Face& Face::operator =(const Face& orig)
 		this->SetMaterial(orig.m_material);
 		this->SetData(orig.m_drawMesh);	
 		this->SetSVLId(orig.m_svlId);
-		
+
+		this->m_selectable = orig.m_selectable;
 		if(orig.m_FaceExtInfo)
 		{
 			this->m_FaceExtInfo = new FaceExtInfo();
@@ -188,7 +191,7 @@ void Face::Traverse(Action* action)
 
 void Face::RayPick(RayPickAction* action)
 {
-	if (!m_visible)
+	if (!m_visible || !this->m_selectable)
 	{
 		return;
 	}
@@ -653,7 +656,17 @@ Color* Face::GetInitColor()
 	return NULL;
 }
 
+void Face::Selectable(bool selectable)
+{
+	m_selectable = selectable;
+}
 
+
+bool Face::Selectable()
+{
+	return this->m_selectable;
+}
+ 
 void Face::SetSceneNode(SceneNode* node)
 {
 	//this->node = node;

@@ -26,6 +26,7 @@ namespace M3D
 class SectionPlane;
 class Model;
 class SceneManager;
+class Ray;
 struct SectionDataBase
 {
 	vector< SectionLine* >m_scetionLinesData;
@@ -67,6 +68,8 @@ public:
 	SectionPlane(const Point3D& origin, const Point3D& normal);
 
 	virtual ~SectionPlane();
+
+	virtual SHAPETYPE GetType(void);
 
 	/**
 	 * 获取交点
@@ -254,6 +257,11 @@ public:
 
 	virtual void RayPick(RayPickAction* action);
 
+    bool Intersect(Ray& ray, Vector3& intersectPnt);
+	void SetCreateId(IDTYPE id);
+
+	IDTYPE GetCreateId();
+
 private:
 	void SetTransformPlaneParam(float A, float B, float C, float D);
 
@@ -267,10 +275,6 @@ private:
 	void GetParam();
 
 
-
-
-	int static m_MaxId;//!<
-
 	//平面参数
 //		float A;
 //		float B;
@@ -279,7 +283,6 @@ private:
 
 	float m_transformEquation[4]; ///平面参数,A B C D顺序排列
 	float m_Equation[4]; ///平面参数,A B C D顺序排列
-	int m_Id;//!<
 	int m_GLClipPlaneID;//!<
 
 	Point3D m_Origin; //!<起始范围
@@ -328,6 +331,9 @@ private:
 	mutable Mutex m_mutex;//!<
 	Matrix3x4 m_innerTransform; //默认旋转从标准面变化过来的中间差值量
 	Vector3 m_tempCenter; //构建剖切面的中心点;
+
+	IDTYPE  m_createId;
+
 };
 }
 

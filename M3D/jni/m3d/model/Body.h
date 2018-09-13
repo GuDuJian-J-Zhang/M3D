@@ -175,6 +175,8 @@ public:
 	virtual int GetSVLId();
 	virtual void SetSVLId(int Id);
 
+	void Selectable(bool selectable);
+
 	int GetLodCount();
 
 	virtual void SetBodyExtInfo();

@@ -152,7 +152,13 @@ public:
 	void SetParameters(int colorNumber = 1, bool rboColor = false, bool rboDepth = false,bool useDepth  = true,bool useStencil  = true,bool useMultisample = false ,int multisampler = 4);
 	void GenerateColorAttatchment();
 	void GenerateDepthAttatchment();
-	void AttachTextureToColor();
+
+	GLuint AttachTextureToColor();
+
+	void OnlyAttachTextureToColor(GLuint texture);
+
+	//void AttachTextureToColor();
+
 	void AttachRenderBufferToColor();
 	void AttachRenderBufferToDepth( bool useStencil = true);
 	void AttachTextureToDepth(bool useStencil = true);
@@ -178,6 +184,9 @@ public:
 	void OutColorTextureLevel(GLenum val) { m_outColorTextureLevel = val; }
 	bool ColorTextureMipmap() const { return m_colorTextureMipmap; }
 	void ColorTextureMipmap(bool val) { m_colorTextureMipmap = val; }
+
+	void RenderToMe();
+
 private:
 	/**
 	 * @brief 进行标记

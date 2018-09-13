@@ -112,6 +112,8 @@ typedef enum ShapeType
 	SHAPE_IMAGE_MODEL = 56,//!<用来显示图片对象
 	SHAPE_TEXT_MODEL = 56,//!<用来显示文字对象
 
+	SHAPE_SECTION = 60, //!<剖面对象
+
     SHAPE_LIGHT_BASE = 70,
     SHAPE_LIGHT_DIRECTIONAL = 71,
     SHAPE_LIGHT_SPOT = 72,

@@ -895,7 +895,7 @@ namespace SVIEW
                 {
                     ShapeNode* shapeNode = (ShapeNode*)node;
                     IShape* shape = shapeNode->GetShape();
-                    if(!(node->IsVisible()) || !shape|| !(shape->IsVisible()))
+                    if(!shape)
                         continue;
                     
                     if (shape->GetType() == SHAPE_TEXT_NOTE)
@@ -1037,66 +1037,6 @@ namespace SVIEW
         Json::FastWriter writer;
         Json::Value jsonLights;
         SceneManager* scene = this->m_View->GetSceneManager();
-        LightManager* lightMgr = scene->GetLightManager();
-        
-        vector<BaseLight*>& alllights = lightMgr->GetAllLight();
-        for (int i = 0;i<alllights.size();i++)
-        {
-            BaseLight* baseLight = alllights.at(i);
-            Json::Value jsonBaseLight;
-            jsonBaseLight["id"] = baseLight->GetID();
-            jsonBaseLight["name"]= baseLight->GetName();
-            jsonBaseLight["Intensity"] =baseLight->GetIntensity();
-            
-            Color lightColor = baseLight->GetLightColor();
-            Json::Value jsonBaseLightColor;
-            jsonBaseLightColor[0] = lightColor.m_r;
-            jsonBaseLightColor[1] = lightColor.m_g;
-            jsonBaseLightColor[2] = lightColor.m_b;
-            jsonBaseLightColor[3] = lightColor.m_a;
-            
-            jsonBaseLight["lightColor"] = jsonBaseLightColor;
-            
-            jsonBaseLight["castShadow"] = baseLight->CastShadow();
-            jsonBaseLight["showSimpleSign"] = baseLight->GetShowSimpleSign();
-            jsonBaseLight["showAllSign"] = baseLight->GetShowAllSign();
-            
-            jsonBaseLight["type"] = baseLight->GetLightSourceType();
-            
-            if (baseLight->GetLightSourceType() == LightType::LightType_Directional)
-            {
-                
-            }
-            else if (baseLight->GetLightSourceType() == LightType::LightType_Point)
-            {
-                PointLight* pointLight = static_cast<PointLight*>(baseLight);
-                jsonBaseLight["decay"] = pointLight->Decay();
-                jsonBaseLight["distance"] = pointLight->Distance();
-            }
-            else if (baseLight->GetLightSourceType() == LightType::LightType_Spot)
-            {
-                SpotLight* pointLight = static_cast<SpotLight*>(baseLight);
-                jsonBaseLight["decay"] = pointLight->Decay();
-                jsonBaseLight["distance"] = pointLight->Distance();
-                jsonBaseLight["angle"] = pointLight->Angle();
-                jsonBaseLight["penumbra"] = pointLight->Penumbra();
-            }
-            else if (baseLight->GetLightSourceType() == LightType::LightType_Hemisphere)
-            {
-                HemisphereLight* pointLight = static_cast<HemisphereLight*>(baseLight);
-                Json::Value jsonBaseLightColor;
-                
-                Color lightColor = pointLight->GroundColor();
-                jsonBaseLightColor[0] = lightColor.m_r;
-                jsonBaseLightColor[1] = lightColor.m_g;
-                jsonBaseLightColor[2] = lightColor.m_b;
-                jsonBaseLightColor[3] = lightColor.m_a;
-                
-                //地面颜色
-                jsonBaseLight["groundColor"] = jsonBaseLightColor;
-            }
-            jsonLights[i] = jsonBaseLight;
-        }
         
         string outJsonLights = writer.write(jsonLights);
         

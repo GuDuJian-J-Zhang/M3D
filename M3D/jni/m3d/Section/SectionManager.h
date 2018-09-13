@@ -92,7 +92,7 @@ namespace M3D
 		list<SectionPlane*> GetPlaneList();
 		bool AddPlane(SectionPlane* plane);
 		bool RemovePlane(SectionPlane* plane);
-		SectionPlane* CreateOneSectionPlane(const Vector3 &normalVector, const Vector3 &point, int planeID);
+		SectionPlane* CreateOneSectionPlane(const Vector3 &normalVector, const Vector3 &point);
 		void BindOneSectionDragger(const Vector3 &normalVector, SectionPlane* plane);
 		bool SetDraggerVisiable(int id, bool val);
 		bool UnBindOneDragger(Dragger* dragger);

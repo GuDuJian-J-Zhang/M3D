@@ -916,7 +916,7 @@ void HardWareFrameBuffer::GenerateDepthAttatchment()
 		}
 	}
 }
-void HardWareFrameBuffer::AttachTextureToColor()
+	GLuint HardWareFrameBuffer::AttachTextureToColor()
 {
 	GLenum format;
 	GLenum dataType;
@@ -953,6 +953,7 @@ void HardWareFrameBuffer::AttachTextureToColor()
 
 	GeometryBuffer* texture = NULL;
 
+		GLuint textureHandle = 0;
 		if (!m_outColorTexture)
 		{
 		string key = IDCreator::GetUUID() + string("_colorAttachment");
@@ -983,6 +984,7 @@ void HardWareFrameBuffer::AttachTextureToColor()
 
 			glBindTexture(GL_TEXTURE_2D, 0);
 			}
+		    textureHandle = obj;
 		}
 		else
 		{
@@ -1009,6 +1011,7 @@ void HardWareFrameBuffer::AttachTextureToColor()
 #endif
 				glBindTexture(GL_TEXTURE_2D, 0);
 			}
+			textureHandle = obj;
 		}
 
 #ifdef _WIN32
@@ -1017,11 +1020,28 @@ void HardWareFrameBuffer::AttachTextureToColor()
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 #endif
 
-	this->m_colorTargets[colorAttachment] = texture;
-}
-void HardWareFrameBuffer::AttachRenderBufferToColor()
-{
-			//TODO MergeAndroid
+		this->m_colorTargets[colorAttachment] = texture;
+		return textureHandle;
+	}
+	void HardWareFrameBuffer::OnlyAttachTextureToColor(GLuint texture)
+	{
+		int colorAttachment = m_usedColorAttachment - 1;
+		if (colorAttachment<0){
+			return;
+		}
+		//this->Bind();
+#ifdef _WIN32
+		glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT + colorAttachment, GL_RENDERBUFFER_EXT,
+			texture);
+#else
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + colorAttachment, GL_RENDERBUFFER,
+			texture);
+#endif
+		//this->UnBind();
+	}
+	void HardWareFrameBuffer::AttachRenderBufferToColor()    
+	{
+		//TODO MergeAndroid
 #ifdef _WIN32
 			glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, m_object);
 #else
