@@ -122,6 +122,8 @@ namespace M3D
 
 
 		vector<TransparentObject>::iterator it = renderableArray.begin();
+
+
 		for (; it != renderableArray.end(); it++)
 		{
 			Renderable* faceRenderData = (*it).renderable;
@@ -234,7 +236,7 @@ namespace M3D
 			{
 				material->NeedUpdate(true);
 			}
-			
+
 
 			//else if (m_ssaoLastState != Parameters::Instance()->m_useSSAO)
 			//{
@@ -244,7 +246,7 @@ namespace M3D
 		}
 		if (m_shadowState != Parameters::Instance()->m_shadowMapEnabled)
 		{
-			material->NeedUpdate(true);			
+			material->NeedUpdate(true);
 		}
 
 		if (material->NeedUpdate())
@@ -273,6 +275,7 @@ namespace M3D
 			m_currentMaterial = material;
 			//refreshLights = true;
 		}
+
 		if (refreshProgram || camera != m_currentCamera)
 		{
 			Matrix4 viewMatrix = camera->GetView().ToMatrix4().Transpose();
@@ -291,43 +294,47 @@ namespace M3D
 				enableClips[i] = action->m_enableClip[i];
 			}
 			program->SetUniformValue(FSP_CLIPPLANES, 3, tc);
+#ifdef __MOBILE__
 			program->SetUniformValue(FSP_ENABLECLIPS, 3, enableClips);
+#endif
 			ShaderParameter* reverseClipPara = program->GetShaderUniformParameter(FSP_REVERSECLIP);
 			program->SetUniformValue(reverseClipPara->m_location, (int)action->m_bReverseClip);
-
-
 			m_currentCamera = camera;//相机记录
-			refreshMaterial = true;//刷新材质
-			refreshLights = true;//刷新灯光
+					refreshMaterial = true;//刷新材质
+					refreshLights = true;//刷新灯光
 
-			//加载材质指定的uniforms
-			if (material->GetMaterialType() == MaterialType::MaterialType_Shader ||
-				material->GetMaterialType() == MaterialType::MaterialType_Phong ||
-				material->GetMaterialType() == MaterialType::MaterialType_Pbr ||
-				material->GetMaterialType() == MaterialType::MaterialType_MatCap
-				)
-			{
-				Vector3 cameraPostion = camera->GetPosition();
-				program->SetUniformValue(CAMERA_POSITION, cameraPostion);
-			}
+					//加载材质指定的uniforms
+					if (material->GetMaterialType() == MaterialType::MaterialType_Shader ||
+						material->GetMaterialType() == MaterialType::MaterialType_Phong ||
+						material->GetMaterialType() == MaterialType::MaterialType_Pbr ||
+						material->GetMaterialType() == MaterialType::MaterialType_MatCap
+						)
+					{
+						Vector3 cameraPostion = camera->GetPosition();
+						program->SetUniformValue(CAMERA_POSITION, cameraPostion);
+					}
+
 		}
+#ifdef WIN32
 
 		Face* face = dynamic_cast<Face*>(renderable);
+		LOGI("face->GetNeedClip() : %d ",face->GetNeedClip());
+			int enableClips[3];
+
 		if (face && face->GetNeedClip())
 		{
-			int enableClips[3];
 			for (int i = 0; i < 3; i++)
 			{
 				enableClips[i] = action->m_enableClip[i];
 			}
-			program->SetUniformValue(FSP_ENABLECLIPS, 3, enableClips);
 		}
 		else
 		{
-			int enableClips[3] = { 0 };
-			program->SetUniformValue(FSP_ENABLECLIPS, 3, enableClips);
+			enableClips[3] = { 0 };
 		}
+			program->SetUniformValue(FSP_ENABLECLIPS, 3, enableClips);
 
+#endif
 		if (refreshMaterial)
 		{
 			//TODO toneMapping?
@@ -677,6 +684,7 @@ namespace M3D
 				m_currentCamera = 0;
 				m_currentMaterial = 0;
 				RenderabelArray& renderableArray = RenderStateArray->GetRenderableArray();
+				LOGI("GLShapeDrawer20::ShadowRender  renderableArray .size = %d",renderableArray.size());
 				for (int i = 0; i < renderableArray.size(); i++)
 				{
 					Face* renderable = static_cast<Face*>(renderableArray[i]);
@@ -2858,6 +2866,7 @@ namespace M3D
 			}
 			std::sort(transparentsObjects.begin(), transparentsObjects.end(), GreaterSort);
 
+			LOGE("GLShapeDrawer20::DrawTranRenderPassGroup  renderableArray .size = %d",transparentsObjects.size());
 			RenderFaces(action, transparentsObjects);
 #endif
 
@@ -3059,6 +3068,7 @@ namespace M3D
 		{
 			Renderable* edgeRenderData = *it;
 			Edge* edge = dynamic_cast<Edge*>(edgeRenderData);
+#ifdef WIN32
 			if (edge && edge->GetNeedClip())
 			{
 				shaderEffect->SetUniformValue(FSP_ENABLECLIPS, 3, enableClips);
@@ -3067,6 +3077,9 @@ namespace M3D
 			{
 				shaderEffect->SetUniformValue(FSP_ENABLECLIPS, 3, disableClips);
 			}
+#elif __MOBILE__
+			shaderEffect->SetUniformValue(FSP_ENABLECLIPS, 3, enableClips);
+#endif
 			const Color& edgeColor = edgeRenderData->GetRenderColor();
 			HardWareVertexBuffer* vertexBuffer =
 				edgeRenderData->GetHardWareVertexBuffer();
@@ -4074,7 +4087,7 @@ namespace M3D
 				glLineStipple(1, 0x00FF);
 #else
 
-#endif		
+#endif
 			}
 			int vertexNum = 2;
 			int indexNum = 2;
@@ -4125,7 +4138,7 @@ namespace M3D
 				glDisable(GL_LINE_STIPPLE);
 #else
 
-#endif	
+#endif
 			}
 		}
 		//PolyLine
@@ -4787,7 +4800,7 @@ namespace M3D
 				if (renderType == RenderableType::RGT_SHADOW)
 				{
 					//			GLShapeDrawer20::DrawSSAOPassGroup(action, &(it->second));
-				//				if (Parameters::Instance()->m_useSSAO) 
+				//				if (Parameters::Instance()->m_useSSAO)
 				//				{
 				////					GLShapeDrawer20::DrawSSAOPassGroup(action, &(it->second));
 				//				}
@@ -5077,7 +5090,7 @@ namespace M3D
 				//}
 				else if (renderType == RenderableType::RGT_EDGELINE)
 				{
-					//GLShapeDrawer20::DrawEdgesRenderPassGroup(action, &it->second);	
+					//GLShapeDrawer20::DrawEdgesRenderPassGroup(action, &it->second);
 					GLShapeDrawer20::DrawDraggerLinePass(action, &(it->second));
 				}
 				//else if (renderType == RenderableType::RGT_EDGELINEINTOP)
