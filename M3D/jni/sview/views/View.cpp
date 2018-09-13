@@ -2936,8 +2936,8 @@ namespace SVIEW
 			if (defaultView == NULL)
 			{
 				defaultView = new ModelView();
-				defaultView->SetViewType(ModelView::DefaultView);
 				defaultView->SetName("DefaultView");
+				defaultView->SetViewType(ModelView::DefaultView);
 				GetModel()->AddModelView(defaultView);
 			}
 		}

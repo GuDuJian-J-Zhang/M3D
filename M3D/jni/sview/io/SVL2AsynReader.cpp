@@ -158,7 +158,7 @@ namespace SVIEW {
 		if (m_M3DModel) {
 			this->FillModelColor(m_M3DModel);
 			//this->FillModelVisible(m_M3DModel);
-			//bool isLoadAttribute = true;//是否加载属性	
+			//bool isLoadAttribute = true;//是否加载属性
 
 			//Stk_DocumentPtr* m_svl2Doc = (Stk_DocumentPtr*)this->m_svl2Doc;
 			//if (SVIEW::Parameters::Instance()->m_IsUseGeoData)
@@ -2237,7 +2237,7 @@ namespace SVIEW {
 					}
 
 				}
-				//获取normalMap 
+				//获取normalMap
 				{
 					HoteamSoft::SVLLib::Stk_TexturePtr normalTexture = materialPtr->GetNormalMap();
 					if (normalTexture.isNotNull())
@@ -2321,7 +2321,7 @@ namespace SVIEW {
 					}
 
 				}
-				//获取normalMap 
+				//获取normalMap
 				{
 					HoteamSoft::SVLLib::Stk_TexturePtr normalTexture = materialPtr->GetNormalMap();
 					if (normalTexture.isNotNull())
@@ -2407,7 +2407,7 @@ namespace SVIEW {
 						hasTexture = true;
 					}
 				}
-				//获取normalMap 
+				//获取normalMap
 				{
 					HoteamSoft::SVLLib::Stk_TexturePtr normalTexture = materialPtr->GetNormalMap();
 					if (normalTexture.isNotNull())
@@ -2614,7 +2614,7 @@ namespace SVIEW {
 					unsigned int buffersize = 0;
 					char* data;
 					(*m_svl2Doc)->GetSVLXFileItem(val, buffersize, &data,false);
-					//将数据赋值给图片对象					
+					//将数据赋值给图片对象
 
 					Texture2D* texture2d = (Texture2D*)this->m_view->GetSceneManager()->GetResourceManager()->GetOrCreateTexture(val, Texture::TEXTURE_2D);
 					texture2d->SetImageParameter(TEXTURE_LOAD_RGBA, TEXTURE_FLAG_MIPMAPS | TEXTURE_FLAG_INVERT_Y);
@@ -2652,7 +2652,7 @@ namespace SVIEW {
 						imagePath = pathes[i];
 						unsigned int buffersize = 0;
 						char* data;
-						//去除首尾空格 
+						//去除首尾空格
 						if (!imagePath.empty())
 					     {
 							imagePath.erase(0, imagePath.find_first_not_of(" "));
@@ -4291,24 +4291,18 @@ namespace SVIEW {
 												 //获取视图基本信息
 			int oldId = pViewData->GetID();
             HoteamSoft::SVLLib::StkViewUsageEnum viewType = pViewData->GetUsageType();
+            pView->SetSvlUseType(pViewData->GetUsageType());
             switch (viewType)
             {
                 case HoteamSoft::SVLLib::VIEW_USAGE_GENERAL_VIEW:
+                case HoteamSoft::SVLLib::VIEW_USAGE_PROE_BASE_VIEW:
+                case HoteamSoft::SVLLib::VIEW_USAGE_DEFAULT_VIEW:
                     pView->SetViewType(ModelView::DefaultView);
                     break;
                 case HoteamSoft::SVLLib::VIEW_USAGE_SV_USER_VIEW:
-                    pView->SetViewType(ModelView::UserView);
-                    break;
                 case HoteamSoft::SVLLib::VIEW_USAGE_SV_USER_CLIPVIEW:
-                    pView->SetViewType(ModelView::UserView);
-                    break;
-                case HoteamSoft::SVLLib::VIEW_USAGE_PROE_BASE_VIEW:
-                    pView->SetViewType(ModelView::DefaultView);
-                    break;
                 case HoteamSoft::SVLLib::VIEW_USAGE_PROE_USER_VIEW:
                     pView->SetViewType(ModelView::UserView);
-                    //go ahead
-                    
                     break;
                 default:
                     //            continue;

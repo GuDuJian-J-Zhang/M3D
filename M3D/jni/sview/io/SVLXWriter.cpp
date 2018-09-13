@@ -1683,7 +1683,6 @@ namespace SVIEW
 		vector<ModelView*>* pVecModelView = pModel->GetModelViewList();
 		if (!pVecModelView)
 			return;
-
 		HoteamSoft::SVLLib::Stk_ModelPtr modelP = m_pDoc->GetModelByID((int)pModel->GetProtoTypeId());
 		if (modelP == nullptr)
 			return;
@@ -1709,7 +1708,18 @@ namespace SVIEW
 			}
 			wstring wstrViewName = Platform::StringToWString(pModelView->GetName(), "auto");
 			viewP->SetName(wstrViewName);
+			if(pModelView->GetViewType() == ModelView::DefaultView){
+			pModelView->SetSvlUseType((int)HoteamSoft::SVLLib::VIEW_USAGE_DEFAULT_VIEW);
+			}else if(pModelView->GetViewType() == ModelView::UserView) {
+				pModelView->SetSvlUseType((int)HoteamSoft::SVLLib::VIEW_USAGE_SV_USER_VIEW);
+			}else if(pModelView->GetViewType() == ModelView::OrignalView){
+				pModelView->SetSvlUseType((int)HoteamSoft::SVLLib::VIEW_USAGE_GENERAL_VIEW);
+			}
+
 			viewP->SetUsageType((HoteamSoft::SVLLib::StkViewUsageEnum)(pModelView->GetSvlUseType()));
+
+
+
 			//viewP->SetTransparency(pModelView->);
 			//if (pModelView->m_bCreateClipPlane)
 			//{
