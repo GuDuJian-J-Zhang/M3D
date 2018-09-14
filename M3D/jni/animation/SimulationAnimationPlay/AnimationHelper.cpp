@@ -10,6 +10,7 @@
 #include "m3d/M3Dmacros.h"
 
 #include "m3d/SceneManager.h"
+#include "m3d/RenderManager.h"
 #include "m3d/utils/PathHelper.h"
 #include "m3d/M3DMacros.h"
 using namespace M3D;
@@ -219,47 +220,47 @@ void AnimationHelper::GetCameraZoom(CameraNode* camera, float& zoom)
 	}
 }
 
-void AnimationHelper::AdjustCameraZoom(CameraNode* camera, float aniWidth,
-		float aniHeight, float aniZoom, float& zoom, View* view)
+void AnimationHelper::AdjustCameraZoom(View* view , float aniWidth,
+		float aniHeight, float aniZoom, float& zoom)
 {
 	float width = 1, height = 1;
+	 CameraNode* camera = view->GetSceneManager()->GetCamera();
 
-	if (camera != NULL)
-	{
-		if (camera->IsOrthographic())
-		{
-			camera->GetOrthoSize(&width, &height);
-		}
-		else
-		{
-			camera->GetOrthoSize(&width, &height);
-			float fAspectRatio = width / height;
-			float fHeightAngle = 1.0;
-			float fDefaultFocusLength = 1.0f;
-			GetCameraFocal(view, fDefaultFocusLength);
-			height = (float)(fDefaultFocusLength * 2.0 * tan(fHeightAngle / 2.0));
-			width = height * fAspectRatio;
-		}
-	}
+	 if (camera != NULL) {
 
-	float dx = aniWidth / width;
-	float dy = aniHeight / height;
+	  camera->GetOrthoSize(&width, &height);
+	 }
+	 float dx = aniWidth / width;
 
-	if (dx > dy)
-	{
-		aniZoom = aniZoom / dx;
-	}
-	else
-	{
-		aniZoom = aniZoom / dy;
-	}
+	 float dy = aniHeight / height;
+	 if (dx > dy) {
+	  aniZoom = aniZoom / dx;
+	 } else {
+	  aniZoom = aniZoom / dy;
+	 }
+	#ifdef _WIN32
 
-	if (aniZoom <= 0)
-	{
-		aniZoom = 1.0f;
-	}
+	#else
 
-	zoom = aniZoom;
+	 int Mob_height =
+	   view->GetSceneManager()->GetRenderManager()->GetWindowHeight() * 2;
+	 int Mob_width =
+	   view->GetSceneManager()->GetRenderManager()->GetWindowWidth() * 2;
+	 float Mob_dx = aniWidth / Mob_width;
+	 float Mob_dy = aniHeight / Mob_height;
+	 if (dx > dy) {
+	  aniZoom = aniZoom * Mob_width / width;
+	 } else {
+	  aniZoom = aniZoom * Mob_height / height;
+	 }
+
+	#endif
+
+	 //LOGI("cur aniZoom-> %f\n",aniZoom);
+	 if (aniZoom <= 0) {
+	  aniZoom = 1.0f;
+	 }
+	 zoom = aniZoom;
 }
 
 void AnimationHelper::SetCameraRotate(const Quaternion& rotation,

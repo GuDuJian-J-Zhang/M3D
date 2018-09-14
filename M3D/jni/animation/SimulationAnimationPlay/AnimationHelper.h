@@ -69,8 +69,8 @@ public:
 	static void GetCameraZoom(CameraNode* camera,float& zoom);
 
 	//根据当前view的宽高比调整缩放比例
-	static void AdjustCameraZoom(CameraNode* camera,float aniWidth,float aniHeight,
-			float aniZoom, float& zoom, View* view);
+	static void AdjustCameraZoom(View* view , float aniWidth,
+			float aniHeight, float aniZoom, float& zoom);
 
 	//ViewPort
 	static void GetViewSize(float& outWidth,float& outHeight,View* view);
