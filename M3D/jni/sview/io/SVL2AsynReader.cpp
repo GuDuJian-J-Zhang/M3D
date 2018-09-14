@@ -143,7 +143,7 @@ namespace SVIEW {
 		m_fileBuffer = 0;
 		m_fileBufferLength = 0;
 		m_mergeface = false;
-
+        m_annoJsonData = "";
 		readInstanceIndex = 0;
 
 		m_usePrototypeProperty = Parameters::Instance()->m_usePrototypeProperty;;
@@ -254,6 +254,9 @@ namespace SVIEW {
 
 	void SVL2AsynReader::FillModelMesh(View* view, Model* model)
 	{
+        if (m_view&&m_annoJsonData.length()>0) {
+            m_view->ParseAnnotation(m_annoJsonData);
+        }
 		SModelFileInfo* fileInfo = model->GetFileInfo();
 		if (fileInfo) {
 			Stk_DocumentPtr* m_svl2Doc = (Stk_DocumentPtr*)this->m_svl2Doc;
@@ -1560,7 +1563,7 @@ namespace SVIEW {
             (*m_svl2Doc)->GetSVLXFileItem(strName, _bufSize, &_dataBuffer);
             if (_dataBuffer != NULL)
             {
-                ParseAnnotation(_dataBuffer);
+                SetAnnotationJsonData(_dataBuffer);
             }
 		}
 
@@ -4532,10 +4535,8 @@ namespace SVIEW {
 
 		return TRUE;
 	}
-    void SVL2AsynReader::ParseAnnotation(const string& value){
-        if (m_view) {
-            m_view->ParseAnnotation(value);
-        }
+    void SVL2AsynReader::SetAnnotationJsonData(const string& value){
+        m_annoJsonData = value;
     }
     void SVL2AsynReader::FillModelVisible(Model* model)
     {

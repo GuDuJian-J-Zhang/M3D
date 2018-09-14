@@ -1302,7 +1302,7 @@ namespace SVIEW
 		{
 			IShape* shape = (IShape*)GetSelector()->GetAll().at(i);
 			Model* model = static_cast<Model*>(shape);
-			if (model)
+			if (model&&model->GetType()==SHAPE_MODEL)
 			{
 				Vector4 nD(endVec - startVec, 0.0f);
 				//对于向量的变化量，应该使用此算法
@@ -2144,32 +2144,6 @@ namespace SVIEW
 			this->m_SceneManager->UnLock();
 			return;
 		}
-		//TODO MergeSimplyM3D
-//        SectionOperator::Clear(this);
-		
-//        if(pView->GetSectionPlaneDirection() != 0)
-//        {
-//            if (pView->GetSectionPlanePercentage() == 0 || pView->GetSectionPlanePercentage() == -1) {
-//                this->GetSceneManager()->GetSectionNode()->GetSection()->SetIsShowCappingPlane(false);
-//                Parameters::Instance()->m_showSection = false;
-//            } else {
-//                SectionOperator::Show(this, 1001, pView->GetSectionPlaneDirection(), pView->GetSectionPlanePercentage(), pView->GetShowClipSectionPlane(), pView->GetShowSectionCappingPlane(), pView->IsReverseClipping());
-//                this->GetSceneManager()->GetSectionNode()->GetSection()->SetIsShowCappingPlane(pView->GetShowSectionCappingPlane());
-//                this->GetSceneManager()->GetSectionNode()->GetSection()->SetIsReverseClipping(pView->IsReverseClipping());
-//                Parameters::Instance()->m_showSection = pView->GetShowClipSectionPlane();
-//            }
-//
-//        }else{
-//            SetMultiClipPlane(pView->m_DirectionX, pView->m_DirectionY, pView->m_DirectionZ, pView->m_PercentageX, pView->m_PercentageY, pView->m_PercentageZ, pView->GetShowClipSectionPlane(), pView->GetShowSectionCappingPlane(), pView->IsReverseClipping());
-//            this->GetSceneManager()->GetSectionNode()->GetSection()->SetIsShowCappingPlane(pView->GetShowSectionCappingPlane());
-//            this->GetSceneManager()->GetSectionNode()->GetSection()->SetIsReverseClipping(pView->IsReverseClipping());
-//            Parameters::Instance()->m_showSection = pView->GetShowClipSectionPlane();
-//        }
-
-//        this->GetExplosiveView()->SetPercentWithoutRestore(this, -1, 0, false);
-		
-		//	LOGI(
-		// "SceneManager::showModelView allViewCount:%d", curRootModel->GetModelViewList().size());
 		if(isAnni)
 		{
 			//如果需要更新摄像机
@@ -2221,20 +2195,6 @@ namespace SVIEW
 
 			if (pView->GetUpDataModelState())
 			{
-//                int direction = pView->getExplosiveType();
-//                float percent = pView->getExplosivePercent();
-//
-//                this->GetExplosiveView()->SetPercent(this, 0, 0, false);
-//                if (direction != -1) {
-//                    this->GetExplosiveView()->Reset();
-//                    this->GetExplosiveView()->SetPercent(this, direction, percent, false);
-//                }
-//                //else
-//                //{
-//                //    this->GetExplosiveView()->SetPercent(this, 0, 0, false);
-//                //}
-//                this->GetExplosiveView()->SetExplosivePercent(0);
-//                this->GetExplosiveView()->SetExplosiveStyle(NOEXPLOSIVE);
 
 				//TODO:相机设置旋转动画
 
@@ -2317,39 +2277,6 @@ namespace SVIEW
 			}
 		}
 
-
-		//    爆炸数据的设置
-
-		//	vector<IShape*>& shapeList = curRootModel->GetShapeList(); ///ShapeList
-		//	//设置视图中的Note为启用
-		//	if (shapeList.size() > 0)
-		//	{
-		//		//LOGI("allshapeCnt:%d", shapeList.size());
-		//	//	LOGI("viewNoteCnt:%d", pView->GetNoteList().size());
-		//
-		//		for (int i = 0; i < shapeList.size(); i++)
-		//		{
-		//			Shape *pShape = shapeList.at(i);
-		//			if (pShape->GetType() == SHAPE_NOTE)
-		//			{
-		//				Note *note = (Note*) shapeList.at(i);
-		//				bool found = false;
-		//
-		//			//	LOGI("note id:%d", note->GetID());
-		//				for (int j = 0; j < pView->GetNoteList().size(); j++)
-		//				{
-		//					if (note->GetID() == pView->GetNoteList().at(j))
-		//					{
-		//						found = true;
-		//						break;
-		//					}
-		//				}
-		//				note->SetVisible(found);
-		//			//	LOGI("noteVisable:%d", found);
-		//			}
-		//		}
-		//	}
-
 		if (pView->GetUpDataModelState())
 		{
 			//设置与视图关联的PMI
@@ -2414,7 +2341,7 @@ namespace SVIEW
 				int iNoteCount = 0;
 				vector<int> vecNoteList = pView->GetNoteList();
 				iNoteCount = vecNoteList.size();
-				for (int i = 0; i < vecNoteList.size(); i++)
+				for (int i = 0; i < iNoteCount; i++)
 				{
 					int iNoteID = vecNoteList[i];
 					for (int j = 0; j < pNoteGroup->Size(); j++)
@@ -2422,9 +2349,11 @@ namespace SVIEW
 						SceneNode* pNode = pNoteGroup->GetChild(j);
 						if (!pNode)
 							continue;
-						if (iNoteID == pNode->GetID())
+                        IShape* pShape = ((ShapeNode*)pNode)->GetShape();
+                        if (pShape && iNoteID == pShape->GetID())
 						{
-							pNode->SetVisible(true);
+                            pNode->SetVisible(true);
+							pShape->SetVisible(true);
 							break;
 						}
 					}
@@ -2500,6 +2429,7 @@ namespace SVIEW
 					}
 				}
 			}
+            this->m_SceneManager->GetRenderManager()->RequestRedraw();
 		}
 
 		//	//允许动画
@@ -6086,6 +6016,8 @@ int View::GetSVLXFileItem(const std::string& i_strFileName, unsigned int& o_bufS
         Json::Value json;
         Json::Value retJson;
         SceneManager *scene = GetSceneManager();
+        //清空
+        scene->GetNoteGroup()->DeleteAllChildren();
         if (reader.parse(value.c_str(), json))
         {
             retJson = json["annotations"];
@@ -6094,23 +6026,41 @@ int View::GetSVLXFileItem(const std::string& i_strFileName, unsigned int& o_bufS
                 for (int i = 0; i < iSize; i++) {
                     Json::Value annoValue = retJson[i];
                     int type = annoValue["type"].asInt();
-                    switch (type) {
-                        case 0://基本-文本
+                    int _id = annoValue["createID"].asInt();
+                    //判断数据是否有效
+                    vector<ModelView*>* allViews = scene->GetModel()->GetModelViewList();
+                    bool valid = false;
+                    if (allViews) {
+                        for (vector<ModelView*>::iterator it = allViews->begin(); it != allViews->end(); it++)
                         {
-                            string jsonValue = writer.write(annoValue);
-                            Note *pNode = NoteFactory::CreateTextNoteFromJSON(scene, jsonValue);
+                            vector<int> ids = (*it)->GetNoteList();
+                            vector<int>::iterator result = find( ids.begin( ), ids.end( ), _id ); //查找3
+                            if ( result != ids.end( ) ) //没找到
+                            {
+                                valid = true;
+                                break;
+                            }
                         }
-                            break;
-                        case 1://零组件
-                            break;
-                        case 2://序号
-                        {
-                            string jsonValue = writer.write(annoValue);
-                            Note *pNode = NoteFactory::CreateSequenceNoteFromJSON(scene, jsonValue);
+                    }
+                    if (valid) {
+                        switch (type) {
+                            case 0://基本-文本
+                            {
+                                string jsonValue = writer.write(annoValue);
+                                Note *pNode = NoteFactory::CreateTextNoteFromJSON(scene, jsonValue);
+                            }
+                                break;
+                            case 1://零组件
+                                break;
+                            case 2://序号
+                            {
+                                string jsonValue = writer.write(annoValue);
+                                Note *pNode = NoteFactory::CreateSequenceNoteFromJSON(scene, jsonValue);
+                            }
+                                break;
+                            default:
+                                break;
                         }
-                            break;
-                        default:
-                            break;
                     }
                 }
             }
