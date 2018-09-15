@@ -994,69 +994,69 @@ namespace SVIEW
                     else if (shape->GetType() == SHAPE_THREED_GESTURE_NOTE)
                     {
         
-//                        ThreeDGesturesNote* pNote = (ThreeDGesturesNote *)shape;
-//                        //在此处填充View中使用的TextNote ID。//TODO
-//                        Json::Value jsonValue;
-//                        jsonValue["createID"] = pNote->GetID();
-//                        jsonValue["type"] = NoteGroup::ANNOTATION_TYPE_GESTURE;
-//                        jsonValue["text"] = pNote->GetTextValue();
-//                        jsonValue["leaderLine"] = true;
-//                        jsonValue["envelope"] = true;
-//                        jsonValue["stub"] = true;
-//                        jsonValue["fixed"] = false;
-//                        jsonValue["spacepoint"] = pNote->GetIsShowSpacePoint();
-//
-//                        Json::Value frameColor;
-//                        frameColor.append(0.0);
-//                        frameColor.append(0.0);
-//                        frameColor.append(0.0);
-//                        frameColor.append(1.0);
-//                        jsonValue["frameColor"] = frameColor;
-//
-//                        Json::Value fillColor;
-//                        fillColor.append(1.0);
-//                        fillColor.append(1.0);
-//                        fillColor.append(1.0);
-//                        fillColor.append(1.0);
-//                        jsonValue["fillColor"] = fillColor;
-//
-//                        Json::Value linesValue;
-//                        vector<Line3D*>& line3DSet = pNote->m_LineList;
-//                        if (line3DSet.size() > 0)
-//                        {
-//                            int allSize = pNote->GetOriginalProjectPns().size();
-//                            for (int i = 0; i < allSize; i = i + 1)
-//                            {
-//                                Json::Value lineValue;
-//                                Color& originalProjectColor =
-//                                pNote->GetOriginalProjectColors().at(i);
-//                                int originalProjectWidth =
-//                                pNote->GetOriginalProjectWidths().at(i);
-//                                lineValue["width"] = originalProjectWidth;
-//                                Json::Value color;
-//                                color.append(originalProjectColor.m_r);
-//                                color.append(originalProjectColor.m_g);
-//                                color.append(originalProjectColor.m_b);
-//                                color.append(originalProjectColor.m_a);
-//                                lineValue["color"] = color;
-//
-//                                Json::Value pointsValue;
-//                                vector<Vector3>& originalProjectPnts = pNote->GetOriginalProjectPns().at(i);
-//                                for (int j = 0; j < originalProjectPnts.size(); j++)
-//                                {
-//                                    Json::Value point;
-//                                    point.append(originalProjectPnts.at(j).m_x);
-//                                    point.append(originalProjectPnts.at(j).m_y);
-//                                    point.append(originalProjectPnts.at(j).m_z);
-//                                    pointsValue.append(point);
-//                                }
-//                                lineValue["points"] = pointsValue;
-//                                linesValue.append(lineValue);
-//                            }
-//                        }
-//                        jsonValue["lines"] = linesValue;
-//                        jsonNotes[index] = jsonValue;
-//                        index++;
+                        ThreeDGesturesNote* pNote = (ThreeDGesturesNote *)shape;
+                        //在此处填充View中使用的TextNote ID。//TODO
+                        Json::Value jsonValue;
+                        jsonValue["createID"] = pNote->GetID();
+                        jsonValue["type"] = NoteGroup::ANNOTATION_TYPE_GESTURE;
+                        jsonValue["text"] = pNote->GetTextValue();
+                        jsonValue["leaderLine"] = true;
+                        jsonValue["envelope"] = true;
+                        jsonValue["stub"] = true;
+                        jsonValue["fixed"] = false;
+                        jsonValue["spacepoint"] = pNote->GetIsShowSpacePoint();
+
+                        Json::Value frameColor;
+                        frameColor.append(0.0);
+                        frameColor.append(0.0);
+                        frameColor.append(0.0);
+                        frameColor.append(1.0);
+                        jsonValue["frameColor"] = frameColor;
+
+                        Json::Value fillColor;
+                        fillColor.append(1.0);
+                        fillColor.append(1.0);
+                        fillColor.append(1.0);
+                        fillColor.append(1.0);
+                        jsonValue["fillColor"] = fillColor;
+
+                        Json::Value linesValue;
+                        vector<Line3D*>& line3DSet = pNote->m_LineList;
+                        if (line3DSet.size() > 0)
+                        {
+                            int allSize = pNote->GetOriginalProjectPns().size();
+                            for (int i = 0; i < allSize; i = i + 1)
+                            {
+                                Json::Value lineValue;
+                                Color& originalProjectColor =
+                                pNote->GetOriginalProjectColors().at(i);
+                                int originalProjectWidth =
+                                pNote->GetOriginalProjectWidths().at(i);
+                                lineValue["width"] = originalProjectWidth;
+                                Json::Value color;
+                                color.append(originalProjectColor.m_r);
+                                color.append(originalProjectColor.m_g);
+                                color.append(originalProjectColor.m_b);
+                                color.append(originalProjectColor.m_a);
+                                lineValue["color"] = color;
+
+                                Json::Value pointsValue;
+                                vector<Vector3>& originalProjectPnts = pNote->GetOriginalProjectPns().at(i);
+                                for (int j = 0; j < originalProjectPnts.size(); j++)
+                                {
+                                    Json::Value point;
+                                    point.append(originalProjectPnts.at(j).m_x);
+                                    point.append(originalProjectPnts.at(j).m_y);
+                                    point.append(originalProjectPnts.at(j).m_z);
+                                    pointsValue.append(point);
+                                }
+                                lineValue["points"] = pointsValue;
+                                linesValue.append(lineValue);
+                            }
+                        }
+                        jsonValue["lines"] = linesValue;
+                        jsonNotes[index] = jsonValue;
+                        index++;
                     }
                     
                 }

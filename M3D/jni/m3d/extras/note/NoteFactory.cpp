@@ -599,7 +599,6 @@ Note* NoteFactory::CreateThreeDGestureNote(Gesture3DInfo& gesture3DInfos, SceneM
         note->SetIsShowSpacePoint(SVIEW::Parameters::Instance()->m_isShowSpacePoint);
 		AddNoteToScene(scene, note);
 	}
-
 	return note;
 }
 
@@ -1290,7 +1289,7 @@ Note* NoteFactory::CreateThreeDGestureNoteFromJson(SceneManager* scene,const str
     {
         note->SetID(Value["createID"].asInt());
         note->SetType(SHAPE_THREED_GESTURE_NOTE);
-        note->SetVisible(false);
+        note->SetVisible(true);
         bool isShowSpacePoint = Value["spacepoint"].asBool();
         note->SetIsShowSpacePoint(isShowSpacePoint);
         SVIEW::Parameters::Instance()->m_isShowSpacePoint = isShowSpacePoint;
@@ -1318,7 +1317,6 @@ Note* NoteFactory::CreateThreeDGestureNoteFromJson(SceneManager* scene,const str
                         float sY = points[j][1].asFloat();
                         float sZ = points[j][2].asFloat();
                         Vector3 startPoint(sX,sY,sZ);
-//                        Vector2 screenPnt = scene->GetCamera()->WorldToScreenPoint(startPoint);
                         IntVector2 screenPnt = scene->GetCamera()->GetViewPort().WorldToScreenPoint(startPoint);
                         Vector3 tempVec3(screenPnt.m_x,screenPnt.m_y,0.0f);
                         originScreenPnts.push_back(tempVec3);

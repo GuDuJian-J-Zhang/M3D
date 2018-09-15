@@ -1210,6 +1210,7 @@ namespace SVIEW
 		try
 		{
 			m_userDatas.clear();
+            m_allGeasureNoteJsonData.clear();
 			if (m_ExplosiveViewOperator)
 			{
 				m_ExplosiveViewOperator->Reset();
@@ -2349,6 +2350,7 @@ namespace SVIEW
 				for (int i = 0; i < iNoteCount; i++)
 				{
 					int iNoteID = vecNoteList[i];
+                    bool isCreateGeasure = true;
 					for (int j = 0; j < pNoteGroup->Size(); j++)
 					{
 						SceneNode* pNode = pNoteGroup->GetChild(j);
@@ -2359,9 +2361,15 @@ namespace SVIEW
 						{
                             pNode->SetVisible(true);
 							pShape->SetVisible(true);
+                            isCreateGeasure = false;
 							break;
 						}
 					}
+                    if (isCreateGeasure && GetGestureJsonData(StringHelper::IntToString(iNoteID)) != M3D::NO_VALUE) {
+                        string jsonValue = GetGestureJsonData(StringHelper::IntToString(iNoteID));
+                        Note *pNode = NoteFactory::CreateThreeDGestureNoteFromJson(this->GetSceneManager(), jsonValue);
+                        this->RequestDraw();
+                    }
 				}
 			}
 
@@ -5992,6 +6000,7 @@ int View::GetSVLXFileItem(const std::string& i_strFileName, unsigned int& o_bufS
         SceneManager *scene = GetSceneManager();
         //清空
         scene->GetNoteGroup()->DeleteAllChildren();
+        m_allGeasureNoteJsonData.clear();
         if (reader.parse(value.c_str(), json))
         {
             retJson = json["annotations"];
@@ -6009,7 +6018,7 @@ int View::GetSVLXFileItem(const std::string& i_strFileName, unsigned int& o_bufS
                         {
                             vector<int> ids = (*it)->GetNoteList();
                             vector<int>::iterator result = find( ids.begin( ), ids.end( ), _id ); //查找3
-                            if ( result != ids.end( ) ) //没找到
+                            if ( result != ids.end( ) ) //找到
                             {
                                 valid = true;
                                 break;
@@ -6035,6 +6044,7 @@ int View::GetSVLXFileItem(const std::string& i_strFileName, unsigned int& o_bufS
                             case 1002://手势批注
                             {
                                 string jsonValue = writer.write(annoValue);
+                                this->AddGestureJsonData(StringHelper::IntToString(_id), jsonValue);
 //                                Note *pNode = NoteFactory::CreateThreeDGestureNoteFromJson(scene, jsonValue);
                             }
                                 break;
@@ -6044,6 +6054,24 @@ int View::GetSVLXFileItem(const std::string& i_strFileName, unsigned int& o_bufS
                     }
                 }
             }
+        }
+    }
+    const string& View::GetGestureJsonData(const string& key)
+    {
+        map<string, string>::iterator findKey = m_allGeasureNoteJsonData.find(key);
+        if (findKey != m_allGeasureNoteJsonData.end())
+        {
+            return findKey->second;
+        }
+        
+        return M3D::NO_VALUE;
+    }
+    
+    void View::AddGestureJsonData(const string& key, const string& value)
+    {
+        if (key.length() > 0)
+        {
+            m_allGeasureNoteJsonData[key] = value;
         }
     }
 }
