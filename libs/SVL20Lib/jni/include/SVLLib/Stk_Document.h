@@ -46,6 +46,7 @@ public:
 	STK_STATUS			OpenLocal(const std::wstring& fileFullPath);
 	STK_STATUS			OpenFile(const unsigned int i_bufferSize,	const char* i_bufP);
 	STK_STATUS			OpenFile(const std::wstring& fileFullPath);	
+	STK_STATUS			OpenFile(const std::string& strFileFullPathUTF8);
 	STK_STATUS			cacheMeshToTempPath();	
 	STK_STATUS         OpenSVLX(const std::wstring& fileFullPath);
 	STK_STATUS			LoadBom(const std::wstring& bomFullPath);
@@ -92,6 +93,8 @@ public:
 	std::wstring		GetOutputFullPath();
 	std::wstring		GetOutputName();
 	STK_STATUS			WriteFile();
+	STK_STATUS WriteBomFile(const std::wstring& newPath = L"");
+	STK_STATUS WriteMaterialFile(const std::wstring& newPath =L"");
 	const std::string&	GetBinNameUTF8();
 
 	Stk_ModelPtr GetModelByID( int ModelID);
@@ -136,7 +139,9 @@ public:
 	STK_STATUS GetSVLXFileItemToFile(const std::string& i_strFileName, const std::string& i_strOutFilePath, bool bByExt = true, const std::string& i_strNewFileName = "");
 	STK_STATUS GetSVLXFolderItemToFolder(const std::string& i_strFileName, const std::string& i_strOutFilePath);
 	Stk_InstancePtr GetInstanceByID(int instanceID);
-	
+    map<STK_ID, map<STK_ID, map<wstring, wstring>>> *GetAllMeshFaceAttr();
+    map<STK_ID, map<STK_ID, map<wstring, wstring>>> *GetAllMeshEdgeAttr();
+    static Stk_GeometryAttributePtr  GetMeshGeometryAttribute(map<wstring, wstring>& mapAttribute);
 	Stk_GeometryAttributePtr  GetMeshFaceAttribute(int iModelID, int iMeshFaceID);
 	map<wstring, wstring> GetMeshFaceAllAttribute(int iModelID, int iMeshFaceID);
 	wstring              GetMeshFaceAttribute(int iModelID, int iMeshFaceID, const std::wstring& i_wstrAttrName);
@@ -174,6 +179,10 @@ public:
 	STK_STATUS   UnloadLine();
 	STK_STATUS   UnloadPMI();
 	STK_STATUS   UnloadView();
+
+	STK_STATUS		addFileToSVLX(const wstring& i_wstrFileName, const wstring& i_wstrSVLXFileName, const wstring& i_wstrItemName = L"", bool i_bDeleteFile = true);
+
+	Stk_LoadInf* GetLoadInf();
 };
 	}//svllib
 }//hoteamsoft
