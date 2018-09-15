@@ -196,7 +196,7 @@ void CAnimationCallBackFunction::SetCameraCallBack(const char* plcIdPath,const f
 		if (atof(animationVersion.c_str()) >= 1.15f && ((int)fScale[1]) > 0
 			&& ((int)fScale[2]) > 0)
 		{
-			AnimationHelper::AdjustCameraZoom(camera, aniWidth, aniHeight, aniZoom, zoom, pAnimationCallBackFunction->m_pView);
+			AnimationHelper::AdjustCameraZoom( pAnimationCallBackFunction->m_pView,aniWidth, aniHeight, aniZoom, zoom);
 		}
 		else
 		{
@@ -506,7 +506,7 @@ void CAnimationCallBackFunction::SetCameraState(const PTARGETOBJECTINFO& cameraI
 		if (atof(animationVersion.c_str())>= 1.15f && ((int) cameraInfo->m_Scale[1]) > 0
 				&& ((int) cameraInfo->m_Scale[2]) > 0)
 		{
-			AnimationHelper::AdjustCameraZoom(camera,aniWidth,aniHeight,aniZoom,zoom,m_pView);
+			AnimationHelper::AdjustCameraZoom(m_pView,aniWidth,aniHeight,aniZoom,zoom);
 		}
 		else
 		{
