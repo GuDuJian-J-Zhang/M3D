@@ -2241,7 +2241,12 @@ namespace SVIEW
 						{
 							continue;
 						}
-						curModel->SetPlaceMatrix(transform);
+                        ModelShape* modelshape = curModel->GetModelShape();
+                        if (modelshape)
+                        {
+                            modelshape->SetTargetWorldMatrix(transform);
+                        }
+//                        curModel->SetPlaceMatrix(transform);
 					}
 				}
 			}
@@ -2904,17 +2909,6 @@ namespace SVIEW
 
 		if (newView->GetUpDataModelState())
 		{
-//			int direction = GetExplosiveView()->GetExplosiveStyle();
-//			float percent = GetExplosiveView()->GetExplosivePercent();
-//			newView->setExplosiveType(direction);
-//			newView->setExplosivePercent(percent * 50);
-			//LOGI("UpVector:%s",outStr);
-		//       LOGI("ZoomFactor:%f",GetSceneManager()->GetCamera()->GetZoom());
-		//        LOGI("Orthographic:%d",GetSceneManager()->GetCamera()->IsOrthographic());
-		//        LOGI("NearClip:%f",GetSceneManager()->GetCamera()->GetNearClip());
-		//        LOGI("FarClip:%f",GetSceneManager()->GetCamera()->GetFarClip());
-		//        LOGI("FOV:%f",GetSceneManager()->GetCamera()->GetFov());
-		
 			//insAtt
 			map<int, InstanceAttribute> insAttMap;
 
@@ -2960,8 +2954,8 @@ namespace SVIEW
 				ModelShape* modelshape = curModel->GetModelShape();
 				if (modelshape)
 				{
-					//Matrix3x4 matrixTran = modelshape->GetWorldTransform();
-					Matrix3x4 matrixTran = *curModel->GetPlaceMatrix();
+                    Matrix3x4 matrixTran = modelshape->GetWorldTransform();
+//                    Matrix3x4 matrixTran = *curModel->GetPlaceMatrix();
 					ia.placeMatrix = matrixTran.ToMatrix4();
 				}
 				else
@@ -3007,21 +3001,6 @@ namespace SVIEW
 			}
 		}
 
-		//note id
-	//	if (this->GetModel()->m_ShapeList.size() > 0)
-	//	{
-	//		for (int i = 0; i < this->GetModel()->m_ShapeList.size(); i++)
-	//		{
-	//			Shape *pShape = this->GetModel()->m_ShapeList.at(i);
-	//			if (pShape->GetType() == SHAPE_NOTE)
-	//			{
-	//				Note *pNote = (Note*) pShape;
-	//				//LOGI("curNoteID:%d",pNote->GetID());
-	//				newView->AddNoteId(pNote->GetID());
-	//			}
-	//		}
-	//	}
-
 		if (newView->GetUpDataModelState())
 		{
 			Model* topModel = this->GetSceneManager()->GetModel();
@@ -3050,11 +3029,6 @@ namespace SVIEW
 
 			NoteGroup* noteGroup = this->GetSceneManager()->GetNoteGroup();
 			LOGI("UpdateViewByCurrentScene::SHAPE_TEXT_NOTE");
-			//vector<string> *noteDataList = newView->GetNoteDataList(SHAPE_TEXT_NOTE);//TODO 需不需要清空？
-		//	assert(noteDataList != NULL);
-		//	noteDataList->clear();
-			//vector<string> noteDataList;
-			//noteDataList.clear();
 
 			if (noteGroup->Size() > 0)
 			{
@@ -6056,6 +6030,12 @@ int View::GetSVLXFileItem(const std::string& i_strFileName, unsigned int& o_bufS
                             {
                                 string jsonValue = writer.write(annoValue);
                                 Note *pNode = NoteFactory::CreateSequenceNoteFromJSON(scene, jsonValue);
+                            }
+                                break;
+                            case 1002://手势批注
+                            {
+                                string jsonValue = writer.write(annoValue);
+//                                Note *pNode = NoteFactory::CreateThreeDGestureNoteFromJson(scene, jsonValue);
                             }
                                 break;
                             default:

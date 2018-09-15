@@ -412,7 +412,17 @@ namespace M3D
 
 		this->m_drawDataPrepared = dataPrepared;
 	}
-
+    
+    void ModelShape::SetTargetWorldMatrix(Matrix3x4 & targetWorldMatrix)
+    {
+        this->m_worldMatrix = targetWorldMatrix;
+        this->m_glRenderMatrix = this->m_worldMatrix.ToMatrix4().Transpose();
+        
+        this->m_worldBox.Clear();
+        
+        UpdateOCTree();
+    }
+    
 	void ModelShape::SetWorldMatrix(Matrix3x4 & worldMatrix)
 	{
 		this->m_worldMatrix = this->m_parentModel->GetWorldTransform()*worldMatrix;
