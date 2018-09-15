@@ -1210,6 +1210,7 @@ namespace SVIEW
 		try
 		{
 			m_userDatas.clear();
+            m_allGeasureNoteJsonData.clear();
 			if (m_ExplosiveViewOperator)
 			{
 				m_ExplosiveViewOperator->Reset();
@@ -2241,7 +2242,12 @@ namespace SVIEW
 						{
 							continue;
 						}
-						curModel->SetPlaceMatrix(transform);
+                        ModelShape* modelshape = curModel->GetModelShape();
+                        if (modelshape)
+                        {
+                            modelshape->SetTargetWorldMatrix(transform);
+                        }
+//                        curModel->SetPlaceMatrix(transform);
 					}
 				}
 			}
@@ -2344,6 +2350,7 @@ namespace SVIEW
 				for (int i = 0; i < iNoteCount; i++)
 				{
 					int iNoteID = vecNoteList[i];
+                    bool isCreateGeasure = true;
 					for (int j = 0; j < pNoteGroup->Size(); j++)
 					{
 						SceneNode* pNode = pNoteGroup->GetChild(j);
@@ -2354,9 +2361,15 @@ namespace SVIEW
 						{
                             pNode->SetVisible(true);
 							pShape->SetVisible(true);
+                            isCreateGeasure = false;
 							break;
 						}
 					}
+                    if (isCreateGeasure && GetGestureJsonData(StringHelper::IntToString(iNoteID)) != M3D::NO_VALUE) {
+                        string jsonValue = GetGestureJsonData(StringHelper::IntToString(iNoteID));
+                        Note *pNode = NoteFactory::CreateThreeDGestureNoteFromJson(this->GetSceneManager(), jsonValue);
+                        this->RequestDraw();
+                    }
 				}
 			}
 
@@ -2904,17 +2917,6 @@ namespace SVIEW
 
 		if (newView->GetUpDataModelState())
 		{
-//			int direction = GetExplosiveView()->GetExplosiveStyle();
-//			float percent = GetExplosiveView()->GetExplosivePercent();
-//			newView->setExplosiveType(direction);
-//			newView->setExplosivePercent(percent * 50);
-			//LOGI("UpVector:%s",outStr);
-		//       LOGI("ZoomFactor:%f",GetSceneManager()->GetCamera()->GetZoom());
-		//        LOGI("Orthographic:%d",GetSceneManager()->GetCamera()->IsOrthographic());
-		//        LOGI("NearClip:%f",GetSceneManager()->GetCamera()->GetNearClip());
-		//        LOGI("FarClip:%f",GetSceneManager()->GetCamera()->GetFarClip());
-		//        LOGI("FOV:%f",GetSceneManager()->GetCamera()->GetFov());
-		
 			//insAtt
 			map<int, InstanceAttribute> insAttMap;
 
@@ -2960,8 +2962,8 @@ namespace SVIEW
 				ModelShape* modelshape = curModel->GetModelShape();
 				if (modelshape)
 				{
-					//Matrix3x4 matrixTran = modelshape->GetWorldTransform();
-					Matrix3x4 matrixTran = *curModel->GetPlaceMatrix();
+                    Matrix3x4 matrixTran = modelshape->GetWorldTransform();
+//                    Matrix3x4 matrixTran = *curModel->GetPlaceMatrix();
 					ia.placeMatrix = matrixTran.ToMatrix4();
 				}
 				else
@@ -3007,21 +3009,6 @@ namespace SVIEW
 			}
 		}
 
-		//note id
-	//	if (this->GetModel()->m_ShapeList.size() > 0)
-	//	{
-	//		for (int i = 0; i < this->GetModel()->m_ShapeList.size(); i++)
-	//		{
-	//			Shape *pShape = this->GetModel()->m_ShapeList.at(i);
-	//			if (pShape->GetType() == SHAPE_NOTE)
-	//			{
-	//				Note *pNote = (Note*) pShape;
-	//				//LOGI("curNoteID:%d",pNote->GetID());
-	//				newView->AddNoteId(pNote->GetID());
-	//			}
-	//		}
-	//	}
-
 		if (newView->GetUpDataModelState())
 		{
 			Model* topModel = this->GetSceneManager()->GetModel();
@@ -3050,11 +3037,6 @@ namespace SVIEW
 
 			NoteGroup* noteGroup = this->GetSceneManager()->GetNoteGroup();
 			LOGI("UpdateViewByCurrentScene::SHAPE_TEXT_NOTE");
-			//vector<string> *noteDataList = newView->GetNoteDataList(SHAPE_TEXT_NOTE);//TODO 需不需要清空？
-		//	assert(noteDataList != NULL);
-		//	noteDataList->clear();
-			//vector<string> noteDataList;
-			//noteDataList.clear();
 
 			if (noteGroup->Size() > 0)
 			{
@@ -6018,6 +6000,7 @@ int View::GetSVLXFileItem(const std::string& i_strFileName, unsigned int& o_bufS
         SceneManager *scene = GetSceneManager();
         //清空
         scene->GetNoteGroup()->DeleteAllChildren();
+        m_allGeasureNoteJsonData.clear();
         if (reader.parse(value.c_str(), json))
         {
             retJson = json["annotations"];
@@ -6035,7 +6018,7 @@ int View::GetSVLXFileItem(const std::string& i_strFileName, unsigned int& o_bufS
                         {
                             vector<int> ids = (*it)->GetNoteList();
                             vector<int>::iterator result = find( ids.begin( ), ids.end( ), _id ); //查找3
-                            if ( result != ids.end( ) ) //没找到
+                            if ( result != ids.end( ) ) //找到
                             {
                                 valid = true;
                                 break;
@@ -6058,12 +6041,37 @@ int View::GetSVLXFileItem(const std::string& i_strFileName, unsigned int& o_bufS
                                 Note *pNode = NoteFactory::CreateSequenceNoteFromJSON(scene, jsonValue);
                             }
                                 break;
+                            case 1002://手势批注
+                            {
+                                string jsonValue = writer.write(annoValue);
+                                this->AddGestureJsonData(StringHelper::IntToString(_id), jsonValue);
+//                                Note *pNode = NoteFactory::CreateThreeDGestureNoteFromJson(scene, jsonValue);
+                            }
+                                break;
                             default:
                                 break;
                         }
                     }
                 }
             }
+        }
+    }
+    const string& View::GetGestureJsonData(const string& key)
+    {
+        map<string, string>::iterator findKey = m_allGeasureNoteJsonData.find(key);
+        if (findKey != m_allGeasureNoteJsonData.end())
+        {
+            return findKey->second;
+        }
+        
+        return M3D::NO_VALUE;
+    }
+    
+    void View::AddGestureJsonData(const string& key, const string& value)
+    {
+        if (key.length() > 0)
+        {
+            m_allGeasureNoteJsonData[key] = value;
         }
     }
 }

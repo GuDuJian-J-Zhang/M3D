@@ -1,4 +1,4 @@
-﻿/**@file
+/**@file
  *@brief
  *@author	XL
  *@date		2014-1-7
@@ -97,7 +97,7 @@ public:
 	bool IsDrawDataPrepared();
 	void SetDrawDataPrepared(bool dataPrepared);
 	void SetWorldMatrix(Matrix3x4& worldMatrix);
-
+    void SetTargetWorldMatrix(Matrix3x4 & targetWorldMatrix);
 	/**
 	* @brief Move the scene node in the chosen transform space.
 	*/

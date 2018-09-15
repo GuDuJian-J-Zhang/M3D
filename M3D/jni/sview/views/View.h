@@ -1188,7 +1188,8 @@ public:
     
     //批注数据解析
     void ParseAnnotation(const string& value);
-    
+    const string& GetGestureJsonData(const string& key);
+    void AddGestureJsonData(const string& key, const string& value);
 private:
 	CTimer m_rotateAndExplosiveTimer;
 	static void * RotateAndExplosiveTask(void * data);
@@ -1252,6 +1253,7 @@ private:
 	M3D::Model* m_Model;//!<模型
 	mutable M3D::Mutex m_mutex;//!<线程锁
 	map<string,string> m_userDatas;//用户自定义属性
+    map<string,string> m_allGeasureNoteJsonData;//所有手势批注json数据
     set<string> m_srcFiles;
 //    map<string,Model*> m_AllModelMap;
     //

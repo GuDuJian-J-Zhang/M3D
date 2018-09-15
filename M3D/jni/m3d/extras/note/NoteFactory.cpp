@@ -599,7 +599,6 @@ Note* NoteFactory::CreateThreeDGestureNote(Gesture3DInfo& gesture3DInfos, SceneM
         note->SetIsShowSpacePoint(SVIEW::Parameters::Instance()->m_isShowSpacePoint);
 		AddNoteToScene(scene, note);
 	}
-
 	return note;
 }
 
@@ -1276,6 +1275,75 @@ Note* NoteFactory::CreateSequenceNoteFromJSON(SceneManager* scene, const string&
     
     return note;
 }
+Note* NoteFactory::CreateThreeDGestureNoteFromJson(SceneManager* scene,const string& JSONValue)
+{
+    ThreeDGesturesNote * note = NULL;
+    if (JSONValue.length() == 0)
+    {
+        return NULL;
+    }
+    note = new ThreeDGesturesNote;
+    Json::Reader reader;
+    Json::Value Value;
+    if (reader.parse(JSONValue.c_str(), Value))
+    {
+        note->SetID(Value["createID"].asInt());
+        note->SetType(SHAPE_THREED_GESTURE_NOTE);
+        note->SetVisible(true);
+        bool isShowSpacePoint = Value["spacepoint"].asBool();
+        note->SetIsShowSpacePoint(isShowSpacePoint);
+        SVIEW::Parameters::Instance()->m_isShowSpacePoint = isShowSpacePoint;
+            
+        Json::Value lines = Value["lines"];
+        if (lines.isArray()) {
+            int index = lines.size();
+            for (int i = 0; i < index; i++) {
+                Json::Value line = lines[i];
+                
+                float width = line["width"].asFloat();
+                note->SetOriginalProjectWidths(width);
+                    
+                Json::Value color = line["color"];
+                Color temp = Color(color[0].asFloat(), color[1].asFloat(), color[2].asFloat(), color[3].asFloat());
+                note->SetOriginalProjectColors(temp);
+                    
+                Json::Value points = line["points"];
+                vector<Vector3> originPosition;
+                vector<Vector3> originScreenPnts;
+                if (points.isArray()) {
+                    for(int j = 0;j < points.size();j++)
+                    {
+                        float sX = points[j][0].asFloat();
+                        float sY = points[j][1].asFloat();
+                        float sZ = points[j][2].asFloat();
+                        Vector3 startPoint(sX,sY,sZ);
+                        IntVector2 screenPnt = scene->GetCamera()->GetViewPort().WorldToScreenPoint(startPoint);
+                        Vector3 tempVec3(screenPnt.m_x,screenPnt.m_y,0.0f);
+                        originScreenPnts.push_back(tempVec3);
+                        originPosition.push_back(startPoint);
+                    }
+                    note->GetOriginalProjectPns().push_back(originPosition);//将投影点加入note
+                    vector<vector<Vector3> > finalPoints;
+                    InsectPoint(scene, originScreenPnts, originPosition, finalPoints);
+                    for (int m = 0; m < finalPoints.size(); m++)
+                    {
+                        for (int n = 0; n < finalPoints[m].size() - 1; n++)
+                        {
+                            Line3D * line = new Line3D(finalPoints[m][n], finalPoints[m][n + 1]);
+                            line->SetColor(temp);
+                            line->SetLineWidth(width);
+                            note->AddLine(line);
+                        }
+                    }
+                }
+                    
+            }
+        }
+    }
+    AddNoteToScene(scene, note);
+    return note;
+}
+    
 string NoteFactory::TextNoteToXMLElement(SceneManager* scene, TextNote* textNote)
 {
 	LOGI("begin serialize");

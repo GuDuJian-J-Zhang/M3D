@@ -1,4 +1,4 @@
-﻿/**@file
+/**@file
  *@brief    存储交互层的所有Handler，M3D为编程简便
  *@author	XL
  *@date		2014-1-7
@@ -23,6 +23,12 @@ class SceneManager;
 class M3D_API NoteGroup: public GroupNode
 {
 public:
+    const static int ANNOTATION_TYPE_BASE ; //!<文本批注
+    const static int ANNOTATION_TYPE_COMPONENTNAME; //!<零组件批注
+    const static int ANNOTATION_TYPE_VOICE; //!<语音批注
+    const static int ANNOTATION_TYPE_SEQUENCE;//!<序号批注
+    const static int ANNOTATION_TYPE_GESTURE;//3D手势批注
+    
 	NoteGroup();
 	virtual ~NoteGroup();
 	/**
