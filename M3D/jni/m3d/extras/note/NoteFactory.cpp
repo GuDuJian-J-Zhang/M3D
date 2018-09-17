@@ -1112,6 +1112,7 @@ Note* NoteFactory::CreateTextNoteFromXMLElement(SceneManager* scene, const strin
 
 Note* NoteFactory::CreateTextNoteFromJSON(SceneManager* scene, const string& JSONValue)
 {
+	LOGI("NoteFactory::CreateTextNoteFromJson BEGIN");
 	TextNote* note = NULL;
     if (JSONValue.length()==0) {
         return note;
@@ -1131,8 +1132,7 @@ Note* NoteFactory::CreateTextNoteFromJSON(SceneManager* scene, const string& JSO
         Vector3 fCoordiante = Vector3(Value["centerPos"][0].asFloat(), Value["centerPos"][1].asFloat(), Value["centerPos"][2].asFloat());
 
         note->SetNotePos(fCoordiante);
-        {
-            note->SetTextsPos(anchorCoordiante);
+    //            note->SetTextsPos(anchorCoordiante);
             //构造显示文本
             string lengthstr = text;
             //根据整个场景包围盒的大小来确定文字的大小
@@ -1159,42 +1159,41 @@ Note* NoteFactory::CreateTextNoteFromJSON(SceneManager* scene, const string& JSO
             line1->SetName("TextImageLeader");
             
             note->SetTextsPos(pntInPlane); //将原始文本点变为其在camera平面的投影点
-            
+
+
             vector<Texts2D*> temptext;
             Texts2D *title = new Texts2D;
-            title->m_size = 14;
+            title->m_size = fontSize;
             title->m_texts = "内容";
             temptext.push_back(title);
-            
+
             Texts2D *content = new Texts2D;
-            content->m_size = 14.0f;
+            content->m_size = fontSize;
             content->m_texts = lengthstr;
             temptext.push_back(content);
-            
-            ImageBoard * imageBroad = MeasureDisplayHelper::createNoteTextsImageN(scene, temptext, pntInPlane);
-            
-            //将线加入测量对象中
-            note->AddLine(line1);
-            note->AddImage(imageBroad);
-            note->AddPoint(point1);
-            
-            
-            ComText* ct = new ComText();
-            CText* t = new CText;
-            
-            t->SetText(text);
-            //t->SetCharWidthHeight(content->m_size ,content->m_size );
-            ct->AddCText(t);
-            note->m_ComTexts.push_back(ct);
-            
-            note->SetFrontShow(false); //是否前端显示
-        }
+
+        ImageBoard * imageBroad = MeasureDisplayHelper::createNoteTextsImageN(scene, temptext, pntInPlane);
+
+        //将线加入测量对象中
+        note->AddLine(line1);
+        note->AddPoint(point1);
+        note->AddImage(imageBroad);
+
+        ComText* ct = new ComText();
+        CText* t = new CText;
+
+        t->SetText(text);
+        //t->SetCharWidthHeight(content->m_size ,content->m_size );
+        ct->AddCText(t);
+        note->m_ComTexts.push_back(ct);
     }
+
+        note->SetFrontShow(false); //是否前端显示
 	if (note)
 	{
 		AddNoteToScene(scene, note);
 	}
-
+	LOGI("NoteFactory::CreateTextNoteFromJson END");
 	return note;
 }
 Note* NoteFactory::CreateSequenceNoteFromJSON(SceneManager* scene, const string& JSONValue)
@@ -1254,8 +1253,8 @@ Note* NoteFactory::CreateSequenceNoteFromJSON(SceneManager* scene, const string&
             
             //将线加入测量对象中
             note->AddLine(line1);
-            note->AddImage(imageBroad);
             note->AddPoint(point1);
+            note->AddImage(imageBroad);
             
             ComText* ct = new ComText();
             CText* t = new CText;
