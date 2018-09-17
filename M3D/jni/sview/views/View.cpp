@@ -1211,6 +1211,8 @@ namespace SVIEW
 		{
 			m_userDatas.clear();
             m_allGeasureNoteJsonData.clear();
+            m_allTextNoteJsonData.clear();
+            m_allSequeNoteJsonData.clear();
 			if (m_ExplosiveViewOperator)
 			{
 				m_ExplosiveViewOperator->Reset();
@@ -1225,6 +1227,7 @@ namespace SVIEW
 			this->m_draggerHandler->Reset();
 			//清空动画文件
 			SetAnimationXMLData("");
+            m_SceneManager->GetNoteGroup()->Clear();
 			if (m_Reader != NULL)
 			{
 				delete m_Reader;
@@ -1994,8 +1997,19 @@ namespace SVIEW
 
 	void View::RemoveShape(int id)
 	{
+        bool isViewNote = false;
+        if (m_curModelView) {
+            vector<int> ids = m_curModelView->GetNoteList();
+            vector<int>::iterator it = find(ids.begin(),ids.end(),id);
+            if (it != ids.end()) {
+                isViewNote = true;
+            }
+        }
 		LOGE("View::RemoveShape");
-		this->GetSceneManager()->RemoveShape(id);
+        //TODO 当前视图关联note不删除
+        if (isViewNote == false) {
+            this->GetSceneManager()->RemoveShape(id);
+        }
 	}
 
 	void View::GetShapePos(int id, int type, float* p)
@@ -2139,6 +2153,7 @@ namespace SVIEW
 			this->m_SceneManager->UnLock();
 			return;
 		}
+        m_curModelView = pView;
 		//老版本设计器中创建的剖面也保存为自定义视图，剖面数据不应执行视图切换处理
 		if (pView->GetSvlUseType() == M3D::ModelView::ViewSvlUseTypeEnum::VIEW_USAGE_USER_CLIPPLANE)
 		{
@@ -2350,7 +2365,7 @@ namespace SVIEW
 				for (int i = 0; i < iNoteCount; i++)
 				{
 					int iNoteID = vecNoteList[i];
-                    bool isCreateGeasure = true;
+                    bool isCreate = true;
 					for (int j = 0; j < pNoteGroup->Size(); j++)
 					{
 						SceneNode* pNode = pNoteGroup->GetChild(j);
@@ -2361,14 +2376,21 @@ namespace SVIEW
 						{
                             pNode->SetVisible(true);
 							pShape->SetVisible(true);
-                            isCreateGeasure = false;
+                            isCreate = false;
 							break;
 						}
 					}
-                    if (isCreateGeasure && GetGestureJsonData(StringHelper::IntToString(iNoteID)) != M3D::NO_VALUE) {
+                    if (isCreate && GetTextJsonData(StringHelper::IntToString(iNoteID)) != M3D::NO_VALUE) {
+                        string jsonValue = GetTextJsonData(StringHelper::IntToString(iNoteID));
+                        Note *pNode = NoteFactory::CreateTextNoteFromJSON(this->GetSceneManager(), jsonValue);
+                    }
+                    if (isCreate && GetSequenceJsonData(StringHelper::IntToString(iNoteID)) != M3D::NO_VALUE) {
+                        string jsonValue = GetSequenceJsonData(StringHelper::IntToString(iNoteID));
+                        Note *pNode = NoteFactory::CreateSequenceNoteFromJSON(this->GetSceneManager(), jsonValue);
+                    }
+                    if (isCreate && GetGestureJsonData(StringHelper::IntToString(iNoteID)) != M3D::NO_VALUE) {
                         string jsonValue = GetGestureJsonData(StringHelper::IntToString(iNoteID));
                         Note *pNode = NoteFactory::CreateThreeDGestureNoteFromJson(this->GetSceneManager(), jsonValue);
-                        this->RequestDraw();
                     }
 				}
 			}
@@ -2881,7 +2903,7 @@ namespace SVIEW
 				defaultView = new ModelView();
 				defaultView->SetName("DefaultView");
 				defaultView->SetViewType(ModelView::DefaultView);
-				GetModel()->AddModelView(defaultView);
+//                GetModel()->AddModelView(defaultView);
 			}
 		}
 		LOGI(" View::GetDefaultModelView() end. viewAddr:%d", defaultView);
@@ -6000,6 +6022,8 @@ int View::GetSVLXFileItem(const std::string& i_strFileName, unsigned int& o_bufS
         SceneManager *scene = GetSceneManager();
         //清空
         scene->GetNoteGroup()->DeleteAllChildren();
+        m_allTextNoteJsonData.clear();
+        m_allSequeNoteJsonData.clear();
         m_allGeasureNoteJsonData.clear();
         if (reader.parse(value.c_str(), json))
         {
@@ -6030,7 +6054,8 @@ int View::GetSVLXFileItem(const std::string& i_strFileName, unsigned int& o_bufS
                             case 0://基本-文本
                             {
                                 string jsonValue = writer.write(annoValue);
-                                Note *pNode = NoteFactory::CreateTextNoteFromJSON(scene, jsonValue);
+                                this->AddTextJsonData(StringHelper::IntToString(_id), jsonValue);
+//                                Note *pNode = NoteFactory::CreateTextNoteFromJSON(scene, jsonValue);
                             }
                                 break;
                             case 1://零组件
@@ -6038,7 +6063,8 @@ int View::GetSVLXFileItem(const std::string& i_strFileName, unsigned int& o_bufS
                             case 2://序号
                             {
                                 string jsonValue = writer.write(annoValue);
-                                Note *pNode = NoteFactory::CreateSequenceNoteFromJSON(scene, jsonValue);
+                                this->AddSequenceJsonData(StringHelper::IntToString(_id), jsonValue);
+//                                Note *pNode = NoteFactory::CreateSequenceNoteFromJSON(scene, jsonValue);
                             }
                                 break;
                             case 1002://手势批注
@@ -6072,6 +6098,42 @@ int View::GetSVLXFileItem(const std::string& i_strFileName, unsigned int& o_bufS
         if (key.length() > 0)
         {
             m_allGeasureNoteJsonData[key] = value;
+        }
+    }
+    const string& View::GetTextJsonData(const string& key)
+    {
+        map<string, string>::iterator findKey = m_allTextNoteJsonData.find(key);
+        if (findKey != m_allTextNoteJsonData.end())
+        {
+            return findKey->second;
+        }
+        
+        return M3D::NO_VALUE;
+    }
+    
+    void View::AddTextJsonData(const string& key, const string& value)
+    {
+        if (key.length() > 0)
+        {
+            m_allTextNoteJsonData[key] = value;
+        }
+    }
+    const string& View::GetSequenceJsonData(const string& key)
+    {
+        map<string, string>::iterator findKey = m_allSequeNoteJsonData.find(key);
+        if (findKey != m_allSequeNoteJsonData.end())
+        {
+            return findKey->second;
+        }
+        
+        return M3D::NO_VALUE;
+    }
+    
+    void View::AddSequenceJsonData(const string& key, const string& value)
+    {
+        if (key.length() > 0)
+        {
+            m_allSequeNoteJsonData[key] = value;
         }
     }
 }
