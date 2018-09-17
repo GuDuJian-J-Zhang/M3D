@@ -23,7 +23,7 @@ namespace HoteamSoft {
 			Stk_LoadInf();
 			~Stk_LoadInf(void);
 
-			static Stk_LoadInf* GetInstance();
+			//static Stk_LoadInf* GetInstance();
 
 			/*****************************************************************
 			º¯ÊýÃû	£ºRegisterModelGroupId

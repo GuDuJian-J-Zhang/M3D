@@ -232,12 +232,13 @@ enum StkEntityTypeEnum
 	ENTITY_TYPE_MESH_COM = 1013,				/*!< MeshCom类型					*/
 	ENTITY_TYPE_BODY = 4001,					/*!< Body类型						*/
 	ENTITY_TYPE_MESH_FACE = 4030,				/*!< MeshFace类型					*/
-	//ENTITY_TYPE_NOTE = 20000,					/*!< 3D批注类型						*/
+	ENTITY_TYPE_NOTE = 20000,					/*!< 3D批注类型						*/
 	ENTITY_TYPE_REFLINE = 20001,				/*!< 辅助线							*/
 	ENTITY_TYPE_MESH_EDG = 20100,				/*!< MeshEdge类型					*/
 	ENTITY_TYPE_LAYER = 20101,					/*!< 图层类型						*/
 	ENTITY_TYPE_MAGNETIC_LINE = 20102,			/*!< 磁力线类型						*/
-	ENTITY_TYPE_FEAT_PIPE = 20103				/*!< 线缆类型						*/
+	ENTITY_TYPE_FEAT_PIPE = 20103,				/*!< 线缆类型						*/
+	ENTITY_TYPE_SECTION = 20104				    /*!< 剖面类型						*/
 };
 
 /** @brief Mesh存储方式 */
@@ -1062,6 +1063,8 @@ enum StkMaterialTypeEnum
 {
 	STK_MATERIALTYPE_SIMPLAE		= 0,		//只有颜色和透明度信息
 	STK_MATERIALTYPE_PHONG			= 1,		//带贴图使用
+	STK_MATERIALTYPE_PBR ,		
+	STK_MATERIALTYPE_SHADER,
 	STK_MATERIALTYPE_ALL,
 
 	STK_MATERIALTYPE_JADE = 101,		//金正金扩展 玉石
@@ -1076,6 +1079,7 @@ enum StkFileOpenModeEnum
 {
 	STK_FILE_OPENMODE_LOCAL = 0,	//打开本地文件
 	STK_FILE_OPENMODE_BUFFER,		//打开网络缓存文件
+	STK_FILE_OPENMODE_LOCAL_ZIP,		//从本地文件中抽取相关数据
 };
 enum StkMemBlockTypeEnum
 {
