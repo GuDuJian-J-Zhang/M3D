@@ -1124,7 +1124,7 @@ Note* NoteFactory::CreateTextNoteFromJSON(SceneManager* scene, const string& JSO
     {
         note->SetID(Value["createID"].asInt());
         note->SetType(SHAPE_TEXT_NOTE);
-        note->SetVisible(false);
+        note->SetVisible(true);
         string text = Value["text"].asString();
         Vector3 anchorCoordiante = Vector3(Value["annotationPos"][0].asFloat(), Value["annotationPos"][1].asFloat(), Value["annotationPos"][2].asFloat());
         
@@ -1211,7 +1211,7 @@ Note* NoteFactory::CreateSequenceNoteFromJSON(SceneManager* scene, const string&
     {
         note->SetID(Value["createID"].asInt());
         note->SetType(SHAPE_SEQUENCE_NUMBER_NOTE);
-        note->SetVisible(false);
+        note->SetVisible(true);
         string text = Value["text"].asString();
         Vector3 anchorCoordiante = Vector3(Value["annotationPos"][0].asFloat(), Value["annotationPos"][1].asFloat(), Value["annotationPos"][2].asFloat());
         

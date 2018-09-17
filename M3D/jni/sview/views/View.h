@@ -1190,6 +1190,14 @@ public:
     void ParseAnnotation(const string& value);
     const string& GetGestureJsonData(const string& key);
     void AddGestureJsonData(const string& key, const string& value);
+    const string& GetTextJsonData(const string& key);
+    
+    void AddTextJsonData(const string& key, const string& value);
+    
+    const string& GetSequenceJsonData(const string& key);
+    
+    void AddSequenceJsonData(const string& key, const string& value);
+    
 private:
 	CTimer m_rotateAndExplosiveTimer;
 	static void * RotateAndExplosiveTask(void * data);
@@ -1253,6 +1261,8 @@ private:
 	M3D::Model* m_Model;//!<模型
 	mutable M3D::Mutex m_mutex;//!<线程锁
 	map<string,string> m_userDatas;//用户自定义属性
+    map<string,string> m_allTextNoteJsonData;//所有文本批注json数据
+    map<string,string> m_allSequeNoteJsonData;//所有序号批注json数据
     map<string,string> m_allGeasureNoteJsonData;//所有手势批注json数据
     set<string> m_srcFiles;
 //    map<string,Model*> m_AllModelMap;
