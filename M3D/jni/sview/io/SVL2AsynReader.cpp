@@ -1102,7 +1102,7 @@ namespace SVIEW {
 				//打开文件
 				(*m_svl2Doc)->OpenFile(wfilePath);
 				(*m_svl2Doc)->LoadAttribute();
-				(*m_svl2Doc)->LoadGeoAttribute();
+                (*m_svl2Doc)->LoadGeoAttribute();
 				map<STK_ID, map<STK_ID, map<wstring, wstring>>>* meshFaceAtrrPtr = (*m_svl2Doc)->GetAllMeshFaceAttr();
 				if (meshFaceAtrrPtr)
 				{
@@ -1577,7 +1577,6 @@ namespace SVIEW {
 		{
 			this->m_mergeface = true;
 		}
-
 		(*m_svl2Doc)->loadAttributeStream();
 		(*m_svl2Doc)->getInstanceNames(i_mapInstanceIDtoName);
 		(*m_svl2Doc)->unloadAttributeStream();

@@ -59,10 +59,7 @@ namespace SVIEW
         virtual int SaveTo(View* view,const string& srcPath,const string &targetPath);
 
 		int SaveLights(const string& destFilePath);
-        //保存测量
-        int SaveMeasures(const string& destFilePath);
-        //保存批注
-        int SaveAnnotations(const string& destFilePath);
+        
 		int WriteMaterials(const string& destFilePath);
 
 		virtual int SaveToByIncrease(View* view, const string& tempPath, const string &strsrcPath, const string &strsrcName);
@@ -81,7 +78,14 @@ namespace SVIEW
 		void WriteAllProtoTypes(M3D::Model* model);
 
 		void SaveView();
-
+        
+//        /**
+//         保存视图和批注
+//
+//         @param view
+//         @param srcFilePath svlx文件地址
+//         */
+//        string SaveViewAndAnnotation(View* view,const string& srcFilePath);
 		void writeMeshPrim(void* meshPrim, M3D::Body* body);
 		void writeLineSet(void* meshPrim, M3D::Body* body);
 		void writeMeshFace(void* meshPrim, M3D::Face* face);
@@ -101,13 +105,17 @@ namespace SVIEW
 		vector<Model*>& GetSavedModels();
 
 		void SetSavedModel(vector<Model*>& val);
+        
 	private:
 		/************************************************************************/
 		/* 保存材质                                                                     */
 		/************************************************************************/
 		void SaveMaterial(Model* model, void* instancePtr);
 		void SaveMaterial();
-
+        //保存测量
+        int SaveMeasures(const string& destFilePath);
+        //保存批注
+        int SaveAnnotations(const string& destFilePath);
 		bool SaveTexture2D(Texture2D* texture2d, void* stktexturePtr);
 
 		bool SaveImage(Image* image, void* stktexturePtr);

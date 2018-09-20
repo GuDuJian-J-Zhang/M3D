@@ -1239,7 +1239,7 @@ namespace SVIEW
 				m_Model->Release();
 			}
 			m_Model = NULL;
- 
+            m_curModelView = NULL;
 			m_SceneManager->RemoveModel();
 
 			//int modelLightSize = m_SceneManager->GetModelLights()->size();
@@ -1997,18 +1997,63 @@ namespace SVIEW
 
 	void View::RemoveShape(int id)
 	{
-        bool isViewNote = false;
+        bool isRemove = true;
+        bool isNote = false;
+        //当前视图关联note
         if (m_curModelView) {
             vector<int> ids = m_curModelView->GetNoteList();
             vector<int>::iterator it = find(ids.begin(),ids.end(),id);
             if (it != ids.end()) {
-                isViewNote = true;
+                isRemove = true;
+                isNote = true;
+            }
+        }
+        //判断是否和其他视图关联
+        vector<ModelView*>* allViews = this->GetSceneManager()->GetModel()->GetModelViewList();
+        if (allViews) {
+            for (vector<ModelView*>::iterator it = allViews->begin(); it != allViews->end(); it++)
+            {
+                if (m_curModelView && (*it) != m_curModelView) {
+                    vector<int> ids = (*it)->GetNoteList();
+                    vector<int>::iterator result = find( ids.begin( ), ids.end( ), id ); //查找
+                    if ( result != ids.end( ) ) //找到
+                    {
+                        isRemove = false;
+                        break;
+                    }
+                }
             }
         }
 		LOGE("View::RemoveShape");
-        //TODO 当前视图关联note不删除
-        if (isViewNote == false) {
+        //TODO 视图关联note是否可删除
+        if (isRemove == true) {
             this->GetSceneManager()->RemoveShape(id);
+        }else if (isNote){
+            //显示关联的批注信息
+            NoteGroup* pNoteGroup = this->GetSceneManager()->GetNoteGroup();
+            for (int j = 0; j < pNoteGroup->Size(); j++)
+            {
+                SceneNode* pNode = pNoteGroup->GetChild(j);
+                if (!pNode)
+                    continue;
+                IShape* pShape = ((ShapeNode*)pNode)->GetShape();
+                if (pShape && id == pShape->GetID())
+                {
+                    pNode->SetVisible(false);
+                    pShape->SetVisible(false);
+                    break;
+                }
+            }
+        }
+        if (isNote) {
+            if (m_curModelView) {
+                vector<int> ids = m_curModelView->GetNoteList();
+                vector<int>::iterator it = find(ids.begin(),ids.end(),id);
+                if (it != ids.end()) {
+                    ids.erase(it);
+                    m_curModelView->SetNoteIds(ids);
+                }
+            }
         }
 	}
 
@@ -3173,35 +3218,6 @@ namespace SVIEW
 
 		LOGI("end update textnote by current scene");
 
-//		//TODO MERGEToMobile
-//            if (SectionOperator::Instance != NULL) {
-//                ///sectionPlane
-//                int direction = SectionOperator::Instance->m_Direction;
-//                float percentage = 100 * SectionOperator::Instance->m_fPercentage; //
-//                int directionX = SectionOperator::Instance->m_DirectionX;
-//                float percentageX = SectionOperator::Instance->m_fPercentageX; //
-//                int directionY = SectionOperator::Instance->m_DirectionY;
-//                float percentageY = SectionOperator::Instance->m_fPercentageY; //
-//                int directionZ = SectionOperator::Instance->m_DirectionZ;
-//                float percentageZ = SectionOperator::Instance->m_fPercentageZ; //
-//                bool showCutPlane = SVIEW::Parameters::Instance()->m_showSection;
-//                bool isCappingPlane =
-//                        this->GetSceneManager()->GetSectionNode()->GetSection()->IsShowCappingPlane();
-//                bool isReverse = this->GetSceneManager()->GetSectionNode()->GetSection()->IsReverseClipping();
-//                newView->SetSectionPlaneDirection(direction);
-//                newView->SetSectionPlanePercentage(percentage);
-//                newView->SetSectionPlaneDirectionAndPercentage(directionX, directionY, directionZ, percentageX, percentageY, percentageZ);
-//                newView->SetShowClipSectionPlane(showCutPlane);
-//                newView->SetShowSectionCappingPlane(isCappingPlane);
-//                newView->SetReverseClipping(isReverse);
-//            }
-
-			/*-----------------------------------------------------------------------------*/
-
-			//LOGI("Set note id end");
-		//	delete action;
-
-			//LOGI("View::UpdateViewByCurrentScene end.");
 		ret = true;
 	RET: return ret;
 

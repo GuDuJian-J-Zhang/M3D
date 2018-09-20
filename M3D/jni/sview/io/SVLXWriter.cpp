@@ -181,9 +181,21 @@ namespace SVIEW
  
 			//Images文件夹,由于文件会存储多次，暂时屏蔽掉
 			//TODO
-			//string strImagesFolderName = "images";
-			//string strImagesFolderPath = strSVLXOutFilePath + "images";
-			//m_pDoc->GetSVLXFolderItemToFolder(strImagesFolderName, strImagesFolderPath);
+            string strImagesFolderName = "images";
+            string strImagesFolderPath = strSVLXOutFilePath + "images";
+            m_pDoc->GetSVLXFolderItemToFolder(strImagesFolderName, strImagesFolderPath);
+            
+            string strSaresFolderName = "sares";
+            string strSaresFolderPath = strSVLXOutFilePath + "sares";
+            m_pDoc->GetSVLXFolderItemToFolder(strSaresFolderName, strSaresFolderPath);
+            
+            string strManualFolderName = "manual";
+            string strManualFolderPath = strSVLXOutFilePath + "manual";
+            m_pDoc->GetSVLXFolderItemToFolder(strManualFolderName, strManualFolderPath);
+            
+            string strHotsFolderName = "hotspotres";
+            string strHotsFolderPath = strSVLXOutFilePath + "hotspotres";
+            m_pDoc->GetSVLXFolderItemToFolder(strHotsFolderName, strHotsFolderPath);
 
 			//PMI
 			string strPMIFileName = strSaveFileName;
@@ -212,10 +224,10 @@ namespace SVIEW
 			m_pDoc->GetSVLXFileItemToFile(".arrow", strArrowFilePath, true, strArrowFileName);
 
 			//用户批注
-			string strUserNoteFileName = strSaveFileName;
-			strUserNoteFileName.append(".usernote");
-			string strUserNoteFilePath = strSVLXOutFilePath;
-			m_pDoc->GetSVLXFileItemToFile(".usernote", strUserNoteFilePath, true, strUserNoteFileName);
+//            string strUserNoteFileName = strSaveFileName;
+//            strUserNoteFileName.append(".usernote");
+//            string strUserNoteFilePath = strSVLXOutFilePath;
+//            m_pDoc->GetSVLXFileItemToFile(".usernote", strUserNoteFilePath, true, strUserNoteFileName);
 
 			//移动端的视图文件
 			string strViewFileName = strSaveFileName;
@@ -229,17 +241,55 @@ namespace SVIEW
 			string strInfFilePath = strSVLXOutFilePath;
 			m_pDoc->GetSVLXFileItemToFile(".inf", strInfFilePath, true, strInfFileName);
 
+            //geo文件
+            string strGeoFileName = strSaveFileName;
+            strGeoFileName.append(".geo");
+            string strGeoFilePath = strSVLXOutFilePath;
+            m_pDoc->GetSVLXFileItemToFile(".geo", strGeoFilePath, true, strGeoFileName);
+            
+            //animation文件
+            string strAniFileName = strSaveFileName;
+            strAniFileName.append(".animation");
+            string strAniFilePath = strSVLXOutFilePath;
+            m_pDoc->GetSVLXFileItemToFile(".animation", strAniFilePath, true, strAniFileName);
+            
+            //hotspot文件
+            string strHotFileName = strSaveFileName;
+            strHotFileName.append(".hotspot");
+            string strHotFilePath = strSVLXOutFilePath;
+            m_pDoc->GetSVLXFileItemToFile(".hotspot", strHotFilePath, true, strHotFileName);
+            
+            //manual文件
+            string strManFileName = strSaveFileName;
+            strManFileName.append(".manual");
+            string strManFilePath = strSVLXOutFilePath;
+            m_pDoc->GetSVLXFileItemToFile(".manual", strManFilePath, true, strManFileName);
+            
+            //task文件
+            string strTaskFileName = strSaveFileName;
+            strTaskFileName.append(".task");
+            string strTaskFilePath = strSVLXOutFilePath;
+            m_pDoc->GetSVLXFileItemToFile(".task", strTaskFilePath, true, strTaskFileName);
+            
 			m_pDoc->ClearSVLXFileItem();
 
 			m_pDoc->AddSVLXFileItem(strPreViewFileName);
-			//m_pDoc->AddSVLXFileItem(strImagesFolderName);
+            m_pDoc->AddSVLXFileItem(strImagesFolderName);
+            m_pDoc->AddSVLXFileItem(strSaresFolderName);
+            m_pDoc->AddSVLXFileItem(strManualFolderName);
+            m_pDoc->AddSVLXFileItem(strHotsFolderName);
 			m_pDoc->AddSVLXFileItem(strPMIFileName);
 			m_pDoc->AddSVLXFileItem(strLayerFileName);
 			m_pDoc->AddSVLXFileItem(strLineFileName);
 			m_pDoc->AddSVLXFileItem(strArrowFileName);
-			m_pDoc->AddSVLXFileItem(strUserNoteFileName);
+//            m_pDoc->AddSVLXFileItem(strUserNoteFileName);
 			m_pDoc->AddSVLXFileItem(strViewFileName);
 			m_pDoc->AddSVLXFileItem(strInfFileName);
+            m_pDoc->AddSVLXFileItem(strGeoFileName);
+            m_pDoc->AddSVLXFileItem(strAniFileName);
+            m_pDoc->AddSVLXFileItem(strHotFileName);
+            m_pDoc->AddSVLXFileItem(strManFileName);
+            m_pDoc->AddSVLXFileItem(strTaskFileName);
 		}
 
 		SaveMaterial();
@@ -730,7 +780,98 @@ namespace SVIEW
 			return;
 		SaveUserDefineViews(topModel);
 	}
-
+//    string SVLXWriter::SaveViewAndAnnotation(View* view,const string& srcFilePath)
+//    {
+//        string retstr = "";
+//        m_View = view;
+//        Model* topModel = view->GetSceneManager()->GetModel();
+//        string topModelName = topModel->GetName();
+//        vector<Model*> savedModels;
+//
+//        if (topModelName == "Root")
+//        {
+//            for (int i = 0; i < topModel->GetChildren().size(); i++)
+//            {
+//                M3D::Model* subModel = topModel->GetChildren().at(i);
+//                savedModels.push_back(subModel);
+//            }
+//        }
+//        else
+//        {
+//            savedModels.push_back(topModel);
+//        }
+//
+//        this->SetSavedModel(savedModels);
+//        Stk_DocumentPtr* m_svl2Doc = (Stk_DocumentPtr*)this->m_svl2Doc;
+//        *m_svl2Doc = Stk_DocumentPtr::CreateObject();
+//        HoteamSoft::SVLLib::Stk_DocumentPtr& m_pDoc = *m_svl2Doc;
+//        string strFilePath = FileHelper::GetDirName(srcFilePath);
+//        wstring wstrSVLXOutFilePath = Platform::StringToWString(srcFilePath,"auto");
+//
+//        wstring wstrExt = wstrSVLXOutFilePath.substr(wstrSVLXOutFilePath.size() - 5, 5);
+//        if (wstrExt == L".svlx" || wstrExt == L".SVLX")
+//            wstrSVLXOutFilePath = wstrSVLXOutFilePath.substr(0, wstrSVLXOutFilePath.length() - 5);
+//
+//        m_pDoc->SetOutputFullPath(wstrSVLXOutFilePath);
+//        wstrSVLXOutFilePath = m_pDoc->GetOutputFullPath();
+//
+//        string strSaveFileName = Platform::WStringToString(m_pDoc->GetOutputName(), "auto");
+//        string strSVLXOutFilePath = Platform::WStringToString(wstrSVLXOutFilePath, "auto");
+//        //将目录不能编辑的内容解压，然后重新压缩进SVLX中
+//        if (srcFilePath.size() > 0)
+//        {
+//            m_pDoc->OpenFile(Platform::StringToWString(srcFilePath, "auto"));
+//            //移动端的视图文件
+//            string strViewFileName = strSaveFileName;
+//            strViewFileName.append(".view");
+//            string strViewFile = strFilePath;
+//            strViewFile.append(strViewFileName);
+//
+//            //保存Bom
+//            //根据名称判断顶级是否是多实例
+//            //string topModelName = topModel->GetName();
+//            vector<Model*>& savedModels = this->GetSavedModels();
+//            if (savedModels.size() >1)
+//            {
+//                Stk_DocumentPtr* m_svl2Doc = (Stk_DocumentPtr*)this->m_svl2Doc;
+//                HoteamSoft::SVLLib::Stk_DocumentPtr& m_pDoc = *m_svl2Doc;
+//
+//                for (int i = 0;i<savedModels.size();i++)
+//                {
+//                    M3D::Model* subModel = savedModels.at(i);
+//                    HoteamSoft::SVLLib::Stk_InstancePtr pNewTopInstance = m_pDoc->AddTopInstance(subModel->GetSVLId());
+//                    WriteTopInstance(subModel, &pNewTopInstance);
+//                }
+//            }
+//            else if(savedModels.size() == 1)
+//            {
+//                Stk_DocumentPtr* m_svl2Doc = (Stk_DocumentPtr*)this->m_svl2Doc;
+//                HoteamSoft::SVLLib::Stk_DocumentPtr& m_pDoc = *m_svl2Doc;
+//
+//                M3D::Model* subModel = savedModels.at(0);
+//                HoteamSoft::SVLLib::Stk_InstancePtr pNewTopInstance = m_pDoc->AddTopInstance(subModel->GetSVLId());
+//                WriteTopInstance(subModel, &pNewTopInstance);
+//            }
+//
+//            SaveView();
+//
+//            int status = m_pDoc->WriteViewFile(Platform::StringToWString(strViewFile,"auto"), strViewFileName);
+//            if (status == 0) {
+//                retstr = strViewFile;
+//            }
+//            //移动端的批注文件
+//            string strAnnoFileName = strSaveFileName;
+//            strAnnoFileName.append(".annotation");
+//            string strAnnoFile = strFilePath;
+//            strAnnoFile.append(strAnnoFileName);
+//            SaveAnnotations(strAnnoFile);
+//            string strAnnoFilePath = strSVLXOutFilePath;
+//            m_pDoc->GetSVLXFileItemToFile(".annotation", strAnnoFilePath, true, strAnnoFileName);
+//            m_pDoc->AddSVLXFileItem(strAnnoFileName);
+//        }
+//        m_pDoc = nullptr;
+//        return retstr;
+//    }
 	void SVLXWriter::WriteAllProtoTypes(M3D::Model* model)
 	{
 		//vector<M3D::Model*> allSubModels;
