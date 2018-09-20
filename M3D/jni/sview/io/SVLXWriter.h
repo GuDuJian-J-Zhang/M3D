@@ -26,6 +26,7 @@ namespace M3D
 	class Texture2D;
 	class Image;
 	class BaseMaterial;
+	class ModelView;
 }
 
 
@@ -40,6 +41,7 @@ using M3D::ShaderMaterial;
 using M3D::Image;
 using M3D::BaseMaterial;
 using M3D::MatCapMaterial;
+using M3D::ModelView;
 
 namespace SVIEW
 {
@@ -101,6 +103,7 @@ namespace SVIEW
 		vector<Model*>& GetSavedModels();
 
 		void SetSavedModel(vector<Model*>& val);
+
 	private:
 		/************************************************************************/
 		/* 保存材质                                                                     */

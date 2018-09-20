@@ -104,6 +104,8 @@ public:
 	bool GetViewInfo(vector<Stk_ViewPtr> *pStkViewList, Model* inModel, int *outViewNum,
 		vector<ModelView*>& outViewData);
 
+//	string SVL2AsynReader::GetViewInfoStr(Model* model);
+
 	void SetPolyLineForPMI(PMIData* pPMIData, vector<HoteamSoft::SVLLib::STK_PNT32>& vertexBuf,
 		vector<STK_UINT32>& indexBuf);
 	void SetPolyLineForPMI(PMIData* pPMIData, vector<SFPOINT3>& vecPolylinePnts);

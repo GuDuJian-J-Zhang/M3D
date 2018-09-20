@@ -16,9 +16,7 @@
 #include "m3d/graphics/MovedMatrixInfo.h"
 #include "m3d/graphics/CameraNode.h"
 #include "m3d/model/InstanceAttribute.h"
-#include "m3d/graphics/CameraNode.h"
 #include "m3d/model/PolyLine.h"
-
 namespace M3D
 {
 
@@ -405,15 +403,18 @@ public:
 	bool IsInitView() {
 		return m_bInitView;
 	}
-//将视图对象值转成JSON数据
-	string toJson();
-    
-    int m_DirectionX; //X剖切方向
-    float m_PercentageX; //X剖切比例
-    int m_DirectionY; //Y剖切方向
-    float m_PercentageY; //Y剖切比例
-    int m_DirectionZ; //Z剖切方向
-    float m_PercentageZ; //Z剖切比例
+	//将视图对象值转成JSON数据
+		string toJson();
+
+		//将JSON数据转成视图对象
+		ModelView* fromJson(string jsonStr);
+
+	    int m_DirectionX; //X剖切方向
+	    float m_PercentageX; //X剖切比例
+	    int m_DirectionY; //Y剖切方向
+	    float m_PercentageY; //Y剖切比例
+	    int m_DirectionZ; //Z剖切方向
+	    float m_PercentageZ; //Z剖切比例
 private:
 	int m_ID;  //!<视图ID
 	string m_Name;  //!<视图名称
@@ -443,9 +444,8 @@ private:
 	map<string, string> m_appendInfo; //!<附加信息
 
 	string viewJsonStr; //!<视图的Json字符串
-
-private:
 	static int m_MaxId; //!<
+
 };
 
 }

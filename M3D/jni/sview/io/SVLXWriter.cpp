@@ -1816,14 +1816,13 @@ namespace SVIEW
 				{
 					float fPosTargetDistance = 1.0f;
 					BoundingBox box = m_View->GetSceneManager()->GetSceneBox();
-					fPosTargetDistance = m_View->GetSceneManager()->GetSceneBox().Length()
-						* CAMERA_POSFACTOR;
+					fPosTargetDistance = box.Length()* CAMERA_POSFACTOR;
 					cameraP->SetFocalDistance(fPosTargetDistance);
 					float fHeight = (float)(fPosTargetDistance * 2.0 * (tanf(pCamera.GetFov()*M_DEGTORAD * 0.5f)/ pCamera.GetZoom()));
 					cameraP->SetHeight(fHeight);
 				}
 			}
-			
+
 			cameraP->SetProjectType(ProjectType);
 			Quaternion rotation = pCamera.GetRotation();
 			Vector3 position = pCamera.GetPosition();
@@ -1839,7 +1838,7 @@ namespace SVIEW
 			cameraP->SetAspectRatio(pCamera.GetAspectRatio());
 			cameraP->SetNearDistance(pCamera.GetNearClip());
 			cameraP->SetFarDistance(pCamera.GetFarClip());
-			
+
 			viewP->SetCamera(cameraP);
 
 			//实例属性
@@ -1871,6 +1870,7 @@ namespace SVIEW
 
 				viewP->AddInsPlacement(wstrPlcPath, idPlacement, newMatrix);
 			}
+
 			//关联剖面节点
 			vector<int> vecSectionPlane = pModelView->GetSectionPlaneIDList();
 
@@ -1902,7 +1902,6 @@ namespace SVIEW
 			SaveUserDefineViews(subModel);
 		}
 	}
-
 	void SVLXWriter::SaveUserInfo()
 	{
 		if (m_View)

@@ -7,6 +7,9 @@
 
 #include "m3d/model/ModelView.h"
 #include "m3d/base/json/json.h"
+#include "SVLLib/Stk_API.h"
+#include "m3d/utils/PathHelper.h"
+using namespace HoteamSoft::SVLLib;
 
 namespace M3D {
 
@@ -321,36 +324,183 @@ ModelView::GetGestureNotePolyLineColors() {
 
 string ModelView:: toJson(){
 	Json::FastWriter writer;
-	Json::Value viewJson ;
+	Json::Value modelViewsJson ;
+	modelViewsJson["version"] = "0.1";
+	Json::Value modelViewJson ;
+
+	modelViewJson["id"] = m_ID;
+	modelViewJson["name"] = m_Name;
+	modelViewJson["usageType"] = m_SvlType;
+	modelViewJson["isActivated"] = false;
+	modelViewJson["isDefault"] = false;
+	modelViewJson["transparency"] = 1.0;
+
+//相机参数
 	Json::Value cameraJson ;
-	viewJson["ID"] = m_ID;
-	viewJson["name"] = m_Name;
-	viewJson["usageType"] = m_ViewType;
-	viewJson["isActivated"] = false;
-	viewJson["transparency"] = 1;
+	HoteamSoft::SVLLib::STK_UINT32 ProjectType = 1;
+	if(m_Camera.IsOrthographic()){
+		ProjectType = 1;
+		cameraJson["projectType"] = ProjectType;
+		float fOrthoWidth;
+		float fOrthoHeight;
+		m_Camera.GetOrthoSize(&fOrthoWidth, &fOrthoHeight);
+		cameraJson["height"] = (fOrthoHeight/ m_Camera.GetZoom());
+		cameraJson["focalDistance"] = 1.0f;
+	}else{
+		ProjectType = 2;
+		cameraJson["projectType"] = ProjectType;
+		float fPosTargetDistance = 1.0f;
+//		BoundingBox box = m_View->GetSceneManager()->GetSceneBox();
+//		fPosTargetDistance = m_View->GetSceneManager()->GetSceneBox().Length()
+//					* CAMERA_POSFACTOR;
+		float fHeight = (float)(fPosTargetDistance * 2.0 * (tanf(m_Camera.GetFov()*M_DEGTORAD * 0.5f)/ m_Camera.GetZoom()));
+		cameraJson["focalDistance"] = fPosTargetDistance;
+		cameraJson["height"] = fHeight;
+	}
+	cameraJson["angle"] = 1.0;
+	Quaternion rotation = m_Camera.GetRotation();
+	Vector3 position = m_Camera.GetPosition();
+	Matrix4 sbMatrix(position, rotation, 1.0f);
+	cameraJson["matix"] = sbMatrix.Tostring();
+	cameraJson["aspectRatio"] = m_Camera.GetAspectRatio();
+	cameraJson["nearDistance"] = m_Camera.GetNearClip();
+	cameraJson["farDistance"] = m_Camera.GetFarClip();
 
-	cameraJson["projectType"] = m_Camera.IsOrthographic();
+	modelViewJson["camera"] = cameraJson;
+	//实例属性
+	Json::Value insAttributesJson ;
+	map<int, InstanceAttribute> mapInstanceAttribute = GetInstanceAttributeMap();
+	for (map<int, InstanceAttribute>::const_iterator it = mapInstanceAttribute.begin();
+					it != mapInstanceAttribute.end(); it++){
+		const InstanceAttribute &curInsAtt = it->second;
+		Json::Value insAttributeJson ;
+		insAttributeJson["plcPath"] = PathHelper::SVLPathDecToHex(curInsAtt.path);
+		insAttributeJson["visible"] = curInsAtt.visible ? HoteamSoft::SVLLib::STK_DISPLAY : HoteamSoft::SVLLib::STK_NO_DISPLAY;
+		insAttributeJson["matix"] = curInsAtt.placeMatrix.Tostring();
+		insAttributeJson["color"] =  curInsAtt.insColor.Tostring();
+		insAttributesJson[curInsAtt.path].append(insAttributeJson);
+	 }
 
-	//TODO 相机暂时没提供以下接口
-	cameraJson["nearDistance"] = m_Camera.GetPosition().Tostring();
-	cameraJson["farDistance"] = m_Camera.GetPosition().Tostring();
-	cameraJson["focalDistance"] = m_Camera.GetPosition().Tostring();
-	cameraJson["viewVolumeSize"] = m_Camera.GetPosition().Tostring();
-	//TODO end
-	cameraJson["pos"] = m_Camera.GetPosition().Tostring();
-	cameraJson["quat"] = m_Camera.GetDirection().Tostring();
-	viewJson["camera"] = cameraJson;
+	modelViewJson["insAttributes"].append(insAttributesJson);
 
-	//TODO 暂定内容
-	viewJson["clipPlanes"] = "";
-	viewJson["connectors"] = "0,0,0";
-	viewJson["insAttributes"] = "";
-    viewJson["PMIs"]= "1,2,3";
-    viewJson["notes"]= "1,2,3";
+	modelViewsJson["views"].append(modelViewJson);
 
-	viewJsonStr = writer.write(viewJson);
+		Json::Value valueJson ;
+	//	vector<int> vecView = Ge();
+//		if(vecView.size()>0){
+			//	for(int i = 0 ; i<vecView.size();i++){
+			//			int NodeID = vecView[i];
+			//			valueJson["views"].append(NodeID) ;
+			//		}
+//		valueJson["id"] = this->m_ID ;
+//		modelViewsJson["model_views"].append(valueJson);
+//		}else
+		{
+	valueJson.resize(0);
+	modelViewsJson["model_views"] = valueJson;
+		}
+	//试图关联的PMI
+	vector<int> vecPMI = GetPMIList();
+	Json::Value pmiJson ;
+	if(vecPMI.size()>0){
+		for(int i = 0 ; i<vecPMI.size();i++){
+				int pmiID = vecPMI[i];
+				pmiJson["pmis"].append(pmiID) ;
+			}
+		pmiJson["id"] = this->m_ID ;
+		modelViewsJson["view_pmis"].append(pmiJson);
+	}	else {
+		pmiJson.resize(0);
+		modelViewsJson["view_pmis"] = pmiJson;
+			}
+	//试图关联的View
+//	vector<int> vecView = Ge();
+	Json::Value viewJson ;
+//	if(vecPMI.size()>0){
+//	for(int i = 0 ; i<vecView.size();i++){
+//			int NodeID = vecView[i];
+//			viewJson["views"].append(NodeID) ;
+//		}
+//	viewJson["id"] = this->m_ID ;
+//	modelViewsJson["view_views"] .append (viewJson);
+//}else
+	{
+		viewJson.resize(0);
+	modelViewsJson["view_views"] = viewJson;
+		}
+	//试图关联的批注
+	vector<int> vecNote = GetNoteList();
+	Json::Value noteJson ;
+	LOGI( " vecNote.size() =%d",vecNote.size());
+	if(vecNote.size()>0){
+	for(int i = 0 ; i<vecNote.size();i++){
+			int NodeID = vecNote[i];
+			noteJson["notes"].append(NodeID) ;
+		}
+	noteJson["id"] = this->m_ID ;
+	modelViewsJson["view_notes"] .append (noteJson);
+	}else
+	{
+		noteJson.resize(0);
+	modelViewsJson["view_notes"] = noteJson;
+		}
+
+	viewJsonStr = writer.write(modelViewsJson);
+	LOGE("viewJsonStr =",viewJsonStr.c_str());
         return viewJsonStr;
 	}
+
+
+ ModelView* ModelView:: fromJson(string jsonStr){
+	ModelView *modelView = new ModelView();
+	Json::Reader reader;
+	Json::Value viewJson ;
+	modelView->SetID(viewJson["id"].asInt());
+	modelView->SetName(viewJson["name"].asCString());
+	modelView->SetSvlUseType(viewJson["usageType"].asInt());
+	switch (modelView->GetSvlUseType()) {
+			case HoteamSoft::SVLLib::VIEW_USAGE_GENERAL_VIEW:
+			case HoteamSoft::SVLLib::VIEW_USAGE_PROE_BASE_VIEW:
+			case HoteamSoft::SVLLib::VIEW_USAGE_DEFAULT_VIEW:
+				modelView->SetViewType(ModelView::DefaultView);
+				break;
+			case HoteamSoft::SVLLib::VIEW_USAGE_SV_USER_VIEW:
+			case HoteamSoft::SVLLib::VIEW_USAGE_SV_USER_CLIPVIEW:
+			case HoteamSoft::SVLLib::VIEW_USAGE_PROE_USER_VIEW:
+				modelView->SetViewType(ModelView::UserView);
+				break;
+			default:
+				//            continue;
+				break;
+			}
+	bool isActivated =  !viewJson["isActivated"].asBool();
+	if(!isActivated && modelView->GetSvlUseType() != HoteamSoft::SVLLib::VIEW_USAGE_USER_CLIPPLANE){
+		modelView->SetIsInitView(true);
+	}else{
+		modelView->SetIsInitView(false);
+	}
+	//获取相机参数
+	CameraNode cameraInfo;
+
+	Json::Value camaraJson  = viewJson["camera"];
+	cameraInfo.SetID(camaraJson["id"].asInt());
+	cameraInfo.SetAspectRatio(camaraJson["aspectRatio"].asFloat());
+	cameraInfo.SetNearClip(camaraJson["nearDistance"].asFloat());
+	cameraInfo.SetFarClip(camaraJson["farDistance"].asFloat());
+	cameraInfo.SetZoom(1.0f);
+//	camaraJson["matix"]
+	cameraInfo.SetProtoTypeId(camaraJson["projectType"].asInt());
+
+//给视图添加相机
+	modelView->SetCamera(cameraInfo);
+	modelView->SetUpDataCamera(true);
+	modelView->SetUpDataModel(true);
+
+
+
+        return modelView;
+	}
+
 
 //	int ModelView::GetType()
 //	{

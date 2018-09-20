@@ -199,6 +199,21 @@ public:
      * @return
      */
     ModelView * LoadModelView(string &xmlString);
+
+
+    /**
+     * string 与  ModelView 的转化
+     * @param modelView
+     * @return
+     */
+    string LoadStringNew(ModelView *modelView);
+    /**
+     * 加载所有模型视图
+     * @param xmlString
+     * @return
+     */
+    ModelView * LoadModelViewNew(string &jsonString);
+
     //视图相关
     /**
      * @brief 获取当前的状态存到View中去，一个view表示当前状态的快照

@@ -1163,12 +1163,12 @@ Note* NoteFactory::CreateTextNoteFromJSON(SceneManager* scene, const string& JSO
 
             vector<Texts2D*> temptext;
             Texts2D *title = new Texts2D;
-            title->m_size = fontSize;
+            title->m_size = 14;
             title->m_texts = "内容";
             temptext.push_back(title);
 
             Texts2D *content = new Texts2D;
-            content->m_size = fontSize;
+            content->m_size = 14;
             content->m_texts = lengthstr;
             temptext.push_back(content);
 
