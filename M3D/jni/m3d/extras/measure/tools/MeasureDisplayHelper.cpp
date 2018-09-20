@@ -731,7 +731,6 @@ ImageBoard* MeasureDisplayHelper:: createNoteTextsImageN(SceneManager* scene,
 	if (fontSize < 1.0)
 		fontSize = 15.0f;
 	fontSize = fontSize * 40 / 15.0f;
-	LOGI(" createNoteTextsImageN::scene %p", scene);
 	GlueObj* gluObj = scene->GetGlueObj();
 
 	int notZh = 0;
@@ -779,15 +778,12 @@ LOGI("end CreateNoteRectangleImage");
 	string createImagePath = "";
 	if (gluObj)
 	{
-		LOGI("gluObj if %p", gluObj);
-		//LOGI("shape2DSet if %p", shape2DSet);
 		createImagePath = gluObj->createImage(shape2DSet, scene);
-		//LOGI("createImagePath %s", createImagePath.c_str());
+		LOGI("createImagePath %s", createImagePath.c_str());
 	}
 
 	delete shape2DSet;
 	shape2DSet = NULL;
-	LOGI("createImagePath.length() %d",createImagePath.length());
 	if (createImagePath.length() > 0)
 	{
 
