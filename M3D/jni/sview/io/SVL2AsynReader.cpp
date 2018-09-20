@@ -1037,7 +1037,7 @@ void SVL2AsynReader::LoadAttribute(Model* model, string & path, View *m_view) {
 			//打开文件
 			(*m_svl2Doc)->OpenFile(wfilePath);
 			(*m_svl2Doc)->LoadAttribute();
-			(*m_svl2Doc)->LoadGeoAttribute();
+                (*m_svl2Doc)->LoadGeoAttribute();
 			map<STK_ID, map<STK_ID, map<wstring, wstring>>>* meshFaceAtrrPtr = (*m_svl2Doc)->GetAllMeshFaceAttr();
 			if (meshFaceAtrrPtr) {
 				m_view->GetSceneManager()->GetExtendInfoManager()->SetAllMeshFaceAttr(
@@ -1482,7 +1482,6 @@ Model* SVL2AsynReader::ReadFile(const char* thePath) {
 	if (!SVIEW::Parameters::Instance()->GetLoadExternInfo()) {
 		this->m_mergeface = true;
 	}
-
 	(*m_svl2Doc)->loadAttributeStream();
 	(*m_svl2Doc)->getInstanceNames(i_mapInstanceIDtoName);
 	(*m_svl2Doc)->unloadAttributeStream();
