@@ -2403,6 +2403,7 @@ namespace M3D
 				}
 				else
 				{
+					//普通模型
 					DrawPhongPass(action);
 				}
 
@@ -4781,7 +4782,6 @@ namespace M3D
 
 	void GLShapeDrawer20::DrawPhongPass(RenderAction* action)
 	{
-		//	LOGI("Begin DrawPhonePass ");
 		RenderEffect* renderType = action->GetRenderEffect();
 		RenderableTypeGroup& dataType = renderType->GetRenderableTypeFilter();
 		RenderQueuePriority& currentEffect = renderType->GetRenderQueuePriority();

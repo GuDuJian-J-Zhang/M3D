@@ -7066,7 +7066,7 @@ namespace M3D
 			"  vec4 jewelType = texture2D(u_sampler2,v_texCoords);\n"
 			"  vec4 highlight = texture2D(u_sampler3,v_texCoords);\n"
 			"  vec4 FragColor = vec4(0.0);"
-			"  FragColor = vec4( mix(frontColor.rgb,backColor.rgb,jewelType.a)+highlight.rgb*0.40,1.0);\n "
+			"  FragColor = vec4( mix(frontColor.rgb,backColor.rgb,jewelType.a)+highlight.rgb*0.40,frontColor.a);\n "
 			"  gl_FragColor = FragColor;\n"
 			"}\n";
 	}
@@ -7109,13 +7109,13 @@ namespace M3D
 			"   vec4 FragColor = vec4(0.0);"
 			"	if(jewelDepth.r<ringArmDepth.r)\n"
 			"	{\n"
-			"      FragColor = vec4(blendColor.rgb,1.0);\n "
+			"      FragColor = vec4(blendColor.rgba);\n "
 			"   }\n"
 			"   else\n"
 			"   {\n"
-			"      FragColor = vec4(ringArmColor.rgb,1.0);\n"
+			"      FragColor = vec4(ringArmColor.rgba);\n"
 			"   }\n"
-			"    gl_FragColor = vec4(FragColor.rgb,1.0);\n"
+			"    gl_FragColor = vec4(FragColor.rgba);\n"
 			"}\n";
 	}
 

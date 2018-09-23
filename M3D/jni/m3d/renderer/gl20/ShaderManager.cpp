@@ -322,7 +322,6 @@ namespace M3D
 		}
 		//	m_shaderStrMap[Multilight] =sMultilight;
 
-
 		ShaderStrings sBackground(ShaderSrcCode::BackgroundVert(), ShaderSrcCode::BackgroundFrag());
 		m_shaderStrMap.insert(std::make_pair(Background, sBackground));
 		m_SMTMap.insert(std::make_pair(Background, SMT_Background));

@@ -378,11 +378,10 @@ string ModelView:: toJson(){
 		insAttributeJson["visible"] = curInsAtt.visible ? HoteamSoft::SVLLib::STK_DISPLAY : HoteamSoft::SVLLib::STK_NO_DISPLAY;
 		insAttributeJson["matix"] = curInsAtt.placeMatrix.Tostring();
 		insAttributeJson["color"] =  curInsAtt.insColor.Tostring();
-		insAttributesJson[curInsAtt.path].append(insAttributeJson);
+		insAttributesJson[it->first] = insAttributeJson ;
 	 }
 
-	modelViewJson["insAttributes"].append(insAttributesJson);
-
+	modelViewJson["insAttributes"] = insAttributesJson;
 	modelViewsJson["views"].append(modelViewJson);
 
 		Json::Value valueJson ;
@@ -445,61 +444,97 @@ string ModelView:: toJson(){
 	modelViewsJson["view_notes"] = noteJson;
 		}
 
-	viewJsonStr = writer.write(modelViewsJson);
+	viewJsonStr = modelViewsJson.toStyledString();
 	LOGE("viewJsonStr =",viewJsonStr.c_str());
         return viewJsonStr;
 	}
 
 
- ModelView* ModelView:: fromJson(string jsonStr){
+ ModelView* ModelView:: fromJson( string& jsonStr){
+	 string jsonValue = jsonStr;
 	ModelView *modelView = new ModelView();
 	Json::Reader reader;
-	Json::Value viewJson ;
-	modelView->SetID(viewJson["id"].asInt());
-	modelView->SetName(viewJson["name"].asCString());
-	modelView->SetSvlUseType(viewJson["usageType"].asInt());
-	switch (modelView->GetSvlUseType()) {
-			case HoteamSoft::SVLLib::VIEW_USAGE_GENERAL_VIEW:
-			case HoteamSoft::SVLLib::VIEW_USAGE_PROE_BASE_VIEW:
-			case HoteamSoft::SVLLib::VIEW_USAGE_DEFAULT_VIEW:
-				modelView->SetViewType(ModelView::DefaultView);
-				break;
-			case HoteamSoft::SVLLib::VIEW_USAGE_SV_USER_VIEW:
-			case HoteamSoft::SVLLib::VIEW_USAGE_SV_USER_CLIPVIEW:
-			case HoteamSoft::SVLLib::VIEW_USAGE_PROE_USER_VIEW:
-				modelView->SetViewType(ModelView::UserView);
-				break;
-			default:
-				//            continue;
-				break;
-			}
-	bool isActivated =  !viewJson["isActivated"].asBool();
-	if(!isActivated && modelView->GetSvlUseType() != HoteamSoft::SVLLib::VIEW_USAGE_USER_CLIPPLANE){
-		modelView->SetIsInitView(true);
-	}else{
-		modelView->SetIsInitView(false);
-	}
-	//获取相机参数
-	CameraNode cameraInfo;
+	Json::Value modelViewsJson;
+	Json::Value viewsJson;
+	Json::Value viewJson;
+	if (reader.parse(jsonValue, modelViewsJson)) {
+		viewsJson = modelViewsJson["views"];
+	for(int i = 0 ; i< viewsJson.size();i++){
+		viewJson = viewsJson[i];
+		modelView->SetID(viewJson["id"].asInt());
+		modelView->SetName(viewJson["name"].asCString());
+		modelView->SetSvlUseType(viewJson["usageType"].asInt());
+		switch (modelView->GetSvlUseType()) {
+		case HoteamSoft::SVLLib::VIEW_USAGE_GENERAL_VIEW:
+		case HoteamSoft::SVLLib::VIEW_USAGE_PROE_BASE_VIEW:
+		case HoteamSoft::SVLLib::VIEW_USAGE_DEFAULT_VIEW:
+			modelView->SetViewType(ModelView::DefaultView);
+			break;
+		case HoteamSoft::SVLLib::VIEW_USAGE_SV_USER_VIEW:
+		case HoteamSoft::SVLLib::VIEW_USAGE_SV_USER_CLIPVIEW:
+		case HoteamSoft::SVLLib::VIEW_USAGE_PROE_USER_VIEW:
+			modelView->SetViewType(ModelView::UserView);
+			break;
+		default:
+			//            continue;
+			break;
+		}
+		bool isActivated = !viewJson["isActivated"].asBool();
+		if (!isActivated
+				&& modelView->GetSvlUseType()
+						!= HoteamSoft::SVLLib::VIEW_USAGE_USER_CLIPPLANE) {
+			modelView->SetIsInitView(true);
+		} else {
+			modelView->SetIsInitView(false);
+		}
+		//获取相机参数
+		CameraNode cameraInfo;
 
-	Json::Value camaraJson  = viewJson["camera"];
-	cameraInfo.SetID(camaraJson["id"].asInt());
-	cameraInfo.SetAspectRatio(camaraJson["aspectRatio"].asFloat());
-	cameraInfo.SetNearClip(camaraJson["nearDistance"].asFloat());
-	cameraInfo.SetFarClip(camaraJson["farDistance"].asFloat());
-	cameraInfo.SetZoom(1.0f);
+		Json::Value camaraJson = viewJson["camera"];
+		cameraInfo.SetID(camaraJson["id"].asInt());
+		cameraInfo.SetAspectRatio(camaraJson["aspectRatio"].asFloat());
+		cameraInfo.SetNearClip(camaraJson["nearDistance"].asFloat());
+		cameraInfo.SetFarClip(camaraJson["farDistance"].asFloat());
+		cameraInfo.SetZoom(1.0f);
 //	camaraJson["matix"]
-	cameraInfo.SetProtoTypeId(camaraJson["projectType"].asInt());
+		cameraInfo.SetProtoTypeId(camaraJson["projectType"].asInt());
 
 //给视图添加相机
-	modelView->SetCamera(cameraInfo);
-	modelView->SetUpDataCamera(true);
-	modelView->SetUpDataModel(true);
-
-
-
-        return modelView;
+		modelView->SetCamera(cameraInfo);
+		modelView->SetUpDataCamera(true);
+		modelView->SetUpDataModel(true);
+		//实例属性
+		map<int, InstanceAttribute> mapInstanceAttribute;
+		Json::Value insAttributesJson = viewJson["insAttributes"];
+		Json::Value insAttributeJson;
+		InstanceAttribute ia;
+		for (int i = 0; i < insAttributesJson.size(); i++) {
+			LOGE("第   %d 个",i);
+			insAttributeJson = insAttributesJson[i];
+			LOGE(" insAttributeJson= %s", insAttributeJson.toStyledString().c_str());
+			ia.path = insAttributeJson["plcpath"].asString();
+			string color = insAttributeJson["color"].asString();
+//		Color dispColor();
+//		ia.insColor = dispColor;
+			ia.hasColor = true;
+//			ia.id = insAttributeJson["plcpath"].asInt();
+			string matix = insAttributeJson["matix"].asString();
+//		ia.placeMatrix = insAttributeJson["visible"].asBool();
+			ia.visible = insAttributeJson["visible"].asBool();
+		}
 	}
+		//PMI 信息
+		Json::Value pmisJson = modelViewsJson["view_pmis"]["pmis"];
+		LOGE(" pmisJson= %s", pmisJson.toStyledString().c_str());
+		Json::Value pmiJson;
+		for (int it = 0; it != pmisJson.size(); it++) {
+			pmiJson = pmisJson[it];
+
+		}
+
+	}
+        return modelView;
+ }
 
 
 //	int ModelView::GetType()
