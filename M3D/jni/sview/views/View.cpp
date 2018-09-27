@@ -2079,25 +2079,25 @@ void View::ShowModelView(int viewId, bool isAnni) {
 	//	LOGE("SceneManager::showModelView clipPlaneIdList 11" );
 	//设置视图中的剖面为启用
 //
-
+// TODO 剖面后期完善
 	vector<int> clipPlaneIdList = pView->GetSectionPlaneIDList();
 	this->m_SceneManager->GetSectionNode()->GetSection()->ClearPlanes();
-	if (clipPlaneIdList.size() > 0) {
-		//		LOGE("SceneManager::showModelView clipPlaneIdList 2" );
-		for (int i = 0; i < curRootModel->GetSectionPlaneList()->size(); i++) {
-			SectionPlane* curPlane = curRootModel->GetSectionPlaneList()->at(i);
-			for (int j = 0; j < clipPlaneIdList.size(); j++) {
-				if (clipPlaneIdList.at(j) == curPlane->GetID()) {
-					//					LOGE("SceneManager::showModelView clipPlaneIdList 3" );
-					this->m_SceneManager->GetSectionNode()->GetSection()->AddPlane(
-							curPlane);
-					//					LOGE("SceneManager::showModelView clipPlaneIdList 4" );
-					//					LOGI("SceneManager::showModelView enable plane:%d param:%f,%f,%f,%f", curPlane->GetID(), *curPlane->GetEquation(), *(curPlane->GetEquation()+1), *(curPlane->GetEquation()+2), *(curPlane->GetEquation()+3));
-					break;
-				}
-			}
-		}
-	}
+//    if (clipPlaneIdList.size() > 0) {
+//        //        LOGE("SceneManager::showModelView clipPlaneIdList 2" );
+//        for (int i = 0; i < curRootModel->GetSectionPlaneList()->size(); i++) {
+//            SectionPlane* curPlane = curRootModel->GetSectionPlaneList()->at(i);
+//            for (int j = 0; j < clipPlaneIdList.size(); j++) {
+//                if (clipPlaneIdList.at(j) == curPlane->GetID()) {
+//                    //                    LOGE("SceneManager::showModelView clipPlaneIdList 3" );
+//                    this->m_SceneManager->GetSectionNode()->GetSection()->AddPlane(
+//                            curPlane);
+//                    //                    LOGE("SceneManager::showModelView clipPlaneIdList 4" );
+//                    //                    LOGI("SceneManager::showModelView enable plane:%d param:%f,%f,%f,%f", curPlane->GetID(), *curPlane->GetEquation(), *(curPlane->GetEquation()+1), *(curPlane->GetEquation()+2), *(curPlane->GetEquation()+3));
+//                    break;
+//                }
+//            }
+//        }
+//    }
 
 	if (pView->GetUpDataModelState()) {
 		//设置与视图关联的PMI

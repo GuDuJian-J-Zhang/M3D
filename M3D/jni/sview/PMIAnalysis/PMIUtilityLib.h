@@ -1,4 +1,4 @@
-﻿/**********************************************************
+/**********************************************************
 *		Created on 2014/04/21 By gongcy
 *	All Rights Reserved. Copyright(C) 2014 Sinovation.com
 *
@@ -12,10 +12,12 @@
 #pragma once
 #ifndef	___MEASUREANNOTATAION_PMI_UTILITY_LIB_DIALOG_H__
 #define	___MEASUREANNOTATAION_PMI_UTILITY_LIB_DIALOG_H__
-#include "Stk_Instance.h"
-#include "Stk_PMIEntity.h"
-#include "Stk_CurveEntity.h"
-
+//#include "Stk_Instance.h"
+//#include "Stk_PMIEntity.h"
+//#include "Stk_CurveEntity.h"
+#include <prebuilt/svl2/include/Stk_Instance.h>
+#include <prebuilt/svl2/include/Stk_CurveEntity.h>
+#include <prebuilt/svl2/include/Stk_PMIEntity.h>
 /*
 #ifdef SVIEWCOMMON_EXPORTS
 #define SVIEWCOMMON_API __declspec(dllexport)

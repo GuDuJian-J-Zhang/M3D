@@ -1,4 +1,4 @@
-﻿//update by gongcy on 2014/04/19
+//update by gongcy on 2014/04/19
 //添加接口：
 //1.GetArcAngleData
 //2.GetCircleDrawData
@@ -30,12 +30,13 @@
 
 #include "sview/pmiAnalysis/PMIDef.h"
 
-#include "Stk_Define.h"
-#include "Stk_CurveEntity.h"
+#include <prebuilt/svl2/include/Stk_Define.h>
+#include <prebuilt/svl2/include/Stk_CurveEntity.h>
+#include <prebuilt/svl2/include/Stk_PMIEntity.h>
+//#include "Stk_CurveEntity.h"
 //#include "SbXfBox3f.h"
 //#include "SbMatrix.h"
-#include "Stk_PMIEntity.h"
-
+//#include "Stk_PMIEntity.h"
 class  SVIEWCOMMON_API  CTessCircle
 {
 public:
