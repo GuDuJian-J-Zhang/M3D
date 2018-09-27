@@ -407,7 +407,7 @@ public:
 		string toJson();
 
 		//将JSON数据转成视图对象
-		ModelView* fromJson(string jsonStr);
+		static ModelView* fromJson( string& jsonStr);
 
 	    int m_DirectionX; //X剖切方向
 	    float m_PercentageX; //X剖切比例

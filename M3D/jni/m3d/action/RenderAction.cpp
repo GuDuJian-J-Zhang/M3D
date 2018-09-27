@@ -313,7 +313,7 @@ void RenderAction::Execute()
 //		LOGI("execute es2");
 		//this->BeginDelayDraw();
 		GLDrawer20::InitialGL();
-		if (Parameters::Instance()->m_useStereo)
+		if (Parameters::Instance()->m_useStereo) //是否为VR模式
 		{
 			GLShapeDrawer20::SetFocalLength(this);
 			//float distance = (this->GetScene()->GetCamera()->GetWorldPosition() - this->GetScene()->GetSceneBox().Center()).Length()*0.03;
@@ -335,6 +335,7 @@ void RenderAction::Execute()
             if (Parameters::Instance()->m_BackTransparent == false){
                 GLShapeDrawer20::DrawBackGround(this->GetBackGroundNode(), this);
             }
+
 			GLShapeDrawer20::DrawRenderPassGroup(this);
 		}
 		GLShapeDrawer20::DrawGroundNode(this->GetGroundNode(), this);
