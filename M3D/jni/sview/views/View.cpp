@@ -2986,8 +2986,8 @@ bool View::UpdateSpecialViewByCurrentScene(ModelView* newView) {
 	if (newView->GetUpDataModelState()) {
 		int direction = GetExplosiveView()->GetExplosiveStyle();
 		float percent = GetExplosiveView()->GetExplosivePercent();
-		newView->setExplosiveType(direction);
-		newView->setExplosivePercent(percent * 50);
+//        newView->setExplosiveType(direction);
+//        newView->setExplosivePercent(percent * 50);
 
 		//LOGI("UpVector:%s",outStr);
 		//       LOGI("ZoomFactor:%f",GetSceneManager()->GetCamera()->GetZoom());

@@ -1,4 +1,4 @@
-﻿/**@file
+/**@file
  *@brief	ModelView类头文件
  *@author	bing
  *@date		2013-12-6
@@ -378,23 +378,6 @@ public:
 		return m_SvlType;
 	}
 
-//	设置爆炸方向
-	void setExplosiveType(int type) {
-		m_ExplosiveType = type;
-	}
-	//	设置爆炸方向
-	int getExplosiveType() {
-		return m_ExplosiveType;
-	}
-	//	设置爆炸百分比
-	void setExplosivePercent(float percent) {
-		m_ExplosivePercent = percent;
-	}
-	//	设置爆炸百分比
-	float getExplosivePercent() {
-		return m_ExplosivePercent;
-	}
-
 	//	设置是否是初始视图
 	void SetIsInitView(bool bInit) {
 		m_bInitView = bInit;
@@ -406,15 +389,9 @@ public:
 	//将视图对象值转成JSON数据
 		string toJson();
 
-		//将JSON数据转成视图对象
-		static ModelView* fromJson( string& jsonStr);
+    //将JSON数据转成视图对象
+    static ModelView* fromJson( string& jsonStr);
 
-	    int m_DirectionX; //X剖切方向
-	    float m_PercentageX; //X剖切比例
-	    int m_DirectionY; //Y剖切方向
-	    float m_PercentageY; //Y剖切比例
-	    int m_DirectionZ; //Z剖切方向
-	    float m_PercentageZ; //Z剖切比例
 private:
 	int m_ID;  //!<视图ID
 	string m_Name;  //!<视图名称
@@ -427,8 +404,6 @@ private:
 	bool m_UpDataCamera; //!< 标识是否更新Camera
 	bool m_UpDataModel; //!< 标识是否更新模型的矩阵
 
-	int m_Direction; //剖切方向
-	float m_Percentage; //剖切比例
     bool m_ShowClipPlane; //显示剖切面
     bool m_ShowCappingPlane; //显示剖切辅助面
     bool m_ReverseClipping; //显示反面

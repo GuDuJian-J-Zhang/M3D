@@ -370,10 +370,10 @@ bool XmlSceneSerializer::CreateViews(vector<ModelView *>* viewList)
 		//Explosive
 		XMLElement* explosiveElement = m_Doc->NewElement("Explosive");
 
-			int direction = pView->getExplosiveType();
-			int percent = pView->getExplosivePercent();
-			explosiveElement->SetAttribute("Direction", direction);
-			explosiveElement->SetAttribute("Percent", percent);
+//            int direction = pView->getExplosiveType();
+//            int percent = pView->getExplosivePercent();
+//            explosiveElement->SetAttribute("Direction", direction);
+//            explosiveElement->SetAttribute("Percent", percent);
 
 		viewElement->InsertEndChild(explosiveElement);
 
@@ -388,18 +388,18 @@ bool XmlSceneSerializer::CreateViews(vector<ModelView *>* viewList)
 		//SectionPlanes
 		XMLElement* sectionPlanesElement = m_Doc->NewElement("SectionPlanes");
 		viewElement->InsertEndChild(sectionPlanesElement);
-		sectionPlanesElement->SetAttribute("DirectionX",
-				pView->m_DirectionX);
-		sectionPlanesElement->SetAttribute("PercentX",
-				pView->m_PercentageX);
-        sectionPlanesElement->SetAttribute("DirectionY",
-                                           pView->m_DirectionY);
-        sectionPlanesElement->SetAttribute("PercentY",
-                                           pView->m_PercentageY);
-        sectionPlanesElement->SetAttribute("DirectionZ",
-                                           pView->m_DirectionZ);
-        sectionPlanesElement->SetAttribute("PercentZ",
-                                           pView->m_PercentageZ);
+//        sectionPlanesElement->SetAttribute("DirectionX",
+//                pView->m_DirectionX);
+//        sectionPlanesElement->SetAttribute("PercentX",
+//                pView->m_PercentageX);
+//        sectionPlanesElement->SetAttribute("DirectionY",
+//                                           pView->m_DirectionY);
+//        sectionPlanesElement->SetAttribute("PercentY",
+//                                           pView->m_PercentageY);
+//        sectionPlanesElement->SetAttribute("DirectionZ",
+//                                           pView->m_DirectionZ);
+//        sectionPlanesElement->SetAttribute("PercentZ",
+//                                           pView->m_PercentageZ);
 		sectionPlanesElement->SetAttribute("ShowSectionPlane",
 				pView->GetShowClipSectionPlane());
 		sectionPlanesElement->SetAttribute("ShowCappingPlane",
@@ -1108,8 +1108,8 @@ XmlSceneSerializer::GetViewFromElement(XMLElement* viewElement)
 
 		LOGI(
 				"GetViewFromElement --- direction: %d;percent: %d", direction, percent);
-		retView->setExplosiveType(direction);
-		retView->setExplosivePercent(percent);
+//        retView->setExplosiveType(direction);
+//        retView->setExplosivePercent(percent);
 
 	}
 
