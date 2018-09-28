@@ -1,4 +1,4 @@
-﻿/*
+/*
  * ModelView.cpp
  *
  *  Created on: 2013-12-6
@@ -9,6 +9,7 @@
 #include "m3d/base/json/json.h"
 #include "SVLLib/Stk_API.h"
 #include "m3d/utils/PathHelper.h"
+#include "m3d/utils/StringHelper.h"
 using namespace HoteamSoft::SVLLib;
 
 namespace M3D {
@@ -26,14 +27,6 @@ ModelView::ModelView() :
 	m_ExplosivePercent = 0;
 	m_SvlType = ViewSvlUseTypeEnum::VIEW_USAGE_UNKNOWN;
 	m_ViewType = Undefine;
-	m_Direction = -1000;
-	m_Percentage = -1;
-    m_DirectionX = -1000;
-    m_PercentageX = -1;
-    m_DirectionY = -1000;
-    m_PercentageY = -1;
-    m_DirectionZ = -1000;
-    m_PercentageZ = -1;
 	m_bInitView = false;
 }
 ModelView::ModelView(ModelView & modelView) :
@@ -58,14 +51,6 @@ ModelView::ModelView(ModelView & modelView) :
 	this->m_InstanceAttributeMap = modelView.m_InstanceAttributeMap; ///模型的当前ins信息map
 	this->m_SvlType = modelView.m_SvlType; //从svl中读取到的type
 	this->m_ViewType = modelView.m_ViewType; //模型视图类型，-1=未初始化，0=默认视图（也是sview自订），1=svl中视图，2=sview自订视图
-	this->m_Direction = modelView.m_Direction;
-	this->m_Percentage = modelView.m_Percentage;
-    this->m_DirectionX = modelView.m_DirectionX;
-    this->m_PercentageX = modelView.m_PercentageX;
-    this->m_DirectionY = modelView.m_DirectionY;
-    this->m_PercentageY = modelView.m_PercentageY;
-    this->m_DirectionZ = modelView.m_DirectionZ;
-    this->m_PercentageZ = modelView.m_PercentageZ;
 	this->m_appendInfo = modelView.m_appendInfo; ///附加信息
 	this->m_bInitView = modelView.IsInitView();
 	LOGI("cope  ModelView End");
@@ -128,47 +113,6 @@ vector<int> ModelView::GetPMIList() {
 
 vector<int> ModelView::GetSectionPlaneIDList() {
 	return m_SectionPlaneIDList;
-}
-/**
- * 设置剖切面剖切方向
- * @param direction
- */
-void ModelView::SetSectionPlaneDirection(int direction) {
-	m_Direction = direction;
-}
-/**
- * 获取剖切面剖切方向
- *
- */
-int ModelView::GetSectionPlaneDirection() {
-	return m_Direction;
-}
-/**
- * 设置剖切面剖切方向
- * @param direction
- */
-void ModelView::SetSectionPlaneDirectionAndPercentage(int directionX,int directionY,int directionZ, float percentageX,float percentageY,float percentageZ) {
-    m_DirectionX = directionX;
-    m_DirectionY = directionY;
-    m_DirectionZ = directionZ;
-    m_PercentageX = percentageX;
-    m_PercentageY = percentageY;
-    m_PercentageZ = percentageZ;
-}
-
-/**
- * 设置剖切面剖切比例
- * @param percentage
- */
-void ModelView::SetSectionPlanePercentage(float percentage) {
-	m_Percentage = percentage;
-}
-/**
- * 获取剖切面剖切比例
- *
- */
-float ModelView::GetSectionPlanePercentage() {
-	return m_Percentage;
 }
 /**
  * 设置怕剖切面的辅助面显示标示
@@ -347,20 +291,39 @@ string ModelView:: toJson(){
 		cameraJson["height"] = (fOrthoHeight/ m_Camera.GetZoom());
 		cameraJson["focalDistance"] = 1.0f;
 	}else{
-		ProjectType = 2;
+		ProjectType = 0;
 		cameraJson["projectType"] = ProjectType;
 		float fPosTargetDistance = 1.0f;
 //		BoundingBox box = m_View->GetSceneManager()->GetSceneBox();
 //		fPosTargetDistance = m_View->GetSceneManager()->GetSceneBox().Length()
 //					* CAMERA_POSFACTOR;
-		float fHeight = (float)(fPosTargetDistance * 2.0 * (tanf(m_Camera.GetFov()*M_DEGTORAD * 0.5f)/ m_Camera.GetZoom()));
 		cameraJson["focalDistance"] = fPosTargetDistance;
+		float fHeight = (float) (fPosTargetDistance * 2.0
+				* (tanf(m_Camera.GetFov() * M_DEGTORAD * 0.5f)
+						/ m_Camera.GetZoom()));
 		cameraJson["height"] = fHeight;
 	}
 	cameraJson["angle"] = 1.0;
 	Quaternion rotation = m_Camera.GetRotation();
 	Vector3 position = m_Camera.GetPosition();
+    cameraJson["origin"] = position.Tostring();
+    cameraJson["targetVector"] = m_Camera.GetDirection().Tostring();
+    cameraJson["upVector"] = m_Camera.GetUp().Tostring();
 	Matrix4 sbMatrix(position, rotation, 1.0f);
+    HoteamSoft::SVLLib::STK_MTX32 m_mtxTransform;
+    for (size_t m = 0; m < 4; m++)
+    {
+        for (size_t n = 0; n < 4; n++)
+            m_mtxTransform.PlcMatrix[m][n] = sbMatrix.Data()[n * 4 + m];
+    }
+    char cTemp[256];
+    string strMatirx = "";
+    sprintf(cTemp, "%.8f %.8f %.8f %.8f %.8f %.8f %.8f %.8f %.8f %.8f %.8f %.8f %.8f %.8f %.8f %.8f",
+            m_mtxTransform.PlcMatrix[0][0], m_mtxTransform.PlcMatrix[0][1], m_mtxTransform.PlcMatrix[0][2], m_mtxTransform.PlcMatrix[0][3],
+            m_mtxTransform.PlcMatrix[1][0], m_mtxTransform.PlcMatrix[1][1], m_mtxTransform.PlcMatrix[1][2], m_mtxTransform.PlcMatrix[1][3],
+            m_mtxTransform.PlcMatrix[2][0], m_mtxTransform.PlcMatrix[2][1], m_mtxTransform.PlcMatrix[2][2], m_mtxTransform.PlcMatrix[2][3],
+            m_mtxTransform.PlcMatrix[3][0], m_mtxTransform.PlcMatrix[3][1], m_mtxTransform.PlcMatrix[3][2], m_mtxTransform.PlcMatrix[3][3]);
+    strMatirx = cTemp;
 	cameraJson["matix"] = sbMatrix.Tostring();
 	cameraJson["aspectRatio"] = m_Camera.GetAspectRatio();
 	cameraJson["nearDistance"] = m_Camera.GetNearClip();
@@ -368,18 +331,24 @@ string ModelView:: toJson(){
 
 	modelViewJson["camera"] = cameraJson;
 	//实例属性
-	Json::Value insAttributesJson ;
-	map<int, InstanceAttribute> mapInstanceAttribute = GetInstanceAttributeMap();
-	for (map<int, InstanceAttribute>::const_iterator it = mapInstanceAttribute.begin();
-					it != mapInstanceAttribute.end(); it++){
+	Json::Value insAttributesJson;
+	map<int, InstanceAttribute> mapInstanceAttribute =
+			GetInstanceAttributeMap();
+	for (map<int, InstanceAttribute>::const_iterator it =
+			mapInstanceAttribute.begin(); it != mapInstanceAttribute.end();
+			it++) {
 		const InstanceAttribute &curInsAtt = it->second;
-		Json::Value insAttributeJson ;
-		insAttributeJson["plcPath"] = PathHelper::SVLPathDecToHex(curInsAtt.path);
-		insAttributeJson["visible"] = curInsAtt.visible ? HoteamSoft::SVLLib::STK_DISPLAY : HoteamSoft::SVLLib::STK_NO_DISPLAY;
+		Json::Value insAttributeJson;
+		insAttributeJson["plcPath"] = PathHelper::SVLPathDecToHex(
+				curInsAtt.path);
+		insAttributeJson["visible"] =
+				curInsAtt.visible ?
+						HoteamSoft::SVLLib::STK_DISPLAY :
+						HoteamSoft::SVLLib::STK_NO_DISPLAY;
 		insAttributeJson["matix"] = curInsAtt.placeMatrix.Tostring();
-		insAttributeJson["color"] =  curInsAtt.insColor.Tostring();
-		insAttributesJson[it->first] = insAttributeJson ;
-	 }
+		insAttributeJson["color"] = curInsAtt.insColor.Tostring();
+		insAttributesJson[curInsAtt.path] = insAttributeJson;
+	}
 
 	modelViewJson["insAttributes"] = insAttributesJson;
 	modelViewsJson["views"].append(modelViewJson);
@@ -446,8 +415,8 @@ string ModelView:: toJson(){
 
 	viewJsonStr = modelViewsJson.toStyledString();
 	LOGE("viewJsonStr =",viewJsonStr.c_str());
-        return viewJsonStr;
-	}
+    return viewJsonStr;
+}
 
 
  ModelView* ModelView:: fromJson( string& jsonStr){
@@ -491,45 +460,118 @@ string ModelView:: toJson(){
 		CameraNode cameraInfo;
 
 		Json::Value camaraJson = viewJson["camera"];
-		cameraInfo.SetID(camaraJson["id"].asInt());
-		cameraInfo.SetAspectRatio(camaraJson["aspectRatio"].asFloat());
+        
+        //投影类型
+        float fHeight = camaraJson["height"].asFloat();
+        cameraInfo.SetAspectRatio(camaraJson["aspectRatio"].asFloat());
+        if (camaraJson["projectType"].asInt() == 1) {
+            cameraInfo.SetOrthographic(true);
+            cameraInfo.SetOrthoSize(
+                                    Vector2(fHeight * cameraInfo.GetAspectRatio(),
+                                            fHeight));
+        } else {
+            cameraInfo.SetOrthographic(false);
+        }
+        cameraInfo.SetZoom(1.0f);
+        cameraInfo.SetFov(camaraJson["angle"].asFloat());
+        cameraInfo.setPosition(camaraJson["origin"].asString());
+        cameraInfo.setDirection(camaraJson["targetVector"].asString());
 		cameraInfo.SetNearClip(camaraJson["nearDistance"].asFloat());
 		cameraInfo.SetFarClip(camaraJson["farDistance"].asFloat());
-		cameraInfo.SetZoom(1.0f);
-//	camaraJson["matix"]
-		cameraInfo.SetProtoTypeId(camaraJson["projectType"].asInt());
-
+        //获取镜头原始位置
+        Vector3 pos = cameraInfo.GetPosition();
+        
+        //获取Target方向向量
+        Vector3 target = cameraInfo.GetDirection();
+        
+        Vector3 up = cameraInfo.GetUp();
+        
+        HoteamSoft::SVLLib::STK_MTX32 matrix4;
+        string strMatrix = camaraJson["matix"].asString();
+        std::vector<std::string> vecMatrixValue = StringHelper::Split(strMatrix, " ");
+        if (vecMatrixValue.size() == 16)
+        {
+            for (int ii = 0; ii < 4; ii++)
+            {
+                for (int jj = 0; jj < 4; jj++)
+                {
+                    matrix4.PlcMatrix[ii][jj] = atof(vecMatrixValue[ii * 4 + jj].c_str());
+                }
+            }
+        }
+        vecMatrixValue.clear();
+        Quaternion rotation;
+        if ((target.m_x != -1.0f || target.m_y != -1.0f
+             || target.m_z != -1.0f)
+            && (up.m_x != -1.0f || up.m_y != -1.0f || up.m_z != -1.0f)) {
+            //构造出旋转,参考李坤的算法,貌似和已有的通过direct和up构造的方法不一致.
+            Vector3 x = target.CrossProduct(up);
+            Vector3 y = up;
+            Vector3 z = -target;
+            rotation.FromAxes(x, y, z);
+        } else {
+            Matrix3 matrix3(matrix4.PlcMatrix[0][0],
+                            matrix4.PlcMatrix[1][0], matrix4.PlcMatrix[2][0],
+                            matrix4.PlcMatrix[0][1], matrix4.PlcMatrix[1][1],
+                            matrix4.PlcMatrix[2][1], matrix4.PlcMatrix[0][2],
+                            matrix4.PlcMatrix[1][2], matrix4.PlcMatrix[2][2]);
+            rotation.FromRotationMatrix(matrix3);
+            pos.m_x = matrix4.PlcMatrix[3][0];
+            pos.m_y = matrix4.PlcMatrix[3][1];
+            pos.m_z = matrix4.PlcMatrix[3][2];
+        }
+        cameraInfo.SetRotation(rotation);
+        cameraInfo.SetPosition(pos);
 //给视图添加相机
-		modelView->SetCamera(cameraInfo);
-		modelView->SetUpDataCamera(true);
-		modelView->SetUpDataModel(true);
-		//实例属性
-		map<int, InstanceAttribute> mapInstanceAttribute;
-		Json::Value insAttributesJson = viewJson["insAttributes"];
-		Json::Value insAttributeJson;
-		InstanceAttribute ia;
-		for (int i = 0; i < insAttributesJson.size(); i++) {
-			LOGE("第   %d 个",i);
-			insAttributeJson = insAttributesJson[i];
-			LOGE(" insAttributeJson= %s", insAttributeJson.toStyledString().c_str());
-			ia.path = insAttributeJson["plcpath"].asString();
-			string color = insAttributeJson["color"].asString();
-//		Color dispColor();
-//		ia.insColor = dispColor;
-			ia.hasColor = true;
-//			ia.id = insAttributeJson["plcpath"].asInt();
-			string matix = insAttributeJson["matix"].asString();
-//		ia.placeMatrix = insAttributeJson["visible"].asBool();
-			ia.visible = insAttributeJson["visible"].asBool();
+			modelView->SetCamera(cameraInfo);
+			modelView->SetUpDataCamera(true);
+			modelView->SetUpDataModel(true);
+			//实例属性
+			map<int, InstanceAttribute> mapInstanceAttribute;
+			Json::Value insAttributesJson = viewJson["insAttributes"];
+			Json::Value insAttributeJson;
+			Json::Value::Members mem(insAttributesJson.getMemberNames());
+			InstanceAttribute ia;
+			for (Json::Value::Members::iterator it = mem.begin();
+					it != mem.end(); ++it) {
+				const std::string &name = *it;
+				insAttributeJson = insAttributesJson[name];
+				ia.path = insAttributeJson["plcpath"].asString();
+				string colorStr = insAttributeJson["color"].asString();
+                std::vector<std::string> vecColorValue = StringHelper::Split(colorStr, " ");
+                float colorR = atof(vecColorValue[0].c_str());
+                float colorG = atof(vecColorValue[1].c_str());
+                float colorB = atof(vecColorValue[2].c_str());
+                float colorA = atof(vecColorValue[3].c_str());
+				Color dispColor(colorR, colorG, colorB, colorA);
+				ia.insColor = dispColor;
+				ia.hasColor = true;
+				string matix = insAttributeJson["matix"].asString();
+                
+                HoteamSoft::SVLLib::STK_MTX32 m_matrix4;
+                std::vector<std::string> m_vecMatrixValue = StringHelper::Split(matix, " ");
+                if (m_vecMatrixValue.size() == 16)
+                {
+                    for (int ii = 0; ii < 4; ii++)
+                    {
+                        for (int jj = 0; jj < 4; jj++)
+                        {
+                            m_matrix4.PlcMatrix[ii][jj] = atof(m_vecMatrixValue[ii * 4 + jj].c_str());
+                        }
+                    }
+                }
+                m_vecMatrixValue.clear();
+                ia.placeMatrix.Set((const float*) m_matrix4.PlcMatrix);
+				ia.visible = insAttributeJson["visible"].asBool();
+			}
 		}
-	}
 		//PMI 信息
 		Json::Value pmisJson = modelViewsJson["view_pmis"]["pmis"];
 		LOGE(" pmisJson= %s", pmisJson.toStyledString().c_str());
 		Json::Value pmiJson;
 		for (int it = 0; it != pmisJson.size(); it++) {
 			pmiJson = pmisJson[it];
-
+            modelView->AddPMIId(pmiJson.asInt());
 		}
 
 	}
