@@ -1974,6 +1974,7 @@ namespace SVIEW
 				for (size_t n = 0; n < 4; n++)
 					mtxTransform.PlcMatrix[m][n] = sbMatrix.Data()[n * 4 + m];
 			}
+            
 			//cameraP->SetMatrixFlag(true);
 			cameraP->SetMatrix(mtxTransform);
 			cameraP->SetAspectRatio(pCamera.GetAspectRatio());
