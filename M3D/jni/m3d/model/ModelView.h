@@ -125,12 +125,12 @@ public:
 	 * 设置剖切面剖切方向
 	 * @param direction
 	 */
-	void SetSectionPlaneDirection(int direction);
+//	void SetSectionPlaneDirection(int direction);
 	/**
 	 * 获取剖切面剖切方向
 	 *
 	 */
-	int GetSectionPlaneDirection();
+//	int GetSectionPlaneDirection();
     /**
      * 设置多面剖方向和比例
      * @param directionX
@@ -140,17 +140,17 @@ public:
      * @param percentageY
      * @param percentageZ
      */
-    void SetSectionPlaneDirectionAndPercentage(int directionX,int directionY,int directionZ, float percentageX,float percentageY,float percentageZ);
+//    void SetSectionPlaneDirectionAndPercentage(int directionX,int directionY,int directionZ, float percentageX,float percentageY,float percentageZ);
 	/**
 	 * 设置剖切面剖切比例
 	 * @param percentage
 	 */
-	void SetSectionPlanePercentage(float percentage);
+//	void SetSectionPlanePercentage(float percentage);
 	/**
 	 * 获取剖切面剖切比例
 	 *
 	 */
-	float GetSectionPlanePercentage();
+//	float GetSectionPlanePercentage();
 	/**
 	 * 设置怕剖切面的辅助面显示标示
 	 * @param flag

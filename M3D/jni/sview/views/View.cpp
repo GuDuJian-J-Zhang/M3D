@@ -3259,10 +3259,10 @@ bool View::UpdateSpecialViewByCurrentScene(ModelView* newView) {
 				this->GetSceneManager()->GetSectionNode()->GetSection()->IsShowCappingPlane();
 		bool isReverse =
 				this->GetSceneManager()->GetSectionNode()->GetSection()->IsReverseClipping();
-		newView->SetSectionPlaneDirection(direction);
-		newView->SetSectionPlanePercentage(percentage);
-		newView->SetSectionPlaneDirectionAndPercentage(directionX, directionY,
-				directionZ, percentageX, percentageY, percentageZ);
+//		newView->SetSectionPlaneDirection(direction);
+//		newView->SetSectionPlanePercentage(percentage);
+//		newView->SetSectionPlaneDirectionAndPercentage(directionX, directionY,
+//				directionZ, percentageX, percentageY, percentageZ);
 		newView->SetShowClipSectionPlane(showCutPlane);
 		newView->SetShowSectionCappingPlane(isCappingPlane);
 		newView->SetReverseClipping(isReverse);

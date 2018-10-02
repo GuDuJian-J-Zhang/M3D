@@ -456,6 +456,7 @@ string ModelView:: toJson(){
 		} else {
 			modelView->SetIsInitView(false);
 		}
+
 		//获取相机参数
 		CameraNode cameraInfo;
 
@@ -467,15 +468,30 @@ string ModelView:: toJson(){
         if (camaraJson["projectType"].asInt() == 1) {
             cameraInfo.SetOrthographic(true);
             cameraInfo.SetOrthoSize(
-                                    Vector2(fHeight * cameraInfo.GetAspectRatio(),
+                 Vector2(fHeight * cameraInfo.GetAspectRatio(),
                                             fHeight));
         } else {
             cameraInfo.SetOrthographic(false);
         }
         cameraInfo.SetZoom(1.0f);
         cameraInfo.SetFov(camaraJson["angle"].asFloat());
-        cameraInfo.setPosition(camaraJson["origin"].asString());
-        cameraInfo.setDirection(camaraJson["targetVector"].asString());
+
+        string positionStr = camaraJson["origin"].asString();
+        vector<string> positionValue = StringHelper::Split(positionStr, " ");
+        Vector3 positionVector3 ;
+        positionVector3.m_x =  atof(positionValue[0].c_str());
+        positionVector3.m_y =  atof(positionValue[1].c_str());
+        positionVector3.m_z =  atof(positionValue[2].c_str());
+        cameraInfo.SetPosition(positionVector3);
+        string directionStr = camaraJson["targetVector"].asString();
+        vector<string> directionValue = StringHelper::Split(directionStr, " ");
+        Vector3 directionVector3 ;
+        directionVector3.m_x =  atof(directionValue[0].c_str());
+        directionVector3.m_y =  atof(directionValue[1].c_str());
+        directionVector3.m_z =  atof(directionValue[2].c_str());
+        cameraInfo.SetDirection(directionVector3);
+
+
 		cameraInfo.SetNearClip(camaraJson["nearDistance"].asFloat());
 		cameraInfo.SetFarClip(camaraJson["farDistance"].asFloat());
         //获取镜头原始位置
@@ -484,8 +500,15 @@ string ModelView:: toJson(){
         //获取Target方向向量
         Vector3 target = cameraInfo.GetDirection();
         
-        Vector3 up = cameraInfo.GetUp();
-        
+        LOGI("ModelView target.x =%f ;target.y =%f ;target.z =%f",target.m_x,target.m_y,target.m_z);
+
+        string upStr = camaraJson["upVector"].asString();
+			vector<string> upValue = StringHelper::Split(upStr, " ");
+			Vector3 up;
+			up.m_x = atof(upValue[0].c_str());
+			up.m_y = atof(upValue[1].c_str());
+			up.m_z = atof(upValue[2].c_str());
+        LOGI("ModelView up.x =%f ;up.y =%f ;up.z =%f",up.m_x,up.m_y,up.m_z);
         HoteamSoft::SVLLib::STK_MTX32 matrix4;
         string strMatrix = camaraJson["matix"].asString();
         std::vector<std::string> vecMatrixValue = StringHelper::Split(strMatrix, " ");
@@ -510,18 +533,16 @@ string ModelView:: toJson(){
             Vector3 z = -target;
             rotation.FromAxes(x, y, z);
         } else {
-            Matrix3 matrix3(matrix4.PlcMatrix[0][0],
-                            matrix4.PlcMatrix[1][0], matrix4.PlcMatrix[2][0],
-                            matrix4.PlcMatrix[0][1], matrix4.PlcMatrix[1][1],
-                            matrix4.PlcMatrix[2][1], matrix4.PlcMatrix[0][2],
-                            matrix4.PlcMatrix[1][2], matrix4.PlcMatrix[2][2]);
+            Matrix3 matrix3(matrix4.PlcMatrix[0][0],matrix4.PlcMatrix[1][0], matrix4.PlcMatrix[2][0],
+                            matrix4.PlcMatrix[0][1],matrix4.PlcMatrix[1][1], matrix4.PlcMatrix[2][1],
+                            matrix4.PlcMatrix[0][2],matrix4.PlcMatrix[1][2], matrix4.PlcMatrix[2][2]);
             rotation.FromRotationMatrix(matrix3);
             pos.m_x = matrix4.PlcMatrix[3][0];
             pos.m_y = matrix4.PlcMatrix[3][1];
             pos.m_z = matrix4.PlcMatrix[3][2];
         }
         cameraInfo.SetRotation(rotation);
-        cameraInfo.SetPosition(pos);
+//        cameraInfo.SetPosition(pos);
 //给视图添加相机
 			modelView->SetCamera(cameraInfo);
 			modelView->SetUpDataCamera(true);
