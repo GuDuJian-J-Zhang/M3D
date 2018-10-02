@@ -2039,7 +2039,10 @@ void View::ShowModelView(int viewId, bool isAnni) {
 					curModel->SetVisible(curInsAtt.visible, false);
 					if (curInsAtt.hasColor) {
 						Color tmpColor = curInsAtt.insColor;
-						curModel->SetColor(tmpColor);
+                        //TODO 贴图类型
+                        if (tmpColor != Color(0.0, 0.0, 0.0, 1.0)) {
+                            curModel->SetColor(tmpColor);
+                        }
 					}
 					//ModelShape* shapeNode = curModel->GetModelShape();
 					//if (shapeNode)
@@ -3244,29 +3247,29 @@ bool View::UpdateSpecialViewByCurrentScene(ModelView* newView) {
 	LOGI("end update textnote by current scene");
 
 	//TODO MERGEToMobile
-	if (SectionOperator::Instance != NULL) {
-		///sectionPlane
-		int direction = SectionOperator::Instance->m_Direction;
-		float percentage = 100 * SectionOperator::Instance->m_fPercentage; //
-		int directionX = SectionOperator::Instance->m_DirectionX;
-		float percentageX = SectionOperator::Instance->m_fPercentageX; //
-		int directionY = SectionOperator::Instance->m_DirectionY;
-		float percentageY = SectionOperator::Instance->m_fPercentageY; //
-		int directionZ = SectionOperator::Instance->m_DirectionZ;
-		float percentageZ = SectionOperator::Instance->m_fPercentageZ; //
-		bool showCutPlane = SVIEW::Parameters::Instance()->m_showSection;
-		bool isCappingPlane =
-				this->GetSceneManager()->GetSectionNode()->GetSection()->IsShowCappingPlane();
-		bool isReverse =
-				this->GetSceneManager()->GetSectionNode()->GetSection()->IsReverseClipping();
-		newView->SetSectionPlaneDirection(direction);
-		newView->SetSectionPlanePercentage(percentage);
-		newView->SetSectionPlaneDirectionAndPercentage(directionX, directionY,
-				directionZ, percentageX, percentageY, percentageZ);
-		newView->SetShowClipSectionPlane(showCutPlane);
-		newView->SetShowSectionCappingPlane(isCappingPlane);
-		newView->SetReverseClipping(isReverse);
-	}
+//    if (SectionOperator::Instance != NULL) {
+//        ///sectionPlane
+//        int direction = SectionOperator::Instance->m_Direction;
+//        float percentage = 100 * SectionOperator::Instance->m_fPercentage; //
+//        int directionX = SectionOperator::Instance->m_DirectionX;
+//        float percentageX = SectionOperator::Instance->m_fPercentageX; //
+//        int directionY = SectionOperator::Instance->m_DirectionY;
+//        float percentageY = SectionOperator::Instance->m_fPercentageY; //
+//        int directionZ = SectionOperator::Instance->m_DirectionZ;
+//        float percentageZ = SectionOperator::Instance->m_fPercentageZ; //
+//        bool showCutPlane = SVIEW::Parameters::Instance()->m_showSection;
+//        bool isCappingPlane =
+//                this->GetSceneManager()->GetSectionNode()->GetSection()->IsShowCappingPlane();
+//        bool isReverse =
+//                this->GetSceneManager()->GetSectionNode()->GetSection()->IsReverseClipping();
+////        newView->SetSectionPlaneDirection(direction);
+////        newView->SetSectionPlanePercentage(percentage);
+////        newView->SetSectionPlaneDirectionAndPercentage(directionX, directionY,
+////                directionZ, percentageX, percentageY, percentageZ);
+//        newView->SetShowClipSectionPlane(showCutPlane);
+//        newView->SetShowSectionCappingPlane(isCappingPlane);
+//        newView->SetReverseClipping(isReverse);
+//    }
 
 	/*-----------------------------------------------------------------------------*/
 

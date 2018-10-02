@@ -1087,11 +1087,11 @@ XmlSceneSerializer::GetViewFromElement(XMLElement* viewElement)
 	XMLElement* sectionElement = viewElement->FirstChildElement(
 			"SectionPlanes");
 	if (NULL != sectionElement) {
-		retView->SetSectionPlaneDirection(
-				sectionElement->IntAttribute("Direction"));
-		retView->SetSectionPlanePercentage(
-				sectionElement->FloatAttribute("Percent"));
-        retView->SetSectionPlaneDirectionAndPercentage(sectionElement->IntAttribute("DirectionX"), sectionElement->IntAttribute("DirectionY"), sectionElement->IntAttribute("DirectionZ"), sectionElement->FloatAttribute("PercentX"), sectionElement->FloatAttribute("PercentY"), sectionElement->FloatAttribute("PercentZ"));
+//        retView->SetSectionPlaneDirection(
+//                sectionElement->IntAttribute("Direction"));
+//        retView->SetSectionPlanePercentage(
+//                sectionElement->FloatAttribute("Percent"));
+//        retView->SetSectionPlaneDirectionAndPercentage(sectionElement->IntAttribute("DirectionX"), sectionElement->IntAttribute("DirectionY"), sectionElement->IntAttribute("DirectionZ"), sectionElement->FloatAttribute("PercentX"), sectionElement->FloatAttribute("PercentY"), sectionElement->FloatAttribute("PercentZ"));
 		retView->SetShowClipSectionPlane(
 				sectionElement->BoolAttribute("ShowSectionPlane"));
 		retView->SetShowSectionCappingPlane(
