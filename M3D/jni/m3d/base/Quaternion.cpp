@@ -198,7 +198,6 @@ float Quaternion::RollAngle() const
     return EulerAngles().m_z;
 }
 
-
 Matrix3 Quaternion::RotationMatrix() const
 {
 	//left hand
@@ -274,77 +273,5 @@ string Quaternion::Tostring() const
     sprintf(tempBuffer, "%g %g %g %g", m_w, m_x, m_y, m_z);
     return string(tempBuffer);
 }
-
-void
-Quaternion::GetValue(Vector3& axis, float & fAngle) const
-{
-	if ((m_w >= -1.0f) && (m_w <= 1.0f)) {
-		float radians = float(acos(m_w)) * 2.0f;
-		float scale = static_cast<float>(sin(radians / 2.0f));
-		fAngle = radians*M_RADTODEG;
-		if (scale != 0.0f) {
-			axis.m_x = m_x / scale;
-			axis.m_y = m_y / scale;
-			axis.m_z = m_z / scale;
-			// FIXME: why not just flip the sign on each component according
-			// to "scale" and normalize the axis instead? 20010111 mortene.
-			return;
-		}
-	}
-
-	// Quaternion can't be converted to axis and rotation angle, so we just
-	// set up values to indicate this.
-	axis.m_x = 0.0f;
-	axis.m_y = 0.0f;
-	axis.m_z = 1.0f;
-	fAngle = 0.0f;
-}
-
-Vector3 Quaternion::GetAixsValue() const
-{
-	Vector3 axis;
-	if ((m_w >= -1.0f) && (m_w <= 1.0f)) {
-		float radians = float(acos(m_w)) * 2.0f;
-		float scale = static_cast<float>(sin(radians / 2.0f));
-		if (scale != 0.0f) {
-			axis.m_x = m_x / scale;
-			axis.m_y = m_y / scale;
-			axis.m_z = m_z / scale;
-			// FIXME: why not just flip the sign on each component according
-			// to "scale" and normalize the axis instead? 20010111 mortene.
-			return axis;
-		}
-	}
-
-	// Quaternion can't be converted to axis and rotation angle, so we just
-	// set up values to indicate this.
-	axis.m_x = 0.0f;
-	axis.m_y = 0.0f;
-	axis.m_z = 1.0f;
-
-	return axis;
-}
-
-
-float Quaternion::GetAngleValue() const
-{
-	float fAngle;
-	if ((m_w >= -1.0f) && (m_w <= 1.0f)) {
-		float radians = float(acos(m_w)) * 2.0f;
-		float scale = static_cast<float>(sin(radians / 2.0f));
-		fAngle = radians*M_RADTODEG;
-		if (scale != 0.0f) {		
-			// FIXME: why not just flip the sign on each component according
-			// to "scale" and normalize the axis instead? 20010111 mortene.
-			return fAngle;
-		}
-	}
-	// Quaternion can't be converted to axis and rotation angle, so we just
-	// set up values to indicate this.
-	fAngle = 0.0f;
-
-	return fAngle;
-}
-
 
 }

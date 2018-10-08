@@ -22,7 +22,7 @@
 #include <fstream>
 #include <stack>
 #include <list>
-//#include <algorithm>
+#include <algorithm>
 
 using std::ifstream;
 using std::ostream;
@@ -35,7 +35,7 @@ using std::pair;
 using std::stack;
 using std::list;
 using std::swap;
-//#include <math.h>
+#include <math.h>
 #include <assert.h>
 
 #include "m3d/M3D.h"

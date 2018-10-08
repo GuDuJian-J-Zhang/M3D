@@ -1,4 +1,4 @@
-// All Rights Reserved. Copyright (C) 2014 HOTEAMSOFT, Ltd
+﻿// All Rights Reserved. Copyright (C) 2014 HOTEAMSOFT, Ltd
 /****************************************************************************
  *	@file		GroupManager.cpp
  *
@@ -7,7 +7,7 @@
  *	@par	历史:
  *		2016-04-08 Create by hhw
 ****************************************************************************/
-#include "stdafx.h"
+#include "StdAfx.h"
 #include "GroupManager.h"
 #include "Group.h"
 #include "../SimulationCommon/UtilityXMLParser.h"
@@ -172,55 +172,6 @@ void CGroupManager::Init()
 	m_nNextGroupID=0;
 	DeleteAllGroup();
 }
-void CGroupManager::WriteToFile(const char *filename)
-{
-	//写入XML文件
-	string strFilePath(filename);
-	if(strFilePath.empty())
-		return;
-	XMLDocument* pDoc = new XMLDocument();
-	
-	//XMLDeclaration* pDecl = new XMLDeclaration("1.0","UTF-8","");
-	//pDoc->LinkEndChild(pDecl);
-	XMLElement* pGroupListEle = pDoc->NewElement("GroupList");
-	pDoc->LinkEndChild(pGroupListEle);
-
-	GroupVector::iterator iter=m_vecGroupList.begin();
-	for (;iter!=m_vecGroupList.end();++iter)
-	{
-		CGroup *pGroup=*iter;
-		if (!pGroup)
-		{
-			continue;
-		}
-		XMLElement* pGroupEle = pDoc->NewElement("Group");
-		pGroupListEle->LinkEndChild(pGroupEle);
-		//pGroup->WriteToFile(pGroupEle);
-	}
-	//由ANSI码转UTF-8
-	XMLPrinter printer;
-	pDoc->Accept(&printer);
-	char UTF8BOM[3]={'\xEF','\xBB','\xBF'};
-	FILE *fp;
-	fp = fopen(strFilePath.c_str(), "w");
-	if(fp)
-	{
-		int nSize = fwrite(UTF8BOM, 1, sizeof(UTF8BOM), fp);
-		if(nSize == 3)
-			fwrite(printer.CStr(), 1, strlen(printer.CStr()), fp);
-		fclose(fp);
-	}
-	delete pDoc;
-}
-
-void CGroupManager::ReadFromFile(const wchar_t *filename)
-{
-	////在XML文件读取根零件
-	//char szFileName[512];
-	//WideCharToMultiByte(CP_ACP, 0, (LPCTSTR)(filename), -1,
-	//	szFileName, sizeof(szFileName), NULL, NULL);
-	//ReadFromFile(szFileName);
-}
 
 void CGroupManager::ReadFromFile(const char*filename)
 {
@@ -235,112 +186,98 @@ void CGroupManager::ReadFromFile(const char*filename)
 	XMLError ret = doc.LoadFile(strFilePath.c_str());
 	if(ret == XML_SUCCESS)
 	{
-		ReadFromXMLDocument(doc);
-	}
-}
-
-void CGroupManager::setGroupData(char* pData)
-{
-	if (!pData)
-		return;
-	XMLDocument XMLDoc;
-	XMLDoc.Parse(pData, 0);
-	ReadFromXMLDocument(XMLDoc);
-}
-
-void CGroupManager::ReadFromXMLDocument(XMLDocument& doc)
-{
-	XMLElement* pGroupListEle = doc.RootElement();
-	if (!pGroupListEle)
-		return;
-	for (XMLElement* pGroupEle = pGroupListEle->FirstChildElement("Group");
-		pGroupEle; pGroupEle = pGroupEle->NextSiblingElement("Group"))
-	{
-		//创建根节点
-		const char* pszID = NULL;
-		int id;
-		pszID = pGroupEle->Attribute("ID");
-		//ID
-		if (pszID)
+		XMLElement* pGroupListEle = doc.RootElement();
+		if(!pGroupListEle)
+			return;
+		for(XMLElement* pGroupEle = pGroupListEle->FirstChildElement("Group");
+			pGroupEle;pGroupEle = pGroupEle->NextSiblingElement("Group"))
 		{
-			sscanf(pszID, "%d", &id);
-		}
-		else
-		{
-			id = 0;
-		}
-		const char* pszName = NULL;
-		string strPath = "";
-		//名称
-		pszName = pGroupEle->Attribute("Name");
-
-		CGroup *pGroup = AddGroup(id, pszName);
-		if (pGroup)
-		{
-			for (XMLElement* pGroupItemEle = pGroupEle->FirstChildElement("GroupItem");
-				pGroupItemEle; pGroupItemEle = pGroupItemEle->NextSiblingElement("GroupItem"))
+			//创建根节点
+			const char* pszID = NULL;
+			int id;
+			pszID = pGroupEle->Attribute("ID");
+			//ID
+			if(pszID)
 			{
-				const char* pszItemName = NULL, *pszItemPLCPath = NULL,
-					*pszPos = NULL, *pszQuat = NULL, *pszScale = NULL;
-				string strName = "";
-				string strPath = "";
-				string strPLCPath = "";
-				AniPoint hOffsetGroupPos(0, 0, 0), hOffsetGroupScale(1, 1, 1), hLocalPos(0, 0, 0), hLocalScale(1, 1, 1);
-				AniQuat hOffsetGroupQuat(0, 0, 0, 1), hLocalQuat(0, 0, 0, 1);
+				sscanf(pszID, "%d", &id);
+			}
+			else
+			{
+				id = 0;
+			}
+			const char* pszName = NULL;
+			string strPath = "";
+			//名称
+			pszName = pGroupEle->Attribute("Name");
 
-				//名称
-				pszItemName = pGroupItemEle->Attribute("Name");
-				if (pszItemName)
+			CGroup *pGroup=AddGroup(id,pszName);
+			if (pGroup)
+			{
+				for(XMLElement* pGroupItemEle = pGroupEle->FirstChildElement("GroupItem");
+					pGroupItemEle;pGroupItemEle = pGroupItemEle->NextSiblingElement("GroupItem"))
 				{
-					strName = (string)pszItemName;
-				}
+					const char* pszItemName = NULL, *pszItemPLCPath = NULL,
+						*pszPos=NULL, *pszQuat=NULL, *pszScale=NULL;
+					string strName = "";
+					string strPath = "";
+					string strPLCPath="";
+					AniPoint hOffsetGroupPos(0,0,0),hOffsetGroupScale(1,1,1),hLocalPos(0,0,0),hLocalScale(1,1,1);
+					AniQuat hOffsetGroupQuat(0,0,0,1),hLocalQuat(0,0,0,1);
 
-				pszItemPLCPath = pGroupItemEle->Attribute("PLCPath");
-				if (pszItemPLCPath)
-					strPLCPath = (string)pszItemPLCPath;
+					//名称
+					pszItemName = pGroupItemEle->Attribute("Name");
+					if(pszItemName)
+					{
+						strName = (string)pszItemName;
+					}
+					
+					pszItemPLCPath = pGroupItemEle->Attribute("PLCPath");
+					if(pszItemPLCPath)
+						strPLCPath = (string)pszItemPLCPath;
 
-				//char newPlcIdPath[SA_BUFFER_SIZE_SMALL];
-				//CAnimationAPI::ConvertSAPlcPathToDisPlcPath(pszPLCPath,newPlcIdPath);
-				strPath = strPLCPath;//newPlcIdPath;
-									 //位置
-				pszPos = pGroupItemEle->Attribute("OffsetGroupPos");
-				if (pszPos)
-				{
-					CUtilityXMLParser::GetFloatPoint(pszPos, hOffsetGroupPos);
-				}
-				//方向
-				pszQuat = pGroupItemEle->Attribute("OffsetGroupQuat");
-				if (pszQuat)
-				{
-					CSACommonAPI::GetQuatPoint(pszQuat, hOffsetGroupQuat);
-				}
-				//比例
-				pszScale = pGroupItemEle->Attribute("OffsetGroupScale");
-				if (pszScale)
-				{
-					CUtilityXMLParser::GetFloatPoint(pszScale, hOffsetGroupScale);
-				}
-				//位置
-				pszPos = pGroupItemEle->Attribute("LocalPos");
-				if (pszPos)
-				{
-					CUtilityXMLParser::GetFloatPoint(pszPos, hLocalPos);
-				}
-				//方向
-				pszQuat = pGroupItemEle->Attribute("LocalQuat");
-				if (pszQuat)
-				{
-					CSACommonAPI::GetQuatPoint(pszQuat, hLocalQuat);
-				}
-				//比例
-				pszScale = pGroupItemEle->Attribute("LocalScale");
-				if (pszScale)
-				{
-					CUtilityXMLParser::GetFloatPoint(pszScale, hLocalScale);
-				}
-				CGroupItem *pGroupItem = new CGroupItem(pGroup, strPath, strPLCPath, hLocalPos, hLocalQuat, hLocalScale, hOffsetGroupPos, hOffsetGroupQuat, hOffsetGroupScale, strName);
-				pGroup->AddGroupItem(pGroupItem);
+					//char newPlcIdPath[SA_BUFFER_SIZE_SMALL];
+					//CAnimationAPI::ConvertSAPlcPathToDisPlcPath(pszPLCPath,newPlcIdPath);
+					strPath=strPLCPath;//newPlcIdPath;
+					//位置
+					pszPos = pGroupItemEle->Attribute("OffsetGroupPos");
+					if(pszPos)
+					{
+						CUtilityXMLParser::GetFloatPoint(pszPos, hOffsetGroupPos);
+					}
+					//方向
+					pszQuat = pGroupItemEle->Attribute("OffsetGroupQuat");
+					if(pszQuat)
+					{
+						CSACommonAPI::GetQuatPoint(pszQuat, hOffsetGroupQuat);
+					}
+					//比例
+					pszScale = pGroupItemEle->Attribute("OffsetGroupScale");
+					if(pszScale)
+					{
+						CUtilityXMLParser::GetFloatPoint(pszScale, hOffsetGroupScale);
+					}
+					//位置
+					pszPos = pGroupItemEle->Attribute("LocalPos");
+					if(pszPos)
+					{
+						CUtilityXMLParser::GetFloatPoint(pszPos, hLocalPos);
+					}
+					//方向
+					pszQuat = pGroupItemEle->Attribute("LocalQuat");
+					if(pszQuat)
+					{
+						CSACommonAPI::GetQuatPoint(pszQuat, hLocalQuat);
+					}
+					//比例
+					pszScale = pGroupItemEle->Attribute("LocalScale");
+					if(pszScale)
+					{
+						CUtilityXMLParser::GetFloatPoint(pszScale, hLocalScale);
+					}
+					CGroupItem *pGroupItem=new CGroupItem(pGroup,strPath,strPLCPath,hLocalPos,hLocalQuat,hLocalScale,hOffsetGroupPos,hOffsetGroupQuat,hOffsetGroupScale,strName);
+					pGroup->AddGroupItem(pGroupItem);
 
+				}
 			}
 		}
 	}

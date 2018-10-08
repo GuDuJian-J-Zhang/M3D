@@ -111,41 +111,40 @@ int LicenseManager::CheckLicenese()
 
 	return 0;
 }
-
-bool LicenseManager::ObtainAuthorization()
-{
-	if(keyState == -1)
-	{
-		CheckLicenese();
-
-		keyState = 0;
-		bool licenseState = false;
-		time(&now);
-		timenow = localtime(&now);
-
-		int tm_mday = timenow->tm_mday; /* day of the month */
-		int tm_mon = timenow->tm_mon; /* month */
-		int tm_year = timenow->tm_year; /* year */
-
-		LOGI("now year %d mon %d day %d",tm_year,tm_mon,tm_mday);
-
-		tm timeTarget;
-		timeTarget.tm_year =  this->m_year -1900;
-		timeTarget.tm_mon = this->m_month-1;
-		timeTarget.tm_mday = this->m_day -0;
-		timeTarget.tm_hour = 0;
-		timeTarget.tm_min = 0;
-		timeTarget.tm_sec = 0;
-
-		time_t target = mktime(&timeTarget);
-		int diff = difftime(target,now);
-
-		keyState = diff>0 ?1:-1;
-	}
-
-	return keyState == 1;
-	//return true;
-}
+    bool LicenseManager::ObtainAuthorization()
+    {
+        if(keyState == -1)
+        {
+            CheckLicenese();
+            
+            keyState = 0;
+            bool licenseState = false;
+            time(&now);
+            timenow = localtime(&now);
+            
+            int tm_mday = timenow->tm_mday; /* day of the month */
+            int tm_mon = timenow->tm_mon; /* month */
+            int tm_year = timenow->tm_year; /* year */
+            
+            LOGI("now year %d mon %d day %d",tm_year,tm_mon,tm_mday);
+            
+            tm timeTarget;
+            timeTarget.tm_year =  this->m_year -1900;
+            timeTarget.tm_mon = this->m_month-1;
+            timeTarget.tm_mday = this->m_day -0;
+            timeTarget.tm_hour = 0;
+            timeTarget.tm_min = 0;
+            timeTarget.tm_sec = 0;
+            
+            time_t target = mktime(&timeTarget);
+            int diff = difftime(target,now);
+            
+            keyState = diff>0 ?1:-1;
+        }
+        
+        return keyState == 1;
+        //return true;
+    }
 
 }
 

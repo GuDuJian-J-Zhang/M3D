@@ -14,7 +14,9 @@
 #include "m3d/base/Object.h"
 #include "m3d/base/Vector3.h"
 #include "m3d/base/BoundingBox.h"
+#include "m3d/action/RenderAction.h"
 #include "m3d/graphics/Renderable.h"
+
 
 namespace M3D
 {
@@ -23,7 +25,7 @@ class SceneManager;
 class GeometryAttribute;
 class HardWareVertexBuffer;
 class HardWareIndexBuffer;
-class RenderAction;
+
 /**
  * 网格数据的接口类
  */
@@ -152,16 +154,7 @@ public:
 	 */
 	void UpdateHardWareBuffer(SceneManager* sceneMgr);
 
-	void UpdateHardWareBuffer(SceneManager* sceneMgr,int CacheType);
-
-	/**
-	* 将磁盘中的数据，再读取到内存中
-	*/
-	void UnCacheFromDisk(SceneManager* sceneMgr);
-
 	float GetVolumeAndArea(float& volume,float& area);
-
-	void RecalculateNormal();
 private:
 	/**
 	 * 内存不足时，回调函数
@@ -206,11 +199,6 @@ public:
 	virtual BoundingBox& GetBoundingBox();
 
 	virtual void RayPick(RayPickAction* action);
-
-	virtual void FramePick(RayPickAction* action);
-
-	virtual void FramePickFast(RayPickAction* action);
-
 
 	/**
 	 * IMeshData virtual fun
@@ -258,8 +246,9 @@ public:
 	 * @return 偏移量
 	 */
 	unsigned int  GetDataOffset();
+
 	float GetVolumeAndArea(float& volume,float& area);
-    
+
 private:
 	GeometryAttribute* m_geoAttribute;//!<关联几何属性
 
@@ -267,6 +256,7 @@ private:
 
 	unsigned int m_dataOffset; //!< 数据相对于refMeshData的偏移量
 	unsigned int m_dataLength; //!< 数据总长度
+
 	BoundingBox m_boudingBox;
 };
 

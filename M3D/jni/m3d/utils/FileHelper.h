@@ -9,7 +9,11 @@
 
 #ifndef M3D_FILE_HELPER_H
 #define  M3D_FILE_HELPER_H
-#include "M3D/M3DExport.h"
+#include <string>
+#include <iostream>
+
+using std::string;
+using std::iostream;
 namespace M3D
 {
 
@@ -45,7 +49,7 @@ public:
 	 * @return
 	 */
 	static string GetFileName(const string& filePath);
-	static string GetFileNameWithoutExt(const string& filePath);
+
 	/**
 	 * 得到后缀名
 	 * @param filePath
@@ -66,32 +70,7 @@ public:
 	 * @return
 	 */
 	static bool FileExist(const string& filePath);
-	static int is_dir(const char* path);
-	static int endwith(const char* s, char c);
-	static string str_contact(const char* str1, const char* str2);
-	static void copy_file(const char* source_path, const char *destination_path);
-	static void copy_folder(const char* source_path, const char *destination_path);
 
-	static bool make_dir(const std::string& pathName);
-	static bool delete_dir(std::string strDir);
-	static bool get_src_files_name(const string&srcDirPath, std::vector<std::string>& fileNameList);
-	static void do_copy(const string&srcDirPath, const string&desDirPath, const std::vector<std::string> &fileNameList);
-
-	/************************************************************************/
-	/* 读取文本文件                                                                     */
-	/************************************************************************/
-
-	static string ReadAsciiFile(const string& filePath);
-	static string  ReadTxt(string file);
-
-	//以二进制的方式读取buffer，需要在外部释放此反馈的buffer
-	static bool ReadBinFile(const string& filePath,char* &readbuffer,int& bufferLength);
-
-	static bool RemoveFile(const string& filePath);
-
-	static int SaveFileAssAscii(const string& fileContent,const string& destFilePath);
-
-	static int SaveFileAsBin(const char* buffer, int bufferSize,const string& destFilePath);
 };
 }
 #endif/*M3D_FILE_HELPER_H*/

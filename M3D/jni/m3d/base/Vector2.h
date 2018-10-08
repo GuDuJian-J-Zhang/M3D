@@ -10,8 +10,8 @@
 #define M3D_VECTOR2_H_
 
 #include "m3d/base/MathDefs.h"
-#include "m3d/M3DExport.h"
- 
+#include "m3d/M3D.h"
+
 namespace M3D
 {
 
@@ -81,18 +81,10 @@ public:
 	{
 		return Vector2(m_x + rhs.m_x, m_y + rhs.m_y);
 	}
-	Vector2 Add(const Vector2& rhs) const
-	{
-		return Vector2(m_x + rhs.m_x, m_y + rhs.m_y);
-	}
 	/**
 	 * @brief Return negation.
 	 */
 	Vector2 operator -() const
-	{
-		return Vector2(-m_x, -m_y);
-	}
-	Vector2 Negative() const
 	{
 		return Vector2(-m_x, -m_y);
 	}
@@ -103,18 +95,10 @@ public:
 	{
 		return Vector2(m_x - rhs.m_x, m_y - rhs.m_y);
 	}
-	Vector2 Sub(const Vector2& rhs) const
-	{
-		return Vector2(m_x - rhs.m_x, m_y - rhs.m_y);
-	}
 	/**
 	 * @brief Multiply with a scalar.
 	 */
 	Vector2 operator *(float rhs) const
-	{
-		return Vector2(m_x * rhs, m_y * rhs);
-	}
-	Vector2 Multiply(float rhs) const
 	{
 		return Vector2(m_x * rhs, m_y * rhs);
 	}
@@ -125,10 +109,6 @@ public:
 	{
 		return Vector2(m_x * rhs.m_x, m_y * rhs.m_y);
 	}
-	Vector2 Multiply(const Vector2& rhs) const
-	{
-		return Vector2(m_x * rhs.m_x, m_y * rhs.m_y);
-	}
 	/**
 	 * @brief Divide by a scalar.
 	 */
@@ -136,18 +116,10 @@ public:
 	{
 		return Vector2(m_x / rhs, m_y / rhs);
 	}
-	Vector2 Divide(float rhs) const
-	{
-		return Vector2(m_x / rhs, m_y / rhs);
-	}
 	/**
 	 * @brief Divide by a vector.
 	 */
 	Vector2 operator /(const Vector2& rhs) const
-	{
-		return Vector2(m_x / rhs.m_x, m_y / rhs.m_y);
-	}
-	Vector2 Divide(const Vector2& rhs) const
 	{
 		return Vector2(m_x / rhs.m_x, m_y / rhs.m_y);
 	}
@@ -161,12 +133,7 @@ public:
 		m_y += rhs.m_y;
 		return *this;
 	}
-	Vector2& Added(const Vector2& rhs)
-	{
-		m_x += rhs.m_x;
-		m_y += rhs.m_y;
-		return *this;
-	}
+
 	/**
 	 * @brief Subtract-assign a vector.
 	 */
@@ -176,12 +143,7 @@ public:
 		m_y -= rhs.m_y;
 		return *this;
 	}
-	Vector2& Subed(const Vector2& rhs)
-	{
-		m_x -= rhs.m_x;
-		m_y -= rhs.m_y;
-		return *this;
-	}
+
 	/**
 	 * @brief Multiply-assign a scalar.
 	 */
@@ -191,12 +153,7 @@ public:
 		m_y *= rhs;
 		return *this;
 	}
-	Vector2& Multiplyed(float rhs)
-	{
-		m_x *= rhs;
-		m_y *= rhs;
-		return *this;
-	}
+
 	/**
 	 * @brief Multiply-assign a vector.
 	 */
@@ -206,12 +163,7 @@ public:
 		m_y *= rhs.m_y;
 		return *this;
 	}
-	Vector2& Multiplyed(const Vector2& rhs)
-	{
-		m_x *= rhs.m_x;
-		m_y *= rhs.m_y;
-		return *this;
-	}
+
 	/**
 	 * @brief Divide-assign a scalar.
 	 */
@@ -222,13 +174,7 @@ public:
 		m_y *= invRhs;
 		return *this;
 	}
-	Vector2& Divided(float rhs)
-	{
-		float invRhs = 1.0f / rhs;
-		m_x *= invRhs;
-		m_y *= invRhs;
-		return *this;
-	}
+
 	/**
 	 * @brief Divide-assign a vector.
 	 */
@@ -238,12 +184,7 @@ public:
 		m_y /= rhs.m_y;
 		return *this;
 	}
-	Vector2& Divided(const Vector2& rhs)
-	{
-		m_x /= rhs.m_x;
-		m_y /= rhs.m_y;
-		return *this;
-	}
+
 	/**
 	 * @brief Normalize to unit length.
 	 */
@@ -337,18 +278,6 @@ public:
 	{
 		return &m_x;
 	}
-
-	M3D_ADDRESSTYPE Address()
-	{
-		//获取地址的真实方式
-		return TAddress(*this);
-	}
-
-	void FillByAddress(M3D_ADDRESSTYPE memoryAddress)
-	{
-		*this = *TFromAddress<Vector2>(memoryAddress);
-	}
-
 	/**
 	 * @brief Return as string.
 	 */

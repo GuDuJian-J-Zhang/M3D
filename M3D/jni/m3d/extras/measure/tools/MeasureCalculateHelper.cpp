@@ -559,13 +559,13 @@ bool MeasureCalculateHelper::LineLineDistance(
 {
 	bool ret = true;
 
-	Vector3 alpha0 = (lineAttribute0.GetEndPoint()
-			- lineAttribute0.GetStartPoint()).Normalized();
-	Vector3 alpha1 = (lineAttribute1.GetEndPoint()
-			- lineAttribute1.GetStartPoint()).Normalized();
+	Vector3 alpha0 = lineAttribute0.GetEndPoint()
+			- lineAttribute0.GetStartPoint();
+	Vector3 alpha1 = lineAttribute1.GetEndPoint()
+			- lineAttribute1.GetStartPoint();
 
-	if (alpha0.CrossProduct(alpha1).Length() >= -0.001
-			&& alpha0.CrossProduct(alpha1).Length() <= 0.001)
+	if (alpha0.CrossProduct(alpha1).Length() >= -0.000001
+			&& alpha0.CrossProduct(alpha1).Length() <= 0.000001)
 	{
 		//两直线平行
 		//转化到点到直线的距离

@@ -18,7 +18,7 @@ class M3D_API GL10Context: public RenderContext
 public:
 	friend class RenderContext;
 	virtual ~GL10Context();
-	virtual void OptimizeContext();
+
 	/**
 	 * 获取上下文类型
 	 * @return
@@ -42,8 +42,6 @@ public:
 
 private:
 	GL10Context();
-	bool initialized;
-	int m_deviceSupportMsaaNum;
 };
 }
 

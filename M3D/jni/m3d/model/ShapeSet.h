@@ -12,15 +12,15 @@
 #ifndef M3D_CAD_NODE_H_
 #define M3D_CAD_NODE_H_
 
-#include "m3d/graphics/Renderable.h"
 #include "m3d/model/Shape.h"
 #include "m3d/model/LODData.h"
+#include "m3d/action/RenderAction.h"
+#include "m3d/graphics/Renderable.h"
 namespace M3D
 {
 class Edge;
 class Body;
-class RenderAction;
-class Model;
+
 
 /**
  * @class ShapeSet

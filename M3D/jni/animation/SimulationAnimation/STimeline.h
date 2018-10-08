@@ -32,23 +32,6 @@ class CSTimeline;
 template class VArray< int >;
 #endif
 
-class SA_API CTimeLineRange
-{
-public:
-	CTimeLineRange(CSTimeline* pTimeLine = 0);
-	~CTimeLineRange();
-private:
-	VIntArray m_tlKeyFrameIndexArray;
-	CSTimeline* m_pTimeLine;
-public:
-	void AddKeyFrameIndex(int iKeyFrameIndex);
-	void Clear();
-	int* GetKeyFrameIndexArray();
-	int GetKeyFrameIndexArrayLength(){return m_tlKeyFrameIndexArray.Count();}
-	int GetBeginKeyFrameIndex();
-	int GetEndKeyFrameIndex();
-	CSTimeline* GetTimeline() { return m_pTimeLine;};
-};
 
 class SA_API CSTimeline 
 {
@@ -169,21 +152,7 @@ public:
  	*/	
 	void SetInstancedTimeline(CSTimeline *timeline) { m_pInstancedTimeline = timeline; }
 	
-	/*!
-	Adjusts the given keyframe time by the passed delta value. 
-	\param time The time of the keyframe to begin the adjustment.
-	\param delta The number of ticks to offset the given time.
-	\param doall Pass true ripple the effect to all keyframes after the given time.
- 	*/	
-	void Adjust(int time, int delta, bool doall = true);
-	/*!
-	Adjust Timeline based on delta value relative to current time. In other words,
-	the timeline will be offset by the pass delta value for all the keyframe interval
-	at the given time and all the keyframe intervals after that time.
-	\param time The time of the keyframe to begin the adjustment.
-	\param delta The number of ticks to offset the given time.
-  	*/	
-	void AdjustRelative(int time, int delta);
+
 
 	/*! \return Current tick relative to the properties in this timeline.  This value takes into account
 	start time and looping. */
@@ -196,8 +165,6 @@ public:
 	void SetCurrentRelativeTick(float tick) { m_CurrentRelativeTick = tick; }
 	void SetCheckRelativeFrame(bool bCheckRelativeFrame = true) {m_bCheckRelativeFrame = bCheckRelativeFrame;}
 
-	//克隆
-	CSTimeline* Clone();
 
 protected:	
 	/*!
@@ -223,17 +190,6 @@ protected:
  	float					m_CurrentTick;					//!< This is for internal use only.			
 	float					m_CurrentRelativeTick;				//!< This is for internal use only.	
 	bool					m_bCheckRelativeFrame;
-private:
-	VArray<CTimeLineRange*>	m_pTLRangeArray;
-public:
-	void AddTLRange();
-	int GetTLRangeByCurFrame(int iCurFrame,CTimeLineRange** pTLRange);
-	CTimeLineRange* GetLastTLRange(int iCurTLRange);
-	CTimeLineRange* GetNextTLRange(int iCurTLRange);
-	VArray<CTimeLineRange*>& GetTimeLineRange() { return m_pTLRangeArray; }
-	void Adjust(int iFrameType, int delta, int iAniType, 
-		VIntArray& keyFrameIndexArray, VIntArray& keyFrameArray, VArray<CTimeLineRange*> tlRangeArray);
-	void AdjustRelative(int iBeginIndex, int iEndIndex, bool bBegin, int delta, VIntArray& keyFrameArray);
 };
 
 //SA_NAMESPACE_END

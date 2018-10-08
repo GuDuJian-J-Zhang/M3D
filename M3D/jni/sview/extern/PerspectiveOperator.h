@@ -18,6 +18,7 @@ namespace M3D
 {
 
 const int DEFAULIT_TIMES = 30;
+class WorkNodes;
 class SceneManager;
 class Quaternion;
 class Vector3;
@@ -44,7 +45,7 @@ public:
 	virtual ~PerspectiveOperator();
 
 	void Show(SVIEW::View* pView, int viewType, bool allowRotate = true,
-			bool allowTran = false, bool allowScale = false,bool useAni = true);
+			bool allowTran = false, bool allowScale = false);
 	void Show(SVIEW::View* pView, float* pMatrix, bool allowRotate = true,
 			bool allowTran = false, bool allowScale = false);
 	void Show(SVIEW::View* pView, const ControlInfo& cameraMatrix,
@@ -52,7 +53,7 @@ public:
 					false, int keepMsecond = 30);
 
 	void Apply(SVIEW::View* pView, int viewType, bool allowRotate = true,
-			bool allowTran = false, bool allowScale = false, bool useAni = true);
+			bool allowTran = false, bool allowScale = false);
 
 	void Apply(SVIEW::View* pView, float* pMatrix, bool allowRotate = true,
 			bool allowTran = false, bool allowScale = false);
@@ -100,12 +101,11 @@ public:
 
 	static void* commonTimerTask(void* arg);
 
-	bool GetAllowUseAni() const { return m_allowUseAni; }
-	void SetAllowUseAni(bool val) { m_allowUseAni = val; }
 private:
 	void Initialize();
 protected:
 private:
+	WorkNodes* m_pSelectedNodes;
 	SVIEW::View* m_pView;
 
 	SceneManager* m_pSceneManager;
@@ -114,10 +114,6 @@ private:
 	bool m_bAllowRotate;
 	bool m_bAllowTran;
 	bool m_bAllowScale;
-
-	bool m_useAni;
-
-	bool m_allowUseAni;
 
 	float m_pMatrix[16];
 

@@ -18,7 +18,6 @@ Resource::~Resource()
 void Resource::Init()
 {
 	SetResourceManager(NULL);
-	this->SetSvlId(OBJID++);
 }
 
 void Resource::SetResourceManager(ResourceManager* resourceMgr)

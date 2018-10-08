@@ -11,12 +11,11 @@
 #define M3D_BILLBOARD_H_
 
 #include "m3d/base/Matrix4.h"
-#include "m3d/base/Matrix3x4.h"
+#include "m3d/action/RenderAction.h"
 #include "m3d/graphics/Renderable.h"
 #include "m3d/base/Mutex.h"
 namespace M3D
 {
-class RenderAction;
 /**
  * @class
  * @brief 公告板类
@@ -31,9 +30,8 @@ public:
 	 * @param renderAction 渲染动作
 	 * @return 返回矩阵
 	 */
-	Matrix3x4& GetWorldMatrix(RenderAction* renderAction);
 
-	Matrix3x4& GetWorldMatrix(const Matrix3x4& modelViewMatrix);
+	Matrix3x4& GetWorldMatrix(RenderAction* renderAction);
 	/**
 	 * @brief 获取世界矩阵
 	 * @return 返回矩阵
@@ -45,13 +43,12 @@ public:
 	 * @return 返回矩阵
 	 */
 	Matrix4& GetGLWorldMatrix(RenderAction* renderAction);
-
-	Matrix4& GetGLWorldMatrix(const Matrix3x4& modelViewMatrix);
 	/**
 	 * @brief 获取符合OpenGL格式的矩阵
 	 * @return 返回矩阵
 	 */
 	Matrix4& GetGLWorldMatrix();
+
 
 	/**
 	 * @brief 是否允许平移
@@ -95,8 +92,6 @@ public:
 	 * @return 中心坐标
 	 */
 	Vector3& GetCenter();
-
-	static float GetFitShowScale(RenderAction* renderAction,Vector3& position);
 
 private:
 	Matrix3x4 m_worldMatrix;//!<世界矩阵

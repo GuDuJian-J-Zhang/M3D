@@ -1,37 +1,31 @@
-///*
-// * ModelAssemblyHelper.cpp
-// *
-// *  Created on: 2016-1-4
-// *      Author: CDJ
-// */
-//
-#include "m3d/ResourceManager.h"
+/*
+ * ModelAssemblyHelper.cpp
+ *
+ *  Created on: 2016-1-4
+ *      Author: CDJ
+ */
+
 #include "m3d/extras/modelmanager/ModelAssemblyHelper.h"
 #include "m3d/model/GeoAttribute.h"
-#include "m3d/model/Model.h"
-
 #include "m3d/SceneManager.h"
-#include "m3d/SceneManager.h"
-#include "m3d/utils/ShapeHelper.h"
 #include "m3d/utils/M3DTools.h"
-#include "m3d/utils/FileHelper.h"
+#include "m3d/utils/ShapeHelper.h"
+#include "m3d/ResourceManager.h"
+#include "m3d/SceneManager.h"
+#include "m3d/scenemanager.h"
 #include "sview/utils/ViewHelper.h"
-#include "m3d/extras/OperationHistoryManager.h"
-
-#include "sview/views/Parameters.h"
 #include "m3d/scene/ShapeNode.h"
+#include "m3d/scene/GroupNode.h"
+#include "m3d/scene/ModelNode.h"
+#include "m3d/Utils/FileHelper.h"
+#include "sview/io/Reader.h"
 #include "sview/io/Writer.h"
 #include "m3d/model/Body.h"
 #include "m3d/model/ShapeSet.h"
-#include "m3d/SceneManager.h"
-#include "m3d/scene/GroupNode.h"
-#include "sview/io/Reader.h"
-#include "sview/io/SVL2AsynReader.h"
+#include "m3d/extras/OperationHistoryManager.h"
 #include "m3d/base/Quaternion.h"
 
 using SVIEW::Reader;
-using SVIEW::Parameters;
-using SVIEW::SVL2AsynReader;
 namespace M3D
 {
 
@@ -54,11 +48,11 @@ Matrix3x4 ModelAssemblyHelper::GetPlaceMatrix(Model* model)
 	Matrix3x4 mat;
 	if (model)
 	{
-	/*	ModelNode * tempNode = GetModelNode(model);
+		ModelNode * tempNode = GetModelNode(model);
 		if(tempNode)
 		{
 			mat = tempNode->GetPlcMatrix();
-		}*/
+		}
 
 	}
 	return mat;
@@ -69,7 +63,11 @@ Matrix3x4 ModelAssemblyHelper::GetWorldMatrix(Model* model)
 	Matrix3x4 mat;
 	if (model)
 	{
-		mat = model->GetWorldTransform();
+		ModelNode * tempNode = GetModelNode(model);
+		if(tempNode)
+		{
+			mat = tempNode->GetWorldTransform();
+		}
 	}
 	return mat;
 }
@@ -79,11 +77,11 @@ string ModelAssemblyHelper::GetPlacePath(Model* model)
 	string path = "";
 	if (model)
 	{
-		//ModelNode * tempNode =  GetModelNode(model);
-		//if(tempNode)
-		//{
-		//	path = tempNode->GetName();
-		//}
+		ModelNode * tempNode =  GetModelNode(model);
+		if(tempNode)
+		{
+			path = tempNode->GetName();
+		}
 		//LOGI("ModelManager::GetPlacePath path === %s",path.c_str());
 	}
 
@@ -94,11 +92,11 @@ void ModelAssemblyHelper::SetPlacePath(Model* model, string path)
 {
 	if (model)
 	{
-		//ModelNode * tempNode =  GetModelNode(model);
-		//if(tempNode)
-		//{
-		//	tempNode->SetName(path);
-		//}
+		ModelNode * tempNode =  GetModelNode(model);
+		if(tempNode)
+		{
+			tempNode->SetName(path);
+		}
 	}
 }
 
@@ -122,7 +120,7 @@ void ModelAssemblyHelper::SetPlacePath(Model* model, Model* pareModel)
 //			LOGI("model->GetSubModelCount() ==%d", model->GetSubModelCount());
 			for (int i = 0; i < model->GetSubModelCount(); i++)
 			{
-				SetPlacePath((Model*)model->GetSubModels().at(i), model);
+				SetPlacePath(model->GetSubModels().at(i), model);
 			}
 		}
 
@@ -133,62 +131,46 @@ void ModelAssemblyHelper::SetPlaceMatrix(Model* model, const Matrix3x4& plcMat)
 {
 	if (model)
 	{
-		//ModelNode * tempNode = GetModelNode(model);
-		//if(tempNode)
-		//{
-		//	tempNode->SetOrigPlcMatrix(plcMat);
-		//}
+		ModelNode * tempNode = GetModelNode(model);
+		if(tempNode)
+		{
+			tempNode->SetOrigPlcMatrix(plcMat);
+		}
 	}
 }
 
 void ModelAssemblyHelper::ComputePlaceMatrix(Model* model)
 {
-	//ModelNode * modelNode = GetModelNode(model);
-	//ModelNode * parentNode = GetParentNode(model);
-	//if(modelNode  && parentNode)
-	//{
+	ModelNode * modelNode = GetModelNode(model);
+	ModelNode * parentNode = GetParentNode(model);
+	if(modelNode  && parentNode)
+	{
 
-	//	Matrix3x4 plcMat =
-	//			parentNode->GetWorldTransform().Inverse() *modelNode->GetWorldTransform();
-	//	LOGI("=====================================");
-	//	LOGI("%s",parentNode->GetWorldTransform().Inverse().ToString().c_str());
-	//	LOGI("=====================================");
-	//	LOGI("=====================================");
-	//	LOGI("%s",modelNode->GetWorldTransform().ToString().c_str());
-	//	LOGI("=====================================");
-	//	SetPlaceMatrix(model, plcMat);
-	//}
-	//else
-	//{
-	//	LOGI("parentNode is NULL");
-	//}
-}
-
-void ModelAssemblyHelper::ComputePlaceMatrix(Model* sourceModel, Model* desModel)
-{
-	//1 获取目标装配相对世界坐标系的矩阵a
-	Matrix3x4 parentWorldMat = ModelAssemblyHelper::GetWorldMatrix(desModel);
-	//2 求取矩阵a的逆装配矩阵b
-	Matrix3x4 inverseParentWorldMat = parentWorldMat.Inverse();
-	//3 获取源装配相对于世界坐标系的矩阵c
-	Matrix3x4 sourceWorldMat = ModelAssemblyHelper::GetWorldMatrix(sourceModel);
-	//4 求源装配相对于目标装配的矩阵d
-	Matrix3x4 tempMat;
-	tempMat = Matrix3x4::IDENTITY;
-	Matrix3x4 sourcePlaceMatrix = inverseParentWorldMat * (tempMat * sourceWorldMat);
-	//5 将矩阵设置给源装配
-	sourceModel->SetOrigPlcMatrix(sourcePlaceMatrix);
+		Matrix3x4 plcMat =
+				parentNode->GetWorldTransform().Inverse() *modelNode->GetWorldTransform();
+		LOGI("=====================================");
+		LOGI("%s",parentNode->GetWorldTransform().Inverse().ToString().c_str());
+		LOGI("=====================================");
+		LOGI("=====================================");
+		LOGI("%s",modelNode->GetWorldTransform().ToString().c_str());
+		LOGI("=====================================");
+		SetPlaceMatrix(model, plcMat);
+	}
+	else
+	{
+		LOGI("parentNode is NULL");
+	}
 }
 
 void ModelAssemblyHelper::SetWorldMatrix(Model* model, const Matrix3x4& wldMat)
 {
 	if (model)
 	{
-		/*ModelNode * tempNode =GetModelNode(model);
+		ModelNode * tempNode =GetModelNode(model);
 		if(tempNode)
 		{
 			tempNode->SetWorldTransform(wldMat);
-		}*/
+		}
 	}
 }
 
@@ -216,39 +198,40 @@ int ModelAssemblyHelper::GetMaxPlcId(Model* model)
 				}
 			}
 		}
+
 	}
 
-	ret  = maxNum+1;  
+	ret  = maxNum+1;
 
 	return ret;
 }
 
 void ModelAssemblyHelper::PrintPlcID(Model * model)
 {
-	/*ModelNode* sourceModelNod = GetModelNode(model);
+	ModelNode* sourceModelNod = GetModelNode(model);
 	for(int i = 0;i<model->GetSubModels().size();i++)
 	{
-		PrintPlcID((Model*)model->GetSubModels().at(i));
+		PrintPlcID(model->GetSubModels().at(i));
 	}
-	LOGI("sourceModelNod name == %s",sourceModelNod->GetName().c_str());*/
+	LOGI("sourceModelNod name == %s",sourceModelNod->GetName().c_str());
 }
 
-bool ModelAssemblyHelper::InsertInLast(View * view,Model* sourceModel, Model* desModel)
+bool ModelAssemblyHelper::InsertBefore(View * view,Model* sourceModel, Model* desModel)
 {
-	LOGI(" ModelManager::InsertBefore BEGIN");
+	//LOGI(" ModelManager::InsertBefore BEGIN");
 	bool msg =false;
 	if (sourceModel && desModel)
 	{
 		//LOGI(" ModelManager::InsertBefore 1");
-		//string desModelName = GetPlacePath(desModel);
+		string desModelName = GetPlacePath(desModel);
 
-		//ModelNode* sourceModelNod = GetModelNode(sourceModel);
+		ModelNode* sourceModelNod = GetModelNode(sourceModel);
 
-		//ModelNode* desModelNod = GetModelNode(desModel);
+		ModelNode* desModelNod = GetModelNode(desModel);
 
 	//	LOGI("sourceModelNod pointer = %p,desModelNod pointer = %p",sourceModelNod,desModelNod);
 
-		//if (sourceModelNod && desModelNod)
+		if (sourceModelNod && desModelNod)
 		{
 		//	LOGI(" ModelManager::InsertBefore 2");
 /*			//判断子模型数量，若为0则是零件，不为零则为装配
@@ -256,7 +239,7 @@ bool ModelAssemblyHelper::InsertInLast(View * view,Model* sourceModel, Model* de
 			{
 //				GroupNode* pare = (GroupNode*) desModel->GetParent();
 
-				pare->AddChildInSameLevelBefore(sourceModelNod, desModelName);
+//				pare->AddChildInSameLevelBefore(sourceModelNod, desModelName);
 
 				msg =  ASSEMBLYMSG::ASSAMBLY_INS_BEFO_ERR;
 			}
@@ -264,20 +247,16 @@ bool ModelAssemblyHelper::InsertInLast(View * view,Model* sourceModel, Model* de
 			{
 			*/	//若原零件是个装配，那么把要插入的零件之间放入最后
 			int tempId = desModel->GetUseablePlcId();
-			SceneManager* scene = view->GetSceneManager(); scene->Lock();
-				//desModelNod->AddChild(sourceModelNod);
+				desModelNod->AddChild(sourceModelNod);
 				desModel->AddSubModel(sourceModel);
-				sourceModel->SetPlcId(tempId);
-				sourceModel->ClearPlcPath(true);
-//				LOGI("temoId == %d",tempId);
-				view->GetSceneManager()->AsynUpdateModelCacheInfo(sourceModel,true);
-				//sourceModelNod->UpdateName();
-//				PrintPlcID(sourceModel);
-            //设置ocTree区域
-                view->GetSceneManager()->RequestUpdateWhenSceneBoxChanged();    //将模型加入装配中
-/*			}*/
 
-                scene->UnLock();
+
+				sourceModel->SetPlcId(tempId);
+//				LOGI("temoId == %d",tempId);
+				view->GetSceneManager()->ReIndexIDMapAfterAddModel(sourceModel);
+				sourceModelNod->UpdateName();
+//				PrintPlcID(sourceModel);
+/*			}*/
 		}
 
 		msg =  true;
@@ -287,74 +266,84 @@ bool ModelAssemblyHelper::InsertInLast(View * view,Model* sourceModel, Model* de
 		//LOGI("ModelManager::InsertBefor ASSEMBLYMSG::ASSAMBLY_INS_BEFO_ERR");
 		msg = false;
 	}
-	LOGI(" ModelManager::InsertBefore END");
+//	LOGI(" ModelManager::InsertBefore END");
 	return msg;
 
 }
 
-bool ModelAssemblyHelper::InsertInPos(View* view, Model* sourceModel, int iId, Model* parentModel)
-{
-	LOGI(" ModelManager::InsertInPos BEGIN");
-	bool bRet = false;
-	if (!view || !sourceModel || !parentModel)
-		return bRet;
-	//以下的判断有没有必要？若加上则应该添加parentModel子ID计数减一的代码
-	//if (iPos > parentModel->GetUseablePlcId())
-	//	return bRet;
-	SceneManager* scene = view->GetSceneManager(); 
-	scene->Lock();
-	parentModel->AddSubModel(sourceModel);
-	sourceModel->SetPlcId(iId);
-	sourceModel->ClearPlcPath(true);
-	view->GetSceneManager()->AsynUpdateModelCacheInfo(sourceModel, true);
-	//设置ocTree区域
-	view->GetSceneManager()->RequestUpdateWhenSceneBoxChanged();    //将模型加入装配中
-	scene->UnLock();
-	bRet = true;
-	LOGI(" ModelManager::InsertInPos END");
-	return bRet;
-}
-
-//bool ModelAssemblyHelper::DetachModel(Model* model)
-//{
-//	bool msg = false;
-//	if (model)
-//	{
-//        //model->AddRef();
-//		//SceneManager* scene = view->GetSceneManager(); scene->Lock();
-//		
-//		//scene->UnLock();
-//		msg =  true;
-//	}
-//	else
-//	{
-//		msg =  false;
-//	}
-//
-//	return msg;
-//}
-
-bool ModelAssemblyHelper::DeleteModel(View* view, Model* model)
+bool ModelAssemblyHelper::DetachModel(Model* model)
 {
 	bool msg = false;
 	if (model)
+	{
+		ModelNode* tempNode = GetModelNode(model);
+		ModelNode* pare = GetParentNode(model);
+		if(pare && tempNode)
 		{
-            SceneManager* scene = view->GetSceneManager();
-			msg = view->GetSceneManager()->AsynRemoveModelFromeScene(model->GetParent(), model);
+			pare->DetachChild(tempNode);
+		}
+
+		Model * parent  = model->GetParent();
+		if(parent)
+		{
+			parent->DetachSubModel(model);
+		}
+
+		msg =  true;
+
+	}
+	else
+	{
+		msg =  false;
+	}
+
+	return msg;
+}
+
+bool ModelAssemblyHelper::DeleteModel(View* view, Model* model)
+{
+	LOGI("ModelAssemblyHelper::DeleteModel BEGIN");
+	bool msg = false;
+	if (model)
+		{
+		LOGI("ModelAssemblyHelper::DeleteModel 1");
+			ModelNode* tempNode = GetModelNode(model);
+			ModelNode* pare = GetParentNode(model);
+			if(pare && tempNode)
+			{
+				LOGI("pare->DeleteChild");
+				pare->DeleteChild(tempNode);
+			}
+
+			Model * parentMdl  = model->GetParent();
+			if(parentMdl)
+			{
+				LOGI("parentMdl->RemoveSubModel");
+				LOGI("parentMdl pointer is %p",parentMdl);
+				parentMdl->DetachSubModel(model);	//这里不要用removeModel
+			}
+
+			SceneManager* scene = view->GetSceneManager();
+			LOGI("scene->ReIndexIDMapAfterDeleteModel BEGIN");
+			scene->ReIndexIDMapAfterDeleteModel(model);//在这里就已经将model删除了，因此上面只需detach
+			LOGI("scene->ReIndexIDMapAfterDeleteModel END");
 			msg =  true;
+
 		}
 		else
 		{
+			LOGI("ModelAssemblyHelper::DeleteModel ASSAMBLY_DEL_ERR");
 			msg =  false;
 		}
 
+	LOGI("ModelAssemblyHelper::DeleteModel END");
 	return msg;
 }
 
 Model* ModelAssemblyHelper::GetModelFromId(View* view, int modelId)
 {
 	Model * ret = NULL;
-	IShape * modelShp = view->GetShape(modelId);
+	Shape * modelShp = view->GetShape(modelId);
 	if(modelShp&&modelShp->GetType() == SHAPE_MODEL)
 	{
 		//LOGI("ModelManager::GetModelFromId complete");
@@ -363,67 +352,26 @@ Model* ModelAssemblyHelper::GetModelFromId(View* view, int modelId)
 	return ret;
 }
 
-//ModelNode* ModelAssemblyHelper::GetParentNode(Model* model)
-//{
-//	ModelNode * ret = NULL;
-//
-//	if(model)
-//	{
-//		SceneNode * node = model->GetSceneNode()->GetParent();
-//		if(node)
-//		{
-//			SceneNode * tempRet = node->GetParent();
-//			if(tempRet && tempRet->GetType()==MODEL_NODE)
-//			{
-//				ret = (ModelNode *) (tempRet);
-//			}
-//		}
-//
-//	}
-//
-//	return ret;
-//}
+ModelNode* ModelAssemblyHelper::GetParentNode(Model* model)
+{
+	ModelNode * ret = NULL;
 
-//void ModelAssemblyHelper::FillAssembly(View* view, Model* model)
-//{
-//	SModelFileInfo* fileInfo = model->GetFileInfo();
-//	if (fileInfo) {
-//		string curFilePath = "";// fileInfo->GetPath();
-//		curFilePath = FileHelper::GetUnionStylePath(curFilePath);
-//
-//		LOGI("curFilePath is ==%s", curFilePath.c_str());
-//		Reader* reader = Reader::GetReader(curFilePath);
-//
-//		Model* subModel = static_cast<Model*>(reader->GetModel());
-//		SceneManager* scene = view->GetSceneManager();
-//
-//		int defaultPlcId = model->GetSubModelCount() - 1;
-//
-//		if (defaultPlcId < 0)
-//		{
-//			defaultPlcId = 0;
-//		}
-//
-//		{			//将模型加入装配中
-//			SceneNode* sceneNode = model->GetSceneNode()->GetParent();
-//
-//			//if (subModel && sceneNode && sceneNode->GetType() == MODEL_NODE)
-//			//{
-//			//	ModelNode* modelNode = (ModelNode*)sceneNode;
-//			//	GroupNode* modelGroup = scene->CreateModelNodes(subModel, modelNode->GetName(), defaultPlcId);
-//			//	//对场景进行锁定
-//			//	SceneManager* scene = view->GetSceneManager();scene->Lock();
-//			//	model->AddSubModel(subModel);
-//			//	modelNode->AddChild(modelGroup);
-//			//	scene->UnLock();
-//			//}
-//		}
-//
-//		delete reader;
-//
-//		model->ClearFileInfo();
-//	}	
-//}
+	if(model)
+	{
+		SceneNode * node = model->GetSceneNode()->GetParent();
+		if(node)
+		{
+			SceneNode * tempRet = node->GetParent();
+			if(tempRet && tempRet->GetType()==MODEL_NODE)
+			{
+				ret = (ModelNode *) (tempRet);
+			}
+		}
+
+	}
+
+	return ret;
+}
 
 Model* ModelAssemblyHelper::AddModel(View * view,const string& filePath)
 {
@@ -433,59 +381,84 @@ Model* ModelAssemblyHelper::AddModel(View * view,const string& filePath)
 	LOGI("curFilePath is ==%s",curFilePath.c_str());
 	Reader* reader = Reader::GetReader(curFilePath);
     reader->SetView(view);
-	Model* model = static_cast<Model*>(reader->GetModel());
-    string ext = FileHelper::GetExt(curFilePath);
-    if (model) {
-        if (ext == "svlx") {
-            vector<Model*> subModelArray;
-            model->GetAllSubModels(subModelArray);
-            subModelArray.push_back(model);
-            for (int i = 0; i < subModelArray.size(); i++) {
-                Model *subModel = subModelArray.at(i);
-                ((SVL2AsynReader*)reader)->FillModelMesh(view, subModel);
-				//view->GetSceneManager()->AsynUpdateModelCacheInfo(subModel, true);
-            }
-			((SVL2AsynReader*)reader)->AddGeoAttribute(model, curFilePath, view);
-        }
-		model->AddRef();
-        if (reader) {
-            delete reader;
-            reader = NULL;
-        }
-    }
+	Model* model = reader->GetModel();
+
+	//得到顶级模型
+	Model* topModel = view->GetSceneManager()->GetModel();
+	//得到子模型,加入Model装配中
+//	if(topModel->IsAssembly())
+//	{
+//		topModel->AddSubModel(model);
+//	}
+	SceneManager* scene = view->GetSceneManager();
+
+	int defaultPlcId = topModel->GetSubModelCount()-1;
+
+	//将模型加入装配中
+	SceneNode* sceneNode = topModel->GetSceneNode()->GetParent();
+	if(sceneNode && sceneNode->GetType() == MODEL_NODE)
+	{
+		ModelNode* modelNode = (ModelNode*)sceneNode;
+
+		GroupNode* modelGroup = scene->CreateModelNodes(model,modelNode->GetName(),defaultPlcId);
+
+//		modelNode->AddChild(modelGroup);
+//
+//		scene->ReIndexIDMapAfterAddModel(model);
+	}
+
+	delete reader;
+
 	return model;
 }
 
-//ModelNode* ModelAssemblyHelper::GetModelNode(Model* model)
-//{
-//	//LOGI("ModelManager::GetModelNode BEGIN");
-//	ModelNode* ret = NULL;
-//	if (model)
-//	{
-//		SceneNode* tempRet = model->GetSceneNode()->GetParent();
-//		if (tempRet)
-////			LOGI("tempRet->GetType()== %d", tempRet->GetType());
-//		if (tempRet && tempRet->GetType() == MODEL_NODE)
-//		{
-//			ret = (ModelNode *) tempRet;
-//		}
-//	}
-//	//LOGI("ModelManager::GetModelNode END");
-//	return ret;
-//}
+ModelNode* ModelAssemblyHelper::GetModelNode(Model* model)
+{
+	//LOGI("ModelManager::GetModelNode BEGIN");
+	ModelNode* ret = NULL;
+	if (model)
+	{
+		SceneNode* tempRet = model->GetSceneNode()->GetParent();
+		if (tempRet)
+//			LOGI("tempRet->GetType()== %d", tempRet->GetType());
+		if (tempRet && tempRet->GetType() == MODEL_NODE)
+		{
+			ret = (ModelNode *) tempRet;
+		}
+	}
+	//LOGI("ModelManager::GetModelNode END");
+	return ret;
+}
 /**
  * @brief 旋转装配模型
  * @param model 要旋转的模型
  * @param quat 旋转量
  */
 void ModelAssemblyHelper::RotateAssemblyModel(Model* model, Quaternion& quat)
-{	
+{
+	ModelNode* modelNode = GetModelNode(model);
+	ModelNode * parentNode = GetParentNode(model);
+	ShapeNode * shpNd = (ShapeNode*) model->GetSceneNode();
 
-	Model* parent = model->GetParent();
 	Matrix3x4 modelWMat;
-	modelWMat = model->GetWorldTransform();
+	if(modelNode)
+	{
+		modelWMat = modelNode->GetWorldTransform();
+	}
+	else
+	{
+		modelWMat = Matrix3x4::IDENTITY;
+	}
 	Matrix3x4 pareWMat; //父节点世界转换矩阵
-	pareWMat = parent ? parent->GetWorldTransform() : pareWMat;
+
+	if (parentNode)
+	{
+		pareWMat = parentNode->GetWorldTransform();
+	}
+	else
+	{
+		pareWMat = Matrix3x4::IDENTITY;
+	}
 
 	Vector3 boxCenter = GetModelWorldBoundingBox(model).Center();
 //	LOGI("boxCenter === %s",boxCenter.Tostring().c_str());
@@ -495,7 +468,12 @@ void ModelAssemblyHelper::RotateAssemblyModel(Model* model, Quaternion& quat)
 	trans2.MultiTranslate(boxCenter);
 	Matrix3x4 tempmat = trans2 * rot1 * trans1;
 	Matrix3x4 plcMat = pareWMat.Inverse() * tempmat * modelWMat;
-	model->SetPlaceMatrix(plcMat);
+#ifdef WIN32
+	modelNode->SetPlcMatrix(plcMat);
+#else
+	modelNode->SetOrigPlcMatrix(plcMat);
+	modelNode->SetPlcMatrix(plcMat);
+#endif // WIN32
 }
 
 /**
@@ -505,60 +483,40 @@ void ModelAssemblyHelper::RotateAssemblyModel(Model* model, Quaternion& quat)
  */
 void ModelAssemblyHelper::TranslateAssemblyModel(Model* model, Vector3& move)
 {
-	if (!model)
+	ModelNode* modelNode = GetModelNode(model);
+	ModelNode * parentNode = GetParentNode(model);
+	ShapeNode * shpNd = (ShapeNode*) model->GetSceneNode();
+
+	Matrix3x4 modelWMat;
+	if(modelNode)
 	{
-		return;
+		modelWMat = modelNode->GetWorldTransform();
+	}
+	else
+	{
+		modelWMat = Matrix3x4::IDENTITY;
+	}
+	Matrix3x4 pareWMat; //父节点世界转换矩阵
+
+	if (parentNode)
+	{
+		pareWMat = parentNode->GetWorldTransform();
+	}
+	else
+	{
+		pareWMat = Matrix3x4::IDENTITY;
 	}
 
-	Model* parent = model->GetParent();
-	Matrix3x4 modelWMat;	
-	modelWMat = model->GetWorldTransform();	
-	Matrix3x4 pareWMat; //父节点世界转换矩阵
-	pareWMat = parent ? parent->GetWorldTransform() : pareWMat;
 	Matrix3x4 tempmat;
 	tempmat.MultiTranslate(move);
 	Matrix3x4 plcMat = pareWMat.Inverse() * (tempmat * modelWMat);
-	model->SetPlaceMatrix(plcMat);
-}
+#ifdef WIN32
+	modelNode->SetPlcMatrix(plcMat);
+#else
+	modelNode->SetOrigPlcMatrix(plcMat);
+	modelNode->SetPlcMatrix(plcMat);
+#endif // WIN32
 
-
-void ModelAssemblyHelper::RequestShowAllModel(SceneManager* scene)
-{
-	scene->RequestUpdateWhenSceneBoxChanged();
-	scene->OptimizeCameraView(false);
-}
-
-void ModelAssemblyHelper::RequestShowAllAfterAddModel(SceneManager* scene, Model* addModel)
-{
-	if (!addModel)
-	{
-		return;
-	}
-
-	if (IsModelInScene(scene,addModel))
-	{
-		scene->GetSceneBox().Clear();
-		RequestShowAllModel(scene);
-	}
-}
-
-bool ModelAssemblyHelper::IsModelInScene(SceneManager* scene, Model* model)
-{
-	bool ret = false;
-	if (!model)
-	{
-		return ret;
-	}
-
-	BoundingBox modelBox;
-	modelBox = model->GetWorldBoundingBox();
-	BoundingBox& sceneBox = scene->GetSceneBox();
-	if (sceneBox.IsInside(modelBox) != INSIDE)
-	{
-		ret = true;
-	}
-
-	return ret;
 }
 
 /**
@@ -568,11 +526,29 @@ bool ModelAssemblyHelper::IsModelInScene(SceneManager* scene, Model* model)
  */
 void ModelAssemblyHelper::ScaleAssemblyModel(Model* model, Vector3& scale)
 {
-	Model* parent = model->GetParent();
+	ModelNode* modelNode = GetModelNode(model);
+	ModelNode * parentNode = GetParentNode(model);
+	ShapeNode * shpNd = (ShapeNode*) model->GetSceneNode();
+
 	Matrix3x4 modelWMat;
-	modelWMat = model->GetWorldTransform();
+	if(modelNode)
+	{
+		modelWMat = modelNode->GetWorldTransform();
+	}
+	else
+	{
+		modelWMat = Matrix3x4::IDENTITY;
+	}
 	Matrix3x4 pareWMat; //父节点世界转换矩阵
-	pareWMat = parent ? parent->GetWorldTransform() : pareWMat;
+
+	if (parentNode)
+	{
+		pareWMat = parentNode->GetWorldTransform();
+	}
+	else
+	{
+		pareWMat = Matrix3x4::IDENTITY;
+	}
 
 	Vector3 boxCenter =GetModelWorldBoundingBox(model).Center();
 	Matrix3x4 trans1, trans2, rot1;
@@ -581,32 +557,29 @@ void ModelAssemblyHelper::ScaleAssemblyModel(Model* model, Vector3& scale)
 	trans2.MultiTranslate(boxCenter);
 	Matrix3x4 tempmat = trans2 * rot1 * trans1;
 	Matrix3x4 plcMat = pareWMat.Inverse() * tempmat * modelWMat;
-	model->SetPlaceMatrix(plcMat);
+#ifdef WIN32
+	modelNode->SetPlcMatrix(plcMat);
+#else
+	modelNode->SetOrigPlcMatrix(plcMat);
+	modelNode->SetPlcMatrix(plcMat);
+#endif // WIN32
+
+
 }
- 
+
 BoundingBox ModelAssemblyHelper::GetModelWorldBoundingBox(Model * model)
 {
-	BoundingBox center;
-
-	if (model->GetType() == SHAPETYPE::SHAPE_LIGHT_BASE ||
-		model->GetType() == SHAPETYPE::SHAPE_LIGHT_DIRECTIONAL ||
-		model->GetType() == SHAPETYPE::SHAPE_LIGHT_SPOT ||
-		model->GetType() == SHAPETYPE::SHAPE_LIGHT_POINT)
+	ShapeNode * shpNd = (ShapeNode*) model->GetSceneNode();
+	BoundingBox tempBox = shpNd->GetWorldBoundingBox();
+	if(model->GetSubModelCount()>0)
 	{
-		SignModel* signModel = static_cast<SignModel*>(model);
 
-		M3D::ImageModel* imageModel = signModel->GetSimpleSignModel();
-		if (imageModel)
+		for(int i=0;i<model->GetSubModels().size();i++ )
 		{
-			center = imageModel->GetWorldBoundingBox();
+			tempBox.Merge(GetModelWorldBoundingBox(model->GetSubModels().at(i)));
 		}
 	}
-	else
-	{
-		center = model->GetTotalWorldBoundingBox();
-	}
-
-	return center;
+	return tempBox;
 }
 
 }

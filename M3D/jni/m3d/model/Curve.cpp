@@ -127,8 +127,8 @@ M3D_STATUS SPolyLine::SetPoints(const vector<Vector3>& i_pntPoints)
 
 void SPolyLine::GetDomain(float& o_fUMin, float& o_fUMax)
 {
-	//o_fUMin = m_fUMin;
-	//o_fUMax = m_fUMax;
+	o_fUMin = m_fUMin;
+	o_fUMax = m_fUMax;
 }
 
 /****************************************************************************
@@ -143,25 +143,9 @@ void SPolyLine::GetDomain(float& o_fUMin, float& o_fUMax)
 
 M3D_STATUS SPolyLine::SetDomain(float i_fUMin, float i_fUMax)
 {
-	//m_fUMin = i_fUMin;
-	//m_fUMax = i_fUMax;
+	m_fUMin = i_fUMin;
+	m_fUMax = i_fUMax;
 	return M_SUCCESS;
-}
-
-
-void SPolyLine::AddPointsIndex(M3D_INDEX_TYPE pointIndex)
-{
-	this->m_PntIndex.push_back(pointIndex);
-}
-
-vector<M3D_INDEX_TYPE>& SPolyLine::GetPntIndex()
-{
-	return m_PntIndex;
-}
-
-void SPolyLine::SetPntIndex(vector<M3D_INDEX_TYPE>& val)
-{
-	m_PntIndex = val;
 }
 
 RefPolyLine::RefPolyLine(SPolyLine* refLine):IPolyLine()
@@ -258,9 +242,9 @@ Vector3 RefPolyLine::GetEndPnt()
 	if (m_refLine)
 	{
 		vector<Vector3>& pnts = m_refLine->GetPoints();
-		if (pnts.size() > m_dataOffset + m_dataLength -1)
+		if (pnts.size() > m_dataOffset + m_dataLength)
 		{
-			pnt = pnts.at(m_dataOffset + m_dataLength-1);
+			pnt = pnts.at(m_dataOffset + m_dataLength);
 		}
 	}
 	return pnt;

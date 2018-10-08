@@ -23,8 +23,7 @@ void CProcessTargetObject::Serialize(CUtilityXMLGenerator *xmlgen)
 		strcmp(m_Type, TARGETOBJECTTYPE_FOLDER) == 0 ||
 		strcmp(m_Type, TARGETOBJECTTYPE_SOUND) == 0 ||
 		strcmp(m_Type, TARGETOBJECTTYPE_IMAGE) == 0 ||
-		strcmp(m_Type, TARGETOBJECTTYPE_ZOOM) == 0 ||
-		strcmp(m_Type, TARGETOBJECTTYPE_TOOL) == 0)
+		strcmp(m_Type, TARGETOBJECTTYPE_ZOOM) == 0)
 	{
 		CUtilityXMLTag xmlt;
 		xmlt.SetTagname("ProcessTargetObject");
@@ -239,14 +238,7 @@ CProcessTargetObject::CProcessTargetObject(void *pParent, const char *name, cons
 			{
 				//初始对象列表中如果没有要创建的对象，过程中不可以添加
 				//assert(0);
-				if (strcmp(GetType(), TARGETOBJECTTYPE_IMAGE) == 0)
-				{
-					m_Key = -1;
-				}
-				else
-				{
-					m_Key = ((CProcess*)m_pParent)->GetSimulationAnimationManager()->RegisterInitTargetObjectKey();
-				}
+				m_Key =  ((CProcess*)m_pParent)->GetSimulationAnimationManager()->RegisterInitTargetObjectKey();
 			}
 		}
 	}
@@ -271,37 +263,6 @@ void CProcessTargetObject::CreateTargetString(const char *type, const char *path
 
 }
 	
-void CProcessTargetObject::SetValue(const char *name, AniPoint *pos/* = 0*/, AniQuat *quat/* = 0*/, AniPoint *scale/* = 0*/, bool visible/* = true*/, float fTrans/* = -1.0*/)
-{
-	m_bSerializeFromKey = true;
-	if (name)
-		strcpy(m_Name, name);
-	else
-		strcpy(m_Name, "");
-
-	if (pos)
-		m_Pos = pos;
-	else
-		m_Pos.Set(0, 0, 0);
-
-	if (quat)
-		m_Quat = quat;
-	else
-		m_Quat.Set(0.0f, 0.0f, 0.0f, 1.0f);
-
-	if (scale)
-		m_Scale = scale;
-	else
-		m_Scale.Set(1.0f, 1.0f, 1.0f);
-
-	m_bVisible = visible;
-
-	m_Trans = fTrans;
-
-	m_CameraType = NoCamera;
-
-	ResolveTarget(m_Path, m_ResolvedPath, m_Type, m_CameraType);
-}
 
 bool CProcessTargetObject::IsEqual(const char *target)
 {
@@ -333,9 +294,7 @@ void CProcessTargetObject::ResolveTarget(const char *in, char *result, char *Tar
 	char* pTarget = NULL;
 	pTarget = strtok(target, seps);
 	pTarget = strtok(NULL, seps);
-	if(!pTarget)
-		return;
-	strcpy(target, pTarget);
+	strcpy(target,pTarget);
 	if (strcmp(TargetType, TARGETOBJECTTYPE_INS) == 0 || 
 		strcmp(TargetType, TARGETOBJECTTYPE_PMI) == 0 || 
 		strcmp(TargetType, TARGETOBJECTTYPE_CLIP) == 0 || 
@@ -432,25 +391,16 @@ CProcess::CProcess(const int ID,const int nBehaviorActionID,const char *name)
 	else
 	{
 		sprintf(m_Name,"步骤%d",ID+1);
-#ifndef SVIEW_DESIGNER 
-#ifdef WIN32
- 		SA_UTF8 strName(m_Name);
-		strcpy(m_Name, (const char*)strName.encodedText());
-#endif
-#endif
 	}
 	strcpy(m_Desc, "");
 
 	m_nBehaviorActionID = nBehaviorActionID;
-	m_bPlay = true;
+	
 	////创建摄像机对象
 	//CHAR strPlcID[MAX_PATH];
 	//strcpy(strPlcID, TARGETOBJECTTYPE_CAM);
 	//strcat(strPlcID, ":SCENE/TARGET");
 	//CreateTargetObjectByPath("Camera",strPlcID);
-	m_ReferenceCount = 0;
-	m_pProcessManager = NULL;
-	m_pBehaviorAction = NULL;
 }
 
 CProcess::~CProcess(void)
@@ -463,32 +413,6 @@ CProcess::~CProcess(void)
 	}
 	DeleteAllTargetObject();
 	delete_vlist(m_TargetObjectList);
-}
-
-void CProcess::Reference()
-{
-	m_ReferenceCount++;
-	if(m_ReferenceCount>1 &&
-		GetBehaviorAction())
-	{
-		GetBehaviorAction()->Reference();
-	}
-}
-void CProcess::Release()
-{
-	m_ReferenceCount--;
-	
-	if (m_ReferenceCount <= 0)
-	{
-		delete this;
-	}
-	else
-	{
-		if (GetBehaviorAction())
-		{
-			GetBehaviorAction()->Release();
-		}
-	}
 }
 
 void CProcess::SetName(const char* name)
@@ -626,7 +550,7 @@ void CProcess::AddTargetObject(CProcessTargetObject *tinfo)
 	vlist_add_last(m_TargetObjectList, (void *)tinfo);
 }
 
-void CProcess::UpdateTargetList(std::vector<TARGETOBJECTINFO*>& vecTarget)
+void CProcess::UpdateTargetList(std::vector<TARGETOBJECTINFO>& vecTarget)
 {
 	DeleteAllTargetObject();
 	//根据传入的对象状态判断哪些是相对初始状态变化过的，记录变化过的对象
@@ -637,33 +561,31 @@ void CProcess::UpdateTargetList(std::vector<TARGETOBJECTINFO*>& vecTarget)
 	//遍历对象列表
 	for(int i = 0;i < (int)vecTarget.size(); i++)
 	{
-		TARGETOBJECTINFO* targetObjectInfo = vecTarget[i];
-		if(!targetObjectInfo)
-			continue;
+		TARGETOBJECTINFO targetObjectInfo = vecTarget[i];
 		CProcessTargetObject* pProcessTargetObject = NULL;
 		//对象是否在初始化对象列表中存在
-		if((pProcessTargetObject = pSAManager->FindInitTargetObjectByPath(targetObjectInfo->m_Path)))
+		if((pProcessTargetObject = pSAManager->FindInitTargetObjectByPath(targetObjectInfo.m_Path)))
 		{
-			AniPoint pntPos(targetObjectInfo->m_Pos[0],targetObjectInfo->m_Pos[1],targetObjectInfo->m_Pos[2]);
-			AniPoint pntScale(targetObjectInfo->m_Scale[0],targetObjectInfo->m_Scale[1],targetObjectInfo->m_Scale[2]);
-			AniQuat quat(targetObjectInfo->m_Quat[0],targetObjectInfo->m_Quat[1],targetObjectInfo->m_Quat[2],targetObjectInfo->m_Quat[3]);
+			AniPoint pntPos(targetObjectInfo.m_Pos[0],targetObjectInfo.m_Pos[1],targetObjectInfo.m_Pos[2]);
+			AniPoint pntScale(targetObjectInfo.m_Scale[0],targetObjectInfo.m_Scale[1],targetObjectInfo.m_Scale[2]);
+			AniQuat quat(targetObjectInfo.m_Quat[0],targetObjectInfo.m_Quat[1],targetObjectInfo.m_Quat[2],targetObjectInfo.m_Quat[3]);
 			//显示状态是否改变的判断
-			if(targetObjectInfo->m_bVisible == pProcessTargetObject->GetVisible())
+			if(targetObjectInfo.m_bVisible == pProcessTargetObject->GetVisible())
 			{
 				//显示状态不变
 				//隐藏状态下的单独处理
-				if(TARGETOBJECT_TYPE_INS == targetObjectInfo->m_Type ||TARGETOBJECT_TYPE_CAM == targetObjectInfo->m_Type)
+				if(TARGETOBJECT_TYPE_INS == targetObjectInfo.m_Type ||TARGETOBJECT_TYPE_CAM == targetObjectInfo.m_Type)
 				{
 					//零件或摄像机
 					if(pntPos.Equal(pProcessTargetObject->GetPos(), (float)ANIMATION_D_TOL) && 
 						quat.Equal(pProcessTargetObject->GetQuat(), (float)ANIMATION_D_TOL2) &&
 						pntScale.Equal(pProcessTargetObject->GetScale(), (float)ANIMATION_D_TOL2)&&
-						(targetObjectInfo->m_Trans == pProcessTargetObject->GetTrans() || targetObjectInfo->m_Trans == -1.0))
+						(targetObjectInfo.m_Trans == pProcessTargetObject->GetTrans() || targetObjectInfo.m_Trans == -1.0))
 					{
 						continue;
 					}
-				}else if(TARGETOBJECT_TYPE_PMI == targetObjectInfo->m_Type && 
-					(targetObjectInfo->m_Trans == pProcessTargetObject->GetTrans() || targetObjectInfo->m_Trans == -1.0))
+				}else if(TARGETOBJECT_TYPE_PMI == targetObjectInfo.m_Type && 
+					(targetObjectInfo.m_Trans == pProcessTargetObject->GetTrans() || targetObjectInfo.m_Trans == -1.0))
 				{
 					//PMI
 					continue;
@@ -672,27 +594,27 @@ void CProcess::UpdateTargetList(std::vector<TARGETOBJECTINFO*>& vecTarget)
 
 			//创建新的对象 并添加到链表中
 			CProcessTargetObject* pNewTargetObject = new CProcessTargetObject(this, 
-				targetObjectInfo->m_Name, targetObjectInfo->m_Path, &pntPos, 
-				&quat, &pntScale, targetObjectInfo->m_bVisible, targetObjectInfo->m_Trans);
+				targetObjectInfo.m_Name, targetObjectInfo.m_Path, &pntPos, 
+				&quat, &pntScale, targetObjectInfo.m_bVisible, targetObjectInfo.m_Trans);
 			AddTargetObject(pNewTargetObject);
 
 		}else
 		{
 			//图片只放入步骤中
-			if(targetObjectInfo->m_Type == TARGETOBJECT_TYPE_IMAGE)
+			if(targetObjectInfo.m_Type == TARGETOBJECT_TYPE_IMAGE)
 			{
-				AniPoint pntPos(targetObjectInfo->m_Pos[0],targetObjectInfo->m_Pos[1],targetObjectInfo->m_Pos[2]);
-				AniPoint pntScale(targetObjectInfo->m_Scale[0],targetObjectInfo->m_Scale[1],targetObjectInfo->m_Scale[2]);
-				AniQuat quat(targetObjectInfo->m_Quat[0],targetObjectInfo->m_Quat[1],targetObjectInfo->m_Quat[2],targetObjectInfo->m_Quat[3]);
+				AniPoint pntPos(targetObjectInfo.m_Pos[0],targetObjectInfo.m_Pos[1],targetObjectInfo.m_Pos[2]);
+				AniPoint pntScale(targetObjectInfo.m_Scale[0],targetObjectInfo.m_Scale[1],targetObjectInfo.m_Scale[2]);
+				AniQuat quat(targetObjectInfo.m_Quat[0],targetObjectInfo.m_Quat[1],targetObjectInfo.m_Quat[2],targetObjectInfo.m_Quat[3]);
 				CProcessTargetObject* pNewTargetObject = new CProcessTargetObject(this, 
-					targetObjectInfo->m_Name, targetObjectInfo->m_Path, &pntPos, 
-					&quat, &pntScale, targetObjectInfo->m_bVisible, targetObjectInfo->m_Trans);
+					targetObjectInfo.m_Name, targetObjectInfo.m_Path, &pntPos, 
+					&quat, &pntScale, targetObjectInfo.m_bVisible, targetObjectInfo.m_Trans);
 				AddTargetObject(pNewTargetObject);
 			}
 			else
 			{
 				//将没有查找到的对象加入到初始化列表
-				pSAManager->AddInitTargetObject(*targetObjectInfo);
+				pSAManager->AddInitTargetObject(targetObjectInfo);
 			}
 		}
 	}
@@ -821,30 +743,16 @@ long CProcess::RegisterTargetObjectKey()
 			return iRet;
 }
 
-void NS_SimulationAnimation::CProcess::SetProcessManager(CProcessManager* pProcessManager)
-{
-	m_pProcessManager = pProcessManager;
-	m_pBehaviorAction = NULL;
-	GetBehaviorAction();
-}
-
-void NS_SimulationAnimation::CProcess::SetBehaviorActionID(const int ID)
-{
-	m_nBehaviorActionID = ID;
-	m_pBehaviorAction = NULL;
-	GetBehaviorAction();
-}
-
 CSBehaviorAction* CProcess::GetBehaviorAction()
 {
-	if(!m_pBehaviorAction &&
-		m_pProcessManager &&
+	CSBehaviorAction* pBehaviorAction = 0;
+	if(m_pProcessManager && 
 		m_pProcessManager->GetAnimationStepManager() &&
 		m_pProcessManager->GetAnimationStepManager()->GetSimulationAnimationManager())
 	{
-		m_pBehaviorAction = m_pProcessManager->GetAnimationStepManager()->GetSimulationAnimationManager()->FindSimAniByID(m_nBehaviorActionID);
+		pBehaviorAction = m_pProcessManager->GetAnimationStepManager()->GetSimulationAnimationManager()->FindSimAniByID(m_nBehaviorActionID);
 	}
-	return m_pBehaviorAction;
+	return pBehaviorAction;
 }
 
 CSimulationAnimationManager* CProcess::GetSimulationAnimationManager()
@@ -1030,10 +938,7 @@ void CProcess::UpdateView(bool bUpdateModel/* = true*/, bool bUpdateCam/* = fals
 		//调用更新当前视口中模型状态的回调函数
 		if(pSAManager->GetAnimationPlayApi() && vecTargetObjectInfo.size()>0)
 		{
-			if (bUpdateModel)
-			{
-				pSAManager->GetAnimationPlayApi()->SetTargetState(vecTargetObjectInfo);
-			}
+			pSAManager->GetAnimationPlayApi()->SetTargetState(vecTargetObjectInfo, pSAManager->GetView());
 		}
 
 		//清空临时vector
@@ -1048,9 +953,9 @@ void CProcess::UpdateView(bool bUpdateModel/* = true*/, bool bUpdateCam/* = fals
 				pSAManager->SetCameraPlay(true);
 			}
 			CSBehaviorAction* pBehaviorAction = GetBehaviorAction();
-			if(pBehaviorAction && pAnimationStepManager->GetPlayMode() != CAnimationStepManager::PLAY_MODE_NONE)
+			if(pBehaviorAction)
 			{
-				if(pSAManager->GetReversePlay())
+				if(pSAManager->GetReversePlay() && pAnimationStepManager->GetPlayMode() != CAnimationStepManager::PLAY_MODE_NONE)
 				{
 					pBehaviorAction->RewindReverse();
 				}
@@ -1111,80 +1016,6 @@ void CProcess::TargetObject2StructInfo(CProcessTargetObject*pProcessTargetObject
 	}
 }
 
-CProcess* CProcess::Clone(CProcessManager* pParentProcessManager)
-{
-	//克隆功能 实现步骤的拷贝复制
-	CProcess* pNewProcess = NULL;
-	if (!pParentProcessManager)
-		return pNewProcess;
-	CProcessManager* pProcessManager = GetProcessManager();
-	if(!pProcessManager)
-		return pNewProcess;
-	CAnimationStepManager* pAnimationStepManager = pProcessManager->GetAnimationStepManager();
-	if(!pAnimationStepManager)
-		return pNewProcess;
-	CSimulationAnimationManager* pSAManager =  pAnimationStepManager->GetSimulationAnimationManager();
-	if(!pSAManager)
-		return pNewProcess;
-	pNewProcess = new CProcess(pParentProcessManager->RegisterProcessID(), pSAManager->RegisterBehaviorActionID());
-	if(!pNewProcess)
-		return pNewProcess;
-	pNewProcess->SetDesc(m_Desc);
-	pNewProcess->SetProcessManager(pParentProcessManager);
-
-	CProcess* pTmpProcess = pParentProcessManager->FindProcessByName(m_Name);
-	int index = 1;
-	string strName = m_Name;
-	//循环查询
-	while (pTmpProcess)
-	{
-		index++;
-		strName = m_Name;
-		strName += "(";
-		char szIndex[32] = { 0 };
-#ifdef WIN32
-        _itoa_s(index, szIndex, 10);
-#else
-        sprintf(szIndex, "%d", index);
-#endif
-
-		strName += szIndex;
-		strName += ")";
-		pTmpProcess = pParentProcessManager->FindProcessByName(strName.c_str());
-	}
-	pNewProcess->SetName(strName.c_str());
-	pParentProcessManager->AddProcess(pNewProcess);
-	//动画
-	CSBehaviorAction* pBehaviorAction = pSAManager->FindSimAniByID(GetBehaviorActionID());
-	if(pBehaviorAction)
-	{
-		CSBehaviorAction* pNewBehaviorAction = pBehaviorAction->Clone();
-		if(pNewBehaviorAction)
-		{
-			pNewProcess->SetBehaviorActionID(pNewBehaviorAction->GetID());
-			pNewBehaviorAction->SetName(pNewProcess->GetName());
-		}
-	}
-
-	START_LIST_ITERATION(CProcessTargetObject, m_TargetObjectList)
-		if(temp)
-		{
-			CProcessTargetObject* pProcessTargetObject = pNewProcess->CreateTargetObjectByPath(temp->GetName(), temp->GetPath());
-			if(pProcessTargetObject)
-			{
-				AniPoint* pos = temp->GetPos();
-				AniQuat* quat = temp->GetQuat();
-				AniPoint* scale = temp->GetScale();
-				pProcessTargetObject->SetPos(pos->x, pos->y, pos->z);
-				pProcessTargetObject->SetQuat(quat->x, quat->y, quat->z, quat->w);
-				pProcessTargetObject->SetScale(scale->x, scale->y, scale->z);
-				pProcessTargetObject->SetTrans(temp->GetTrans());
-				pProcessTargetObject->SetVisible(temp->GetVisible());
-			}
-		}
-		END_LIST_ITERATION(m_TargetObjectList)
-	return pNewProcess;
-}
 SA_NAMESPACE_END
 
 

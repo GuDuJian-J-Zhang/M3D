@@ -95,30 +95,30 @@ Matrix3x4 ShapeHelper::GetShapeWorldMatrix(IShape* shape)
 		if (edge->GetBody() != NULL)
 		{
 			worldMatrix =
-					edge->GetBody()->GetModel()->GetWorldTransform();
+					edge->GetBody()->GetModel()->GetSceneNode()->GetWorldTransform();
 		}
 		else if(edge->GetFace() != NULL)
 		{
 			worldMatrix =
-					edge->GetFace()->GetBody()->GetModel()->GetWorldTransform();
+					edge->GetFace()->GetBody()->GetModel()->GetSceneNode()->GetWorldTransform();
 		}
 	}
 	else if (shape->GetType() == SHAPE_FACE)
 	{
 		Face* face = (Face*) shape;
 		worldMatrix =
-				face->GetBody()->GetModel()->GetWorldTransform();
+				face->GetBody()->GetModel()->GetSceneNode()->GetWorldTransform();
 
 	}
 	else if (shape->GetType() == SHAPE_BODY)
 	{
 		Body* body = (Body*) shape;
-		worldMatrix = body->GetModel()->GetWorldTransform();
+		worldMatrix = body->GetModel()->GetSceneNode()->GetWorldTransform();
 	}
 	else if (shape->GetType() == SHAPE_MODEL)
 	{
 		Model* model = dynamic_cast<Model *>(shape);
-		worldMatrix = model->GetWorldTransform();
+		worldMatrix = model->GetSceneNode()->GetWorldTransform();
 	}
 
 	return worldMatrix;
@@ -129,15 +129,10 @@ Vector2 ShapeHelper::GetCommonSize(SceneManager* scene, const Vector2& size)
 	float width = 100.0f;
 	float heigh = 100.0f;
     
-#ifdef _WIN32
-	float screenPPI = 100;
-#else
-	float screenPPI =  Parameters::Instance()->m_screenPPI;
-#endif
-
+    float screenPPI = Parameters::Instance()->m_screenPPI;
     float screenWidth = Parameters::Instance()->m_screenWidth;
     float screenHeight =  Parameters::Instance()->m_screenHeight;
-
+ 
 	if (scene)
 	{
 		CameraNode* camera = scene->GetCamera();
@@ -155,16 +150,23 @@ Vector2 ShapeHelper::GetCommonSize(SceneManager* scene, const Vector2& size)
 //			screenWidth = screenHeight;
 		}
         
-#ifdef _WIN32
 		//屏幕宽度的20分之一
-		width =  width /(6* (screenWidth/(screenPPI*2.5)));
-#else
-		//屏幕宽度的20分之一
-		width = width / (20 * (screenWidth / (screenPPI*2.5)));
-#endif
+		width =  width /(20* (screenWidth/(screenPPI*2.5)));
 	}
-
 	return Vector2(width*size.m_x, width*size.m_y);
 }
 
+ModelNode * ShapeHelper::GetModelNode(Model * model)
+{
+	ModelNode* ret = NULL;
+	if (model)
+	{
+		SceneNode* tempRet = model->GetSceneNode()->GetParent();
+		if (tempRet && tempRet->GetType() == MODEL_NODE)
+		{
+			ret = (ModelNode *) tempRet;
+		}
+	}
+	return ret;
+}
 }

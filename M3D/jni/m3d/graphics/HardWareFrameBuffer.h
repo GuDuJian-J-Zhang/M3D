@@ -33,7 +33,7 @@ public:
 	 * 获取FBO
 	 * @return
 	 */
-	GLuint Create();
+	GLuint GetFBO();
 	virtual ~HardWareFrameBuffer();
 	/**
 	 * @brief 创建深度挂载
@@ -135,58 +135,6 @@ public:
 
 	GLint GetOriginalFBO();
 	GLint GetFirstFBO();
-	
-	/**
-	* 当前一次的FBO大小改变了，需要解除关联
-	*/
-	bool DeatchFromPriFBO();
-
-	//新函数
-
-	int AllocColorAttachment();
-	void Destroy();
-	//void SetSize(int width, int height);
-	void ReShape();
-	void GenerateFramerBuffer();
-
-	void SetParameters(int colorNumber = 1, bool rboColor = false, bool rboDepth = false,bool useDepth  = true,bool useStencil  = true,bool useMultisample = false ,int multisampler = 4);
-	void GenerateColorAttatchment();
-	void GenerateDepthAttatchment();
-
-	GLuint AttachTextureToColor();
-
-	void OnlyAttachTextureToColor(GLuint texture);
-
-	//void AttachTextureToColor();
-
-	void AttachRenderBufferToColor();
-	void AttachRenderBufferToDepth( bool useStencil = true);
-	void AttachTextureToDepth(bool useStencil = true);
-	GLRenderTarget* GetColorTarget(int key = 0);
-	GLRenderTarget* GetDepthTarget();
-
-	//颜色缓冲区数量
-	int ColorAttachmentNumber() const { return m_colorAttachmentNumber; }
-	void ColorAttachmentNumber(int val) { m_colorAttachmentNumber = val; }
-	GLenum ColorInternalFormat() const { return m_colorInternalFormat; }
-	void ColorInternalFormat(GLenum val) { m_colorInternalFormat = val; }
-	GLenum DepthInternalFormat() const { return m_depthInternalFormat; }
-	void DepthInternalFormat(GLenum val) { m_depthInternalFormat = val; }
-	bool UseDepthBuffer() const { return m_useDepthBuffer; }
-	void UseDepthBuffer(bool val) { m_useDepthBuffer = val; }
-	bool UseStencilBuffer() const { return m_useStencilBuffer; }
-	void UseStencilBuffer(bool val) { m_useStencilBuffer = val; }
-	bool UseMultisample() const { return m_useMultisample; }
-	void UseMultisample(bool val) { m_useMultisample = val; }
-	GeometryBuffer* OutColorTexture()  { return m_outColorTexture; }
-	void OutColorTexture(GeometryBuffer* val) { m_outColorTexture = val; }
-	GLenum OutColorTextureLevel()  { return m_outColorTextureLevel; }
-	void OutColorTextureLevel(GLenum val) { m_outColorTextureLevel = val; }
-	bool ColorTextureMipmap() const { return m_colorTextureMipmap; }
-	void ColorTextureMipmap(bool val) { m_colorTextureMipmap = val; }
-
-	void RenderToMe();
-
 private:
 	/**
 	 * @brief 进行标记
@@ -205,32 +153,6 @@ private:
 	vector<bool> m_colorAttaMSS;
 	vector<bool> m_colorAttaRBOS;
 	GLint m_firstFBO;//应用层的那个FBO
-
-	//新函数
-	int m_usedColorAttachment;
-	int m_colorAttachmentNumber;
-	bool m_colorUseRenderBuffer;
-	bool m_depthUseRenderBuffer;
-
-	bool m_useDepthBuffer;
-
-	bool m_useStencilBuffer;
-
-	bool m_useMultisample;
-
-	int m_multisamplerNumber;
-
-	map<int, GLRenderTarget*> m_colorTargets;
-	GLRenderTarget* m_depthTarget;
-
-	GLenum m_colorInternalFormat;
-	GLenum m_depthInternalFormat;
-
-	GeometryBuffer* m_outColorTexture;
-	GLenum m_useOutColorTexture;	
-	GLenum m_outColorTextureLevel;
-	//GLenum m_outColor
-	bool m_colorTextureMipmap;
 };
 
 } /* namespace M3D */

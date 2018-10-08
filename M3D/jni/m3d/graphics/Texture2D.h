@@ -32,14 +32,11 @@ public:
 		\param flags can be any of SOIL_FLAG_POWER_OF_TWO | SOIL_FLAG_MIPMAPS | SOIL_FLAG_TEXTURE_REPEATS | SOIL_FLAG_MULTIPLY_ALPHA | SOIL_FLAG_INVERT_Y | SOIL_FLAG_COMPRESS_TO_DXT | SOIL_FLAG_DDS_LOAD_DIRECT
 		\return 0-failed, otherwise returns the OpenGL texture handle
 	**/
-	unsigned int LoadOGLTexture(const string& filename,
+	static unsigned int LoadOGLTexture(const string& filename,
 			int force_channels,
 			unsigned int reuse_texture_ID,
 			unsigned int flags);
 
-	static GLuint CreateRGBATexture(GLubyte * image,
-		unsigned int width,
-		unsigned int height);
 	/**
 	 * 从内存中加载纹理
 	 * @param buffer
@@ -49,24 +46,13 @@ public:
 	 * @param flags
 	 * @return
 	 */
-	unsigned int LoadOGLTexture(const unsigned char *const buffer,
+	static unsigned int LoadOGLTexture(const unsigned char *const buffer,
 			int buffer_length,
 			int force_channels,
 			unsigned int reuse_texture_ID,
 			unsigned int flags);
 
-	bool FreeOGLTexture(unsigned int OGLObj);
-
-	
-	//************************************
-	// Method:    UpdateImage
-	// FullName:  M3D::Texture2D::UpdateImage
-	// Access:    public 
-	// Returns:   void
-	// Qualifier: 更新图片数据
-	// Parameter: Image * image
-	//************************************
-	void UpdateImage(Image* image);
+	static bool FreeOGLTexture(unsigned int OGLObj);
 public:
 	Texture2D();
 
@@ -87,41 +73,8 @@ protected:
 
 protected:
 	virtual void UpdataOGLObj();
-};
 
-/**
-* @class
-* @brief 2D纹理类包装类，纹理单元在外部创建，然后通过接口传入
-*/
-class M3D_API Texture2DPackaging :public Texture
-{
-public:
-	Texture2DPackaging()
-	{
-		this->m_textures[0] = 0;
-	}
 
-	virtual int GetType()
-	{
-		return TEXTURE_2D;
-	}
-
-	virtual ~Texture2DPackaging()
-	{
-
-	}
-
-	void SetTexture2DID(GLuint textureid)
-	{
-		this->m_textures[0] = textureid;
-	}
-
-	GLuint GetTexture2DID()
-	{
-		return this->m_textures[0];
-	}
-
-private:
 
 };
 }

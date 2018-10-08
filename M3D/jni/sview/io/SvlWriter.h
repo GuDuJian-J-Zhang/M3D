@@ -57,7 +57,6 @@ namespace SVIEW
 
         Stk_ProtoType* GetDefaultProto(Stk_DocumentManager * stkDocMgr);
 
-		wstring GetSVLUTF8String(const string& m3dString);
 
         /**
          * 初始化内部数据
@@ -65,7 +64,7 @@ namespace SVIEW
          */
         void init();
     private:
-//      map<string,Model *> m_CurModelMap;//instanceID,Model
+//        map<string,Model *> m_CurModelMap;//instanceID,Model
         vector<Model*> m_allModels;
         bool isSavingSVL;
         Stk_DocumentManager *m_stkDocMgr;

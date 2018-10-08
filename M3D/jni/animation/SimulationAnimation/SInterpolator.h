@@ -44,7 +44,6 @@ template class  VArray< void *>;
 #define INTERPOLATOR_SOUND				"Sound"		//定义声音插值器类型 Add By YL 2014.11.6
 #define INTERPOLATOR_IMAGE				"Image"		//定义图片插值器类型 Add By YL 2015.1.19
 #define INTERPOLATOR_NORMAL				"Normal"	
-#define INTERPOLATOR_INSTANCECREATE		"InstanceCreate"
 
 /*! \enum TrailInterpolatorType
 	Various Modes for Trail Interpolator
@@ -203,8 +202,6 @@ public:
 	Resets the interpolator instance. 
 	*/	
 	virtual void Reset() { };
-	//克隆
-	virtual CSInterpolator* Clone();
 
 protected:	
 
@@ -328,8 +325,6 @@ public:
   	*/
 	virtual void CalculatePos(int keyframe, float fraction, AniPoint &res);
 	void CalculatePosCamera(int keyframe, float fraction,  AniPoint &res);
-	//克隆
-	virtual CSInterpolator* Clone();
 
 protected:
 	/*!
@@ -432,8 +427,6 @@ public:
   	*/
 	virtual void Interpolate(int keyframe, float fraction);
 	virtual void CalculatePos(int keyframe, float fraction, AniPoint &res);
-	//克隆
-	virtual CSInterpolator* Clone();
 
 protected:
 	char				m_ColorComponent[SA_BUFFER_SIZE_SMALL];  /*!< For internal use only.*/
@@ -522,9 +515,7 @@ public:
 	virtual void Interpolate(int keyframe, float fraction);
 	void Evaluate(int keyframe, float fraction, bool &hasPos, AniPoint &pos, bool &hasQuat, AniQuat &quat, bool &hasScale, AniPoint &scale);
 
-	//克隆
-	virtual CSInterpolator* Clone();
-
+ 
 protected:
 	/*!
 	Calculates the interpolated camera orientation and position for camera types that are position driven.
@@ -629,8 +620,7 @@ public:
 	\param res Returns the result of the calculation.  	
 	*/
 	virtual void CalculateQuat(int keyframe, float fraction,  AniQuat &res);
-	//克隆
-	virtual CSInterpolator* Clone();
+
 
 protected:
 	/*!
@@ -705,8 +695,7 @@ public:
 	\param fraction The fraction value from the specified keyframe to the next keyframe.  The value is from 0 to 1.
 	*/
 	virtual void Interpolate(int keyframe, float fraction);
-	//克隆
-	virtual CSInterpolator* Clone();
+
 };
 
 //定义声音插值器类 Add By YL 2014.11.6
@@ -770,8 +759,7 @@ public:
 	*/
 	virtual void Interpolate(int keyframe, float fraction);
 	void GetFilePathName(char* cSoundFilePath);
-	//克隆
-	virtual CSInterpolator* Clone();
+
 };
 
 /************************************************************************/
@@ -855,8 +843,6 @@ public:
 	\param res The result of the interpolation.
   	*/
 	virtual void CalculatePos(int keyframe, float fraction, AniPoint &res);
-	//克隆
-	virtual CSInterpolator* Clone();
 
 protected:
 
@@ -895,8 +881,7 @@ public:
 	
 	virtual void Interpolate(int keyframe, float fraction);
 	virtual void CalculatePos(int keyframe, float fraction, AniPoint &res);
-	//克隆
-	virtual CSInterpolator* Clone();
+ 
 };
 /************************************************************************/
 /*定义剖面差值器类 added by yhp 2014-10-25 End                            */
@@ -968,8 +953,6 @@ public:
 	\param res The result of the interpolation.
 	*/
 	virtual void CalculatePos(int keyframe, float fraction, AniPoint &res);
-	//克隆
-	virtual CSInterpolator* Clone();
 };
 
 /************************************************************************/
@@ -1037,9 +1020,7 @@ public:
 	Resets the interpolator instance by turning off the visibility of all segments in the keyframe list.
 	*/
 	virtual void Reset();
-	static void DeciperString(CSInterpolatorInstanceCreate *itp, char *text, int &counter);	
-	//克隆
-	virtual CSInterpolator* Clone();
+	static void DeciperString(CSInterpolatorInstanceCreate *itp, char *text, int &counter);
 };
 //SA_NAMESPACE_END
 

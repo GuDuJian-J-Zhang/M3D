@@ -43,7 +43,7 @@ public:
 	 * @return true小模型 false 大模型
 	 */
 	int IsLittleModel(const BoundingBox& box,CameraNode* camera);
-	int IsLittleBody(const BoundingBox& box, CameraNode* camera);
+
 	/**
 	 * 设置比较模型对角线的长度
 	 * @param modelLength

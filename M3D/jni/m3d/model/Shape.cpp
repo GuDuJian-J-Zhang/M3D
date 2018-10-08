@@ -1,12 +1,10 @@
 ﻿#include "m3d/model/Shape.h"
 #include "m3d/utils/IDCreator.h"
-#include "m3d/scene/SceneNode.h"
 #include "m3d/SceneManager.h"
+#include "m3d/scene/SceneNode.h"
+
 #include "m3d/graphics/Material.h"
 #include "sview/views/Parameters.h"
-#include "m3d/action/Action.h"
-#include "m3d/action/RenderAction.h"
-
 namespace M3D
 {
 Shape::Shape():Object()
@@ -42,21 +40,20 @@ Shape& Shape::operator =(const Shape& orig)
 {
 	if (this != &orig)
 	{
-		Object::operator=(orig);
-		//m_HasColor = orig.m_HasColor;
+		m_HasColor = orig.m_HasColor;
 		m_Visible = orig.m_Visible;
 		m_IsSelect = orig.m_IsSelect;
 		m_Color = orig.m_Color;
-		//m_InitColor = orig.m_InitColor;
+		m_InitColor = orig.m_InitColor;
 		node = NULL;
 		m_IsFirstGetProperties = orig.m_IsFirstGetProperties;
-		//m_Properties = orig.m_Properties;
+		m_Properties = orig.m_Properties;
 		this->SetType(orig.m_Type);
 
 		//设置材质
 		this->SetMaterial(orig.m_material);
 
-		//this->m_copyId = orig.m_copyId;//拷贝对象，使用同一个copy对象的id
+		this->m_copyId = orig.m_copyId;//拷贝对象，使用同一个copy对象的id
 	}
 	return *this;
 }
@@ -76,6 +73,11 @@ BoundingBox& Shape::GetBoundingBox()
 	if(!m_BoundingBox.Defined())
 	{
 		ComputeBox();
+		if(SVIEW::Parameters::Instance()->m_simplityMode)
+		{
+			Optimize();
+		}
+
 	}
 	return m_BoundingBox;
 }
@@ -87,20 +89,13 @@ bool Shape::IsVisible()
 
 bool Shape::IsOrigVisible()
 {
-	//return m_origVisible;
-	return true;
+	return m_origVisible;
 }
 
 void Shape::SetOrigVisible(bool visible)
 {
-	//m_origVisible = visible;
+	m_origVisible = visible;
 
-	this->SetVisible(visible);
-}
-
-void Shape::SetOrigVisible(bool visible, bool relSub)
-{
-	//this->m_origVisible = visible;
 	this->SetVisible(visible);
 }
 
@@ -129,20 +124,20 @@ void Shape::SetColor(const Color& color)
 	this->m_Color = color;
 }
 
-Color* Shape::GetColor()
+Color& Shape::GetColor()
 {
-	return &m_Color;
+	return m_Color;
 }
 
-Color* Shape::GetDrawColor()
+Color& Shape::GetDrawColor()
 {
 	if (IsSelected())
 	{
 		//LOGE("shape is selected id:: %d",(int)this);
-		return Color::SelectColor;
+		return *Color::SelectColor;
 	}
 	else
-		return &m_Color;
+		return m_Color;
 }
 
 float Shape::GetAlpha()
@@ -175,20 +170,14 @@ void Shape::RayPick(RayPickAction* action)
 
 }
 
-void Shape::FramePick(RayPickAction* action)
-{
-
-}
-
 string Shape::GetProperties()
 {
-	//if (m_IsFirstGetProperties)
-	//{
-	//	InitProperties();
-	//	m_IsFirstGetProperties = false;
-	//}
-	//return m_Properties;
-	return "";
+	if (m_IsFirstGetProperties == true)
+	{
+		InitProperties();
+		m_IsFirstGetProperties = false;
+	}
+	return m_Properties;
 }
 
 void Shape::InitProperties()
@@ -198,19 +187,19 @@ void Shape::InitProperties()
 
 void Shape::AddProperty(string key, string value)
 {
-	/*if(m_Properties.find(key+ "::") != string::npos)
+	if(m_Properties.find(key+ "::") != string::npos)
 	{
 		LOGI("find properties");
 		return;
 	}
 	if (!m_Properties.empty())
 		m_Properties.append(";;");
-	m_Properties.append(key + "::" + value);*/
+	m_Properties.append(key + "::" + value);
 }
 
 void Shape::ClearProperties()
 {
-	//m_Properties.clear();
+	m_Properties.clear();
 }
 
 void Shape::SetSceneNode(SceneNode* node)
@@ -240,26 +229,24 @@ string Shape::GetGeometryInfo()
 	string geoInfo;
 
 	return geoInfo;
-}	
-
-void Shape::Traverse(Action* action)
-{
-
 }
 
 void Shape::SetHasChild(bool haschild)
 {
-	//this->m_hasChild  = haschild;
+	this->m_hasChild  = haschild;
 }
 
 bool Shape::GetHasChild()
 {
-	//return this->m_hasChild;
-	return false;
+	return this->m_hasChild;
 }
 
-void Shape::SetMaterial(BaseMaterial* material)
+void Shape::SetMaterial(Material* material)
 {
+	if(this->m_material)
+	{
+		this->m_material->Release();
+	}
 	this->m_material = material;
 	if(this->m_material)
 	{
@@ -267,56 +254,29 @@ void Shape::SetMaterial(BaseMaterial* material)
 	}
 }
 
-BaseMaterial* Shape::GetMaterial()
+Material* Shape::GetMaterial()
 {
 	return this->m_material;
 }
 
 void Shape::SetCADNode(ShapeSet* node)
 {
-	//this->m_parentNode = node;
+	this->m_parentNode = node;
 }
 
 ShapeSet* Shape::GetCADNode()
 {
-	//return this->m_parentNode;
-	return NULL;
+	return this->m_parentNode;
 }
 
 void Shape::SetCopyObjId(IDTYPE objId)
 {
-	//this->m_copyId = objId;
+	this->m_copyId = objId;
 }
 
 IDTYPE Shape::GetCopyObjId()
 {
-	//return this->m_copyId;
-	return 0;
-}
-
-void Shape::AddRef(void)
-{
-	Object::AddRef();
-}
-
-void Shape::Release(void)
-{
-	Object::Release();
-}
-
-int Shape::GetSVLId()
-{
-	return -1;
-}
-
-void Shape::SetSVLId(int Id)
-{
-
-}
-
-void Shape::SetScene(SceneManager* scene)
-{
-	//this->m_scene = scene;
+	return this->m_copyId;
 }
 
 bool Shape::AllowExculding()
@@ -331,13 +291,12 @@ void Shape::SetAlloewExculding(bool allow)
 
 bool Shape::RendreVisible()
 {
-	//return this->m_renderVisible;
-	return true;
+	return this->m_renderVisible;
 }
 
 void Shape::SetRenderVisible(bool visible)
 {
-	//this->m_renderVisible = visible;
+	this->m_renderVisible = visible;
 }
 
 void Shape::Init()
@@ -346,23 +305,25 @@ void Shape::Init()
 	//color = Color::Default;
 	//ambcolor = Color::Default;
 	//difcolor = Color::Default;
-	//m_HasColor = false;
+	m_HasColor = false;
 	m_Visible = true;
-	//m_origVisible = true;
+	m_origVisible = true;
 	m_IsSelect = false;
 	m_allowExcluding = true;
 	m_IsFirstGetProperties = true;
 	//m_OldAlpha = 1.0f;
-	//m_InitColor =  Color(0.8, 0.8, 0.8, 1.0);
+	m_InitColor =  Color(0.8, 0.8, 0.8, 1.0);
 	node = NULL;
 	//this->m_Id = IDCreator::GetDefaultID();
 	this->m_Id = OBJID++;
-	//m_hasChild = false;
-	m_isHighlight = false;
-	//m_renderVisible = true;
+	m_hasChild = false;
+
+	m_renderVisible = true;
+	m_material = NULL;
 //    this->SetDataChanged(true,false);
 	this->SetMaterial(NULL);
 	this->SetCADNode(NULL);
+
 	this->SetScene(NULL);
 }
 
@@ -372,6 +333,11 @@ float Shape::GetVolumeAndArea(float& volume,float& area)
 	volume = 0;
 	area = 0;
 	return 0;
+}
+
+void Shape::SetScene(SceneManager* scene)
+{
+	this->m_scene = scene;
 }
 
 }

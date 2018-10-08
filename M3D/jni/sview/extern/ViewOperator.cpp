@@ -4,7 +4,7 @@
 #include "sview/views/Parameters.h"
 #include "m3d/RenderManager.h"
 #include "m3d/graphics/CameraNode.h"
-#include "m3d/model/Model.h"
+#include "m3d/scene/ShapeNode.h"
 
 using SVIEW::Parameters;
 
@@ -64,17 +64,29 @@ bool ViewOperator::FitView(SceneManager* scene)
 			int screenHeight = renderManager->GetWindowHeight();
 			int screenWidth = renderManager->GetWindowWidth();
 
-			float width = fitViewBox.Length();
-			float height = width * screenHeight / screenWidth;
-			float length = fitViewBox.Length();
+			 float length = fitViewBox.Length();
 
 			if (renderManager != NULL)
 			{
 				renderManager->GetCullerHelper().SetModelLength(
 						fitViewBox.Length());
 			}
+            
+            float width = 100;
+            float height = 100;
+            if (screenHeight <= screenWidth)
+            {
+                width = fitViewBox.Length();
+                height = width * screenHeight / screenWidth;
+            }
+            else
+            {
+                height = fitViewBox.Length();
+                width = height * screenWidth / screenHeight;
+            }
+   
 			LOGI("FitView step 2");
-			camera->SetViewPort(0, 0, screenWidth, screenHeight);
+			//camera->SetViewPort(0, 0, screenWidth, screenHeight);
 			Vector3 center = fitViewBox.Center();
 
 			center.m_z += fitViewBox.Length() * 1.5f;
@@ -83,8 +95,8 @@ bool ViewOperator::FitView(SceneManager* scene)
 
 			camera->SetOrthoSize(Vector2(width * 2, height * 2));
 
-			camera->SetNearClip(length * 0.1);
-			camera->SetFarClip(length * 3.5);
+            //camera->SetNearClip(length * 0.1);
+			//camera->SetFarClip(length * 3.5);
 
 			float defaultZoom = Parameters::Instance()->m_DefaultZoomFactor;
 
@@ -97,7 +109,7 @@ bool ViewOperator::FitView(SceneManager* scene)
 
 			camera->SetInitRotateCenter(fitViewBox.Center());
 
-			camera->SetFov(90);
+			//camera->SetFov(90);
 
 			camera->LookAt(fitViewBox.Center(), Vector3(0, 1, 0), TS_WORLD);
 
@@ -109,7 +121,7 @@ bool ViewOperator::FitView(SceneManager* scene)
 	LOGI("FitView end");
 	return ret;
 }
-void ViewOperator::ComputeFitViewBox(void* data, Model* node)
+void ViewOperator::ComputeFitViewBox(void* data,SceneNode* node)
 {
 	if(node!= NULL && node->GetType() == SHAPE_NODE)
 	{
@@ -120,8 +132,10 @@ void ViewOperator::ComputeFitViewBox(void* data, Model* node)
 		{
 			BoundingBox& sceneBox = viewOperator->GetFitViewBox();
 			BoundingBox& shapeNodeBox = node->GetWorldBoundingBox();
- 
-			if(node->IsVisible() && shapeNodeBox.Defined())
+			ShapeNode* shapeNode = (ShapeNode*)node;
+
+			Shape* shape = shapeNode->GetShape();
+			if(shape && shape->IsVisible() && shapeNodeBox.Defined())
 			{
 				sceneBox.Merge(shapeNodeBox);
 			}

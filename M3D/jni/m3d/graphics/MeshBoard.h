@@ -49,7 +49,7 @@ private:
 //  Rect uv_;
 
 	vector<Vector3> points;//!<
-	mutable Mutex m_mutex; //!<线程锁对象
+
 	Billboard m_bindBillboard;//!<
 };
 }

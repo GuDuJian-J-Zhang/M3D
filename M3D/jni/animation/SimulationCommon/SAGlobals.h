@@ -18,38 +18,7 @@
 #pragma pack(push)
 #pragma pack(8)
 #endif
-
-/*! \enum CFileInputResult
-* Indicates the result of an attempt to read a file
-*/
-enum CFileInputResult
-{
-	InputOK					= 1,    //!< 成功
-	InputVersionMismatch	= 2,    //!< 版本不匹配
-	InputFail				= 3,    //!< 失败
-	InputNotHandled			= 4,    //!< 文件句柄不正确
-	InputBadFileName		= 5,    //!< 文件名错误
-	InputBadOptions			= 6     //!< 属性错误
-};
-
-
-/*! \enum CFileOutputResult
-* Indicates the result of an attempt to write a file
-*/
-enum CFileOutputResult
-{
-	OutputOK				= 1,    //!< 成功
-	OutputVersionMismatch	= 2,    //!< 版本不匹配
-	OutputFail				= 3,    //!< 失败
-	OutputNotHandled		= 4,    //!< 文件句柄不正确
-	OutputBadFileName		= 5,    //!< 文件名错误
-	OutputBadOptions		= 6     //!< 属性错误
-};
-
-/*! \def LAST_FileOutputResult
-    \brief Specifies last file output type
-*/
-#define LAST_FileOutputResult OutputBadOptions	   
+   
 
 /*! \enum SACameraType Camera Type of target object */
 enum SACameraType

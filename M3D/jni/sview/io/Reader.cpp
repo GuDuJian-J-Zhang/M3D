@@ -4,7 +4,7 @@
  *  Created on: 2013-5-31
  *      Author: billy
  */
-#include "m3d/ResourceManager.h"
+
 #include "m3d/M3D.h"
 #include "m3d/model/Model.h"
 #include "m3d/model/MeshData.h"
@@ -12,21 +12,13 @@
 #include "m3d/utils/IDCreator.h"
 #include "m3d/utils/StringHelper.h"
 #include "m3d/utils/FileHelper.h"
-#include "m3d/utils/StringHelper.h"
-#include "m3d/graphics/Material.h"
-#include "m3d/graphics/BaseMaterial.h"
-
-#include "m3d/SceneManager.h"
 
 #include "Reader.h"
 #include "Svlreader.h"
-#include "SVL2AsynReader.h"
 
 #include "AssimpReader.h"
 #include "m3d/utils/FileHelper.h"
 #include "sview/views/Parameters.h"
-
-#include "sview/views/View.h"
 
 using M3D::IDCreator;
 using M3D::StringHelper;
@@ -38,7 +30,7 @@ namespace SVIEW
 ReaderListener::ReaderListener() :
 		M3D::Object()
 {
-	
+
 }
 
 ReaderListener::~ReaderListener()
@@ -71,10 +63,8 @@ Reader::Reader(void)
 	m_readPercent = -1;
 	InitializeID();
 	this->m_readerListener = NULL;
-	this->SetAsynMode(false);
-	this->SetView(NULL);
 
-	this->SetUseIndex(Parameters::Instance()->m_IsUseIndexMode);
+	this->SetView(NULL);
 }
 
 Reader::~Reader(void)
@@ -98,7 +88,7 @@ int Reader::InitializeID()
 		this->m_IDCreator->Initialize(IDCreator::MODEL, -1);
 		return this->m_IDCreator->GetID(IDCreator::MODEL);
 
-		//M3D::Object::OBJID =0;
+		M3D::Object::OBJID =0;
 	}
 	return 0;
 }
@@ -143,7 +133,7 @@ bool Reader::AddSourceFile(const string& filePath)
 Model*
 Reader::GetModel(int id)
 {
-	return NULL;
+	return new Model;
 }
 
 IVertexSet*
@@ -189,34 +179,15 @@ Reader::GetReader(const string &file)
 	{
 		reader = new SvlReader();
 	}
-	else if ("svlx" == ext || "SVLX" == ext)
-	{
-		reader = new SVL2AsynReader();
-	}
-	else if ("dat" == ext || "DAT" == ext)
-	{
-		reader = new SVL2AsynReader();
-	}
+//	else if ("obj" == ext || "OBJ" == ext)
+//	{
+//		reader = new ObjReader();
+//	}
 //	else	if ("stl" == ext || "STL" == ext)
 //	{
 //		reader = new StlReader();
 //	}
-	else if ("fbx" == ext || "dae" == ext || "gltf" == ext 
-		|| "glb" == ext || "blend" == ext || "3ds" == ext 
-		|| "ase" == ext || "obj" == ext || "ifc" == ext 
-		|| "xgl" == ext || "zgl" == ext || "ply" == ext 
-		|| "dxf" == ext || "lwo" == ext || "lws" == ext 
-		|| "lxo" == ext || "stl" == ext || "x" == ext 
-		|| "ac" == ext || "ms3d" == ext || "cob" == ext 
-		|| "scn" == ext || "bvh" == ext || "csm" == ext 
-		|| "xml" == ext || "irrmesh" == ext || "irr" == ext 
-		|| "mdl" == ext || "md2" == ext || "md3" == ext 
-		|| "pk3" == ext || "mdc" == ext || "md5*" == ext 
-		|| "smd" == ext || "vta" == ext || "ogex" == ext 
-		|| "3d" == ext || "b3d" == ext || "q3d" == ext 
-		|| "q3s" == ext || "nff" == ext || "off" == ext 
-		|| "raw" == ext || "ter" == ext || "" == ext 
-		|| "mdl" == ext || "hmp" == ext || "ndo" == ext)
+	else
 	{
 		reader = new AssimpReader();
 	}
@@ -273,60 +244,17 @@ ReaderListener* Reader::GetListener()
 	return this->m_readerListener;
 }
 
-bool Reader::IsAsynMode()
-{
-	return m_isAnsyMode;
-}
+//void Reader::SetFontPath(const string &fontPath)
+//{
+//	if (!fontPath.empty())
+//	{
+//		m_FontPath = fontPath;
+//	}
+//}
 
-void Reader::SetAsynMode(bool asynMode)
-{
-	this->m_isAnsyMode = asynMode;
-}
-
-
-bool Reader::IsUseIndex() {
-	return this->m_isUseIndex;
-}
-
-bool Reader::CanUseIndex(int vertexsCount) {
-	return (this->IsUseIndex() && (vertexsCount < INDEX_MAX_COUNT));
-}
-
-void Reader::SetUseIndex(bool useIndex) {
-	this->m_isUseIndex = useIndex;
-}
-
-
-BaseMaterial* Reader::CovertColorToMaterial(Color& srcColor)
-{
-	//?¨´?YColor¦Ì??¦Ì??DD¡À¨¨??
-	char tempBuffer[CONVERSION_BUFFER_LENGTH];
-	sprintf(tempBuffer, "ColorBaseMaterial--%3.2f %3.2f %3.2f %3.2f", srcColor.m_r, srcColor.m_g, srcColor.m_b, srcColor.m_a);
-	string srcColorCode = string(tempBuffer);
-
-	BaseMaterial* material = this->m_view->GetSceneManager()->GetResourceManager()
-		->GetMaterial(srcColorCode);
-	if (material)
-	{
-		return material;
-	}
-	else
-	{
-		material = this->m_view->GetSceneManager()->GetResourceManager()->GetOrCreateMaterial(srcColorCode, MaterialType_Phong);
-	}
-
-	Material* tempMaterial = static_cast<Material*>(material);	
-	tempMaterial->DisplayName(srcColorCode);
-
-	tempMaterial->SetDiffuse(srcColor);
-	tempMaterial->Opacity(srcColor.m_a);
-
-	float shininess = 20.0;
-	if (shininess >= 0)
-	{
-		tempMaterial->SetShininess(shininess);
-	}
-	return material;
-}
+//string& Reader::GetReadLogs()
+//{
+//	return this->m_readLogs;
+//}
 
 }

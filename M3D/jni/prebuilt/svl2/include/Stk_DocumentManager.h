@@ -158,11 +158,6 @@ private:
 	 ****************************************************************************/
 	STK_STATUS				SearchInstancesByIDFromVirtualBomTable(Stk_ProtoType* i_stkProtoP, wstring i_wstrBomID, vector<Stk_Instance*>& o_vcInstances);
 public:
-	static Stk_DocumentManager* NewDocumentManager();
-
-	static void DeleteDocumentManager(Stk_DocumentManager* documentMgr);
-
-public:
 	STK_STATUS				LoadCADSubFile(wstring& i_wstrSVLPath, vector<Stk_ProtoType*>& o_vcTopProtos );
 
 	/****************************************************************************

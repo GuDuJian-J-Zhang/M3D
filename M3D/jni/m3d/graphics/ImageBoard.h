@@ -34,8 +34,6 @@ public:
 	 */
 	void Set(const Vector3& pos, const Vector2& size);
 
-	void SetOrigSize(const Vector3& pos, const Vector2& size);
-
 	virtual ~ImageBoard();
 
 	/**
@@ -48,11 +46,6 @@ public:
 	 * @return
 	 */
 	Vector3* GetVertexs();
-
-	//vector<Vector3> GetLocalTransformedVertexs();
-
-	vector<Vector3> GetWorldTransformedVertexs();
-
 	/**
 	 * 获取纹理坐标
 	 * @return
@@ -81,8 +74,6 @@ public:
 	 * @param renderAction
 	 */
 	void UpdateRenderData(RenderAction* renderAction);
-
-	void UpdateRenderDataByModelViewMatrix(const Matrix3x4& modelViewMatrix);
 
 	/**
 	 * 获取渲染颜色
@@ -145,40 +136,16 @@ public:
 	 * @return true 允许 false 不允许
 	 */
 	bool IsAllowScale();
-	bool GetInTop();
-	void SetInTop(bool val);
-
-	bool GetFlipV() const { return m_flipV; }
-	void SetFlipV(bool val) { m_flipV = val; }
-
-
-	/**
-	* @brief 返回图片是否固定在屏幕上面显示
-	* @return 
-	*/
-	bool GetFixShowInScreen() const;
-
-	/**
-	* @brief 设置图片固定在屏幕上面显示
-	*/
-	void SetFixShowInScreen(bool val);
-	Vector2 GetSize();
 private:
     Vector3 m_position;//!<位置
     Vector2 size_;//!<大小
-	Vector2 origSize;
     Rect uv_;//!<纹理坐标
- 
+
 	vector<Vector3> points;//!<顶点
 	vector<Vector2> textCoords;//!<纹理坐标
 
 	Billboard m_bindBillboard;//!<公告板
 	Texture* m_texture;//!<纹理
-	mutable Mutex m_mutex; //!<线程锁对象
-
-	bool m_fixShowInScreen;//在屏幕上固定位置显示
-
-	bool m_flipV;
 };
 }
 

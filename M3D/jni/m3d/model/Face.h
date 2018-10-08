@@ -8,153 +8,158 @@
  *
  */
 
-#ifndef M3D_LFACE_H_
-#define M3D_LFACE_H_
+#ifndef M3D_FACE_H_
+#define M3D_FACE_H_
+
+#include "m3d/model/Shape.h"
 #include "m3d/model/LODData.h"
-#include "m3d/model/IShape.h"
+#include "m3d/action/RenderAction.h"
 #include "m3d/graphics/Renderable.h"
 namespace M3D
 {
 class Edge;
 class Body;
-class Action;
-class RenderAction;
-class ExtendInfoManager;
-class GeometryAttribute;
-class M3D_API FaceExtInfo
-{
-	friend class Face;
-private:
-	FaceExtInfo();
 
-	Color m_InitColor;//!<初始颜色 模型读取时的初始颜色，在SView中不修改。
-	bool m_origVisible;//!<读取时候的显示隐藏状态
-	bool m_origHighlight;
-	string m_Properties; //!<属性信息
-	int m_InstanceID;
-	bool m_IsFirstGetProperties; //!<是否是第一次获取属性信息
+class LFace: public Renderable, public Object, public IShape
+{
 public:
-	virtual ~FaceExtInfo();
+	LFace();
+	virtual ~LFace();
+
+	virtual SHAPETYPE GetType(void);
+
+	BoundingBox GetBoundingBox();
+
+	virtual void FindVisiableObject(RenderAction* renderAction);
+
+	virtual void RayPick(RayPickAction* action);
+	/**
+	 * 得到渲染时使用的RefMesh
+	 * @return
+	 */
+	Mesh* GetRenderMeshData();
+
+	/**
+	 * 设置渲染时使用的RefMesh
+	 * @param meshCache
+	 */
+	void SetRenderMeshData(Mesh* meshCache);
+
+	///Renderable virtual function
+	/**
+	 * 得到渲染时的颜色
+	 * @return
+	 */
+	virtual const Color& GetRenderColor();
+
+	void SetColor(const Color* color);
+
+	virtual void SetSelected(bool isSelected);
+
+	virtual IDTYPE GetID()
+	{
+		return this->m_Id;
+	}
+
+	virtual void SetID(IDTYPE value)
+	{
+		this->m_Id = value;
+	}
+
+	IShape* GetParent();
+
+	void SetParent(IShape* shape);
+
+private:
+	bool m_visible;
+	bool m_IsSelect; ///是否选中
+	IDTYPE m_Id; ///编号
+	Mesh* m_drawCache; //!<渲染时使用的Mesh
+	Color m_Color; ///颜色
+	IShape* m_parent;
 };
 
-class M3D_API Face:public Object, public Renderable,public IShape
+/**@class Face
+ * @brief Face类
+ *
+ * 提供Face类的相关方法
+ */
+class Face: public Shape, public LOD, public Renderable
 {
 public:
 	Face();
 	virtual ~Face();
-
-	//bool UseExtInfo();
-
-	//bool UnUseExtInfo();
-
 	Face(const Face& orig);
 	Face& operator =(const Face& orig);
 
-	void SetData(Mesh* vertexData);
-	Mesh* GetData();
-	virtual void SetRenderMeshData(Mesh* meshCache);
- 
-	virtual bool Visible();
- 
-	virtual void SetBody(Body* body);
-
-	virtual Body* GetBody();
-
-	virtual void AddEdge(Edge* edge, int level = 0);
-	virtual vector<Edge*>* GetEdges();
-
-	virtual int GetVertexCount(int level = 0);
-	virtual Mesh* GetRenderMeshData();
- 
-	virtual BaseMaterial* GetRenderMaterial();
-
-	const Color& GetRenderColor();
 	/**
-	* @see Shape
-	*/
-	virtual void Restore();
-	virtual void Restore(bool resub);
-	virtual void ResetColor();
-	virtual SHAPETYPE GetType(void);
-	virtual void SetType(SHAPETYPE type);
+	 * 设置上级Body
+	 * @param body
+	 */
+	void SetBody(Body* body);
+
+	/**
+	 * 得到上级Body
+	 * @return
+	 */
+	Body* GetBody();
+
+	/**
+	 * 添加边数据
+	 * @param edge
+	 * @param level 如果需要使用，指定级lod级别。
+	 */
+	void AddEdge(Edge* edge, int level = 0);
+
+	/**
+	 * 得到所有的边界线
+	 * @return
+	 */
+	vector<Edge*>& GetEdges();
+
+	///shape virtual functions
+	virtual void ComputeBox();
 	virtual void RayPick(RayPickAction* action);
-	virtual void FramePick(RayPickAction* action);
 	virtual void SetSelected(bool select);
 	virtual void SetAlpha(float a);
-	virtual void SetAlpha(float a, bool relSub);
 	virtual void SetVisible(bool visible);
-	virtual void SetVisible(bool visible, bool relSub);
-	virtual void ComputeBox();
-	virtual void SetInitColor(const Color &color);
-	virtual void SetInitAlpha(float alpha);
-	virtual void SetInitHightlight(bool isHighlight);
-	virtual bool IsHightlight();
-	virtual void SetColor(const Color &color);
-	virtual void SetColor(const Color& color, bool reSub);
-	virtual void ResetAlpha();
-	virtual Color* GetDrawColor();
-	virtual Color* GetColor();
-	virtual float GetAlpha();
-	virtual bool IsSelected() const;
-	virtual void SetBox(const BoundingBox& box);
-	virtual bool IsVisible();
-	virtual bool IsOrigVisible();
-	virtual void SetOrigVisible(bool visible);
-	virtual void SetOrigVisible(bool visible, bool relSub);
-	virtual BoundingBox& GetBoundingBox();
-	virtual string GetProperties();
+	virtual string GetGeoInfo();
 	virtual void InitProperties();
-	virtual void AddProperty(string key, string value);
-	virtual void ClearProperties();
-	virtual IDTYPE GetID();
-	virtual void SetID(IDTYPE  value);
-	virtual std::string GetName();
-	virtual void SetName(const std::string& value);
-	virtual Color* GetInitColor();
-	void Selectable(bool selectable);
-	bool Selectable();
-
-	virtual void SetSceneNode(SceneNode* node);
-	virtual SceneNode* GetSceneNode();
-	virtual void SetMaterial(BaseMaterial* material);
-	virtual BaseMaterial* GetMaterial();
-	virtual bool AllowExculding();
-	virtual void SetAlloewExculding(bool allow);
-	virtual bool RendreVisible();
-	virtual void SetRenderVisible(bool visible);
-	virtual float GetVolumeAndArea(float& volume, float& area);
-	virtual string GetGeometryInfo();
 	virtual void FindVisiableObject(RenderAction* renderAction);
-	virtual void Traverse(Action* action);
-	virtual void AddRef(void);
-	virtual void Release(void);
-	virtual int GetSVLId();
-	virtual void SetSVLId(int Id);
-	GeometryAttribute* GetGeoAttribute();
+	/**
+	 * 得到Face下指定lod等级Mesh顶点的个数
+	 * @param level lod等级
+	 * @return
+	 */
+	int GetVertexCount(int level = 0);
 
-	virtual IDTYPE GetCopyObjId();
-	virtual void SetFaceExtInfo();
+	/**
+	 * 得到渲染时使用的RefMesh
+	 * @return
+	 */
+	Mesh* GetRenderMeshData();
 
-	void SetNeedClip(bool val);
-	bool GetNeedClip();
+	/**
+	 * 设置渲染时使用的RefMesh
+	 * @param meshCache
+	 */
+	void SetRenderMeshData(Mesh* meshCache);
+
+	///Renderable virtual function
+	/**
+	 * 得到渲染时的颜色
+	 * @return
+	 */
+	virtual const Color& GetRenderColor();
+
+	virtual Material* GetRenderMaterial();
+
+	virtual float GetVolumeAndArea(float& volume,float& area);
+
 private:
-	static BoundingBox m_globalFaceBox;
-
-private:
-	bool m_visible;
-	bool m_IsHighlight;
-	bool m_IsSelect; ///是否选中
-	bool m_selectable;
-	IDTYPE m_Id; ///编号
+	Body* body; //!<上级Body
 	Mesh* m_drawCache; //!<渲染时使用的Mesh
-	Mesh* m_drawMesh; //!<渲染时使用的Mesh
-	mutable Color m_Color; ///颜色
-	Body* m_body;
-	BaseMaterial* m_material;//!<关联材质
-	//ExtendInfoManager* m_ExtInfoMgr;
-	FaceExtInfo* m_FaceExtInfo;	
-	int m_svlId;
-	bool m_bNeedClip;
+	vector<Edge*> m_edges; //!<下级Edge
 };
 }
 

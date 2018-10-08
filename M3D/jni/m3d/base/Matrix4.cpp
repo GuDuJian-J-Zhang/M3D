@@ -170,16 +170,7 @@ Vector3 Matrix4::operator *(const Vector3& rhs)const
         (m_m20 * rhs.m_x + m_m21 * rhs.m_y + m_m22 * rhs.m_z + m_m23) * invW
     );
 }
-Vector3 Matrix4::Multiply(const Vector3& rhs)const
-{
-	float invW = 1.0f / (m_m30 * rhs.m_x + m_m31 * rhs.m_y + m_m32 * rhs.m_z + m_m33);
 
-	return Vector3(
-		(m_m00 * rhs.m_x + m_m01 * rhs.m_y + m_m02 * rhs.m_z + m_m03) * invW,
-		(m_m10 * rhs.m_x + m_m11 * rhs.m_y + m_m12 * rhs.m_z + m_m13) * invW,
-		(m_m20 * rhs.m_x + m_m21 * rhs.m_y + m_m22 * rhs.m_z + m_m23) * invW
-	);
-}
 /// Multiply a Vector4.
 Vector4 Matrix4::operator *(const Vector4& rhs)const
 {
@@ -190,15 +181,7 @@ Vector4 Matrix4::operator *(const Vector4& rhs)const
         m_m30 * rhs.m_x + m_m31 * rhs.m_y + m_m32 * rhs.m_z + m_m33 * rhs.m_w
     );
 }
-Vector4 Matrix4::Multiply(const Vector4& rhs)const
-{
-	return Vector4(
-		m_m00 * rhs.m_x + m_m01 * rhs.m_y + m_m02 * rhs.m_z + m_m03 * rhs.m_w,
-		m_m10 * rhs.m_x + m_m11 * rhs.m_y + m_m12 * rhs.m_z + m_m13 * rhs.m_w,
-		m_m20 * rhs.m_x + m_m21 * rhs.m_y + m_m22 * rhs.m_z + m_m23 * rhs.m_w,
-		m_m30 * rhs.m_x + m_m31 * rhs.m_y + m_m32 * rhs.m_z + m_m33 * rhs.m_w
-	);
-}
+
 /// Add a matrix.
 Matrix4 Matrix4::operator +(const Matrix4& rhs) const
 {
@@ -221,27 +204,7 @@ Matrix4 Matrix4::operator +(const Matrix4& rhs) const
         m_m33 + rhs.m_m33
     );
 }
-Matrix4 Matrix4::Add(const Matrix4& rhs) const
-{
-	return Matrix4(
-		m_m00 + rhs.m_m00,
-		m_m01 + rhs.m_m01,
-		m_m02 + rhs.m_m02,
-		m_m03 + rhs.m_m03,
-		m_m10 + rhs.m_m10,
-		m_m11 + rhs.m_m11,
-		m_m12 + rhs.m_m12,
-		m_m13 + rhs.m_m13,
-		m_m20 + rhs.m_m20,
-		m_m21 + rhs.m_m21,
-		m_m22 + rhs.m_m22,
-		m_m23 + rhs.m_m23,
-		m_m30 + rhs.m_m30,
-		m_m31 + rhs.m_m31,
-		m_m32 + rhs.m_m32,
-		m_m33 + rhs.m_m33
-	);
-}
+
 /// Subtract a matrix.
 Matrix4 Matrix4::operator -(const Matrix4& rhs) const
 {
@@ -264,27 +227,7 @@ Matrix4 Matrix4::operator -(const Matrix4& rhs) const
         m_m33 - rhs.m_m33
     );
 }
-Matrix4 Matrix4::Sub(const Matrix4& rhs) const
-{
-	return Matrix4(
-		m_m00 - rhs.m_m00,
-		m_m01 - rhs.m_m01,
-		m_m02 - rhs.m_m02,
-		m_m03 - rhs.m_m03,
-		m_m10 - rhs.m_m10,
-		m_m11 - rhs.m_m11,
-		m_m12 - rhs.m_m12,
-		m_m13 - rhs.m_m13,
-		m_m20 - rhs.m_m20,
-		m_m21 - rhs.m_m21,
-		m_m22 - rhs.m_m22,
-		m_m23 - rhs.m_m23,
-		m_m30 - rhs.m_m30,
-		m_m31 - rhs.m_m31,
-		m_m32 - rhs.m_m32,
-		m_m33 - rhs.m_m33
-	);
-}
+
 /// Multiply with a scalar.
 Matrix4 Matrix4::operator *(float rhs) const
 {
@@ -307,27 +250,7 @@ Matrix4 Matrix4::operator *(float rhs) const
         m_m33 * rhs
     );
 }
-Matrix4 Matrix4::Multiply(float rhs) const
-{
-	return Matrix4(
-		m_m00 * rhs,
-		m_m01 * rhs,
-		m_m02 * rhs,
-		m_m03 * rhs,
-		m_m10 * rhs,
-		m_m11 * rhs,
-		m_m12 * rhs,
-		m_m13 * rhs,
-		m_m20 * rhs,
-		m_m21 * rhs,
-		m_m22 * rhs,
-		m_m23 * rhs,
-		m_m30 * rhs,
-		m_m31 * rhs,
-		m_m32 * rhs,
-		m_m33 * rhs
-	);
-}
+
 //按列存储的矩阵，乘法的计算为列乘行,和按行存储的矩阵相反 very important by xuli
 /// Multiply a matrix.
 Matrix4 Matrix4::operator *(const Matrix4& rhs) const
@@ -351,27 +274,7 @@ Matrix4 Matrix4::operator *(const Matrix4& rhs) const
         m_m30 * rhs.m_m03 + m_m31 * rhs.m_m13 + m_m32 * rhs.m_m23 + m_m33 * rhs.m_m33
     );
 }
-Matrix4 Matrix4::Multiply(const Matrix4& rhs) const
-{
-	return Matrix4(
-		m_m00 * rhs.m_m00 + m_m01 * rhs.m_m10 + m_m02 * rhs.m_m20 + m_m03 * rhs.m_m30,
-		m_m00 * rhs.m_m01 + m_m01 * rhs.m_m11 + m_m02 * rhs.m_m21 + m_m03 * rhs.m_m31,
-		m_m00 * rhs.m_m02 + m_m01 * rhs.m_m12 + m_m02 * rhs.m_m22 + m_m03 * rhs.m_m32,
-		m_m00 * rhs.m_m03 + m_m01 * rhs.m_m13 + m_m02 * rhs.m_m23 + m_m03 * rhs.m_m33,
-		m_m10 * rhs.m_m00 + m_m11 * rhs.m_m10 + m_m12 * rhs.m_m20 + m_m13 * rhs.m_m30,
-		m_m10 * rhs.m_m01 + m_m11 * rhs.m_m11 + m_m12 * rhs.m_m21 + m_m13 * rhs.m_m31,
-		m_m10 * rhs.m_m02 + m_m11 * rhs.m_m12 + m_m12 * rhs.m_m22 + m_m13 * rhs.m_m32,
-		m_m10 * rhs.m_m03 + m_m11 * rhs.m_m13 + m_m12 * rhs.m_m23 + m_m13 * rhs.m_m33,
-		m_m20 * rhs.m_m00 + m_m21 * rhs.m_m10 + m_m22 * rhs.m_m20 + m_m23 * rhs.m_m30,
-		m_m20 * rhs.m_m01 + m_m21 * rhs.m_m11 + m_m22 * rhs.m_m21 + m_m23 * rhs.m_m31,
-		m_m20 * rhs.m_m02 + m_m21 * rhs.m_m12 + m_m22 * rhs.m_m22 + m_m23 * rhs.m_m32,
-		m_m20 * rhs.m_m03 + m_m21 * rhs.m_m13 + m_m22 * rhs.m_m23 + m_m23 * rhs.m_m33,
-		m_m30 * rhs.m_m00 + m_m31 * rhs.m_m10 + m_m32 * rhs.m_m20 + m_m33 * rhs.m_m30,
-		m_m30 * rhs.m_m01 + m_m31 * rhs.m_m11 + m_m32 * rhs.m_m21 + m_m33 * rhs.m_m31,
-		m_m30 * rhs.m_m02 + m_m31 * rhs.m_m12 + m_m32 * rhs.m_m22 + m_m33 * rhs.m_m32,
-		m_m30 * rhs.m_m03 + m_m31 * rhs.m_m13 + m_m32 * rhs.m_m23 + m_m33 * rhs.m_m33
-	);
-}
+
 Matrix4 Matrix4::operator * (const Matrix3x4& rhs) const
 {
     return Matrix4(
@@ -393,27 +296,7 @@ Matrix4 Matrix4::operator * (const Matrix3x4& rhs) const
         m_m30 * rhs.m_m03 + m_m31 * rhs.m_m13 + m_m32 * rhs.m_m23 + m_m33
     );
 }
-Matrix4 Matrix4::Multiply(const Matrix3x4& rhs) const
-{
-	return Matrix4(
-		m_m00 * rhs.m_m00 + m_m01 * rhs.m_m10 + m_m02 * rhs.m_m20,
-		m_m00 * rhs.m_m01 + m_m01 * rhs.m_m11 + m_m02 * rhs.m_m21,
-		m_m00 * rhs.m_m02 + m_m01 * rhs.m_m12 + m_m02 * rhs.m_m22,
-		m_m00 * rhs.m_m03 + m_m01 * rhs.m_m13 + m_m02 * rhs.m_m23 + m_m03,
-		m_m10 * rhs.m_m00 + m_m11 * rhs.m_m10 + m_m12 * rhs.m_m20,
-		m_m10 * rhs.m_m01 + m_m11 * rhs.m_m11 + m_m12 * rhs.m_m21,
-		m_m10 * rhs.m_m02 + m_m11 * rhs.m_m12 + m_m12 * rhs.m_m22,
-		m_m10 * rhs.m_m03 + m_m11 * rhs.m_m13 + m_m12 * rhs.m_m23 + m_m13,
-		m_m20 * rhs.m_m00 + m_m21 * rhs.m_m10 + m_m22 * rhs.m_m20,
-		m_m20 * rhs.m_m01 + m_m21 * rhs.m_m11 + m_m22 * rhs.m_m21,
-		m_m20 * rhs.m_m02 + m_m21 * rhs.m_m12 + m_m22 * rhs.m_m22,
-		m_m20 * rhs.m_m03 + m_m21 * rhs.m_m13 + m_m22 * rhs.m_m23 + m_m23,
-		m_m30 * rhs.m_m00 + m_m31 * rhs.m_m10 + m_m32 * rhs.m_m20,
-		m_m30 * rhs.m_m01 + m_m31 * rhs.m_m11 + m_m32 * rhs.m_m21,
-		m_m30 * rhs.m_m02 + m_m31 * rhs.m_m12 + m_m32 * rhs.m_m22,
-		m_m30 * rhs.m_m03 + m_m31 * rhs.m_m13 + m_m32 * rhs.m_m23 + m_m33
-	);
-}
+
 
 Matrix4 Matrix4::operator*(const Quaternion& rhs) const
 {
@@ -421,12 +304,7 @@ Matrix4 Matrix4::operator*(const Quaternion& rhs) const
 	Matrix4 tempMatrix = Matrix4(rotationMatrix);
 	return (*this) * tempMatrix;
 }
-Matrix4 Matrix4::Multiply(const Quaternion& rhs) const
-{
-	Matrix3 rotationMatrix = rhs.RotationMatrix();
-	Matrix4 tempMatrix = Matrix4(rotationMatrix);
-	return (*this) * tempMatrix;
-}
+
 /// Multiply with a 3x4 matrix.
 // Matrix4 operator * (const Matrix3x4& rhs) const;
 
@@ -569,28 +447,6 @@ Matrix4 Matrix4::Transpose() const
         m_m23,
         m_m33
     );
-}
-
-void Matrix4::Transposed()
-{
-	*this = Matrix4(
-		m_m00,
-		m_m10,
-		m_m20,
-		m_m30,
-		m_m01,
-		m_m11,
-		m_m21,
-		m_m31,
-		m_m02,
-		m_m12,
-		m_m22,
-		m_m32,
-		m_m03,
-		m_m13,
-		m_m23,
-		m_m33
-	);
 }
 
 void Matrix4::Ortho(float left, float right, float bottom, float top,

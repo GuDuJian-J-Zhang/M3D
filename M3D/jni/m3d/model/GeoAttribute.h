@@ -27,7 +27,6 @@ enum GeoAttrTypeEnum
 	M3D_GEOATTR_TYPE_TOROIDALFACE, /*!< 轮胎面							*/
 	M3D_GEOATTR_TYPE_LINE, //!< 直线
 	M3D_GEOATTR_TYPE_ELLIPSE, //!< 椭圆弧
-	M3D_GEOATTR_TYPE_REVOLUTIONFACE_CYLINDERFACE_CONICALFACE, //圆柱面和圆锥面
 };
 
 /**************************************************************************************

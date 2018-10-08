@@ -13,12 +13,12 @@
 
 #include "m3d/base/Color.h"
 #include "m3d/base/Matrix4.h"
+#include "m3d/action/RenderAction.h"
 #include "m3d/graphics/Renderable.h"
 #include "m3d/model/Shape.h"
 
 namespace M3D
 {
-class RenderAction;
 /**
  * @class
  * @brief 灯光类，管理灯光及参数
@@ -44,7 +44,7 @@ public:
 	 * 获取集合信息
 	 * @return
 	 */
-//	virtual string GetGeoInfo();
+	virtual string GetGeoInfo();
 	/**
 	 * @brief 初始化属性
 	 */
@@ -340,9 +340,9 @@ public:
 	 * Return light type.
 	 * @return
 	 */
-	int GetLightType()
+	SHAPETYPE GetLightType()
 	{
-		return this->m_lightType;
+		return this->GetType();
 	}
 
 
@@ -438,9 +438,6 @@ public:
 	 */
 	bool LightState(){return m_turnOn;}
 
-	void SetLightType(int type) { m_lightType = type; }
-
-
 private:
 	bool m_turnOn;
 	Color m_color;
@@ -474,8 +471,6 @@ private:
 	Color m_diffuse;//!<漫反射
 	Color m_specular;//!<高光
 	Color m_lightModelAmbient;//!<
-
-	int m_lightType;//!< 1 平行光 2 点光源 3 聚光灯
 };
 }
 #endif /*M3D_LIGHT_H_*/

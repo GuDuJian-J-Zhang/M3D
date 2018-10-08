@@ -35,7 +35,7 @@ namespace SVIEW
 //        //Writer::SaveTo(targetPath);
 //        Stk_DocumentManager *m_stkDocMgr = new Stk_DocumentManager();
 //        
-//        wstring wsFile = Platform::StringToWString(m_SourcePath);
+//        wstring wsFile = Stk_Platform::StringToWString(m_SourcePath);
 //        
 //        STK_STATUS status = m_stkDocMgr->LoadDocument(wsFile);
 //        if (status != STK_SUCCESS)
@@ -45,7 +45,7 @@ namespace SVIEW
 //        }
 //        
 //        //save
-//        wstring tarFile = Platform::StringToWString(targetPath);
+//        wstring tarFile = Stk_Platform::StringToWString(targetPath);
 //        m_stkDocMgr->SaveDocumentAs(tarFile, FILESAVE_TYPE_UNIQUE);
         
 //        return 0;

@@ -14,11 +14,13 @@
 #include "m3d/base/ControlInfo.h"
 #include "m3d/model/MeshData.h"
 #include "m3d/utils/CullerHelper.h"
+#include "m3d/renderer/gl20/ShaderManager.h"
 #include "m3d/graphics/HardWareFrameBuffer.h"
+
 
 namespace M3D
 {
-class DirectionalLight;
+class Light;
 class Model;
 class Body;
 class Face;
@@ -28,19 +30,13 @@ class RenderQueue;
 class Section;
 class Mesh;
 class VertexSet;
-class BaseMaterial;
+class Material;
 class Renderable;
 class Point;
 class HandlerRotateCenter;
 class HardWareFrameBuffer;
 class SectionLine;
-class PMIData;
-class ModelShape;
-class HandlerGroup;
-class ShaderManager; 
-class ShaderProgram;
-class ImageBoard;
-class GroundNode;
+
 /**
  * @brief 剖切数据封装类
  */
@@ -53,7 +49,7 @@ struct SectionData
 /**
  * @brief 灯光列表
  */
-typedef vector<DirectionalLight*> LightList;
+typedef vector<Light*> LightList;
 
 /**
  * @brief 渲染队列组
@@ -126,13 +122,10 @@ public:
 	const static int RGT_PMI;//!<PMI显示 TODO
 	const static int RGT_POINT;//!<点显示
 	const static int RGT_NOTE ;//!< NOTE显示
-	const static int RGT_ANNOTATION;//!<批注显示
 	const static int RGT_MEASURE ;//!<MEASURE显示
 	const static int RGT_HANDLER  ;//!<HANDLER PMI显示
 
 	const static int RGT_SOLID_TRAN ;//!<实体透明显示
-
-	const static int RGT_SHADOW;
 public:
 	/**
 	 *@brief 构造函数
@@ -636,13 +629,12 @@ public:
 	 * @param model
 	 */
 	void PrepareRenderPMIS(Model* model);
-	void PrepareRenderPMIS(map<int, PMIData*>* pmiDatas);
-	
+
 	/**
 	 * @brief 将Mode中的BoundingBox数据加入显示队列
 	 * @param model
 	 */
-	void PrepareRenderBox(ModelShape* modelShape);
+	void PrepareRenderBox(Model* model);
 
 	/**
 	 * @brief 将Section数据加入显示队列
@@ -655,10 +647,6 @@ public:
 	 * @param note
 	 */
 	void PrepareRenderNote(Note* Note);
-
-	void PrepareRenderAnnotation(Note* note);
-
-	void PrepareRenderImage(ImageBoard* imageBoard);
 
 	/**
 	 * @brief 将点对象加入渲染队列
@@ -732,7 +720,7 @@ public:
 	 * @brief 设置渲染时所需的灯光
 	 * @param lightList
 	 */
-	void AddLight(DirectionalLight* light);
+	void AddLight(Light* light);
 
 	/**
 	 * @brief 设置渲染时所需的灯光
@@ -775,11 +763,6 @@ public:
 	 * @return
 	 */
 	AxisNode* GetAxisNode();
-
-	void FillDelayDrawRenderQueue(RenderQueue& renderQueue,int queueGroup)
-	{
-		m_RenderQueueGroup[queueGroup] = renderQueue;
-	}
 
 	/**
 	 * @brief 获取剔除操作工具类
@@ -868,7 +851,6 @@ public:
 	 * @param measureGroup
 	 */
 	void SetMeasures(MeasureGroup* measureGroup);
-
 	/**
 	 * @brief 得到测量待渲染节点
 	 * @return
@@ -946,13 +928,6 @@ public:
 	 * @param renderable
 	 */
 	void AddToDelayDraw(Renderable* renderable);
-
-	/**
-	* @brief 将渲染对象，加入渲染队列
-	* @param renderable
-	*/
-	void AddFaceToDrawQueue(Face* renderable);
-
 	/**
 	 * @brief 当前是否需要延迟渲染
 	 * @return true 是 false 不需要
@@ -971,6 +946,8 @@ public:
 	 * @param allowDelayDraw
 	 */
 	void SetAllowDelayDraw(bool allowDelayDraw);
+    
+    bool AllowDelayDraw();
 
 	/**
 	 * 优化渲染队列
@@ -984,67 +961,7 @@ public:
 	void SetImmediateDrawBegin(bool immediateDraw);
 
 	bool IsImmediateDrawBegin();
-
-	/**
-	* @brief 获取渲染时所需的灯光
-	* @return
-	*/
-	LightList* GetModelLights();
-
-	/**
-	* @brief 设置渲染时所需的灯光
-	* @param lightList
-	*/
-	void AddModelLight(DirectionalLight* light);
-
-	/**
-	* @brief 设置渲染时所需的灯光
-	* @param lightList
-	*/
-	void SetModelLights(LightList* lights);
-
-	void ClearRenderBox();
-	void MergeRenderBox(BoundingBox& mergeBox);
-	BoundingBox& GetRenderBox();
-
-	/**
-	* @brief 设置背景节点
-	* @param backgroundColor
-	*/
-	void SetGroundNode(GroundNode* groundNode);
-
-	/**
-	* @brief 获取背景节点
-	* @return
-	*/
-	GroundNode* GetGroundNode();
-
-	/**
-	* @brief 将Face中的数据，加入以线着色模式的渲染队列
-	* @param face
-	*/
-	void FacePrepareLineMesh(Face* face);
-	bool GetSceneBoxChanged() const;
-	void SetSceneBoxChanged(bool val);
-	HandlerGroup* GetHandlerGroupNode() const;
-	void SetHandlerGroupNode(HandlerGroup* val);
-	map<int, M3D::RenderQueue>* GetWorkingRenderQueueGroup() const;
-	void SetWorkingRenderQueueGroup(map<int, M3D::RenderQueue>* val);
-	map<int, M3D::RenderQueue>& GetDraggerRenderQueueGroup()  { return m_DraggerRenderQueueGroup; }
-	void SetDraggerRenderQueueGroup(map<int, M3D::RenderQueue>& val) { m_DraggerRenderQueueGroup = val; }
-	vector<ImageBoard *>& GetRenderImageboards()  { return m_renderImageboards; }
-
-	vector<ImageBoard *> GetRenderUIs() const { return m_renderUIs; }
-	void SetRenderUIs(vector<ImageBoard *> val) { m_renderUIs = val; }
-
-	int GetCurrentRenderImageQueueIndex() const { return m_currentRenderImageQueueIndex; }
-	void SetCurrentRenderImageQueueIndex(int val) { m_currentRenderImageQueueIndex = val; }
-
-	vector<ImageBoard *> GetHudImages() const { return m_hudImages; }
-	void SetHudImages(vector<ImageBoard *> val) { m_hudImages = val; }
 private:
-
-	void InitRenderQueueGroup(map<int, M3D::RenderQueue>& renderQueueGroup);
 
 	/**
 	 * @brief 准备开始延时渲染
@@ -1062,7 +979,11 @@ private:
 	 * @param face
 	 */
 	void PrepareFaceMesh(Face* face);
-
+	/**
+	 * @brief 将Face中的数据，加入以线着色模式的渲染队列
+	 * @param face
+	 */
+	void FacePrepareLineMesh(Face* face);
 	/**
 	 * @brief 将Face中的边数据，加入边渲染队列
 	 * @param face
@@ -1089,7 +1010,6 @@ public:
 	ControlInfo m_Control;//!< TODO
 	vector<Vector4> m_clipPlane;//!< 裁剪面列表
 	vector<int> m_enableClip;//!< 开启哪些裁剪面
-	bool m_bReverseClip;//!< 是否反转裁剪结果
 	HardWareFrameBuffer m_frameBffer;//!< 帧缓存对象
 
 	HardWareFrameBuffer m_teethFBO;//!< 牙齿FBO
@@ -1103,7 +1023,7 @@ public:
 	SectionData m_sectionData;//!< 纪录剖切对象
 
 	static ShaderProgram* m_currentSP;//!<TODO
-	static DirectionalLight m_light;//!<TODO 默认灯光
+	static Light m_light;//!<TODO 默认灯光
 
 private:
 	CameraNode* m_pCamera; //!< 摄像机
@@ -1118,16 +1038,11 @@ private:
 	AxisNode* m_axisNode; //!<坐标系显示节点
 	SceneGroundNode* m_sceneGroundNode;//!<地面节点
 	MeasureGroup* m_measureGroupCache; //!<交互节点绘制 TODO
-	HandlerGroup* m_handlerGroupNode; //!<拖拽器相关节点
-
 	Section* m_section; //!<缓存盖面操作信息
 	int m_CurretSpecifyLod; //!<当前使用的LOD，如果直接使用m_iSpecifyLod，会导致在面合并的过程中使用不同的LOD面数据，导致崩溃
 	int m_priTypeCache; //!<  如果状态改变了，则进行缓存
 	map<int, RenderQueue>::iterator m_priTypePassGroup; //!< 渲染队列缓存，用于快速查找
-	map<int, RenderQueue> m_RenderQueueGroup; //!< 正常渲染的队列
-	map<int, RenderQueue> m_DraggerRenderQueueGroup; //!< 不会被裁剪的渲染队列
-	map<int, RenderQueue>* m_WorkingRenderQueueGroup; //!< 当前正在起作用的渲染队列
-
+	map<int, RenderQueue> m_RenderQueueGroup; //!<
 	Renderable* m_mergeFaceCache; //!<缓存前一次面合并后的信息，供下一次面合并时比较
 	Edge* m_mergeEdgeCache; //!<缓存前一次边合并后的信息，供下一次边合并比较实用
 	int m_fps; //!<当前帧率
@@ -1141,12 +1056,6 @@ private:
 
 	RenderQueue m_delayOnceDrawList;//!<延迟渲染分段绘制组
 
-	vector<ImageBoard*> m_renderImageboards; //!<渲染图片的列表
-
-	vector<ImageBoard*> m_renderUIs; //!<渲染图片的列表
-
-	vector<ImageBoard*> m_hudImages; //!<hub图片列表
-
 	int m_delayDrawOnceCount;//!< 一次绘制的个数
 
 	bool m_immediatelyDrawBegin;
@@ -1155,18 +1064,6 @@ private:
 	bool m_allowDelayDraw;//!<是否允许延迟渲染，整体标识
 
 	bool m_currentRenderCount; //!<当前已经加入渲染队列的总数
-
-	BoundingBox m_selectBox; //!<纪录选中模型的包围盒
-
-	LightList m_modellights; //!<渲染灯光
-
-	bool m_isSceneBoxChanged; //!< 场景的包围盒改变了
-
-	bool m_clearDelayDrawFlag;
-
-	GroundNode* m_groundNode;
-
-	int m_currentRenderImageQueueIndex;//当前场景使用绘制图片的组的索引
 };
 }
 

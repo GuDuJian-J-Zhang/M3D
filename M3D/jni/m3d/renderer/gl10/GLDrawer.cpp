@@ -15,9 +15,10 @@
 #include "m3d/scene/AxisNode.h"
 #include "m3d/scene/FPSNode.h"
 #include "m3d/graphics/TextNode.h"
-#include "m3d/graphics/DirectionalLight.h"
+#include "m3d/graphics/Light.h"
 #include "m3d/RenderManager.h"
 
+#include "m3d/scene/ModelNode.h"
 #include "Utility.h"
 
 #include "sview/views/Parameters.h"
@@ -292,7 +293,7 @@ void GLDrawer::DrawText(SceneNode* node, RenderAction* action)
 #endif
 	glEnable(GL_LIGHTING);
 	glEnable(GL_BLEND);
-	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glPopMatrix();
 
 }
@@ -302,8 +303,7 @@ void GLDrawer::InitialGL()
 {
 	glEnable(GL_DEPTH_TEST);
 	glShadeModel(GL_SMOOTH);
-	glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
-	glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	glDisable(GL_BLEND);
 	glDepthMask(GL_TRUE);
@@ -532,11 +532,11 @@ void GLDrawer::LogGLState()
 	LOGI("log gl state end.");
 }
 
-void GLDrawer::ApplyPointLight(DirectionalLight* lightData)
+void GLDrawer::ApplyPointLight(Light* lightData)
 {
 
 }
-void GLDrawer::ApplyDirLight(DirectionalLight* light)
+void GLDrawer::ApplyDirLight(Light* light)
 {
 
 //	Matrix4* worldMatrix = light->getWorldMatrix();

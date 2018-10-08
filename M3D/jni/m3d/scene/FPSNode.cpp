@@ -11,7 +11,6 @@
 #include "sview/views/Parameters.h"
 #include "m3d/model/ComText.h"
 #include "m3d/utils/M3DTools.h"
-#include "m3d/action/RenderAction.h"
 
 using namespace SVIEW;
 
@@ -78,7 +77,7 @@ int FPSNode::GetType(void)
 
 void FPSNode::FindVisiableObject(RenderAction* renderAction)
 {
-	if (!Parameters::Instance()->m_IsShowFPS || !this->IsVisible())
+	if (!Parameters::Instance()->m_IsShowFPS || this->IsHide())
 	{
 		renderAction->SetFPSNode(NULL);
 	}

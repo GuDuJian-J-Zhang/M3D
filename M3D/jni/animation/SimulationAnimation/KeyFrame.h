@@ -828,20 +828,7 @@ public:
 	static void MultDirMatrix(const float* MatrixA,AniPoint& srcDir,AniPoint& dstDir);
 
 	static CSAnimation* AddAnimation(NS_SimulationAnimation::CSBehaviorAction  * pBehaviorAction, const char *name, const char *targetpath, AniPoint* pivot, CSAnimation *pParentAnimation);
-	static void AddPosKeyframe(NS_SimulationAnimation::CSBehaviorAction  *pBehaviorAction, CSAnimation *pAnimation, int tick, AniPoint& pos, bool linear);
-	static void AddRotKeyframe(NS_SimulationAnimation::CSBehaviorAction  *pBehaviorAction, CSAnimation *pAnimation, int tick, AniQuat& quat, bool linear);
-	static void AddScaleKeyframe(NS_SimulationAnimation::CSBehaviorAction  *pBehaviorAction, CSAnimation *pAnimation, int tick, AniPoint& scale);
-	static void AddVisibleKeyframe(NS_SimulationAnimation::CSBehaviorAction  *pBehaviorAction, CSAnimation *pAnimation, int tick, char* strVisible);
-	static void AddColorKeyframe(NS_SimulationAnimation::CSBehaviorAction  *pBehaviorAction, CSAnimation *pAnimation, int tick, AniPoint& color,bool bDiscrete );
-	static void AddSoundKeyframe(NS_SimulationAnimation::CSBehaviorAction  *pBehaviorAction, CSAnimation *pAnimation, int tick, char* strSound);
-	static void AddImageKeyframe(NS_SimulationAnimation::CSBehaviorAction  *pBehaviorAction, CSAnimation *pAnimation, int tick, AniPoint& pos, AniPoint& scale, char* strVisible, bool linear);	
-
-	static void AddPosRotKeyframe(NS_SimulationAnimation::CSBehaviorAction *pBehaviorAction, CSAnimation *pAnimation, int tick, AniPoint pivot, AniPoint pos, bool linear, AniQuat quat, bool linear2,bool bFollowPath);
-	static void AddClipKeyframe(NS_SimulationAnimation::CSBehaviorAction* pBehaviorAction, CSAnimation* pAnimation, int tick, AniPoint pos, AniPoint normal, char* strVisible, bool linear);
 	static void AddCameraKeyframe(NS_SimulationAnimation::CSBehaviorAction *pBehaviorAction, CSAnimation *pAnimation, int tick, AniPoint pivot, AniPoint pos, AniQuat quat, AniPoint scale, bool linear);
-	static void AddZoomKeyframe(NS_SimulationAnimation::CSBehaviorAction *pBehaviorAction, CSAnimation *pAnimation, int tick, AniPoint pos, AniQuat quat, AniPoint scale, bool linear, const char* strVisible,bool bRelaceVisible);
-	//添加工具关键帧
-	static void AddToolKeyframe(NS_SimulationAnimation::CSBehaviorAction* pBehaviorAction, CSAnimation* pAnimation, int tick, char* strPlcPath, char* toolPath, char* parentPath);
 
 	//查找动画
 	static CSAnimation* FindAmimation(const char *target, const char *interpolatortype,NS_SimulationAnimation::CSBehaviorAction* pBehaviorAction);

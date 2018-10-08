@@ -43,12 +43,16 @@ public:
 	 * @return Action类型
 	 */
 	virtual int GetType();
-
+	/**
+	 * @brief 设置回调执行函数
+	 * @param fun 回调函数
+	 */
+	void SetActionFun(ActionFun fun);
 	/**
 	 * @brief 设置简化浏览模式回调执行函数
 	 * @param fun
 	 */
-	void SetActionFun(ActionFun fun);
+	void SetActionLFun(LActionFun fun);
 	/**
 	 * @brief 设置回掉执行数据
 	 * @param data 回调数据
@@ -56,11 +60,15 @@ public:
 	void SetActionData(void* data);
 
 private:
-	virtual void OnExecute(Model* node);
+	virtual void OnExecute(SceneNode* node);
+
+	virtual void OnExecute(LSceneNode* node);
 
 private:
 	void* m_pData; //!< 回调数据
-	ActionFun m_pfun;//!<简化浏览模式回调函数
+
+	ActionFun m_pfun;//!<回调函数
+	LActionFun m_pLfun;//!<简化浏览模式回调函数
 };
 
 }

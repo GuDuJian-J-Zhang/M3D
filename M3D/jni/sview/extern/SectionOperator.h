@@ -20,10 +20,25 @@ namespace M3D
 class SceneManager;
 class Model;
 class ShapeNode;
+class WorkNodes;
 class Section;
 class SectionPlane;
 class ModelView;
- 
+
+/**
+ * @class
+ * @brief 默认剖面方向沿X，Y，Z轴
+ *
+ *
+ */
+class M3D_API Direction
+{
+public:
+	static const int X = 1;
+	static const int Y = 2;
+	static const int Z = 3;
+};
+
 /**@class
  * @brief 控制剖面的显示，位置和方向
  *
@@ -37,13 +52,13 @@ public:
 			float percentage, SectionPlane* outPlane);
 
 public:
-	static void Show(SVIEW::View* pView, int id, int direction, float percentage,
-			bool isShowClipPlane, bool isShowCappingPlane, bool isReverseClip);
+	static void Show(SVIEW::View* pView, int direction, float percentage,
+			bool isShowClipPlane, bool isShowCutPlane);
 
 	static void Clear(SVIEW::View* pView);
 
-	void Init(SVIEW::View* pView, int id, int direction, float percentage,
-			bool isShowClipPlane, bool isShowCappingPlane, bool isReverseClip);
+	void Init(SVIEW::View* pView, int direction, float percentage,
+			bool isShowClipPlane, bool isShowCutPlane);
 
 	void Handle();
 	void RequestDraw();
@@ -55,24 +70,19 @@ public:
 	{
 		return m_Model;
 	}
-
-public:
-	ModelView* m_CurModelView;
+    
     static SectionOperator* Instance;
-	int m_Direction;
-	float m_fPercentage;
-    int m_DirectionX;
-    float m_fPercentageX;
-    int m_DirectionY;
-    float m_fPercentageY;
-    int m_DirectionZ;
-    float m_fPercentageZ;
-	bool m_IsShowClipPlane;
-	bool m_IsShowCappingPlane;
-	bool m_IsReverseClip;
+    int m_Direction;
+    float m_fPercentage;
+    
+private:
+	ModelView* m_CurModelView;
+    bool m_IsShowClipPlane;
+    bool m_IsShowCutPlane;
+	
 protected:
 private:
-
+	
 
 	SVIEW::View* m_pView;
 	SceneManager* m_pSceneManager;

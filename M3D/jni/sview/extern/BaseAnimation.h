@@ -25,7 +25,7 @@ using namespace SVIEW;
 namespace M3D
 {
 class Shape;
-class Model;
+class SceneNode;
 class GroupNode;
 class AnimationOperator;
 

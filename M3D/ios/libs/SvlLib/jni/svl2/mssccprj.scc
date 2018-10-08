@@ -1,9 +1,0 @@
-SCC = This is a Source Code Control file
-
-[DataManager.vcproj]
-SCC_Aux_Path = "\\192.168.2.222\航天应用"
-SCC_Project_Name = "$/SView2/Trunk/View/DataManager", HYHBAAAA
-
-[DataManager.sln]
-SCC_Aux_Path = "\\192.168.2.222\航天应用"
-SCC_Project_Name = "$/SView2/Trunk/View/DataManager", HYHBAAAA

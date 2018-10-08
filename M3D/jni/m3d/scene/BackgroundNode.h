@@ -15,7 +15,7 @@
 namespace M3D
 {
 class Texture;
-class ResourceManager;
+
 /**
  * 绘制背景颜色，支持颜色绘制和图片绘制两种方式
  */
@@ -89,23 +89,7 @@ public:
      */
     bool IsUseImage();
 
-	void SetUseSkyBox(bool useSkyBox);
-	bool IsUseSkyBox();
-
 	Texture* GetTexture();
-	void SetTexture(Texture* texture);
-
-	Texture* GetSkyBoxTexture(string name);
-	Texture* GetSkyBoxTexture();
-	void AddSkyBoxTexture(string name,Texture* skyBox);
-    void ClearSkyBoxTexture();
-	bool IsUseColor();
-	void SetUseColor(bool useColor);
-
-	void KeepBackgroundState();
-	void RestoreBackgroundState();
-    
-    void SetResourceManager(ResourceManager * resMgr);
 
 protected:
 //	virtual void FinalRelease(void); // Container.h
@@ -141,25 +125,6 @@ private:
 	string m_imagePath;  //!<图片路径
 
 	Texture* m_texture;  //!<背景纹理
-
-	map<string, Texture*> m_skyBoxTexture;
-
-	bool m_isUseSkyBox;
-
-	bool m_isUseColor;
-
-	//保存系统原来的背景状态
-	bool m_needRestoreState;
-	Color m_originTopColor;
-	Color m_originBottomColor;
-	Texture * m_originTexture;
-	bool m_originUseColor;
-	bool m_originUseImage;
-	bool m_originUseSkyBox;
-	string m_origimagePath;  //!<图片路径
-
-    ResourceManager* m_resMgr;
-
 };
 }
 #endif // BACKGROUNDCOLORNODE_H

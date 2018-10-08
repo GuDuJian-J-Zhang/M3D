@@ -23,7 +23,7 @@
 #include "../SimulationCommon/TypeDef.h"
 #include "../SimulationCommon/varray.h"
 #include "SimulationAnimationManager.h"
-
+#include "Mutex.h"
 
 //SA_NAMESPACE_BEGIN
 namespace SVIEW{
@@ -46,7 +46,6 @@ class CUtilityXMLTag;
 
 SA_NAMESPACE_BEGIN
 class CSBehaviorAction;
-class Mutex;
 
 //动画类型
 enum AnimationType
@@ -370,33 +369,31 @@ public:
 	void WriteToFile(const unsigned short *filename);
 #endif
 	void WriteToFile(const char *filename);
-	bool GetDataBuffer(char** pBuffer, int& nBufferSize);
-	//
+//
 //	/*!
 //	 Reads XML data containing animation tags from a file and loads it into memory.
 //     \param filename Filename
 //   	*/	
 //
-	CSBehaviorAction* ReadFromFile(const __wchar_t *filename);
+	static CSBehaviorAction* ReadFromFile(const __wchar_t *filename);
 #ifdef _MSC_VER
-	CSBehaviorAction* ReadFromFile(const unsigned short *filename);
+	static CSBehaviorAction* ReadFromFile(const unsigned short *filename);
 #endif
-	CSBehaviorAction* ReadFromFile(const char *filename);
+	static CSBehaviorAction* ReadFromFile(const char *filename);
 //
 //	/*!
 //	Sets up the XML parser to read animation related xml tags.
 //     \param model A pointer to the model object.
 //	 \param buffer A pointer to the memory buffer containing XML data.
 //   	*/		
-	CSBehaviorAction* ProcessXMLData(const char *buffer);
+	static CSBehaviorAction* ProcessXMLData(const char *buffer);
 
 	/*!
 	This is XML read callback which parses XML data and then populates the member variables with the associated values.
   	*/
 	static void *XMLCallback(CUtilityXMLTag *xt, bool open, void *m_pExtraData);
 
-	static void *XMLCallbackSelf(CUtilityXMLTag *xt, bool open, void *m_pExtraData);
-	/*!
+ 	/*! 
 	Sets the current tick based on a given time.
 	\param t The time in seconds. */
  	void  SetCurrentTickByTime(float t);
@@ -626,11 +623,7 @@ public:
 	bool HasLockedAnimations();
 	bool IsAllAnimationsLocked();
 	bool TransferTool(int nType, const char* plcIdPath, const char* strToolPath, const char* strParentPath);
-	
-	//克隆
-	CSBehaviorAction* Clone();
-	//反转动画
-	int Reversion();
+	View* GetView();
 protected:
 
 	/*! Determine if any collisions have occurred for specified target object.
@@ -673,7 +666,7 @@ protected:
 	float				m_fCollisionTime;//最后一次计算干涉的时间
 
     
-	mutable Mutex* m_mutex;
+	mutable Mutex m_mutex;
     
     void Lock();
     void UnLock();

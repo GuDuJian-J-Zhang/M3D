@@ -80,22 +80,6 @@ public:
 	{
 	}
 
-
-	//************************************
-	// Method:    Color
-	// FullName:  M3D::Color::Color
-	// Access:    public 
-	// Returns:   
-	// Qualifier:16进制颜色表示
-	// Parameter: unsigned int hex
-	//************************************
-	explicit  Color(unsigned int hex) {
-		m_r = (hex >> 16 & 255) / 255.0;
-		m_g = (hex >> 8 & 255) / 255.0;
-		m_b = (hex & 255) / 255.0;
-		m_a = 1.0;
-	}
-
 	/**
 	 * @brief Construct from a float array.
 	 *
@@ -105,7 +89,6 @@ public:
 			m_r(data[0]), m_g(data[1]), m_b(data[2]), m_a(data[3])
 	{
 	}
-
 	void SetColor(float r, float g, float b, float a = 1.0f)
 	{
 		m_r = r;
@@ -386,17 +369,6 @@ public:
 	{
 		return M3D::Equals(m_r, rhs.m_r) && M3D::Equals(m_g, rhs.m_g)
 				&& M3D::Equals(m_b, rhs.m_b) && M3D::Equals(m_a, rhs.m_a);
-	}
-
-	M3D_ADDRESSTYPE Address()
-	{
-		//获取地址的真实方式
-		return TAddress(*this);
-	}
-
-	void FillByAddress(M3D_ADDRESSTYPE memoryAddress)
-	{
-		*this = *TFromAddress<Color>(memoryAddress);
 	}
 
 	/**

@@ -9,7 +9,6 @@
 #ifndef M3D_SPHERE_H_
 #define M3D_SPHERE_H_
 
-#include "m3d/base/Object.h"
 #include "m3d/base/Vector3.h"
 
 namespace M3D
@@ -22,13 +21,13 @@ class Frustum;
 /** 
  * @brief %Sphere in three-dimensional space. 
  */
-class M3D_API Sphere:public Object
+class M3D_API Sphere
 {
 public:
 	/**
 	 * @brief Construct undefined.
 	 */
-	Sphere() :Object(),
+	Sphere() :
 			m_center(Vector3::ZERO), m_radius(0.0f), m_defined(false)
 	{
 	}
@@ -36,7 +35,7 @@ public:
 	/**
 	 * @brief Copy-construct from another sphere.
 	 */
-	Sphere(const Sphere& sphere) :Object(),
+	Sphere(const Sphere& sphere) :
 			m_center(sphere.m_center), m_radius(sphere.m_radius), m_defined(
 					sphere.m_defined)
 	{
@@ -45,7 +44,7 @@ public:
 	/**
 	 * @brief Construct from center and radius.
 	 */
-	Sphere(const Vector3& center, float radius) :Object(),
+	Sphere(const Vector3& center, float radius) :
 			m_center(center), m_radius(radius), m_defined(true)
 	{
 	}
@@ -53,7 +52,7 @@ public:
 	/**
 	 * @brief Construct from an array of vertices.
 	 */
-	Sphere(const Vector3* vertices, unsigned count) :Object(),
+	Sphere(const Vector3* vertices, unsigned count) :
 			m_defined(false)
 	{
 		Define(vertices, count);
@@ -62,7 +61,7 @@ public:
 	/**
 	 * @brief Construct from a bounding box.
 	 */
-	Sphere(const BoundingBox& box) :Object(),
+	Sphere(const BoundingBox& box) :
 			m_defined(false)
 	{
 		Define(box);
@@ -71,7 +70,7 @@ public:
 	/**
 	 * @brief Construct from a frustum.
 	 */
-	Sphere(const Frustum& frustum) :Object(),
+	Sphere(const Frustum& frustum) :
 			m_defined(false)
 	{
 		Define(frustum);
@@ -257,21 +256,14 @@ public:
 		return Max((point - m_center).Length() - m_radius, 0.0f);
 	}
 
-
-	float GetRadius() const { return m_radius; }
-	void SetRadius(float val) { m_radius = val; }
-	M3D::Vector3 GetCenter() const { return m_center; }
-	void SetCenter(M3D::Vector3 val) { m_center = val; }
-private:
 	/**
-	* @brief Sphere center.
-	*/
+	 * @brief Sphere center.
+	 */
 	Vector3 m_center;
 	/**
 	 * @brief Sphere radius.
 	 */
 	float m_radius;
-
 	/**
 	 * @brief Defined flag.
 	 */

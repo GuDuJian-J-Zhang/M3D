@@ -47,8 +47,6 @@ namespace M3D
 		bool SetDataRange(const void* data, unsigned start, unsigned count,
 			bool discard = false);
 
-		long GetBufferSize();
-
 		/**
 		* 设置数据相对于起点的偏移量
 		* @param offset
@@ -101,9 +99,8 @@ namespace M3D
 	private:
 		M3D_OFFSET_TYPE m_offset;	//!<索引的偏移量
 
-		static bool m_dynamic;		//!<索引是否为动态
-		M3D_OFFSET_TYPE m_cacheBufferSize;//!<
-		M3D_OFFSET_TYPE m_BufferSize;//!<
+		bool m_dynamic;		//!<索引是否为动态
+		unsigned m_bufferSize;//!<索引个数
 		
 		M3D_OFFSET_TYPE m_bufferOffset;//!<开始位置
 		int m_bufferType;//!<类型

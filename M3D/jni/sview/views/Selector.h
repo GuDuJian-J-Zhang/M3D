@@ -14,7 +14,7 @@
 #define M3D_SELECTOR_H_
 
 #include "sview/SView.h"
-#include "m3d/model/IShape.h"
+#include "m3d/model/Shape.h"
 
 namespace M3D {
     class SceneManager;
@@ -75,7 +75,7 @@ public:
 	 *  获取所有
 	 * @return
 	 */
-	vector<IShape*>& GetAll();
+	vector<IShape*> GetAll();
 
 
 	/**

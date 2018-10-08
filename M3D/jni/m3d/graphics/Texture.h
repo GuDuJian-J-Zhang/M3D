@@ -69,16 +69,6 @@ enum
 	TEXTURE_FLAG_TEXTURE_RECTANGLE = 512
 };
 
-enum TextureEncodingType
-{
-	TEXEL_ENCODING_TYPE_LINEAR,
-	TEXEL_ENCODING_TYPE_SRGB,
-	TEXEL_ENCODING_TYPE_RGBE,
-	TEXEL_ENCODING_TYPE_RGBM7,
-	TEXEL_ENCODING_TYPE_RGBM16,
-	TEXEL_ENCODING_TYPE_RGBD,
-	TEXEL_ENCODING_TYPE_GAMMA	
-};
 
 class Image;
 /**@class
@@ -94,22 +84,6 @@ public:
 	const static int TEXTURE_CUBE =3;//!<立方体纹理
 	const static int TEXTURE_GEO = 4;//!<几何纹理 用来作FBO的挂载纹理对象
 
-	GLenum MinFliter() const { return m_minFliter; }
-	void MinFliter(GLenum val) { m_minFliter = val; }
-	GLenum MagFliter() const { return m_magFliter; }
-	void MagFliter(GLenum val) { m_magFliter = val; }
-	GLenum WrapS() const { return m_wrapS; }
-	void WrapS(GLenum val) { m_wrapS = val; }
-	GLenum WrapT() const { return m_wrapT; }
-	void WrapT(GLenum val) { m_wrapT = val; }
-	bool MipMap() const { return m_isMipMap; }
-	void MipMap(bool val) { m_isMipMap = val; }
-	M3D::TextureEncodingType TextureEncoding() const { return m_textureEncoding; }
-	void TextureEncoding(M3D::TextureEncodingType val) { m_textureEncoding = val; }
-	bool IsGammaInput() const { return m_gammaInput; }
-	void IsGammaInput(bool val) { m_gammaInput = val; }
-	GLenum MinmapFliter() const { return m_minmapFliter; }
-	void MinmapFliter(GLenum val) { m_minmapFliter = val; }
 public:
 	Texture();
 	virtual ~Texture();
@@ -123,11 +97,18 @@ public:
 	 *
 	 * @param fileName
 	 */
-	void SetPath(const string& fileName);
-
-	string GetPath();
-
-	void SetData(unsigned char* data, int length);
+	void Read(const string& fileName);
+	/**
+	 *
+	 * @param zipPath
+	 * @param fileName
+	 */
+	void ReadZip(const string& zipPath, const string& fileName);
+	/**
+	 *
+	 * @param data
+	 */
+	void SetData(const void* data);
 
 	/**
 	 *
@@ -164,12 +145,12 @@ public:
 	 *设置图片路径
 	 * @param imagePath
 	 */
-	//void SetImagePath(const string& imagePath);
+	void SetImagePath(const string& imagePath);
 	/**
 	 *
 	 * @return
 	 */
-	//const string& GetImagePath()const;
+	const string& GetImagePath()const;
 
 	/**
 	 *设置关联的图片
@@ -182,12 +163,6 @@ public:
 	 */
 	Image* GetImage();
 
-	//virtual Texture* CreateEmpty();
-
-	virtual void GenerateMipMap();
-	void NeedUpdate();
-
-	bool Equals(Texture* texture);
 protected:
 	void Init();
 
@@ -205,7 +180,7 @@ protected:
 
 	bool m_isTextureDirty;//!<标志位
 
-	//static string APKPath;//!<
+	static string APKPath;//!<
 
 	//和 soil的定义一样
 	int m_forceChannels;//!<
@@ -214,18 +189,7 @@ protected:
 
 	string m_name;//!<
 
-	//string m_imagePath; //!<图片文件路径
-
-	bool m_isMipMap;//!<是否启用mipmap
-	GLenum m_minFliter;//!<过滤方式
-	GLenum m_magFliter;
-	GLenum m_minmapFliter;
-	GLenum m_wrapS;
-	GLenum m_wrapT;
-	//TODO 纹理内部格式 格式 数据格式
-	TextureEncodingType m_textureEncoding;
-	bool m_gammaInput;
-
+	string m_imagePath; //!<图片文件路径
 };
 }
 

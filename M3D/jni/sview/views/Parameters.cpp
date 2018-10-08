@@ -21,7 +21,6 @@
 #include <sstream>
 #include "Utility.h"
 #include <stdio.h>
-#include "../extern/PerspectiveData.h"
 
 using namespace M3D;
 
@@ -49,17 +48,17 @@ const string Parameters::ITEM_SHOW_TRANSPARENT = "showTransparent";///
 
 const string Parameters::ITEM_APP_DEFAULT_WORK_PATH = "app_default_work_path";///app的默认工作路径
 
-const string Parameters::ITEM_BIG_MODEL_OPTIMIZE = "bigModelRenderAdjust";///app的默认工作路径
+const string Parameters::ITEM_BIG_MODEL_OPTIMIZE =  "bigModelRenderAdjust";///app的默认工作路径
 
-const string Parameters::ITEM_USE_CATIAMODE = "useCatiaMode";//使用catia方式进行节点解析
+const string Parameters::ITEM_USE_CATIAMODE ="useCatiaMode";//使用catia方式进行节点解析
 
-const string Parameters::ITEM_LIGTHING_MODE = "lightingMode";//使用catia方式进行节点解析
+const string Parameters::ITEM_LIGTHING_MODE ="lightingMode";//使用catia方式进行节点解析
 
 const string Parameters::ITEM_SCREEN_WIDTH = "screenWidth";//
-
-const string Parameters::ITEM_SCREEN_HEIGHT = "screenHeight";//
-
-const string Parameters::ITEM_SCREEN_PPI = "screenPPI";//
+    
+const string Parameters::ITEM_SCREEN_HEIGHT ="screenHeight";//
+    
+const string Parameters::ITEM_SCREEN_PPI ="screenPPI";//
 const string Parameters::ITEM_TEXTNOTE_STYLE = "textNoteStyle";///
 const string Parameters::ITEM_MEASURE_UNIT_STYLE = "measureUnitStyle";
 const string Parameters::ITEM_INTERNATIONAL_LANGUAGE = "internationalLanguage";
@@ -71,15 +70,14 @@ const string Parameters::ITEM_SHOW_ROTATECENTER = "isShowRotateCenter";
 const string Parameters::ITEM_OPEN_FIRSTPERSION_CAMERA = "openFirstPersionCamera";
 const string Parameters::ITEM_CUBE_MAP = "cubeMapMode";
 const string Parameters::ITEM_AXIS_POS = "axisPosition";
-const string Parameters::ITEM_AXIS_IMAGE = "axisImage";
 const string Parameters::ITEM_CLIPPLANE_MODE = "clipPlaneMode";
 const string Parameters::ITEM_PERSPECTIVE_STYLE = "front";
-const string Parameters::ITEM_IS_SHOW_SPACEPOINT = "isShowSpacePoint";
+const string Parameters::ITEM_IS_SHOW_SPACEPOINT="isShowSpacePoint";
 
 const string Parameters::ITEM_VIEW_RECORD_MODEL = "viewRecordModel";
 const string Parameters::ITEM_VIEW_RECORD_CAMERA = "viewRecordCamera";
 const string Parameters::ITEM_VIEW_RECORD_NOTE = "viewRecordNote";
-
+    
 const string Parameters::ITEM_DEFAULT_SUFFIX = "defaultSuffix";
 
 const string Parameters::ITEM_USE_COMPUTERPROPERTY = "useComputerCalculate";
@@ -87,76 +85,30 @@ const string Parameters::ITEM_USE_COMPUTERPROPERTY = "useComputerCalculate";
 const string Parameters::ITEM_USE_PROTOTYPE_PROPERTY = "usePrototypeProperty";
 const string Parameters::ITEM_USE_INSTANCE_PROPERTY = "useInstanceProperty";
 
-const string Parameters::ITEM_IS_USER_DATA_BOM = "isUserDataBOM";
+const string Parameters::ITEM_IS_USER_DATA_BOM="isUserDataBOM";
 
-const string Parameters::ITEM_IS_RECALCULATE_NORMAL = "isRecalculateNormal";
-const string Parameters::ITEM_IS_CHECKERRORPOIN = "isCheckErrorPoint";
+Parameters* Parameters::instance  = NULL;
 
-const string Parameters::ITEM_IS_SHOW_BINOCULAR_PICTURE = "isShowBinocularPicture";
-const string Parameters::ITEAM_VR_VIEW_MODE = "vrViewMode";
-
-const string Parameters::ITEM_SELECTED_STYLE = "selectedStyle";
-
- const string Parameters::ITEM_GAMMA = "gamma";
- const string Parameters::ITEM_TONE_MAPPING_EXPOSURE = "toneMappingExposure";
-
-const string Parameters::ITEM_USE_SSAO = "useSSAO";
-const string Parameters::ITEM_USE_GROUND_GRID = "useGroundGrid";
-const string Parameters::ITEM_SSAO_RADIUS = "ssaoRadius";
-const string Parameters::ITEM_SSAO_AOCLAMP = "ssaoAoClamp";
-const string Parameters::ITEM_SSAO_LUMINFLUENCE = "ssaoLuminfluence";
-const string Parameters::ITEM_SSAO_CONTRAST = "ssaoContrast";
-const string Parameters::ITEM_SSAO_BIAS="ssaoBias";
-const string Parameters::ITEM_SSAO_DISPLACE="ssaoDisplace";
-const string Parameters::ITEM_SSAO_AEAR = "ssaoAear";
-
-const string Parameters::ITEM_SHADOW_MAP_ENABLE = "shadowMapEnable";
-
-const string Parameters::DESIGNER_ANNOTATION_USER = "annotationUser";
-const string Parameters::DESIGNER_ANNOTATION_DEPARTMENT = "annotationDepartment";
-const string Parameters::DESIGNER_ANNOTATION_CHARACTER = "annotationCharacter";
-const string Parameters::DESIGNER_ANNOTATION_DISPLAYCOLOR = "annotationDisplayColor";
-
-string Parameters::m_machinName = "";
-string Parameters::m_userName = "";
-string Parameters::m_userDomainName = "";
-string Parameters:: m_projectName ="";
-string Parameters::m_remoteIP ="";
-int Parameters::m_remotePort = 8080;
-
-float Parameters::m_foucsScalFactor = 0.5;
-
-bool Parameters::m_useSimplePath = false;
-
-bool Parameters::m_useBodyObject = true;
-
-bool Parameters::GetLoadExternInfo() const
-{
-	return m_loadExternInfo;
-}
-
-Parameters* Parameters::instance = NULL;
-
-const char* Parameters::paramNameArray[] = { ITEM_ISCONROTATE.c_str(),
-	ITEM_ISUSE_ANIMATION_CAMERA.c_str(),
-	ITEM_ISHEIHGPERFORMANCE.c_str(),
-	ITEM_ISUSEVBO.c_str(),
-	ITEM_ISUSELOD.c_str(),
-	"showFPS",
-	ITEM_ISONLY_SHOW_EDGE_WHEN_MOVING.c_str(),
-	ITEM_LITTLE_MODEL_CULLER_SIZE.c_str(),
-	"showPMI",
-	"showModelEdge",
-	"showTriEdge",
-	"showModelBox",
-	"boxColor",
-	"showAxis",
-	"selectedColor",
-	"alpha",
-	"mulSelect",
-	ITEM_LITTLE_MODEL_CULLER_STYLE.c_str(),
-	ITEM_DEFAULT_ZOOM_FACTOR.c_str(),
-	ITEM_SHOW_TRANSPARENT.c_str()
+const char* Parameters::paramNameArray[] = {ITEM_ISCONROTATE.c_str(),
+    ITEM_ISUSE_ANIMATION_CAMERA.c_str(),
+    ITEM_ISHEIHGPERFORMANCE.c_str(),
+    ITEM_ISUSEVBO.c_str(),
+    ITEM_ISUSELOD.c_str(),
+    "showFPS",
+    ITEM_ISONLY_SHOW_EDGE_WHEN_MOVING.c_str(),
+    ITEM_LITTLE_MODEL_CULLER_SIZE.c_str(),
+    "showPMI",
+    "showModelEdge",
+    "showTriEdge",
+    "showModelBox",
+    "boxColor",
+    "showAxis",
+    "selectedColor",
+    "alpha",
+    "mulSelect",
+    ITEM_LITTLE_MODEL_CULLER_STYLE.c_str(),
+    ITEM_DEFAULT_ZOOM_FACTOR.c_str(),
+    ITEM_SHOW_TRANSPARENT.c_str()
 };
 
 Parameters* Parameters::Instance()
@@ -188,11 +140,6 @@ int Parameters::GetLimitDistance()
 	return 4;
 }
 
-
-int Parameters::GetLanguage()
-{
-	return m_internationalLanguage;
-}
 
 string Parameters::GetParameter(string key) {
 	string value;
@@ -258,7 +205,7 @@ string Parameters::GetParameter(string key) {
     }else if(key ==  ITEM_ISHEIHGPERFORMANCE)
     {
         value = m_IsHighPerformanceView ? TRUE_VALUE : FALSE_VALUE;
- 
+
     }
     else if(key ==  "mulSelect")
     {
@@ -329,10 +276,6 @@ string Parameters::GetParameter(string key) {
 	{
 		value =StringHelper::IntToString(this->m_axisPos);
 	}
-    else if(key == ITEM_AXIS_IMAGE)
-    {
-        value = this->m_axisImage?TRUE_VALUE:FALSE_VALUE;
-    }
     else if(key ==  ITEM_CLIPPLANE_MODE)
     {
         	value =  StringHelper::IntToString(this->m_clipPlaneMode);
@@ -370,93 +313,7 @@ string Parameters::GetParameter(string key) {
 	{
 		value = this->m_isUseUserDataBom? TRUE_VALUE : FALSE_VALUE;;
 	}
-	else if (key == ITEM_IS_RECALCULATE_NORMAL)
-	{
-		value = this->isRecalculateNormal ? TRUE_VALUE : FALSE_VALUE;;
-	} 
-	  else if (key == ITEM_IS_CHECKERRORPOIN)
-    {
-        value = this->m_IsCheckErrorPoint ? TRUE_VALUE : FALSE_VALUE;;
-    }
-	  else if (key == ITEM_IS_SHOW_BINOCULAR_PICTURE)
-	  {
-		  value = this->m_isShowBinocularPicture ? TRUE_VALUE : FALSE_VALUE;
-	  }
-	  else if (key == ITEAM_VR_VIEW_MODE)
-	  {
-		  value = StringHelper::IntToString(this->m_vrViewMode);
-	  }	else if (key == "IsShowCutLine")
-	{
-	 value = this->m_isShowCutLine ? TRUE_VALUE : FALSE_VALUE;
-    } else if (key == "backTransparent")
-    {
-        value = this->m_BackTransparent ? TRUE_VALUE : FALSE_VALUE;
-    }
-	  else if (key == ITEM_SELECTED_STYLE)
-	  {
-		  value = StringHelper::IntToString(this->m_selectedStyle);
-	  }
-	  else if (key == ITEM_GAMMA)
-	  {
-		  value = StringHelper::floatToString(this->m_gammaFactor);
-	  }
-	  else if (key == ITEM_TONE_MAPPING_EXPOSURE)
-	  {
-		  value = StringHelper::floatToString(this->m_toneMappingExposure);
-	  }
-	  else if (key == ITEM_USE_GROUND_GRID)
-	  {
-		  value = this->m_useGroundGrid ? TRUE_VALUE : FALSE_VALUE;
-	  }
-	  else if (key == ITEM_USE_SSAO)
-	  {
-		  value = this->m_useSSAO ? TRUE_VALUE : FALSE_VALUE;
-	  }
-	  else if (key == ITEM_SSAO_RADIUS)
-	  {
-		  value = StringHelper::floatToString(this->g_radius);
-	  }
-	  else if (key == ITEM_SSAO_AOCLAMP)
-	  {
-		  value = StringHelper::floatToString(this->g_aoClamp);
-	  }
-	  else if (key == ITEM_SSAO_BIAS)
-	  {
-		  value = StringHelper::floatToString(this->g_SSAO_Bias);
-	  }
-	  else if (key == ITEM_SSAO_CONTRAST)
-	  {
-		  value = StringHelper::floatToString(this->g_SSAOContrast);
-	  }
-	  else if (key == ITEM_SSAO_DISPLACE)
-	  {
-		  value = StringHelper::floatToString(this->g_Displace);
-	  }
-	  else if (key == ITEM_SSAO_LUMINFLUENCE)
-	  {
-		  value = StringHelper::floatToString(this->g_LumInfluence);
-	  }
-	  else if (key == ITEM_SSAO_AEAR)
-	  {
-		  value = StringHelper::floatToString(this->g_Aear);
-	  }
-	  else if (key == DESIGNER_ANNOTATION_USER)
-	  {
-		  value = this->m_annotationUser;
-	  }
-	  else if (key == DESIGNER_ANNOTATION_DEPARTMENT)
-	  {
-		  value = this->m_annotationDepartment;
-	  }
-	  else if (key == DESIGNER_ANNOTATION_CHARACTER)
-	  {
-		  value = this->m_annotationCharacter;
-	  }
-	  else if (key == ITEM_SHADOW_MAP_ENABLE)
-	  {
-		  value = this->m_shadowMapEnabled ? TRUE_VALUE : FALSE_VALUE;
-	  }
-	//LOGI("getParameter: key:%s,value:%s",key.c_str(),value.c_str());
+	LOGI("getParameter: key:%s,value:%s",key.c_str(),value.c_str());
 	return value;
 }
 
@@ -491,7 +348,7 @@ void Parameters::SetParameter(string key, string value) {
 		m_RemoveSize = atoi(value.c_str());
 
 	}else if (key == ITEM_GLES_VERSION){
-		//LOGI("opengl version value = %s",value.c_str());
+		LOGI("opengl version value = %s",value.c_str());
 		if (value == "1")
 		{
 			this->m_OpenGLESVersion = 1;
@@ -509,9 +366,7 @@ void Parameters::SetParameter(string key, string value) {
 		//BoxColor.SetColor(r,g,b,a);
 	} else if (key == "selectedColor") {
 		//UseBackImage = value == TRUEVALUE;
-    }else if (key == "backTransparent") {
-        m_BackTransparent = value == TRUE_VALUE;
-    } else if (key == "alpha") {
+	} else if (key == "alpha") {
 		//Alpha = value == TRUEVALUE;
 	} else if (key == "mulSelect")
 		m_IsMulSelect = value == TRUE_VALUE;
@@ -594,10 +449,7 @@ void Parameters::SetParameter(string key, string value) {
 	}else if(key == ITEM_AXIS_POS)
 	{
 		this->m_axisPos =  StringHelper::StringToInt(value);
-    }else if(key == ITEM_AXIS_IMAGE)
-    {
-        this->m_axisImage = value == TRUE_VALUE;
-    }
+	}
     else if(key ==  ITEM_CLIPPLANE_MODE)
     {
     	this->m_clipPlaneMode =  StringHelper::StringToInt(value);
@@ -633,115 +485,14 @@ void Parameters::SetParameter(string key, string value) {
 	{
 		this->m_isUseUserDataBom = value==TRUE_VALUE;
 	}
-	else if (key == ITEM_IS_RECALCULATE_NORMAL)
-	{
-		this->isRecalculateNormal = value == TRUE_VALUE;
-	}
-	else if (key == ITEM_IS_CHECKERRORPOIN)
-	{
-		this->m_IsCheckErrorPoint = value == TRUE_VALUE;
-	}
-	else if (key == ITEM_IS_SHOW_BINOCULAR_PICTURE)
-	{
-		this->m_isShowBinocularPicture = value == TRUE_VALUE;
-	}
-	else if (key == ITEAM_VR_VIEW_MODE)
-	{
-		this->m_vrViewMode = StringHelper::StringToInt(value);
-	}
-	else if (key == "IsShowCutLine")
-	{
-		this->m_isShowCutLine = value == TRUE_VALUE;
-	}
-	else if (key == ITEM_SELECTED_STYLE)
-	{
-		this->m_selectedStyle = StringHelper::StringToInt(value);
-	}
-	else if (key == ITEM_GAMMA)
-	{
-		this->m_gammaFactor = StringHelper::StringToFloat(value);
-	}
-	else if (key == ITEM_TONE_MAPPING_EXPOSURE)
-	{
-		this->m_toneMappingExposure = StringHelper::StringToFloat(value);
-	}
-	else if (key == ITEM_USE_GROUND_GRID)
-	{
-		this->m_useGroundGrid = value == TRUE_VALUE;
-	}
-	else if (key == ITEM_USE_SSAO)
-	{
-		this->m_useSSAO = value == TRUE_VALUE;
-	}
-	else if (key == ITEM_SSAO_RADIUS)
-	{		
-		this->g_radius = StringHelper::StringToFloat(value);
-	}
-	else if (key == ITEM_SSAO_AOCLAMP)
-	{		
-		this->g_aoClamp = StringHelper::StringToFloat(value);
-	}
-	else if (key == ITEM_SSAO_BIAS)
-	{		
-		this->g_SSAO_Bias = StringHelper::StringToFloat(value);
-	}
-	else if (key == ITEM_SSAO_CONTRAST)
-	{		
-		this->g_SSAOContrast = StringHelper::StringToFloat(value);
-	}
-	else if (key == ITEM_SSAO_DISPLACE)
-	{		
-		this->g_Displace = StringHelper::StringToFloat(value);
-	}
-	else if (key == ITEM_SSAO_LUMINFLUENCE)
-	{		
-		this->g_LumInfluence = StringHelper::StringToFloat(value);
-	}
-	else if (key == ITEM_SSAO_AEAR)
-	{		
-		this->g_Aear = StringHelper::StringToFloat(value);
-	}
-	else if (key == DESIGNER_ANNOTATION_USER)
-	{
-		this->m_annotationUser = value;
-	}
-	else if (key == DESIGNER_ANNOTATION_DEPARTMENT)
-	{
-		this->m_annotationDepartment = value;
-	}
-	else if (key == DESIGNER_ANNOTATION_CHARACTER)
-	{
-		this->m_annotationCharacter = value;
-	}
-	else if (key == ITEM_SHADOW_MAP_ENABLE)
-	{
-		this->m_shadowMapEnabled = value == TRUE_VALUE;
-	}
-	//LOGI("SetParameter: key:%s,value:%s",key.c_str(),value.c_str());
-}
 
-Color Parameters::GetColor(string key)
-{
-	Color value;
-	if (key == DESIGNER_ANNOTATION_DISPLAYCOLOR)
-	{
-		value = this->m_annotationDisplayColor;
-	}
-	return value;
-}
-void Parameters::SetColor(string key, Color& value)
-{
-	if (key == DESIGNER_ANNOTATION_DISPLAYCOLOR)
-	{
-		this->m_annotationDisplayColor = value;
-	}
+	LOGI("SetParameter: key:%s,value:%s",key.c_str(),value.c_str());
 }
 
 void Parameters::SetDefault() {
 	m_isOpenScale = true;
 	m_IsConRotate = false;
 	m_UseBackImage = true;
-    m_BackTransparent = false;
 	m_IsShowTrilateralEdge = false;
 	m_IsOnlyShowTrilateralEdge = false;
 	m_IsShowBox = false;
@@ -767,10 +518,7 @@ void Parameters::SetDefault() {
 	m_IsUseIndexMode = true;
 	m_OpenGLESVersion = 2; /** OpenGLESVersion = 1,使用1.1版本,OpenGLESVersion = 2，使用2.0版本 */
 	m_IsHighPerformanceView = true;
-	m_UseSpacePoint = false;
-	m_MergeLevel = 1;
-
-	//m_simplityMode = true;
+	m_simplityMode = false;
 	m_bufferType = 1;
     
 	m_NeverSeeScreenPixelSize = 30;
@@ -782,8 +530,8 @@ void Parameters::SetDefault() {
 	m_appWorkPath = "";
 	m_OptimizeBigModel = false;
 	m_LightingMode = 0;
-    m_screenWidth =  1024;
-    m_screenHeight = 768;
+    m_screenWidth =  0;
+    m_screenHeight = 0;
     m_screenPPI = 150;
     m_textNoteStyle = 0;
     m_measureUnitStyle = 0;
@@ -791,7 +539,7 @@ void Parameters::SetDefault() {
 
 	m_IsUseCatiaMode = false;
 
-    m_m3dVersion = "4.0.0";
+    m_m3dVersion = "2.2.2";
 
     m_showSection = true;
     m_isShowRotateCenter = false;
@@ -818,60 +566,15 @@ void Parameters::SetDefault() {
 
 	m_pupillaryDistanceFactor = 0.0f;
 	
-	m_msaaNum = 4;
+	m_msaaNum = 0;//默认关闭多重采样
+
     m_useStereo = false;
     m_axisPos = 2;
-    m_axisImage = false;
-	isRecalculateNormal = false;
-	m_vrViewMode = 0;
-	m_IsCheckErrorPoint = true;
-	//m_isUseFullPath = true;
-	m_IsUseGeoData = true;
-	m_IsUsePmiData = true;
-	m_IsUseModelViewData = true;
-
-	m_defaultViewType = PerspectiveData::ISOMETRIC;
-	m_upDirectionValue = Vector3::UP;
-	m_isShowBinocularPicture = false;
-	m_isShowCutLine = false;
-
-	SetLoadExternInfo(true);
-
-	m_selectedStyle = 3;//1 outline 2 outline and color 3 color
-
-	m_outlineColor = Color::RED;
-
-	m_shadowMapEnabled = false;
-	 m_gammaFactor = 2.2;
-	 m_toneMappingExposure = 1.0;
-	 m_gammaInput = false;
-	 m_gammaOutput = false;
-	 m_doubleSided = false;
-	 m_useSSAO = false;
-	 m_useGroundGrid = false;
-
-	 g_LumInfluence = 0.7f;
-	 g_SSAOContrast = 3.0f;
-	 g_SSAO_Bias = 0.1f;
-	 g_Displace = 0.2f;
-	 g_Aear = 4.0f;
-	 g_aoClamp = 0.24f;
-	 g_radius = 4.0f;
-
-
-	 m_annotationUser = "";
-	 m_annotationDepartment = "";
-	 m_annotationCharacter = "";
-	 m_annotationDisplayColor.SetColor(1.0f, 0.0f, 0.0f, 1.0f);
-
-	 m_showVRInMainView = false;
-
-	 m_shadowMapType = 2;
 }
 
 bool Parameters::LoadFromXML() {
 
-	LOGI("Parameters::loadFromXML");
+	LOGE("Parameters::loadFromXML");
 
 	bool hasXmlFile = false;
 	XMLDocument* doc = new XMLDocument();
@@ -894,7 +597,7 @@ bool Parameters::LoadFromXML() {
 			if (found && outValue != NULL && strcmp(outValue, "") != 0) {
 				SetParameter(paramNameArray[i], outValue);
 			}
-			//LOGI("load param:%s='%s'", paramNameArray[i], outValue);
+			LOGI("load param:%s='%s'", paramNameArray[i], outValue);
 		}
 		free(outValue);
 	}
@@ -918,7 +621,7 @@ bool Parameters::SaveToXML() {
 		if (lastSpliterPos == -1) {
 			lastSpliterPos = xmlPath.find_last_of('/');
 		}
-//		LOGI("lastSpliterPos:%d",lastSpliterPos);
+//		LOGE("lastSpliterPos:%d",lastSpliterPos);
 		if (lastSpliterPos != -1) {
 			string xmlPathDir = xmlPath.substr(0, lastSpliterPos);
 			CreateMulityPath(xmlPathDir.c_str());
@@ -934,7 +637,7 @@ bool Parameters::SaveToXML() {
 			i++) {
 		string value = GetParameter(paramNameArray[i]);
 		SetParamValueToXML(doc, paramNameArray[i], value.c_str());
-		//LOGI("save param: %s value:%s", paramNameArray[i], value.c_str());
+		LOGI("save param: %s value:%s", paramNameArray[i], value.c_str());
 	}
 
 	doc->SaveFile(xmlPath.c_str());
@@ -950,71 +653,6 @@ bool Parameters::SaveToXML() {
 	doc = 0;
 
 	return sucess;
-}
-
-void Parameters::SetMachinName(string& machName)
-{
-	Parameters::m_machinName = machName;
-}
-
-void Parameters::SetUserName(string& userName)
-{
-	Parameters::m_userName = userName;
-}
-
-void Parameters::SetUserDomainName(string& domainName)
-{
-	Parameters::m_userDomainName = domainName;
-}
-
-void Parameters::SetRemoteIP(string& remoteIP)
-{
-	Parameters::m_remoteIP = remoteIP;
-}
-
-void Parameters::SetRemotePort(int port)
-{
-	Parameters::m_remotePort = port;
-}
-
-string& Parameters::GetRemoteIP()
-{
-	return Parameters::m_remoteIP;
-}
-
-int Parameters::GetRemotePort()
-{
-	return Parameters::m_remotePort;
-}
-
-
-void Parameters::SetFoucusModelScaleFactor(float defaultFactor)
-{
-	  Parameters::m_foucsScalFactor = defaultFactor;
-}
-
-void Parameters::SetProjectName(string& projectName)
-{
-	Parameters::m_projectName = projectName;
-}
-
-string& Parameters::GetMachinName()
-{
-	return Parameters::m_machinName;
-}
-
-string& Parameters::GetUserName0()
-{
-	return Parameters::m_userName;
-}
-
-string& Parameters::GetUserDomainName()
-{
-	return Parameters::m_userDomainName;
-}
-
-string& Parameters::GetProjectName() {
-	return Parameters::m_projectName;
 }
 
 bool Parameters::GetParamValueFromXML(XMLDocument* doc, const char* paramName,
@@ -1094,11 +732,6 @@ bool Parameters::SetParamValueToXML(XMLDocument* doc, const char* paramName,
 	}
 
 	return found;
-}
-
-void Parameters::SetLoadExternInfo(bool val)
-{
-	m_loadExternInfo = val;
 }
 
 }

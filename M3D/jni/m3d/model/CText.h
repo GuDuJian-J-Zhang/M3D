@@ -61,7 +61,23 @@ public:
 	{
 		m_Text = str;
 	}
-
+    /**
+     * 获取文本language
+     * @return
+     */
+    string& GetLanguageType()
+    {
+        return m_LanguageType;
+    }
+    
+    /**
+     * 设置文本
+     * @param str
+     */
+    void SetLanguageType(string typeStr)
+    {
+        m_LanguageType = typeStr;
+    }
 	/**
 	 * 获取当前文本 X,Y旋转向量
 	 * @param xAxis
@@ -129,24 +145,6 @@ public:
 	 */
 	static FTFont* GetRender();
 
-	/**
-	* 获取文本language
-	* @return
-	*/
-	string& GetLanguageType()
-	{
-		return m_LanguageType;
-	}
-
-	/**
-	* 设置文本
-	* @param str
-	*/
-	void SetLanguageType(string typeStr)
-	{
-		m_LanguageType = typeStr;
-	}
-
 private:
 	Vector3 m_pntInnerLoc; //!< 定位点
 	Vector3 m_dirAxis[2]; //!< X,Y旋转向量,[0]->X向量,[1]->Y向量
@@ -154,7 +152,7 @@ private:
 	float m_fCharDis; //!< 字符间隔
 	static char m_FontFilePath[256]; //!< 字库文件路径
 	string m_Text; //!< 字符串内容
-	string m_LanguageType; //!< language类型
+    string m_LanguageType; //!< language类型
 	vector<float> m_VertexBuff; /// 顶点buff
 	vector<M3D_INDEX_TYPE> m_IndexBuff; /// 索引buff
 

@@ -13,7 +13,6 @@
 #define M3D_I_VIEW_H_
 #include "sview/SView.h"
 #include "m3d/base/Color.h"
-
 #include "m3d/M3DStates.h"
 
 namespace M3D
@@ -25,7 +24,8 @@ class GroupNode;
 class IDCreator;
 class ModelView;
 class MovedMatrixInfo;
-class IShape;
+class WorkNodes;
+class Shape;
 class ExplosiveViewOperator;
 class BackgroundNode;
 }
@@ -194,8 +194,8 @@ public:
 	 * @param path
 	 * @return
 	 */
-	virtual IShape* GetShapeBySVLPath(const string& path);
-    virtual IShape* GetShape(int shapeId);
+	virtual Shape* GetShapeBySVLPath(const string& path);
+    virtual Shape* GetShape(int shapeId);
 
     /**
      * 设置爆炸视图

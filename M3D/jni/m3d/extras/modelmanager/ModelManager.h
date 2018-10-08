@@ -15,7 +15,8 @@
 #include "m3d/base/Vector3.h"
 #include "m3d/model/Model.h"
 #include "Sview/views/view.h"
-#include "m3d/handler/dragger.h"
+#include "m3d/scene/ModelNode.h"
+
 
 using namespace SVIEW;
 
@@ -53,7 +54,6 @@ typedef enum AssambleMsg
 	ASSAMBLY_DEL_SUCES = 26,    	 //!< delete success
 
 } ASSEMBLYMSG;
-
 
 /**
  * @brief 模型管理器，用来对管理对模型的操作
@@ -104,15 +104,6 @@ public:
 	 bool AddTo(string& fileName,Model * parentModel,Model*& retModel);
 
 	 /**
-	 * 打开指定文件路径的模型，用该模型替换掉model，同时将model的配置ID、路径等赋值给新建模型 并返回
-	 * @param model 将被替换的模型
-	 * @param parentModel 父模型
-	 * @param fileName 文件全路径
-	 * @return 新打开文件创建的模型
-	 */
-	 Model* ReplaceWith(Model* model, Model* parentModel, string& fileName);
-
-	 /**
 	  * @brief 重命名模型名字
 	  * @param name
 	  * @return 成功 true 失败 false
@@ -120,18 +111,15 @@ public:
 	 bool ReName(Model * model,string & name);
 
 	 //void SetID(int id);
-	 bool SetTransform(Model* model,const Matrix3x4& plcMatrix,int transformSpace);
+
+
 	 /**
 	  * @brief 获取命令操作记录
 	  * @return 返回操作历史记录
 	  */
-	 OperationHistoryManager* GetCommandHistoryManager();
-	 /**
-	 * @brief 初始化新建装配
-	 * @param model 新建model
-	 */
-	 void InitNewModel(Model* model);
- 
+	OperationHistoryManager* GetCommandHistoryManager();
+
+
 private:
 	OperationHistoryManager* m_commandHistoryManager;//!<操作历史记录
 	View * m_view;//!<当前视图

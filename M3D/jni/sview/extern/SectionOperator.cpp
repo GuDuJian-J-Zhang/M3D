@@ -1,8 +1,7 @@
 ﻿#include "sview/extern/SectionOperator.h"
 #include "m3d/scene/SceneNode.h"
 #include "m3d/scene/GroupNode.h"
-#include "m3d/scene/SectionNode.h"
-
+#include "sview/extern/WorkNodes.h"
 #include "m3d/graphics/Section.h"
 
 #include "m3d/SceneManager.h"
@@ -15,10 +14,9 @@
 
 #include "m3d/model/ModelView.h"
 #include "m3d/model/PMIData.h"
-
-#include "sview/views/View.h"
 #include "sview/views/Parameters.h"
-#include "m3d/Section/SectionManager.h"
+#include "sview/views/View.h"
+
 namespace M3D
 {
 
@@ -37,7 +35,7 @@ void SectionOperator::GetSectionInfo(SVIEW::View* view,int direction, float perc
 		float width = 0;
 		float height = 0;
 
-		//	sectionNode = GetSectionNode()->GetSectionNode()->GetSection();
+		//	sectionNode = GetSectionNode();
 		float A = 0;
 		float B = 0;
 		float C = 0;
@@ -95,24 +93,23 @@ void SectionOperator::GetSectionInfo(SVIEW::View* view,int direction, float perc
 	outPlane->SetPlaneParam(A, B, C, D);
 }
 
-void SectionOperator::Show(SVIEW::View* pView, int id, int direction, float percentage,
-		bool isShowClipPlane, bool isShowCappingPlane,bool isReverseClip)
+void SectionOperator::Show(SVIEW::View* pView, int direction, float percentage,
+		bool isShowClipPlane, bool isShowCutPlane)
 {
 	if (SectionOperator::Instance == NULL)
 	{
 		SectionOperator::Instance = new SectionOperator();
 		LOGI("new SectionAction::Instance");
 	}
-	LOGI("SectionOperator::Show step 1");
-	SectionOperator::Instance->Init(pView, id, direction, percentage,
-			isShowClipPlane, isShowCappingPlane, isReverseClip);
-	LOGI("SectionOperator::Show step 2");
+//	LOGI("SectionOperator::Show step 1");
+	SectionOperator::Instance->Init(pView, direction, percentage,
+			isShowClipPlane, isShowCutPlane);
+//	LOGI("SectionOperator::Show step 2");
 	SceneManager* pSceneManager = pView->GetSceneManager();
 	pSceneManager->Lock();
 	SectionOperator::Instance->Handle();
-    pView->RequestDraw();
 	pSceneManager->UnLock();
-	LOGI("SectionOperator::Show step 3");
+//	LOGI("SectionOperator::Show step 3");
 }
 
 void SectionOperator::Clear(SVIEW::View* pView)
@@ -124,23 +121,17 @@ void SectionOperator::Clear(SVIEW::View* pView)
 		pSceneManager->Lock();
         SectionOperator::Instance->m_Direction = 0;
         SectionOperator::Instance->m_fPercentage = 0.0;//
-        SectionOperator::Instance->m_DirectionX = 0;
-        SectionOperator::Instance->m_fPercentageX = 0.0;//
-        SectionOperator::Instance->m_DirectionY = 0;
-        SectionOperator::Instance->m_fPercentageY = 0.0;//
-        SectionOperator::Instance->m_DirectionZ = 0;
-        SectionOperator::Instance->m_fPercentageZ = 0.0;//
         SVIEW::Parameters::Instance()->m_showSection = false;
-        pSceneManager->GetSectionNode()->GetSection()->SetIsShowCappingPlane(false);
-		pSceneManager->GetSectionNode()->GetSection()->ClearPlanes();
+        pSceneManager->GetSection()->SetIsShowCappingPlane(false);
+		pSceneManager->GetSection()->ClearPlanes();
 		pSceneManager->UnLock();
 	}
 
 	pSceneManager->GetRenderManager()->RequestRedraw(); //1
 }
 
-void SectionOperator::Init(SVIEW::View* pView, int id, int direction, float percentage,
-		bool isShowClipPlane, bool isShowCappingPlane, bool isReverseClip)
+void SectionOperator::Init(SVIEW::View* pView, int direction, float percentage,
+		bool isShowClipPlane, bool isShowCutPlane)
 {
 	m_pView = pView;
 	SceneManager* pSceneManager = pView->GetSceneManager();
@@ -159,15 +150,15 @@ void SectionOperator::Init(SVIEW::View* pView, int id, int direction, float perc
 		this->m_fPercentage = -0.01;
 
 	this->m_IsShowClipPlane = isShowClipPlane;
-	this->m_IsShowCappingPlane = isShowCappingPlane;
-	this->m_IsReverseClip = isReverseClip;
+	this->m_IsShowCutPlane = isShowCutPlane;
 
-	//int sectionPlaneId = 1001;
+    
+	int sectionPlaneId = 1001;
 	if (m_pCurSectionPlane == NULL)
 	{
 		m_pCurSectionPlane = new SectionPlane();
 	}
-	m_pCurSectionPlane->SetID(id);
+	m_pCurSectionPlane->SetID(sectionPlaneId);
 
 }
 
@@ -205,7 +196,7 @@ void SectionOperator::Handle()
 	SectionLineHelper::DoSectionLines(data,m_pSceneManager);///经此函数，剖切面中将存储带有数据的sectionline对象
 	SectionLineHelper::Triangulation(m_pCurSectionPlane);
 
-	//LOGE("m_pCurSectionPlane = %p",m_pCurSectionPlane);
+	LOGE("m_pCurSectionPlane = %p",m_pCurSectionPlane);
 #endif
 
 #ifdef CLOTH
@@ -213,15 +204,10 @@ void SectionOperator::Handle()
 	void * data = &(m_pCurSectionPlane->m_figureSectonLine); ///获取数据
 	SectionLineHelper::DoFigureSectionLine(data,m_pSceneManager);///经此函数，剖切面中将存储带有数据的sectionline对象
 #endif
-	Section* pSection = m_pView->GetSceneManager()->GetSectionNode()->GetSection();
-	pSection->AddPlane(m_pCurSectionPlane);
-	pSection->SetShowPlaneRect(m_IsShowClipPlane);
-	pSection->SetIsShowCappingPlane(m_IsShowCappingPlane);
-	pSection->SetShowClipPlane(m_IsShowClipPlane);
-	pSection->SetIsReverseClipping(m_IsReverseClip);
- 
+	m_pView->GetSceneManager()->GetSection()->AddPlane(m_pCurSectionPlane);
+
 //	m_pView->GetSceneManager()->setSectionEnable(true);
-	LOGI("new SectionAction::Instance  step 3");
+//	LOGI("new SectionAction::Instance  step 3");
 	//请求绘制
 	m_pView->RequestDraw();
 	//	LOGI("SectionAction::Handle() end");
@@ -238,17 +224,13 @@ void SectionOperator::CreateSectionPlane(Model* model, int direction,
 	//Vector2 size(length,length);
 
 	//outPlane->SetDrawPlane(center,size);
-	if (direction == 0 || percentage == 0.0)
-		outPlane->SetEnable(false);
-	else
-		outPlane->SetEnable(true);
+	outPlane->SetEnable(true);
 
 	//是否显示剖视平面
 	outPlane->SetShowPlaneRect(m_IsShowClipPlane);
-	//是否显示盖面
-    outPlane->SetShowClipPlane(m_IsShowClipPlane);
-    //是否显示截面
-    outPlane->SetShowCappingPlane(m_IsShowCappingPlane);
+
+	//是否显示截面
+	outPlane->SetShowCutPlane(m_IsShowCutPlane);
 }
 
 void SectionOperator::RequestDraw()

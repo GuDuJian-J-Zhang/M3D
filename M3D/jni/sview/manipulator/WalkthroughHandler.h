@@ -10,7 +10,7 @@
 #ifndef M3D_WALKTHROUGHHANDLER_H_
 #define M3D_WALKTHROUGHHANDLER_H_
 #define BIMSPEED
-#include "sview/manipulator/CommonTouchHandler.h"
+#include "sview/manipulator/TouchHandler.h"
 
 namespace SVIEW
 {
@@ -23,13 +23,11 @@ class View;
  *
  *
  */
-class M3D_API WalkthroughHandler: public CommonTouchHandler
+class M3D_API WalkthroughHandler: public TouchHandler
 {
 public:
 	WalkthroughHandler();
 	virtual ~WalkthroughHandler();
-
-	virtual void InitCamera(bool useAni = true);
 
 	/**
 	 * 前后移动
@@ -93,11 +91,15 @@ public:
 	void SetVRMode(bool vrMode);
 
 private:
-	//virtual void OnTouchUp(float* p, int n);
-	//virtual void OnTouchMove(int moveType, float* p, int n);
-	//virtual void OnTouchDown(float* p, int n);
+	virtual void OnTouchUp(float* p, int n);
+	virtual void OnTouchMove(int moveType, float* p, int n);
+	virtual void OnTouchDown(float* p, int n);
 
 private:
+	/**
+	 * 初始化相机
+	 */
+	virtual void InitCamera();
 	//virtual void InitModelViewCamera();
 	/**
 	 * 优化相机

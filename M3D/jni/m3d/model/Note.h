@@ -14,6 +14,7 @@
 #include "m3d/M3D.h"
 #include "m3d/model/Shape.h"
 #include "m3d/model/ComText.h"
+#include "m3d/action/RenderAction.h"
 #include "m3d/graphics/Renderable.h"
 #include "m3d/model/Note.h"
 #include "m3d/graphics/Billboard.h"
@@ -26,7 +27,7 @@ class Shape;
 class BoundingBox;
 class Line3D;
 class Point;
-class RenderAction;
+
 /**
  * 属性的封装，通过key可以设置和获取属性
  */
@@ -125,8 +126,6 @@ public:
 
 	virtual void FindVisiableObject(RenderAction* renderAction);
 
-	void SetVisiableObject(RenderAction* renderAction);
-
 	bool IsDirty();
 
 	void MarkDirty();
@@ -197,7 +196,6 @@ public:
 	 * @return
 	 */
 	vector<ImageBoard*>& GetImageBoards();
-	Vector3 GetImageBoardPosition();
 
 	virtual string GetTextValue();
 	virtual void SetTextValue(string& value);
@@ -233,7 +231,7 @@ public:
 
 protected:
 	bool hasLeader;//!<包含引出线
-	mutable Mutex m_mutex; //!<线程锁对象
+
 	Billboard m_bindBillboard; //!< 文本显示时绑定面的控制面
 };
 

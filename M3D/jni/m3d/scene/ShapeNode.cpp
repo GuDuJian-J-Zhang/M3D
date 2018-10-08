@@ -7,8 +7,6 @@
 #include "m3d/scene/ShapeNode.h"
 #include "m3d/graphics/CameraNode.h"
 #include "m3d/utils/CullerHelper.h"
-#include "m3d/action/RenderAction.h"
-#include "m3d/model/Model.h"
 
 namespace M3D
 {
@@ -19,7 +17,7 @@ ShapeNode::ShapeNode() :
 	m_shape = NULL;
 }
 
-ShapeNode::ShapeNode(IShape* shape) :
+ShapeNode::ShapeNode(Shape* shape) :
 		SceneNode()
 {
 	this->SetShape(shape);
@@ -45,18 +43,17 @@ ShapeNode::~ShapeNode(void)
 //	}
 //}
 
-void ShapeNode::SetShape(IShape *shape)
+void ShapeNode::SetShape(Shape *shape)
 {
 	m_shape = shape;
 	if (m_shape)
 	{
 		m_shape->AddRef();
-		m_shape->SetSceneNode(this);
-		this->MarkDirty();
 	}
+	m_shape->SetSceneNode(this);
 }
 
-IShape *
+Shape *
 ShapeNode::GetShape(void)
 {
 	return m_shape;
@@ -100,7 +97,7 @@ void ShapeNode::ComputeBox()
 {
 	if (!m_bdBox.Defined()) //位置改变了
 	{
-		IShape* shape = this->GetShape();
+		Shape* shape = this->GetShape();
 		if (shape != NULL ) //存在shape对象
 		{
 //			LOGE("ShapeNode::ComputeBox()");
@@ -124,26 +121,9 @@ int ShapeNode::GetType(void)
 	return SHAPE_NODE;
 }
 
-void ShapeNode::OnMarkedDirty()
-{
-	if (this->m_shape)
-	{
-		this->m_shape->GetBoundingBox().Clear();
-		if (this->m_shape->GetType() == SHAPE_MODEL || this->m_shape->GetType() == SHAPE_IMAGE_MODEL)
-		{
-			Model* model = (Model*)this->m_shape;
-			model->SetOrigPlcMatrix(this->GetWorldTransform());
-		}
-	}
-}
-
 void ShapeNode::FindVisiableObject(RenderAction* renderAction)
 {
-	if (!this->IsVisible())
-	{
-		return;
-	}
-	IShape* shape = this->m_shape;
+	Shape* shape = this->m_shape;
 	if (shape != NULL)
 	{
 		if (!shape->AllowExculding())
@@ -187,7 +167,7 @@ void ShapeNode::FindVisiableObject(RenderAction* renderAction)
 					shape->SetRenderVisible(true);
 					shape->FindVisiableObject(renderAction);
 				}
-				else if (littleModelState == 1)
+				else if (littleModelState == 1 && renderAction->AllowDelayDraw())
 				{
 					shape->SetRenderVisible(true);
 					renderAction->SetDelayDraw(true);
@@ -198,7 +178,7 @@ void ShapeNode::FindVisiableObject(RenderAction* renderAction)
 		}
 		else
 		{
-			IShape* shape = this->m_shape;
+			Shape* shape = this->m_shape;
 			if (shape != NULL)
 			{
 				shape->SetRenderVisible(false);
@@ -211,7 +191,7 @@ void ShapeNode::FindVisiableObject(RenderAction* renderAction)
 //	//微小模型剔除
 //	bool littleModelState = renderAction->GetCullerHelper().IsLittleModel(this->GetWorldBoundingBox(),renderAction->GetCamera());
 //
-//	IShape* shape = this->m_shape;
+//	Shape* shape = this->m_shape;
 //	if (shape != NULL)
 //	{
 //		if(!shape->AllowExculding())
@@ -227,14 +207,6 @@ void ShapeNode::FindVisiableObject(RenderAction* renderAction)
 //			shape->FindVisiableObject(renderAction);
 //		}
 //	}
-}
-
-void ShapeNode::Traverse(Action* action)
-{
-	if (this->m_shape != NULL)
-	{
-		m_shape->Traverse(action);
-	}
 }
 
 bool ShapeNode::UpdateName()

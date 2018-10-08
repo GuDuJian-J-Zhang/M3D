@@ -13,10 +13,6 @@
 #include "m3d/action/RenderAction.h"
 #include "m3d/SceneManager.h"
 #include "m3d/utils/ShapeHelper.h"
-#include "m3d/model/Model.h"
-#include "m3d/action/RenderAction.h"
-#include "m3d/action/RayPickAction.h"
-
 namespace M3D
 {
 int PMIData::FixScreen = 8000;
@@ -29,13 +25,16 @@ PMIData::PMIData():Shape()
 //	m_imageboard = NULL;
 	m_DefPlaneDirty = true;
 	fontSize = 1.0f;
-	m_parentModel = NULL;
-
-	this->SetColor(Color::BLUE);
 }
 
 PMIData::~PMIData()
 {
+//	if(m_imageboard)
+//	{
+//		m_imageboard->Release();
+//		m_imageboard = NULL;
+//	}
+
 	for(int i=0;i<m_Lines.size();i++)
 	{
 		m_Lines[i]->Release();
@@ -47,8 +46,6 @@ PMIData::~PMIData()
 		m_ComTexts[i]->Release();
 	}
 	m_ComTexts.clear();
-
-	m_parentModel = NULL;
 }
 
 Matrix4* PMIData::GetOutFrameMatrix()
@@ -59,131 +56,52 @@ Matrix4* PMIData::GetOutFrameMatrix()
 
 void PMIData::RayPick(RayPickAction* action)
 {
-	if (this->GetParentModel())
-	{
-		action->BeginPickAsGroup(this);
 
-		//通过shape对象显示时的ModelMatrix，更新Model射线
-		action->UpdataModelRay(m_WorldMatrix);
-		//判断和Mesh的相交
-		for (int i = 0; i < this->m_ComTexts.size(); i++)
-		{
-			ComText* comtext = this->m_ComTexts.at(i);
-			Mesh* mesh = comtext->GetMesh();
-			if (mesh)
-			{
-				mesh->RayPick(action);
-			}
-		}
-		action->UpdataIntersecPnts(m_WorldMatrix);
-
-		//判断和边界线的相交
-		Vector3  intersection;
-		for (int i = 0; i < m_Lines.size(); i++)
-		{
-			vector<Vector3> & pointlist = m_Lines[i]->GetPointList();
-			for (int j = 1; j < pointlist.size(); j++)
-			{
-				if (action->Intersect(pointlist.at(j-1), pointlist.at(j)
-					, intersection))
-				{
-					intersection = m_WorldMatrix*intersection;
-					action->AddIntersectPnt(intersection);
-				}
-			}
-		}
-
-		action->UpdateGroupPickPnts();
-
-		//添加相交点
-		action->EndPickAsGroup(this);
-
-		//if (this->m_DefPlaneDirty)
-		//{
-		//	//MutexLock lock(m_mutex);
-		//	this->m_DefPlaneDirty = false;
-		//	 = (worldMatrix)*(this->GetDefPlane());
-		//	//m_GLDefPlaneMatrix = m_WorldMatrix.ToMatrix4().Transpose();
-		//	//this->SetRenderWorldMatrix(&m_GLDefPlaneMatrix);
-		//}
-
-		//CameraNode* camera = renderAction->GetCamera();
-		//Matrix3x4 controlMatrix;
-		////更新固定屏幕位置显示矩阵
-		//if (this->m_IsParallelScreen && this->m_Type == FixScreen)
-		//{
-		//	controlMatrix = (camera->GetView()*(worldMatrix)).Inverse();
-		//	if (renderAction->m_Control.GetAspective() < 1)
-		//	{
-		//		controlMatrix.MultiTranslate(Vector3(-20, -30, -10));
-		//		controlMatrix.MultiScale(0.1);
-		//	}
-		//	else
-		//	{
-		//		controlMatrix.MultiTranslate(Vector3(-60, -40, -10));
-		//		controlMatrix.MultiScale(0.2);
-		//	}
-		//}
-		//平齐屏幕更新
-		/*else if (this->m_IsParallelScreen && this->m_Type != FixScreen)
-		{
-			controlMatrix = (camera->GetView()*m_WorldMatrix).Inverse();
-			Vector3 newCenter = (m_WorldMatrix)*this->m_outramLocation;
-			controlMatrix = GetWorldMatrix(controlMatrix, renderAction, newCenter,
-				true, false, false);
-			MutexLock lock(m_mutex);
-			this->m_outFrameMatrix = controlMatrix.ToMatrix4().Transpose();
-		}
-		renderAction->PushRenderable(this, RenderableType::RGT_PMI);*/
-	}
 }
 
 void PMIData::FindVisiableObject(RenderAction* renderAction)
 {
-	if (this->GetParentModel())
+	Matrix3x4* worldMatrix = renderAction->GetWorldMatrix();
+
+	if(this->m_DefPlaneDirty)
 	{
-		Matrix3x4& worldMatrix = this->GetParentModel()->GetWorldTransform();
-
-		if (this->m_DefPlaneDirty)
-		{
-			MutexLock lock(m_mutex);
-			this->m_DefPlaneDirty = false;
-			m_WorldMatrix = (worldMatrix)*(this->GetDefPlane());
-			m_GLDefPlaneMatrix = m_WorldMatrix.ToMatrix4().Transpose();
-			this->SetRenderWorldMatrix(&m_GLDefPlaneMatrix);
-		}
-
-		CameraNode* camera = renderAction->GetCamera();
-
-		Matrix3x4 controlMatrix;
-		//更新固定屏幕位置显示矩阵
-		if (this->m_IsParallelScreen && this->m_Type == FixScreen)
-		{
-			controlMatrix = (camera->GetView()*(worldMatrix)).Inverse();
-			if (renderAction->m_Control.GetAspective() < 1)
-			{
-				controlMatrix.MultiTranslate(Vector3(-20, -30, -10));
-				controlMatrix.MultiScale(0.1);
-			}
-			else
-			{
-				controlMatrix.MultiTranslate(Vector3(-60, -40, -10));
-				controlMatrix.MultiScale(0.2);
-			}
-		}
-		//平齐屏幕更新
-		else if (this->m_IsParallelScreen && this->m_Type != FixScreen)
-		{
-			controlMatrix = (camera->GetView()*m_WorldMatrix).Inverse();
-			Vector3 newCenter = (m_WorldMatrix)*this->m_outramLocation;
-			controlMatrix = GetWorldMatrix(controlMatrix, renderAction, newCenter,
-				true, false, false);
-			MutexLock lock(m_mutex);
-			this->m_outFrameMatrix = controlMatrix.ToMatrix4().Transpose();
-		}
-
-		renderAction->PushRenderable(this, RenderableType::RGT_PMI);
+		MutexLock lock(m_mutex);
+		this->m_DefPlaneDirty = false;
+		m_WorldMatrix = (*worldMatrix)*(this->GetDefPlane());
+		m_GLDefPlaneMatrix = m_WorldMatrix.ToMatrix4().Transpose();
+		this->SetRenderWorldMatrix(&m_GLDefPlaneMatrix);
 	}
+
+	CameraNode* camera = renderAction->GetCamera();
+
+	Matrix3x4 controlMatrix;
+	//更新固定屏幕位置显示矩阵
+	if(this->m_IsParallelScreen && this->m_Type == FixScreen)
+	{
+		controlMatrix = (camera->GetView()*(*worldMatrix)).Inverse();
+		if (renderAction->m_Control.GetAspective() < 1)
+		{
+			controlMatrix.MultiTranslate(Vector3(-20, -30, -10));
+			controlMatrix.MultiScale(0.1);
+		}
+		else
+		{
+			controlMatrix.MultiTranslate(Vector3(-60, -40, -10));
+			controlMatrix.MultiScale(0.2);
+		}
+	}
+	//平齐屏幕更新
+	else if(this->m_IsParallelScreen && this->m_Type != FixScreen)
+	{
+		controlMatrix = (camera->GetView()*m_WorldMatrix).Inverse();
+		Vector3 newCenter = (m_WorldMatrix)*this->m_outramLocation;
+		controlMatrix = GetWorldMatrix(controlMatrix,renderAction,newCenter,
+				 true,false,false);
+		MutexLock lock(m_mutex);
+		this->m_outFrameMatrix = controlMatrix.ToMatrix4().Transpose();
+	}
+
+	renderAction->PushRenderable(this, RenderableType::RGT_PMI);
 }
 
 void PMIData::SetDefPlane(const Matrix3x4& defPlane)
@@ -233,21 +151,6 @@ BoundingBox   PMIData::GetComTextsBox()
 	return box;
 }
 
-void PMIData::MarkDefinePlaneDirty()
-{
-	this->m_DefPlaneDirty = true;
-}
-
-void PMIData::SetParentModel(Model* parentModel)
-{
-	this->m_parentModel = parentModel;
-}
-
-Model* PMIData::GetParentModel()
-{
-	return this->m_parentModel;
-}
-
 Matrix3x4  PMIData::GetWorldMatrix(const Matrix3x4& mvMatrix,RenderAction* renderAction,
 		const Vector3& center,
 		bool allowTran,bool allowRotate,bool allowScale)
@@ -281,7 +184,7 @@ Matrix3x4  PMIData::GetWorldMatrix(const Matrix3x4& mvMatrix,RenderAction* rende
 
 				float dis = (cameraPos - center).Length();
 
-				baseFactor *= dis*2/heigh;
+				baseFactor = dis*2/heigh;
 			}
 			worldMatrix.MultiScale(baseFactor/camera->GetZoom());
 		}

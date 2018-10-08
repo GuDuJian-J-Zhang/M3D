@@ -7,16 +7,12 @@
 *	@par	历史:
 *
 ****************************************************************************/
-#include "../../Utility.h"
+#include "Utility.h"
 #include "stdafx.h"
 #include "TickTimer.h"
 #include "TimerManager.h"
 
 #include "IOSExternDef.h"
-
-#ifdef WIN32
-#include <time.h>
-#endif
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -25,7 +21,6 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 //SA_NAMESPACE_BEGIN
-using namespace NS_SimulationAnimation;
 
 int CTickTimer::m_milliseconds = 50000;
 CTimer CTickTimer::m_timer;
@@ -52,7 +47,7 @@ int CTickTimer::Init()
 	// This is my invented formula to receive windows messages (esp. the timer messages)
 	// in a non-window class (this one) I just register some class and create a window of 0 dimensions
 	// This works cool - Rajesh B
-	m_timer.SetTimer(timerTask,&m_timer, 0, m_milliseconds);
+	m_timer.SetTimer(timerTask, NULL, 0, m_milliseconds);
 #ifndef __ANDROID__
 	StartTimer();
 #endif
@@ -119,21 +114,21 @@ void CTickTimer::OnTimerTick()
 	timerTask(NULL);
 }
 
-//void CTickTimer::timerTimeout(union sigval sig)
-//{
-//	/*struct itimerspec its;
-//	 its.it_value.tv_sec = m_milliseconds ;
-//	 its.it_value.tv_nsec = 0;
-//
-//	 its.it_interval.tv_sec = m_milliseconds;
-//	 its.it_interval.tv_nsec = 0;
-//
-//	 if (timer_settime (m_timer, 0, &its, NULL) == -1)
-//	 {
-//	 return;
-//	 }*/
-//	//StartTimer();
-//}
+void CTickTimer::timerTimeout(union sigval sig)
+{
+	/*struct itimerspec its;
+	 its.it_value.tv_sec = m_milliseconds ;
+	 its.it_value.tv_nsec = 0;
+
+	 its.it_interval.tv_sec = m_milliseconds;
+	 its.it_interval.tv_nsec = 0;
+
+	 if (timer_settime (m_timer, 0, &its, NULL) == -1)
+	 {
+	 return;
+	 }*/
+	//StartTimer();
+}
 
 void* CTickTimer::timerTask(void* arg)
 {
@@ -143,15 +138,11 @@ void* CTickTimer::timerTask(void* arg)
     CTimerManager::GetTimerManager()->Tick( time );
 	return NULL;
 }
-#ifdef WIN32
-#else
+
 struct timeval gFirstGetTime;
-#endif
+
 void APP_Show_Time(float* time)
 {
-#ifdef WIN32
-	*time = clock() / (float)CLOCKS_PER_SEC;
-#else
 	struct timeval tv;
 	gettimeofday(&tv, NULL);
 	if (CTickTimer::m_isFirstGetTime)
@@ -161,14 +152,11 @@ void APP_Show_Time(float* time)
 	}
 
 	*time = (tv.tv_sec - gFirstGetTime.tv_sec)
-		+ ((double)(tv.tv_usec - gFirstGetTime.tv_usec)) / CLOCKS_PER_SEC;
+			+ ((double) (tv.tv_usec - gFirstGetTime.tv_usec)) / CLOCKS_PER_SEC;
 
 	if (*time < 0)
 	{
 		LOGE(" time error %f", *time);
 	}
-#endif // WIN32
-
-
 }
 //SA_NAMESPACE_END

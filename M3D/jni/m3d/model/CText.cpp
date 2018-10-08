@@ -37,7 +37,7 @@ void CText::InitRender()
 #elif __IOS__
 		CText::SetFontFilePath("//System/Library/Fonts/Cache/STHeiti-Light.ttc");
 #elif WIN32
-CText::SetFontFilePath("./data/Fonts/HT_bold.ttf");
+CText::SetFontFilePath("./Fonts/HT_bold.ttf");
 #endif
 	}
 

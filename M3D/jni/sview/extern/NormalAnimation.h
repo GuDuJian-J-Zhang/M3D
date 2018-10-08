@@ -16,7 +16,7 @@
 
 namespace M3D
 {
-class IShape;
+class Shape;
 class SceneNode;
 
 /**
@@ -31,7 +31,7 @@ public:
 	 * @param from
 	 * @param to
 	 */
-	HideShowAnimation(IShape* shape, bool from, bool to);
+	HideShowAnimation(Shape* shape, bool from, bool to);
 	/**
 	 *
 	 */
@@ -54,7 +54,7 @@ private:
 	 * @param from
 	 * @param to
 	 */
-	void SetState(IShape* shape, bool from, bool to);
+	void SetState(Shape* shape, bool from, bool to);
 
 	/**
 	 *
@@ -67,7 +67,7 @@ private:
 	 */
 	void Reset();
 private:
-	IShape* m_shape;
+	Shape* m_shape;
 
 	bool m_fromState;
 
@@ -82,7 +82,7 @@ public:
 	 * @param shape
 	 * @param distColor
 	 */
-	ChangeColorAnimation(IShape* shape, const Color& distColor);
+	ChangeColorAnimation(Shape* shape, const Color& distColor);
 
 	/**
 	 *
@@ -105,14 +105,14 @@ private:
 	 * @param shape
 	 * @param frameStates
 	 */
-	void SetValue(IShape* shape, const vector<Color>& frameStates);
+	void SetValue(Shape* shape, const vector<Color>& frameStates);
 
 	/**
 	 *
 	 * @param shape
 	 * @param distColor
 	 */
-	void SetValue(IShape* shape, const Color& distColor);
+	void SetValue(Shape* shape, const Color& distColor);
 
 	/**
 	 *
@@ -127,7 +127,7 @@ private:
 private:
 	vector<Color> frameStates;
 
-	IShape* m_shape;
+	Shape* m_shape;
 
 	int m_stateIndex;
 
@@ -144,7 +144,7 @@ public:
 	 * @param fromPos
 	 * @param disPos
 	 */
-	ChangePosAnimation(Model* shapeNode, const Vector3& fromPos,
+	ChangePosAnimation(SceneNode* shapeNode, const Vector3& fromPos,
 			const Vector3& toPos);
 
 	/**
@@ -170,7 +170,7 @@ private:
 	 * @param fromPos
 	 * @param disPos
 	 */
-	void SetValue(Model* shapeNode, const Vector3& fromPos,
+	void SetValue(SceneNode* shapeNode, const Vector3& fromPos,
 			const Vector3& toPos);
 
 	/**
@@ -189,7 +189,7 @@ private:
 
 	Vector3 m_distance;
 
-	Model* shapeNode;
+	SceneNode* shapeNode;
 };
 
 }

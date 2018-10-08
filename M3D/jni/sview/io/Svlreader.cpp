@@ -1,4 +1,4 @@
-﻿/*
+/*
  * display.cpp
  *
  *  Created on: 2013-5-31
@@ -30,7 +30,7 @@
 #include "m3d/model/ShapeProperty.h"
 
 #include "m3d/base/Vector3.h"
-#include "m3d/graphics/CameraNode.h"
+#include "m3d/graphics/Cameranode.h"
 
 #include "m3d/graphics/SectionPlane.h"
 #include "m3d/graphics/Material.h"
@@ -40,13 +40,11 @@
 
 #include "m3d/base/Quaternion.h"
 #include "m3d/model/ShapeSet.h"
-#include "m3d/model/ModelShape.h"
-#include "m3d/model/Point.h"
-#include "m3d/SceneManager.h"
+#include "m3d/model/point.h"
 #include "m3d/utils/StringHelper.h"
 #include "m3d/graphics/Texture2D.h"
 #include "m3d/ResourceManager.h"
-
+#include "m3d/SceneManager.h"
 #include "sview/views/Parameters.h"
  
 #include "prebuilt/svl2/include/Stk_DocumentManager.h"
@@ -56,7 +54,6 @@
 #include "prebuilt/svl2/include/Stk_CompositeText.h"
 #include "prebuilt/svl2/include/Stk_LineSetEntity.h"
 #include "sview/views/View.h"
-#include "m3d/model/ExtendInfoManager.h"
 
 using std::ifstream;
 using std::ostream;
@@ -73,16 +70,24 @@ using M3D::Matrix4;
 using M3D::Quaternion;
 using M3D::ShapeSet;
 using M3D::Point;
-using M3D::BaseMaterial;
+using M3D::Material;
 using M3D::Platform;
-using M3D::ModelShape;
-using M3D::ExtendInfoManager;
 using M3D::SceneManager;
 
 #define SHOW_COLOR_LOG false
 #define LOGCOLOR(...) if(SHOW_COLOR_LOG) READER_LOGE(__VA_ARGS__)
 
- 
+
+#ifdef __MOBILE__
+
+#define INDEX_MAX_COUNT 65535
+#endif
+
+#ifdef _WIN32
+#define INDEX_MAX_COUNT 4294967295
+#endif
+
+
 namespace SVIEW {
 
 SVLReaderListener::SVLReaderListener():Stk_Listener()
@@ -117,7 +122,7 @@ SvlReader::SvlReader(void) :
 
 	isReadFaceMeshData = true;
 	m_IsUseLOD = Parameters::Instance()->m_IsUseLOD;
-	
+	this->SetUseIndex(Parameters::Instance()->m_IsUseIndexMode);
 	m_readMaxLodLevel = 0;
 	m_readMinLodLevel = 1;
 
@@ -152,14 +157,12 @@ Model*
 SvlReader::GetModel(int id) {
 	if (m_M3DModel == NULL)
     {
+        LOGI("ReadFile :%s",this->GetFile().c_str());
         m_M3DModel = ReadFile(this->GetFile());
-        
         //如果读取到了model，这里添加一次引用
         if(m_M3DModel)
         {
             m_M3DModel->AddRef();
-
-			m_M3DModel->SetDrawDataPrepared(true,true);
         }
     }
  
@@ -187,6 +190,16 @@ SvlReader::FindModelFromProtoTypeID(int id) {
 	}
 	return NULL;
 }
+std::string WstringToString(const std::wstring str)
+{// wstring转string
+    unsigned len = str.size() * 4;
+    setlocale(LC_CTYPE, "");
+    char *p = new char[len];
+    wcstombs(p,str.c_str(),len);
+    std::string str1(p);
+    delete[] p;
+    return str1;
+}
 
 Model*
 SvlReader::ReadFile(string file) {
@@ -195,6 +208,9 @@ SvlReader::ReadFile(string file) {
 	this->SetPercent(0.0f/100);
 
 	this->AddSourceFile(file);
+
+	LoggerHelper* logger = LoggerHelper::Instance();
+	logger->Begin(LoggerHelper::TYPE_READER);
 
 	LOGI("LoadReadConfig Begin");
 	LoadReadConfig();
@@ -214,37 +230,24 @@ SvlReader::ReadFile(string file) {
 	m_ProtoTypeMap.clear();
 
 	Model* model = NULL;
-#ifdef WIN32
- 	m_stkDocMgr = Stk_DocumentManager::NewDocumentManager();
-#else
- 	m_stkDocMgr = new Stk_DocumentManager();
-#endif
- 
+
+	m_stkDocMgr = new Stk_DocumentManager();
 
 	this->SetPercent(2.0f/100);
-
 	wstring wsFile = Platform::StringToWString(file,"auto");
-
     LOGI("----------LoadReadSVL begin-------");
     SVLReaderListener* svlReaderListener = new SVLReaderListener();
     svlReaderListener->SetReader(this);
     m_stkDocMgr->SetListener(svlReaderListener);
-
-	//Logger::Instance()->PrintLog("SVLReader DataManager Test===FillAssembly begin==");
 	STK_STATUS status = m_stkDocMgr->LoadDocument(wsFile);
-	//Logger::Instance()->PrintLog("SVLReader DataManager Test===FillAssembly end==");
-
 	if (status != STK_SUCCESS) {
 		READER_LOGE("SvlReader:: DataManager ReadFile Error! code: %d",status);
+        
         //删除datamanager的相关资源
         if (m_stkDocMgr != NULL) {
-#ifdef WIN32
-		Stk_DocumentManager::DeleteDocumentManager(m_stkDocMgr);
-#else
-		m_stkDocMgr->~Stk_DocumentManager();
-#endif
-         m_stkDocMgr = NULL;
-       }
+    		m_stkDocMgr->~Stk_DocumentManager();
+    		m_stkDocMgr = NULL;
+        }
         
 		return model;
 	}
@@ -282,9 +285,8 @@ SvlReader::ReadFile(string file) {
 
 	//获取文件版本
 	Stk_File *stkFile = topProtoType->GetFile();
-	wstring wsvlVersion = stkFile->GetSVLVersion();
-	string svlVersion = Platform::WStringToString(wsvlVersion,"utf8");
-	//READER_LOGI("SvlReader::ReadFile svlVersion:%s", svlVersion.c_str());
+	string svlVersion = Platform::WStringToString(stkFile->GetSVLVersion());
+	READER_LOGI("SvlReader::ReadFile svlVersion:%s", svlVersion.c_str());
 
 	//从svl中一次性读取所有的svl格式点render数据
 	this->AddFileMaterialToResourceMgr(stkFile);
@@ -340,28 +342,20 @@ SvlReader::ReadFile(string file) {
 	}
 
 	model = new Model();
-	this->m_M3DModel = model;
-
-	model->SetModelExtInfo(m_view->GetSceneManager()->GetExtendInfoManager());
 
 	m_StkPMIList.clear();
 	m_StkViewList.clear();
 
-	GetInstanceData(model, ins, upHasColor, upInsColor,true);
+	GetInstanceData(model, ins, upHasColor, upInsColor, NULL);
 
 	//读取pmi
 	int pmiCount = 0;
 	vector<PMIData*> pOutPMIData;
 	GetPMIInfo(&m_StkPMIList, &pmiCount, pOutPMIData);
-	if (pOutPMIData.size()>0)
-	{
-		map<int, PMIData*> pmis;
-		for (int i = 0; i < pOutPMIData.size(); i++) {
-			PMIData* pTmpPMI = pOutPMIData.at(i);
-			pmis.insert(
+	for (int i = 0; i < pmiCount; i++) {
+		PMIData* pTmpPMI = pOutPMIData.at(i);
+		model->GetPMIs().insert(
 				map<int, PMIData*>::value_type(pTmpPMI->GetID(), pTmpPMI));
-		}
-		model->SetPMIs(pmis);
 	}
 
 	READER_LOGI("SvlReader::GetInstanceData 读取pmi结束 count:%d", pmiCount);
@@ -391,10 +385,6 @@ SvlReader::ReadFile(string file) {
 #endif
 	//protoTypeArray.clear();
 	READER_LOGI("SvlReader::GetInstanceData 读取视图 end ModelViewCount 111");
-
-	//读取topProto存储的额外显示隐藏信息
-	ReadTopProtoInfo(ins->GetProtoType(),model);
-
 	//计算BOX
 	model->UpdataInfo();
 
@@ -409,11 +399,7 @@ SvlReader::ReadFile(string file) {
 		ins->SetProtoID(0);
 		delete ins;
 		ins = NULL;
-#ifdef WIN32
-		Stk_DocumentManager::DeleteDocumentManager(m_stkDocMgr);
-#else
 		m_stkDocMgr->~Stk_DocumentManager();
-#endif
 		m_stkDocMgr = NULL;
 
 		READER_LOGE("Svlreader::ReadFile delete m_stkDocMgr end");
@@ -425,56 +411,15 @@ SvlReader::ReadFile(string file) {
 #endif
 
 	this->SetPercent(98.0f/100);
-
-
-	//将颜色转换成材质，根据需要进行
-
-	ConvertModelColorToMaterial(model);
-
 	LOGI("SVL Read ok-----");
 
 	return model;
 }
 
-void SvlReader::ConvertModelColorToMaterial(Model* model)
-{
-	vector<Body*>* bodies = model->GetBodys();
-	if (bodies)
-	{
-		for (int i = 0; i < bodies->size(); i++)
-		{
-			Body* subBody = bodies->at(i);// ->FindVisiableObject(renderAction);
-			vector<Face*>& subFaces = subBody->GetFaces();
-
-			for (int j = 0;j<subFaces.size();j++)
-			{
-				Face* subFace = subFaces.at(j);
-				Color* initColor = subFace->GetInitColor();
-				if (initColor)
-				{
-					BaseMaterial* baseMaterial = this->CovertColorToMaterial(*initColor);
-
-					if (baseMaterial)
-					{
-						subFace->SetMaterial(baseMaterial);
-					}
-				}
-			}
-		}
-	}
-
-	vector<Model*>& subModels = model->GetChildren();
-	for (int i = 0;i<subModels.size();i++)
-	{
-		Model* subModel = subModels.at(i);
-		this->ConvertModelColorToMaterial(subModel);
-	}
-}
-
 void SvlReader::GetInstanceData(Model* model, Stk_Instance* ins,
 		STK_BOOL upHasColor, /*(i) 父实例是否有颜色			*/
 		STK_RGBA32 upInsColor, /*(i) 父实例的颜色				*/
-		STK_BOOL upVisible) {
+		string* pStrParentPlacePath) {
 	if (this->IsCancel()) {
 		return;
 	}
@@ -489,27 +434,34 @@ void SvlReader::GetInstanceData(Model* model, Stk_Instance* ins,
 	Stk_Instance *childIns = NULL;
 	//model->SetID(this->GetNewID()); /// 对model赋值了自动生成的id
 
+	STK_RGBA32 curInsColor = { 0, 0, 0, 0 };
+	STK_BOOL hasColor;
 	//设置配置矩阵
 	STK_ID outPlcID;
 	STK_MTX32 outMatrix;
 	ins->GetPlacement(outPlcID, outMatrix);
 	model->SetPlcId(outPlcID);
-
 	float* plcMatrixData = outMatrix.PlcMatrix[0];
-	model->SetPlaceMatrix(Matrix4(plcMatrixData));
 
+	model->SetPlaceMatrix(Matrix4(plcMatrixData));
 	//instanceID
-	//if (pStrParentPlacePath != NULL) {
+	if (pStrParentPlacePath != NULL) {
 		model->SetInstanceID(ins->GetID());
-	//	READER_LOGI("instanceID:%d", ins->GetID());
-	//} else {
-	//	model->SetInstanceID(0);
-	//}
+		READER_LOGI("instanceID:%d", ins->GetID());
+	} else {
+		model->SetInstanceID(0);
+	}
+	//获取配置ID路径
+	char tmpCurPlcIDStr[10];
+	memset(tmpCurPlcIDStr, '\0', sizeof(tmpCurPlcIDStr));
+	sprintf(tmpCurPlcIDStr, "%x", outPlcID); //配置路径按照16进制解析
+	if (pStrParentPlacePath != NULL) {
+		model->SetPlcPath(*pStrParentPlacePath + "|" + tmpCurPlcIDStr);
+	} else {
+		model->SetPlcPath(tmpCurPlcIDStr);
+	}
 	model->AddRef();
 	m_ModelMap.insert(pair<int, Model*>(model->GetID(), model));
-
-	m_modelPlcPathMap.insert(pair<string,Model*>(model->GetPlcPath(),model));
-
 	pProtoType = ins->GetProtoType();
 	if (pProtoType == NULL) {
 		READER_LOGE("SvlReader::GetInstanceData : ProtoType is NULL!! Please check the convertor!");
@@ -520,14 +472,12 @@ void SvlReader::GetInstanceData(Model* model, Stk_Instance* ins,
 		string name = Platform::WStringToString(ins->GetInsName(),"auto");
 		if(pProtoType->GetProtoName().length() == 0)
 		{
-			name = "Default Ins";
+			name = "Default";
 		}
 		model->SetName(name);
 	}
-
 	READER_LOGI(
 			"SvlReader::GetInstanceData : name:%s", model->GetName().c_str());
-
 	GetProtoTypeData(model, pProtoType, upHasColor, upInsColor); //装配中包含几何数据
 	//添加自定义属性
 	if(this->m_useInstanceProperty && ins->GetMetaDataNum()>0){
@@ -540,24 +490,19 @@ void SvlReader::GetInstanceData(Model* model, Stk_Instance* ins,
 		shapeProperty->AddRef();
 
 		vector<Stk_MetaData*> protoTypeProperties;
-
 		for(int i = 0;i<ins->GetMetaDataNum();i++)
 		{
 			protoTypeProperties.push_back(ins->GetMetaDataByIndex(i));
 		}
-
 		FillShapeProperty(protoTypeProperties,shapeProperty);
-
 		shapeProperty->Release();
 	}
-
 	//instance 的可见性设置
-	if (ins->GetDisplayState() == STK_INS_NODISP || upVisible == FALSE) {
+	if (ins->GetDisplayState() == STK_INS_NODISP) {
 		model->SetOrigVisible(false);
 	} else {
 		model->SetOrigVisible(true);
 	}
-
 	STK_UINT32 Type = pProtoType->GetType();
 	if (true || Type == PROTO_TYPE_ASSY)
 	{
@@ -565,25 +510,15 @@ void SvlReader::GetInstanceData(Model* model, Stk_Instance* ins,
 		for (int ii = 0; ii < pProtoType->GetChildInsNum(); ii++) {
 			if (IsCancel())
 				return;
-			STK_RGBA32 curInsColor = { 0, 0, 0, 0 };
-			STK_BOOL hasColor;
-			STK_BOOL upInsVisible;
-
 			childIns = pProtoType->GetChildIns(ii);
-
-			if (childIns->GetDisplayState() == STK_INS_NODISP || upVisible == FALSE) {
-				upInsVisible = false;
-			}
-			else {
-				upInsVisible = true;
-			}
-
 			// 实例颜色
-			if (upHasColor)
-			{
-				curInsColor = upInsColor;
-				hasColor = TRUE;
-			}else if (childIns->HasColor()) {
+//			if (upHasColor)
+//			{
+//			curInsColor = upInsColor;
+//			hasColor = TRUE;
+//			}
+//			else
+			if (childIns->HasColor()) {
 				curInsColor = childIns->GetColor();
 				hasColor = TRUE;
 				if(curInsColor.Red<0 || curInsColor.Green<0 || curInsColor.Blue<0)
@@ -591,9 +526,9 @@ void SvlReader::GetInstanceData(Model* model, Stk_Instance* ins,
 					hasColor = FALSE;
 				}
 			} else {
-				curInsColor.Red = 0.5f;
-				curInsColor.Green = 0.5f;
-				curInsColor.Blue = 0.5f;
+				curInsColor.Red = 0.0f;
+				curInsColor.Green = 0.0f;
+				curInsColor.Blue = 0.0f;
 				curInsColor.Alpha = 0.0f;
 				hasColor = FALSE;
 			}
@@ -602,52 +537,13 @@ void SvlReader::GetInstanceData(Model* model, Stk_Instance* ins,
 			if (!this->IsCancel()) {
 				Model* submodel = new Model();
 				GetInstanceData(submodel, childIns, hasColor, curInsColor,
-						upInsVisible);
+						&model->GetPlcPath());
 				model->AddSubModel(submodel);
-
-				if (curInsColor.Red<0 && curInsColor.Alpha>0.0f)
-				{
-					model->SetInitAlpha(curInsColor.Alpha);
-				}
 			}
 		}
 	}
 //	pmiTime = getTimeLong();
 //	READER_LOGE("pmiTime:%d", pmiTime-dataTime);
-}
-
-void SvlReader::ReadTopProtoInfo(Stk_ProtoType* topProto, Model* topModel)
-{
-	//copy from 设计器
-	const vector<wstring>& strPathList = topProto->GetAllInsAttrPlcPath();
-	int nbList = strPathList.size();
-	StkDisplayStateEnum emDisplayState;
-
-	map<string, Model*>::iterator findMode;
-
-	map<string, Model*>::iterator findEnd = m_modelPlcPathMap.end();
-
-	for (int i = 0; i < nbList; i++)
-	{
-		if (STK_ERROR == topProto->GetInsDisplayStateByPlcPath(strPathList[i], emDisplayState))
-			continue;
-
-		findMode = m_modelPlcPathMap.find("0|" + Platform::WStringToString(strPathList[i],"utf8"));
-
-		if (findMode != findEnd)
-		{
-			Model* model = findMode->second;
-
-			if (emDisplayState == STK_NO_DISPLAY)
-			{
-				model->SetOrigVisible(false);
-			}
-			else
-			{
-				model->SetOrigVisible(true);
-			}
-		}
-	}
 }
 
 void SvlReader::GetProtoTypeData(Model* model, Stk_ProtoType *pProtoType,
@@ -659,7 +555,6 @@ void SvlReader::GetProtoTypeData(Model* model, Stk_ProtoType *pProtoType,
 	if (pModel != NULL)
 	{
 		CopyModelDrawData(model, pModel);
-
 		//如果实例包含颜色，将颜色值赋值给拷贝出来的pModel对象
 		if(upHasColor)
 		{
@@ -670,10 +565,6 @@ void SvlReader::GetProtoTypeData(Model* model, Stk_ProtoType *pProtoType,
 //		LOGE("model11 %s,uphasColor %d Color %s",model->GetName().c_str(),upHasColor,instancColor.Tostring().c_str());
 		return;
 	}
-	//
-	//将protoType  中的材质信息，render数据
-	this->AddFileMaterialToResourceMgr(pProtoType->GetFile());
-
 	AddProtoDataToModel(model, pProtoType, upHasColor, upInsColor);
 	model->SetOrigVisible(pProtoType->GetDisplayState());
 //	LOGE("model22 %s,uphasColor %dColor %s",model->GetName().c_str(),upHasColor,instancColor.Tostring().c_str());
@@ -1315,7 +1206,7 @@ ComText* SvlReader::ConvertStkComTextToComText(Stk_ComText* stkComText) {
 		Vector3 xAxis(x.X, x.Y, x.Z);
 		Vector3 yAxis(y.X, y.Y, y.Z);
 		newText->SetInnerXYAxis(xAxis, yAxis);
-		string textString = Platform::WStringToString(tmpText->GetText(), "auto");
+		string textString = Platform::WStringToString(tmpText->GetText());
 		newText->SetText(textString);
 		comText->AddCText(newText);
 
@@ -1451,8 +1342,9 @@ bool SvlReader::GetViewInfo(vector<Stk_View*> *pStkViewList, Model* inModel,
 		}
 
 		ModelView * pView = new ModelView(); // Stk_View(pProtoType->GetID());
+		pViewData->GetNode()->GetID();
 		//获取视图基本信息
-		int oldId = pViewData->GetID();
+		int oldId = pViewData->GetNode()->GetID();
 		int viewID = i + 1; //pViewData->GetID();
 		READER_LOGI("ViewId:%d new:%d", oldId, viewID);
 
@@ -1465,6 +1357,10 @@ bool SvlReader::GetViewInfo(vector<Stk_View*> *pStkViewList, Model* inModel,
 		pView->SetSvlUseType(pViewData->GetUsageType());
 		pView->SetViewType(ModelView::OrignalView); //svl中的视图都做为原始视图
 
+        //默认视图的剖切设置
+        pView->SetShowCutSectionPlane(false);
+        pView->SetShowSectionCappingPlane(false);
+        
 		//获取Camera信息
 		pCameraData = pViewData->GetCamera();
 		if (pCameraData != NULL) {
@@ -1573,7 +1469,6 @@ void SvlReader::AddProtoDataToModel(Model* model, Stk_ProtoType *pProtoType,
 		STK_BOOL upHasColor, const STK_RGBA32& upInsColor) {
 	//use node way
 	READER_LOGI("SvlReader::AddProtoDataToModel start");
-
 	this->AddProtoType(model); //将model加入Model 原型 Map
 	Stk_Node* topNode = pProtoType->GetTopNode();
 	if(topNode!=NULL)
@@ -1588,18 +1483,16 @@ void SvlReader::AddProtoDataToModel(Model* model, Stk_ProtoType *pProtoType,
 
 		//创建顶级body，用于存储点和lineset等数据
 		Body* topBody = new Body();
-		topBody->AddRef();
+
 		GetStkNodeData(model,topBody,topNode,pProtoType->GetLODCount(),
 				upHasColor,upInsColor,&m_StkPMIList,&m_StkViewList,shapeSet);
 
 		model->AddBody(topBody);
-		topBody->Release();
 	}
 	else
 	{
 		READER_LOGE("SvlReader::AddProtoDataToModel topNodd is NULL!!!");
 	}
-
 	//添加自定义属性
 	if (this->m_usePrototypeProperty && pProtoType->GetAllMetaDatas().size() > 0) {
 		ShapeProperty* shapeProperty = new ShapeProperty();
@@ -1608,7 +1501,6 @@ void SvlReader::AddProtoDataToModel(Model* model, Stk_ProtoType *pProtoType,
 		model->SetShapeProperty(shapeProperty);
 		shapeProperty->Release();
 	}
-
 	READER_LOGI("SvlReader::AddProtoDataToModel end");
 }
 
@@ -1643,7 +1535,7 @@ int protoTypeLODCount,
 	case NODE_TYPE_BODY:
 	{
 		Stk_Body *pCurBody = pNode->GetBody();
-		if (pCurBody != NULL && pNode->GetDispStat())
+		if (pCurBody != NULL)
 		{
 			STK_RGBA32 bodyColor;
 			GetBodyColor(bodyColor, pCurBody, upHasColor, upInsColor); //得到Body的颜色
@@ -1658,31 +1550,21 @@ int protoTypeLODCount,
 				{
 					/*svl 中的复合面对应SView中Body
 					 * SView中不存在复合面的概念，*/
-					Stk_Mesh_Com *pMeshCom = pCurBody->GetMeshCom(meshIndex);//		if (!pModel->GetShapeNode())
-						if (pMeshCom != NULL)
-						{
-							if (!pModel->GetModelShape())
-							{
-								ModelShape* tShapeNode = new ModelShape();
-								pModel->SetModelShape(tShapeNode);
-							}
+					Stk_Mesh_Com *pMeshCom = pCurBody->GetMeshCom(meshIndex);
+					Body* body = new Body();
+					//将svl复合面数据加入M3D Body中
+					AddProtoMeshComDataToBody(body, pMeshCom, protoTypeLODCount,
+							upHasColor, bodyColor, upInsColor);
+					pModel->AddBody(body);
 
-							Body* body = new Body();
-							//将svl复合面数据加入M3D Body中
-							AddProtoMeshComDataToBody(body, pMeshCom, protoTypeLODCount,
-								upHasColor, bodyColor, upInsColor);
-							pModel->AddBody(body);
+					 //设置显示隐藏状态
+					body->SetOrigVisible(pNode->GetDispStat());
 
-							//设置显示隐藏状态
-							body->SetOrigVisible(pNode->GetDispStat());
-
-							//将shape对象关联到node节点上
-							//TODO
-							/*if (pCurShapeSet)
-							{
-								pCurShapeSet->AddShape(body);
-							}*/
-						}
+					//将shape对象关联到node节点上
+					if (pCurShapeSet)
+					{
+						pCurShapeSet->AddShape(body);
+					}
 				}
 				if (pCurShapeSet)
 					pCurShapeSet->SetType(ShapeSet::ShapeSetType::Plane);
@@ -1715,14 +1597,7 @@ int protoTypeLODCount,
 		break;
 	case NODE_TYPE_MESH:{
 		Stk_Mesh_Com *pMeshCom = pNode->GetMesh();
-		if (pMeshCom != NULL) {
-			if (!pModel->GetModelShape())
-			{
-				ModelShape* tShapeNode = new ModelShape();
-				pModel->SetModelShape(tShapeNode);
-				pModel->SetDrawDataPrepared(true);
-			}
-
+        if (pMeshCom != NULL) {
             Body* body = new Body();
             STK_RGBA32 bodyColor;
             STK_RGBA32 meshComColor = pMeshCom->GetColor();
@@ -1735,14 +1610,13 @@ int protoTypeLODCount,
             body->SetOrigVisible(pNode->GetDispStat());
 
             pModel->AddBody(body);
-
+            
             //将shape对象关联到node节点上
-			//TODO
-          /*  if (pCurShapeSet)
+            if (pCurShapeSet)
             {
                 pCurShapeSet->AddShape(body);
                 body->SetOrigVisible(pCurShapeSet->IsOrigVisible());
-            }*/
+            }
         }
 				
 	}
@@ -1752,20 +1626,17 @@ int protoTypeLODCount,
 		Stk_PMI *pPMI = pNode->GetPMI();
 		if (pPMI != NULL)
 		{
-			if (pModel == this->m_M3DModel || pPMI->IsDisplay())
-			{
-				pStkPMIList->push_back(pPMI);
-			}
+			pStkPMIList->push_back(pPMI);
 		}
 	}
 		break;
 	case NODE_TYPE_VIEW:
 	{
 		Stk_View *pView = pNode->GetView();
+		string tmpName = Platform::WStringToString(pView->GetName());
 		//LOGI("SvlReader::GetStkNodeData view: name:%s type:%d",tmpName.c_str(),pView->GetUsageType());
 		if (pView != NULL )//&& pView->GetUsageType() != VIEW_USAGE_UNKNOWN)
 		{
-			string tmpName = Platform::WStringToString(pView->GetName());
 			pStkViewList->push_back(pView);
 		}
 	}
@@ -1862,15 +1733,15 @@ bool SvlReader::UseCatia()
 	return this->m_useCATIAMode;
 }
 
-string SvlReader::GetSVLMaterialID(Stk_File* protoType, unsigned int renderID)
+string SvlReader::GetSVLMaterialID(unsigned int renderID)
 {
 	string materialID  ;
 
 	if(renderID>=0)
 	{
-		materialID = "SVLRender" +
-				StringHelper::IntToString(protoType->GetFileID())
-		+ "|"
+		materialID = "SVLRender"
+//				StringHelper::IntToString(protoTypeMaterialID)
+//		+ "|"
 		+
 		StringHelper::IntToString(renderID);
 	}
@@ -1901,16 +1772,13 @@ void SvlReader::SVLRenderToMaterial(Material* material,Stk_Render* stkRenderP)
 					string textName = material->GetName();
 
 					Texture2D* texture2d  =(Texture2D*)resourceMgr->GetOrCreateTexture(textName,Texture::TEXTURE_2D);
-					if (!texture2d->GetImage())
-					{
-						//构造image，按道理来说image也应该重用
-						Image* image = new Image();
-						image->SetData((unsigned char*)o_chDataP, o_nudataSize);
-						AddRefMe(image);
-						texture2d->SetImage(image);
-						ReleaseMe(image);
-					}
-					material->SetDiffuseMap(texture2d);
+
+					//构造image，按道理来说image也应该重用
+					Image* image = new Image();
+					image->SetData((unsigned char*)o_chDataP,o_nudataSize);
+					texture2d->SetImage(image);
+
+					material->SetTexture(texture2d);
 				}
 
 				float uScale = stkTexture->GetUScale();
@@ -1971,12 +1839,7 @@ void SvlReader::ReadUserData(Stk_ProtoType *pTopProtoType)
             wstring wstrFileName = L"";
             itMapServiceManual->second->GetUserData(wstrDataName,id,dataP,dataSize,wstrFileName);
             string key = "ServiceManual";
-			#ifdef WIN32
-			wstring wstrOut = Platform::UTF_8ToUnicode(dataP);
-			string value = Platform::WStringToString(wstrOut, "auto");
-			#else 
-			string value = dataP;
-			#endif
+            string value = dataP;
             this->m_view->AddUserData(key,value);
         }
         map<STK_ID,Stk_UserData*>* mapUserData1 = pTopProtoType->GetUserDataByName(L"HotSpot");
@@ -1993,12 +1856,7 @@ void SvlReader::ReadUserData(Stk_ProtoType *pTopProtoType)
             itor->second->GetUserData(wstrDataName,id,dataP,dataSize,wstrFileName);
             
             string key = "HotSpot";
-			#ifdef WIN32
-			wstring wstrOut = Platform::UTF_8ToUnicode(dataP);
-            string value = Platform::WStringToString(wstrOut,"auto");
-			#else 
-			string value = dataP;
-			#endif
+            string value = dataP;
             this->m_view->AddUserData(key,value);
         }
         map<STK_ID,Stk_UserData*>* mapDefaultViewData= pTopProtoType->GetUserDataByName(L"DefaultViewID");
@@ -2015,7 +1873,9 @@ void SvlReader::ReadUserData(Stk_ProtoType *pTopProtoType)
             itor->second->GetUserData(wstrDataName,id,dataP,dataSize,wstrFileName);
             STK_ID defaultID = (STK_ID)*dataP;
             string key = "DefaultViewID";
-            string valueStr = StringHelper::IntToString(defaultID);;
+            char* value = new char[256] ;
+            snprintf(value, 256,"%d",defaultID);
+            string valueStr = value;
             this->m_view->AddUserData(key,valueStr);
         }
 	}
@@ -2062,71 +1922,24 @@ void SvlReader::AddProtoMeshComDataToBody(Body* body, Stk_Mesh_Com *pMeshCom,
 		lodCount = protoTypeLODCount;
 
 	READER_LOGI("lodcount is %d", lodCount);
-	bool bUniClr = IsMeshHasUniColor(pMeshCom, upHasColor, meshComColor);//Body下所有的面是否具有相同颜色
-	//bool bUniClr = true; //高性能模式强制开启面合并
+//	bool bUniClr = pMeshCom->IsUniColor(); //Body下所有的面是否具有相同颜色
+	bool bUniClr = true; //高性能模式强制开启面合并
 	//将ComMesh下所有的面的的点数据都填充到Body中
-	
-	VertexSet* bodymeshData = new VertexSet();
-	bodymeshData->AddRef();
-	
-	FillBody(body, bodymeshData, pMeshCom, lodCount);
+	FillBody(body, pMeshCom, lodCount);
 	READER_LOGI("FillBody end");
 
-	if (bUniClr && false) //面合并模式
+	if (bUniClr && isHighPerformance) //面合并模式
 			{
 		//将面合后的面添加到Body中，使用此函数只会得到一个最终的合并Face
-		AddMergeFaceToBody(body, bodymeshData, pMeshCom, upHasColor, meshComColor, lodCount);
+		AddMergeFaceToBody(body, pMeshCom, upHasColor, meshComColor, lodCount);
 	} else //正常模式
 	{
-		AddFaceToBody(body,bodymeshData, pMeshCom, upHasColor, meshComColor, lodCount);
+		AddFaceToBody(body, pMeshCom, upHasColor, meshComColor, lodCount);
 	}
-
-	bodymeshData->Release();
-
 	READER_LOGI("AddProtoMeshComDataToBody end");
 }
 
-bool SvlReader::IsMeshHasUniColor(Stk_Mesh_Com *pMeshCom, STK_BOOL upHasColor, const STK_RGBA32& meshcolor)
-{
-	bool uniColorFlag = false;
-	STK_RGBA32 faceColor;
-	STK_RGBA32 firstfaceColor;
-	Stk_Mesh_Face* pMeshFace;
-	int FaceNum = pMeshCom->GetMeshFaceNum();
-
-	for (int i=0;i<FaceNum;i++)
-	{
-		pMeshFace = pMeshCom->GetMeshFace(i);
-		if (i == 0) {
-			if (upHasColor)
-			{
-				uniColorFlag = true;
-				faceColor = meshcolor;
-				break;
-			}
-			else
-			{
-				faceColor = pMeshFace->GetColor();
-				firstfaceColor = pMeshFace->GetColor();
-			}
-			continue;
-		}
-
-		faceColor = pMeshFace->GetColor();
-
-		if (Abs(faceColor.Red - firstfaceColor.Red)>0.01 || 
-			Abs(faceColor.Green - firstfaceColor.Green)>0.01 ||
-			Abs(faceColor.Blue - firstfaceColor.Blue)>0.01)
-		{
-			uniColorFlag = false;
-			break;
-		}
-	}
-
-	return uniColorFlag;
-}
-
-void SvlReader::AddFaceToBody(Body* body, VertexSet* bodyMesh, Stk_Mesh_Com *pMeshCom,
+void SvlReader::AddFaceToBody(Body* body, Stk_Mesh_Com *pMeshCom,
 							  STK_BOOL upHasColor, const STK_RGBA32& meshcolor, int lodCount) {
 	//READER_LOGE("SvlReader::GetProtoFaceData start");
 	int FaceNum = pMeshCom->GetMeshFaceNum();
@@ -2149,7 +1962,7 @@ void SvlReader::AddFaceToBody(Body* body, VertexSet* bodyMesh, Stk_Mesh_Com *pMe
 			GetFaceColor(faceColor, pMeshFace, upHasColor, meshcolor);
 		}
 
-		////读取材质，首先取face自己的，如果没有则取上级pMeshCom的。
+		//读取材质，首先取face自己的，如果没有则取上级pMeshCom的。
 		unsigned int renderId  = pMeshFace->GetRenderID();
 
 		if(!this->GetMaterialById(renderId))
@@ -2157,17 +1970,12 @@ void SvlReader::AddFaceToBody(Body* body, VertexSet* bodyMesh, Stk_Mesh_Com *pMe
 			renderId = pMeshCom->GetRenderID();
 		}
 
-		Color c(faceColor.Red, faceColor.Green, faceColor.Blue,
-			1 - faceColor.Alpha);
-
 		if(renderId>0){
 			pFace->SetMaterial(this->GetMaterialById(renderId));
-			//Material* material = this->GetMaterialById(renderId);
-			//if (material) {
-			//	c = material->GetAmbient();
-			//}
 		}
 
+		Color c(faceColor.Red, faceColor.Green, faceColor.Blue,
+				1 - faceColor.Alpha);
 		pFace->SetInitColor(c);
 
 		int readLevel = 0;
@@ -2181,12 +1989,12 @@ void SvlReader::AddFaceToBody(Body* body, VertexSet* bodyMesh, Stk_Mesh_Com *pMe
 								m_readMinLodLevel : lodCount - 1;
 			}
 			/*添加指定级别的LOD数据到Face中*/
-			AddLodDataToFace(pFace, pMeshFace, bodyMesh,pMeshCom, allMeshLOD, readLevel);
+			AddLodDataToFace(pFace, pMeshFace, pMeshCom, allMeshLOD, readLevel);
 		}
 	}
 	//READER_LOGE("SvlReader::GetProtoFaceData end");
 }
-void SvlReader::FillBody(Body* body, VertexSet* bodymeshData, Stk_Mesh_Com *pMeshCom, int lodCount) {
+void SvlReader::FillBody(Body* body, Stk_Mesh_Com *pMeshCom, int lodCount) {
 	int readLevel = 0;
 	int readCount = lodCount > 1 ? 2 : 1;
 	for (int lodLevel = 0; lodLevel < readCount; lodLevel++) {
@@ -2197,7 +2005,7 @@ void SvlReader::FillBody(Body* body, VertexSet* bodymeshData, Stk_Mesh_Com *pMes
 					lodCount - 1 > m_readMinLodLevel ?
 							m_readMinLodLevel : lodCount - 1;
 		}
-		AddLodDataToBody(body, bodymeshData, pMeshCom, readLevel);
+		AddLodDataToBody(body, pMeshCom, readLevel);
 	}
 
 	map<unsigned int, MeshLODInfo*> allMeshLOD = pMeshCom->GetAllMeshLOD();
@@ -2209,7 +2017,7 @@ void SvlReader::FillBody(Body* body, VertexSet* bodymeshData, Stk_Mesh_Com *pMes
 		}
 	}
 }
-void SvlReader::AddLodDataToBody(Body* body, VertexSet*  bodymeshData, Stk_Mesh_Com *pMeshCom,
+void SvlReader::AddLodDataToBody(Body* body, Stk_Mesh_Com *pMeshCom,
 		int readLevel) {
 	//若果Mesh不存在realLevel的LOD数据，则返回
 	MeshLODInfo* pMeshLODInfo = pMeshCom->GetMeshLODInfo(readLevel);
@@ -2224,9 +2032,8 @@ void SvlReader::AddLodDataToBody(Body* body, VertexSet*  bodymeshData, Stk_Mesh_
 	int totalVerNum = outVertices->size() / 2;
 	if (CanUseIndex(totalVerNum)) //使用索引将所有的顶点数据直接加入BodyMeshData中
 			{
-		//bodymeshData = new VertexSet();
+		VertexSet* bodymeshData = new VertexSet();
 		bodymeshData->SetUseIndex(true);
-		bodymeshData->AddRef();
 
 		vector<Vector3>* positionArray = bodymeshData->GetPositionArray();
 		vector<Vector3>* normalArray = bodymeshData->GetNormalArray();
@@ -2265,19 +2072,18 @@ void SvlReader::AddLodDataToBody(Body* body, VertexSet*  bodymeshData, Stk_Mesh_
 			}
 		}
 
-		/*		if (bodymeshData->GetVertexCount() > 0) {
-					int addLevel = ConvertToSViewUseLevel(readLevel);
-
-					bodymeshData->AddRef();
-				} */
-
-	   bodymeshData->Release();
-
+		if (bodymeshData->GetVertexCount() > 0) {
+			int addLevel = ConvertToSViewUseLevel(readLevel);
+			body->AddData(bodymeshData, addLevel);
+		} else {
+			bodymeshData->Release();
+		}
 	} else // 不使用索引，仅创建BodyMeshData变量，供读取Face数据时填充
 	{
-		//bodymeshData = new VertexSet();
+		VertexSet* bodymeshData = new VertexSet();
 		bodymeshData->SetUseIndex(false);
-		bodymeshData->AddRef();
+
+		//bodymeshData->SetID(body->GetID());
 
 		if (totalVerNum > 0) {
 			//将复合面数据加入Body中
@@ -2295,11 +2101,11 @@ void SvlReader::AddLodDataToBody(Body* body, VertexSet*  bodymeshData, Stk_Mesh_
 				textureCoordsArray->reserve(totalVerNum);
 			}
 
-			//int addLevel = ConvertToSViewUseLevel(readLevel);
-			//bodymeshData->AddRef();
-		} 
-
-		bodymeshData->Release();
+			int addLevel = ConvertToSViewUseLevel(readLevel);
+			body->AddData(bodymeshData, addLevel);
+		} else {
+			bodymeshData->Release();
+		}
 	}
 
 	//给Body中添加XPolyLine用于存储Body下和Body中Face下所有的Edge显示数据
@@ -2329,9 +2135,6 @@ bool SvlReader::FillEdges(Stk_Mesh_Edge* stk_edge,
 				Vector3((*outVertices)[edge[0] * 2].X,
 						(*outVertices)[edge[0] * 2].Y,
 						(*outVertices)[edge[0] * 2].Z));
-		//纪录一下索引信息,由于SVL数据顶点和法线放到一起了， SVLX是分开放的，因此索引不用乘2
-		bodyPolyLine->AddPointsIndex(edge[0]);
-
 		//加入中间部分点
 		for (int j = 1; j < dataLength - 1; j++) {
 			Vector3 pnt((*outVertices)[edge[j] * 2].X,
@@ -2340,10 +2143,6 @@ bool SvlReader::FillEdges(Stk_Mesh_Edge* stk_edge,
 			//中间的点，每个点要添加两次
 			bodyPolyLine->AddPoints(pnt);
 			bodyPolyLine->AddPoints(pnt);
-
-			//纪录一下索引信息,由于SVL数据顶点和法线放到一起了， SVLX是分开放的，因此索引不用乘2
-			bodyPolyLine->AddPointsIndex(edge[j]);
-			bodyPolyLine->AddPointsIndex(edge[j]);
 		}
 
 		//在加入最后一个点
@@ -2351,8 +2150,6 @@ bool SvlReader::FillEdges(Stk_Mesh_Edge* stk_edge,
 				Vector3((*outVertices)[edge[dataLength - 1] * 2].X,
 						(*outVertices)[edge[dataLength - 1] * 2].Y,
 						(*outVertices)[edge[dataLength - 1] * 2].Z));
-		//纪录一下索引信息,由于SVL数据顶点和法线放到一起了， SVLX是分开放的，因此索引不用乘2
-		bodyPolyLine->AddPointsIndex(edge[dataLength - 1]);
 
 		GetEdgeGeoAttribute(edgeLine, stk_edge);
 		return true;
@@ -2467,7 +2264,7 @@ int SvlReader::GetComMeshAllFaceIndexCount(Stk_Mesh_Com *pMeshCom,
 
 	return indexSize;
 }
-void SvlReader::AddMergeFaceToBody(Body* body, VertexSet* bodymeshData, Stk_Mesh_Com *pMeshCom,
+void SvlReader::AddMergeFaceToBody(Body* body, Stk_Mesh_Com *pMeshCom,
 		STK_BOOL upHasColor, const STK_RGBA32& meshcolor, int lodCount) {
 	//READER_LOGE("SvlReader::GetProtoMergeFaceData start");
 
@@ -2490,7 +2287,7 @@ void SvlReader::AddMergeFaceToBody(Body* body, VertexSet* bodymeshData, Stk_Mesh
 					lodCount - 1 > m_readMinLodLevel ?
 							m_readMinLodLevel : lodCount - 1;
 		}
-		AddMergeLodDataToFace(pFace,bodymeshData, pMeshCom, readLevel);
+		AddMergeLodDataToFace(pFace, pMeshCom, readLevel);
 	}
 
 	//READER_LOGE("SvlReader::GetProtoMergeFaceData end");
@@ -2516,23 +2313,22 @@ void SvlReader::AddEdgeDataToFace(Face* pFace, Stk_Mesh_Face* pMeshFace,
 
 	for (int i = 0; i < edgesID.size(); i++) {
 		Stk_Mesh_Edge* stk_edge = pMeshFace->GetMeshEdgeByID(edgesID[i]);
-		if (stk_edge)
-		{
-			map<STK_UINT32, vcEdgeInfo*> edgelod = stk_edge->GetAllEdgeLODInfo();
-			vcEdgeInfo* topEdgelodinfo = edgelod.at(this->TOPLODLEVEL);
-			vector<STK_UINT32>& edge = *topEdgelodinfo;
-
-			RefPolyLine * edgeLine = new RefPolyLine(bodyPolyLine);
-
-			if (FillEdges(stk_edge, outVertices, bodyPolyLine, edgeLine)) {
-				Edge* edge = new Edge();
-				edge->AddData(edgeLine, readLodLevel);
-				pFace->AddEdge(edge, readLodLevel);
-			}
-			else {
-				edgeLine->Release();
-			}
-		}
+        
+        if (stk_edge) {
+            map<STK_UINT32, vcEdgeInfo*> edgelod = stk_edge->GetAllEdgeLODInfo();
+            vcEdgeInfo* topEdgelodinfo = edgelod.at(this->TOPLODLEVEL);
+            vector<STK_UINT32>& edge = *topEdgelodinfo;
+            
+            RefPolyLine * edgeLine = new RefPolyLine(bodyPolyLine);
+            
+            if (FillEdges(stk_edge, outVertices, bodyPolyLine, edgeLine)) {
+                Edge* edge = new Edge();
+                edge->AddData(edgeLine, readLodLevel);
+                pFace->AddEdge(edge, readLodLevel);
+            } else {
+                edgeLine->Release();
+            }
+        }
 	}
 }
 
@@ -2615,9 +2411,8 @@ void SvlReader::AddLineSetsToShapeCollection(Body *pBody,Stk_Node* pNode,ShapeSe
 
 				//关联到节点中
 				if (shapeSet){
-					//TODO XL
-					//shapeSet->AddShape(edge);
-					//edge->SetOrigVisible(shapeSet->IsOrigVisible());
+					shapeSet->AddShape(edge);
+					edge->SetOrigVisible(shapeSet->IsOrigVisible());
 				}
 			}
 			else
@@ -2875,30 +2670,19 @@ void SvlReader::GetEdgeGeoAttribute(Curve* curve, Stk_Mesh_Edge* stk_edge) {
 
 void SvlReader::GetFaceColor(STK_RGBA32& faceColor, Stk_Mesh_Face* pMeshFace,
 		STK_BOOL upHasColor, const STK_RGBA32& meshcolor) {
-
+	faceColor = meshcolor;
 	// 构成面颜色
 	if (!upHasColor && pMeshFace->HasColor()) {
 		faceColor = pMeshFace->GetColor();
 		if (faceColor.Alpha < 0)
 			faceColor.Alpha = 0.0f;
 	}
-	else
-	{
-		faceColor = meshcolor;
-	}
-
-	if (faceColor.Red < 0 |faceColor.Green<0|faceColor.Blue<0) {
-		faceColor.Red = 0.8f;
-		faceColor.Green = 0.8f;
-		faceColor.Blue = 0.8f;
-		faceColor.Alpha = 0.0f;
-	}
 	//READER_LOGE("GetFaceColor is %f %f %f %f",
 	//faceColor.Red,faceColor.Green,faceColor.Blue,faceColor.Alpha);
 
 }
 
-void SvlReader::AddLodDataToFace(Face* pFace, Stk_Mesh_Face* pMeshFace, VertexSet* bodyMesh,
+void SvlReader::AddLodDataToFace(Face* pFace, Stk_Mesh_Face* pMeshFace,
 		Stk_Mesh_Com *pMeshCom, map<unsigned int, MeshLODInfo*>& allMeshLOD,
 		int readLodLevel) {
 	/*判断是否有此级别的MeshLOD数据*/
@@ -2918,6 +2702,9 @@ void SvlReader::AddLodDataToFace(Face* pFace, Stk_Mesh_Face* pMeshFace, VertexSe
 //	READER_LOGE("realLodLevel %d body lodCount %d",readLodLevel,pFace->GetBody()->GetLodCount());
 
 	//获取上级Body的存储数据
+	VertexSet* bodyMesh = (VertexSet*) pFace->GetBody()->GetData(
+			ConvertToSViewUseLevel(readLodLevel));
+
 	if (bodyMesh) {
 		Mesh* facemeshData = new Mesh(bodyMesh);
 
@@ -2941,20 +2728,21 @@ void SvlReader::AddLodDataToFace(Face* pFace, Stk_Mesh_Face* pMeshFace, VertexSe
 
 			if (facemeshData->GetVertexCount() > 0) {
 				int addLevel = ConvertToSViewUseLevel(readLodLevel);
-				//AddMeshToClearManager(addLevel, facemeshData);
-				//TODO
-				//pFace->AddData(facemeshData, readLodLevel);
+				//			AddMeshToClearManager(addLevel, facemeshData);
+				pFace->AddData(facemeshData, readLodLevel);
 
 				/*高性能模型下，不读取边界和几何属性信息*/
-				GetTriMeshGeoAttribute(facemeshData, pMeshFace, readLodLevel);
+				if (!isHighPerformance) {
+					GetTriMeshGeoAttribute(facemeshData, pMeshFace, readLodLevel);
 
-				//如果边界数据存储在Face中
-				if (pMeshCom->GetMeshEdgeType() == MESH_EDGE_STORE_IN_FACE) {
+					//如果边界数据存储在Face中
+					if (pMeshCom->GetMeshEdgeType() == MESH_EDGE_STORE_IN_FACE) {
 						/*添加边界线到Face中*/
 						AddEdgeDataToFace(pFace, pMeshFace, pMeshLODInfo,
 							readLodLevel);
+					}
 				}
-				pFace->SetData(facemeshData);
+
 			}
 		}
 		else {
@@ -2975,22 +2763,13 @@ void SvlReader::GetMergeFaceColor(STK_RGBA32& faceColor, Stk_Mesh_Com *pMeshCom,
 			faceColor = pMeshFace->GetColor();
 			if (faceColor.Alpha < 0)
 				faceColor.Alpha = 0.0f;
-		}
-		else
-		{
+		} else {
 			faceColor = meshcolor;
 		}
 	}
-
-	if (faceColor.Red < 0 | faceColor.Green < 0 | faceColor.Blue < 0) {
-		faceColor.Red = 0.8f;
-		faceColor.Green = 0.8f;
-		faceColor.Blue = 0.8f;
-		faceColor.Alpha = 0.0f;
-	}
 }
 
-void SvlReader::AddMergeLodDataToFace(Face* pFace, VertexSet* bodymeshData, Stk_Mesh_Com *pMeshCom,
+void SvlReader::AddMergeLodDataToFace(Face* pFace, Stk_Mesh_Com *pMeshCom,
 		int readLevel) {
 //	READER_LOGE("SvlReader::GetMergeFaceLodData step1");
 	MeshLODInfo* pMeshLODInfo = pMeshCom->GetMeshLODInfo(readLevel);
@@ -3003,10 +2782,8 @@ void SvlReader::AddMergeLodDataToFace(Face* pFace, VertexSet* bodymeshData, Stk_
 //	int totalVerNum = 0;
 
 	//获取上级Body的存储数据
-	//TODO
-	VertexSet* bodyMesh = bodymeshData;
-	//VertexSet* bodyMesh = (VertexSet*)((Body*)(pFace->GetBody()))->GetData(
-	//ConvertToSViewUseLevel(readLevel));
+	VertexSet* bodyMesh = (VertexSet*) pFace->GetBody()->GetData(
+			ConvertToSViewUseLevel(readLevel));
 
 	//如果Body中没有显示数据则不进行Face数据的遍历和添加
 	if (!bodyMesh) {
@@ -3014,7 +2791,7 @@ void SvlReader::AddMergeLodDataToFace(Face* pFace, VertexSet* bodymeshData, Stk_
 	}
 
 	Mesh* faceMeshData = new Mesh(bodyMesh);
-	faceMeshData->AddRef();
+
 	/*判断是否可以使用所以*/
 	bool useIndex = bodyMesh->IsUseIndex();
 
@@ -3052,7 +2829,7 @@ void SvlReader::AddMergeLodDataToFace(Face* pFace, VertexSet* bodymeshData, Stk_
 				faceMeshData->SetDataLength(offset + faceIndexNum);
 
 				///预留空间，加快数据存入速度
-				//bodyIndexArray->reserve(bodyIndexArray->size() + faceIndexNum);
+				bodyIndexArray->reserve(bodyIndexArray->size() + faceIndexNum);
 
 				for (int k = 0; k < faceIndexNum; k++) {
 					bodyIndexArray->push_back((*outPolyIndeies)[k]);
@@ -3120,15 +2897,14 @@ void SvlReader::AddMergeLodDataToFace(Face* pFace, VertexSet* bodymeshData, Stk_
 		/*如果faceMeshData有数据，则将其加入到Face中*/
 		int addLevel = ConvertToSViewUseLevel(readLevel);
 //		AddMeshToClearManager(addLevel, faceMeshData);
-		//TODO
-		pFace->SetData(faceMeshData);
-		//pFace->AddData(faceMeshData, readLevel);
-	} 
-
+		pFace->AddData(faceMeshData, readLevel);
+	} else {
 		/*没有数据，则删除faceMeshData*/
 //		faceMeshData->Clear();
 //		delete faceMeshData;
 		faceMeshData->Release();
+	}
+
 //	READER_LOGE("SvlReader::GetMergeFaceLodData end");
 }
 
@@ -3159,11 +2935,11 @@ void SvlReader::GetMeshComColor(STK_RGBA32& meshComColor,
 }
 
 
-BaseMaterial*  SvlReader::GetMaterialById(unsigned int renderId)
+Material*  SvlReader::GetMaterialById(unsigned int renderId)
 {
-	BaseMaterial* material = NULL;
+	Material* material = NULL;
 
-	map<int,BaseMaterial*>::iterator it = m_protoTypeMaterialCache.find(renderId);
+	map<int,Material*>::iterator it = m_protoTypeMaterialCache.find(renderId);
 
 	if(it != m_protoTypeMaterialCache.end())
 	{
@@ -3182,27 +2958,29 @@ void SvlReader::AddFileMaterialToResourceMgr(Stk_File *pStkFile)
 	{
 		int renderNum = pStkFile->GetRenderNum();
 		READER_LOGI("renderNum %d",renderNum);
-		//每个proto建立一个缓存
-		m_protoTypeMaterialCache.clear();
 		if(renderNum>0)
 		{
+			//每个proto建立一个缓存
+			m_protoTypeMaterialCache.clear();
+
+			ResourceManager* resourceMgr = this->m_view->GetSceneManager()->GetResourceManager();
 			for(int i=0;i<renderNum;i++)
 			{
 				Stk_Render* stkRenderP = pStkFile->GetRenderByIndex(i);
 				if(stkRenderP)
 				{
 					unsigned int renderId = stkRenderP->GetID();
-					string materialID = GetSVLMaterialID(pStkFile,stkRenderP->GetID());
+					string materialID = GetSVLMaterialID(stkRenderP->GetID());
 
 					if(materialID.length()>0)
 					{
 						//将材质加入全局资源管理器中，进行资源管理
-						Material* material = (Material*)m_view->GetSceneManager()->GetResourceManager()->GetOrCreateMaterial(materialID);
+						Material* material = resourceMgr->GetOrCreateMaterial(materialID);
 						if(material)
 						{
 							SVLRenderToMaterial(material,stkRenderP);
 							//将material加入缓存列表中 便于快速查找
-							m_protoTypeMaterialCache.insert(std::pair<int,BaseMaterial*>(renderId,material));
+							m_protoTypeMaterialCache.insert(std::pair<int,Material*>(renderId,material));
 							//material->AddRef();
 						}
 					}
@@ -3224,47 +3002,38 @@ bool SvlReader::IsExistProtoModel(Model* model, Stk_ProtoType *pProtoType) {
 
 void SvlReader::CopyModelDrawData(Model* model, Model* orig) {
 //	model->SetProtoModel(orig);
-	if (orig->GetBodys())
-	{
-		if (!model->GetModelShape())
-		{
-			ModelShape* tShapeNode = new ModelShape();
-			model->SetModelShape(tShapeNode);
-		}
-		vector<Body *>::iterator ite1;
-		for (ite1 = orig->GetBodys()->begin(); ite1 != orig->GetBodys()->end();
+	vector<Body *>::iterator ite1;
+	for (ite1 = orig->GetBodys().begin(); ite1 != orig->GetBodys().end();
 			ite1++) {
-			Body* body = new Body(*((Body*)*ite1));
-			model->AddBody(body);
-		}
-		//如果使用catia 则进行node节点信息的copy
-		if (this->UseCatia())
-		{
-			ShapeSet* node = new ShapeSet();
-			*node = *orig->GetShapeCollection();
-			model->SetShapeSet(node);
-			model->UpdateContainsShapesId();
-			model->GetShapeCollection()->UpdataRelevateShape(model);
-		}
-		model->SetOrigVisible(orig->IsOrigVisible());
+		Body* body = new Body(*(*ite1));
+		model->AddBody(body);
 	}
+	//如果使用catia 则进行node节点信息的copy
+	if(this->UseCatia())
+	{
+		ShapeSet* node = new ShapeSet();
+		*node = *orig->GetShapeCollection();
+		model->SetShapeSet(node);
+		model->UpdateContainsShapesId();
+		model->GetShapeCollection()->UpdataRelevateShape(model);
+	}
+	model->SetOrigVisible(orig->IsOrigVisible());
 
 	if(orig->GetShapeProperty() != NULL)
 	{
 		if(this->m_usePrototypeProperty)
 		{
 			model->SetShapeProperty(orig->GetShapeProperty());
-		}
-		//else if(this->m_useInstanceProperty)
-		//{
-		//	ShapeProperty* origshapeProperty = orig->GetShapeProperty();
+		}else if(this->m_useInstanceProperty)
+		{
+			ShapeProperty* origshapeProperty = orig->GetShapeProperty();
 
-		//	ShapeProperty* shapeProperty = new ShapeProperty();
-		//	shapeProperty->SetProperties(origshapeProperty->GetProperties());
-		//	model->SetShapeProperty(shapeProperty);
-		//	shapeProperty->AddRef();
-		//	shapeProperty->Release();
-		//}
+			ShapeProperty* shapeProperty = new ShapeProperty();
+			shapeProperty->SetProperties(origshapeProperty->GetProperties());
+			model->SetShapeProperty(shapeProperty);
+			shapeProperty->AddRef();
+			shapeProperty->Release();
+		}
 	}
 }
 
@@ -3278,6 +3047,18 @@ void SvlReader::SetHighPerformance(bool highPerformance) {
 
 void SvlReader::LoadReadConfig() {
 	SetHighPerformance(Parameters::Instance()->m_IsHighPerformanceView);
+}
+
+bool SvlReader::IsUseIndex() {
+	return this->m_isUseIndex;
+}
+
+bool SvlReader::CanUseIndex(int vertexsCount) {
+	return (this->IsUseIndex() && (vertexsCount < INDEX_MAX_COUNT));
+}
+
+void SvlReader::SetUseIndex(bool useIndex) {
+	this->m_isUseIndex = useIndex;
 }
 
 void SvlReader::AddIndexDataToMesh(Mesh* comMeshTriData,
@@ -3294,12 +3075,12 @@ void SvlReader::AddIndexDataToMesh(Mesh* comMeshTriData,
 	bodyMeshData->SetUseIndex(true);
 
 	vector<M3D_INDEX_TYPE>* bodyIndexArray = bodyMeshData->GetIndexArray();
-	M3D_OFFSET_TYPE offset = bodyIndexArray->size(); //通常情况下使用Mesh肯定包含坐标位置，所以使用顶点位置确定偏移量没问题
+	unsigned int offset = bodyIndexArray->size(); //通常情况下使用Mesh肯定包含坐标位置，所以使用顶点位置确定偏移量没问题
 	faceMeshData->SetDataOffset(offset);
 	faceMeshData->SetDataLength(faceIndexNum);
 
 	///预留空间，加快数据存入速度
-	//bodyIndexArray->reserve(bodyIndexArray->size() + faceIndexNum);
+	bodyIndexArray->reserve(bodyIndexArray->size() + faceIndexNum);
 	for (int k = 0; k < faceIndexNum; k++) {
 		bodyIndexArray->push_back((*outPolyIndeies)[k]);
 	}
@@ -3397,7 +3178,6 @@ void SvlReader::SetXMLAnimationData(const string& xmlData) {
 void SvlReader::FillShapeProperty(const vector<Stk_MetaData*>& protoTypeProperties,ShapeProperty* shapeProperty)
 {
 	vector<ShapePropertyItem>& shapeProperties = shapeProperty->GetProperties();
-	shapeProperties.clear();
 	for(int i =0 ;i<protoTypeProperties.size();i++)
 	{
 		Stk_MetaData* metaData = protoTypeProperties.at(i);
@@ -3416,3 +3196,5 @@ void SvlReader::FillShapeProperty(const vector<Stk_MetaData*>& protoTypeProperti
 
 
 } //ns
+
+

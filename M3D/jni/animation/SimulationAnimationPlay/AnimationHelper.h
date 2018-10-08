@@ -32,7 +32,7 @@ using namespace SVIEW;
 /**
  * @class M3D 动画播放工具类
  */
-class M3D_API AnimationHelper
+class AnimationHelper
 {
 public:
 	AnimationHelper();
@@ -69,15 +69,15 @@ public:
 	static void GetCameraZoom(CameraNode* camera,float& zoom);
 
 	//根据当前view的宽高比调整缩放比例
-	static void AdjustCameraZoom(View* view , float aniWidth,
-			float aniHeight, float aniZoom, float& zoom);
+	static void AdjustCameraZoom(CameraNode* camera,float aniWidth,float aniHeight,
+			float aniZoom, float& zoom);
 
 	//ViewPort
 	static void GetViewSize(float& outWidth,float& outHeight,View* view);
 
 	static void SetCameraRotate(const Quaternion& rotation,CameraNode* camera);
 	static void SetCameraPosition(const Vector3& movement,CameraNode* camera);
-	static void SetCameraZoom(float zoom,CameraNode* camera, View* view);
+	static void SetCameraZoom(float zoom,CameraNode* camera);
 
 	//PMI----------------------
 	static PMIData* GetPMI(unsigned long pmiId,View* view);
@@ -112,6 +112,13 @@ public:
 
 
 private:
+	/**
+	 * 获取模型节点
+	 * @param model
+	 * @return 模型对应的ModelNode节点指针
+	 */
+	static ModelNode * GetModelNode(Model * model);
+
 	static const Matrix3x4& GetPlaceMatrix(Model* model);
 };
 #endif //ANIMATION_PLYAER_HELPOER_H

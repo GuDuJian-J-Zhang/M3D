@@ -1,10 +1,6 @@
 ﻿#include "m3d/scene/AxisNode.h"
 #include "m3d/graphics/CameraNode.h"
 #include "sview/views/Parameters.h"
-#include "m3d/action/RenderAction.h"
-#include "m3d/graphics/ImageBoard.h"
-#include "m3d/SceneManager.h"
-#include "m3d/ResourceManager.h"
 namespace M3D
 {
 
@@ -2894,43 +2890,18 @@ AxisNode::AxisNode():SceneNode()
 	m_zColor = Color::BLUE;
 	m_oColor = Color::YELLOW;
 
-	 m_xImage = NULL;
-	 m_yImage = NULL;
-	 m_zImage = NULL;
-
-	 SetAxisPosition(AxisNode::LEFTDOWN);
+	SetAxisPosition(AxisNode::LEFTDOWN);
 }
 AxisNode::~AxisNode(void)
 {
-	if (m_xImage)
-	{
-		m_xImage->Release();
-		m_xImage = NULL;
-	}
 
-	if (m_yImage)
-	{
-		m_yImage->Release();
-		m_yImage = NULL;
-	}
-
-	if (m_zImage)
-	{
-		m_zImage->Release();
-		m_zImage = NULL;
-	}
 }
 
 void AxisNode::SetViewSize(int width, int height, float ratio)
 {
 	//在横竖屏切换时,将坐标轴位置设置标志设置为空，在绘制坐标轴时强制更新显示数据。
 	m_position = AxisNode::NONE;
-	//Windows下坐标轴显示太大了，需要控制一下
-#ifdef _WIN32
-	ratio = ratio*0.5f;
-#else
 
-#endif
 	//坐标轴宽和高
 	this->m_iWidth = width * ratio;
 	this->m_iHeight = height * ratio;
@@ -2960,37 +2931,17 @@ int AxisNode::GetType(void)
 
 void AxisNode::FindVisiableObject(RenderAction* renderAction)
 {
-	if(!this->IsVisible()){
+	if(this->IsHide()){
 		renderAction->SetAxisNode(NULL);
 	}else{
 		this->SetAxisPosition(SVIEW::Parameters::Instance()->m_axisPos);
 
 		CameraNode * camera = renderAction->GetCamera();
-		Quaternion rotateQuat = camera->GetView().Rotation();
-
+		Matrix3 mat = camera->GetRotation().RotationMatrix().Inverse();
+		Quaternion rotateQuat(mat);
 		this->SetRotation(rotateQuat);
-        if (SVIEW::Parameters::Instance()->m_axisImage) {
-            UpdataAxisImages(renderAction);
-        }else{
-            if (m_xImage)
-            {
-                m_xImage->Release();
-                m_xImage = NULL;
-            }
-            
-            if (m_yImage)
-            {
-                m_yImage->Release();
-                m_yImage = NULL;
-            }
-            
-            if (m_zImage)
-            {
-                m_zImage->Release();
-                m_zImage = NULL;
-            }
-        }
 		renderAction->SetAxisNode(this);
+
 	}
 }
 
@@ -3029,65 +2980,4 @@ void AxisNode::SetAxisPosition(int position)
 		}
 	}
 }
-
-void AxisNode::UpdataAxisImages(RenderAction* renderAction)
-{
-	if (!m_xImage)
-	{
-		Vector2 imageSize(2, 2);
-		SceneManager* scene = renderAction->GetScene();
-		Vector3 xPos = Vector3(9,0,0);
-		m_xImage = new ImageBoard(xPos, imageSize);
-		string imagePath = SVIEW::Parameters::Instance()->m_appWorkPath
-			+ ResourceManager::AxisXImagePath;
-		m_xImage->SetTexture(scene->GetResourceManager()->GetOrCreateTexture(imagePath));
-
-		m_xImage->AddRef();
-	}
-
-	if (!m_yImage)
-	{
-		Vector2 imageSize(2, 2);
-		SceneManager* scene = renderAction->GetScene();
-		Vector3 xPos = Vector3(0, 9, 0);
-		m_yImage = new ImageBoard(xPos, imageSize);
-		string imagePath = SVIEW::Parameters::Instance()->m_appWorkPath
-			+ ResourceManager::AxisYImagePath;;
-		m_yImage->SetTexture(scene->GetResourceManager()->GetOrCreateTexture(imagePath));
-
-		m_yImage->AddRef();
-	}
-
-	if (!m_zImage)
-	{
-		Vector2 imageSize(2, 2);
-		SceneManager* scene = renderAction->GetScene();
-
-		Vector3 xPos = Vector3(0, 0, 9);
-		m_zImage = new ImageBoard(xPos, imageSize);
-		string imagePath = SVIEW::Parameters::Instance()->m_appWorkPath
-			+ ResourceManager::AxisZImagePath;;
-		m_zImage->SetTexture(scene->GetResourceManager()->GetOrCreateTexture(imagePath));
-		m_zImage->AddRef();
-	}
-
-	//CameraNode * camera = renderAction->GetCamera();
-	//Matrix3x4 modelViewMatrix = camera->GetWorldTransform();
-
-	Matrix3x4 modelViewMatrix = this->GetWorldTransform();
-	if (m_xImage)
-	{
-		m_xImage->UpdateRenderDataByModelViewMatrix(modelViewMatrix);
-	}
-	if (m_yImage)
-	{
-		m_yImage->UpdateRenderDataByModelViewMatrix(modelViewMatrix);
-	}
-
-	if (m_zImage)
-	{
-		m_zImage->UpdateRenderDataByModelViewMatrix(modelViewMatrix);
-	}
-}
-
 }

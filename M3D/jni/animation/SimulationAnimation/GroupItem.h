@@ -1,4 +1,4 @@
-// All Rights Reserved. Copyright (C) 2014 HOTEAMSOFT, Ltd
+﻿// All Rights Reserved. Copyright (C) 2014 HOTEAMSOFT, Ltd
 /****************************************************************************
  *	@file		GroupItem.h 
  *
@@ -16,10 +16,6 @@
 class CGroupManager;
 class SoTempPath;
 class CGroup;
-namespace tinyxml2
-{
-	class XMLElement;
-}
 
 class SA_API CGroupItem
 {
@@ -31,7 +27,7 @@ public:
  	std::string GetPlcPath(){ return m_strPlcPath; }
 	std::string GetItemName(){ return m_strItemName; }
  	CGroup *GetGroup(){return m_pGroup;}
-	void WriteToFile(tinyxml2::XMLElement *pGroupItemEle);
+
 	//是否是当前节点的子节点
 	bool IsChild(CGroupItem *pItem);
 	bool IsChild(std::string strItemPath);

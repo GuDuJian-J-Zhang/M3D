@@ -14,12 +14,6 @@
 
 #define M3D_OFFSET_TYPE unsigned long long
 
-#ifdef WIN32
-#define IDTYPE unsigned long long int
-#else
-#define IDTYPE int
-#endif
-
 #ifdef __MOBILE__
 #define M3D_INDEX_TYPE  unsigned short
 #endif
@@ -29,8 +23,9 @@
 #endif
 
 namespace M3D{
-
 const extern string NO_VALUE ;
+
+
 /**
  * M3D中用到的宏
  */
@@ -47,14 +42,9 @@ const extern string BACKGROUNDCOLOR ;
 const extern string SCENEGROUND ;
 
 const extern string HANDLER_GROUPNODE;
-const extern string SCREENUILAYER_GROUPNODE;
 
-const extern string SECTION_GROUP_PATH;
 const extern string NOTE_GROUP_PATH;
-const extern string ANNOTATION_GROUP_PATH;
 const extern string MEASURE_GROUP_PATH;
-const extern string LIGHT_GROUP_PATH;
-const extern string CAMERA_GROUP_PATH;
 
 const extern string TRANSFORM_HANDLER_NODE;
 const extern string ROTATECENTERNODE;
@@ -100,15 +90,11 @@ const extern int HANDLER_NODE_VOICEANNOTATION;
 const extern int HANDLER_NODE_TEXTaNNOTATION;
 const extern int HANDLER_NODE_POINT;
 const extern int HANDLER_GROUP_NODE;
-const extern int SCREENLAYER_GROUP_NODE;
 const extern int HANDLER_NODE_ROTATECENTER;
 const extern int HANDLER_NODE_PLAN;
 
 const extern int NOTE_GROUP_NODE;
 const extern int MEASURE_GROUP_NODE;
-const extern int CAMERA_GROUP_NODE;
-const extern int LIGHT_GROUP_NODE;
-const extern int SECTION_NODE;
 
 const extern int HANDLER_NODE_END;
 
@@ -151,16 +137,12 @@ const extern int NOTE_NODE;
 const extern int PERSPECTIVE; // perspective projection
 const extern int ORTHO; // ortho projection
 
-const extern float LINE_WIDTH;
-
 const extern float NEAR_CLIP_PLANE_FACTOR; // 近平面比例
 const extern float FAR_CLIP_PLANE_FACTOR; // 远平面比例
 
 const extern float NEAR_CLIP_PLANE_VALUE;//近平面的值
 
 const extern float CAMERA_POSFACTOR;//摄像机 距离模型中心 占整个包围盒的距离
-
-const extern string M3D_DEFAULT_MATERIAL;
 
 }
 #endif /*M3D_MACROS_H*/

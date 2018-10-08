@@ -43,7 +43,6 @@ bool AddFileOperation::OnExecute()
 {
 	LOGI("AddFileCommand::OnExecute() BEGIN");
 	bool ret = false;
-
 	if(m_view)
 	{
 		Model * parentMdl = m_desModel;
@@ -60,13 +59,16 @@ bool AddFileOperation::OnExecute()
             {
                 m_upperPlcPath =PathHelper::GetM3DPath(m_desModel);
             }
-			ret = ModelAssemblyHelper::InsertInLast(m_view,m_retModel,parentMdl);
+
+			LOGI("The model from file ID is %d",m_retModel->GetID());
+			ret = ModelAssemblyHelper::InsertBefore(m_view,m_retModel,parentMdl);
+			//LOGI("parentMdl Path === %s",GetPlacePath(retModel).c_str());
 
 			if(!ret)
 			{
 				return ret;
 			}
-		
+
 			ModelAssemblyHelper::ComputePlaceMatrix(m_retModel);//设置配置矩阵
 
 			ret = true;
@@ -80,7 +82,7 @@ bool AddFileOperation::OnExecute()
 	{
 		ret = false;
 	}
-	LOGI("AddFileCommand::OnExecute() END %d " ,ret);
+	LOGI("AddFileCommand::OnExecute() END");
 	return ret;
 }
 

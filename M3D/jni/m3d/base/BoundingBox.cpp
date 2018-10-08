@@ -8,10 +8,8 @@ namespace M3D
 {
 const BoundingBox BoundingBox::MAX_BOX (Vector3::MINIMUM,Vector3::MAXMUN);
 BoundingBox BoundingBox::NO_BOX;
-vector<float> BoundingBox::m_points; //!<
-vector<float> BoundingBox::m_pointsArray; //!<
 
-M3D_INDEX_TYPE BoundingBox::boxIndexs[24] =
+short BoundingBox::boxIndexs[24] =
 { 0, 1, 1, 2, 2, 3, 3, 0, 3, 4, 4, 5, 5, 0, 5, 6, 6, 7, 7, 4, 6, 1, 7, 2 };
 //
 // 顶点索引（不要格式化�?
@@ -65,8 +63,8 @@ void BoundingBox::Define(const Polyhedron& poly)
 
 void BoundingBox::Define(const Sphere& sphere)
 {
-    const Vector3& center = sphere.GetCenter();
-    float radius = sphere.GetRadius();
+    const Vector3& center = sphere.m_center;
+    float radius = sphere.m_radius;
     
     m_min = center + Vector3(-radius, -radius, -radius);
     m_max = center + Vector3(radius, radius, radius);
@@ -86,8 +84,8 @@ void BoundingBox::Merge(const Frustum& frustum)
 
 void BoundingBox::Merge(const Sphere& sphere)
 {
-    const Vector3& center = sphere.GetCenter();
-    float radius = sphere.GetRadius();
+    const Vector3& center = sphere.m_center;
+    float radius = sphere.m_radius;
     
     Merge(center + Vector3(radius, radius, radius));
     Merge(center + Vector3(-radius, -radius, -radius));
@@ -202,7 +200,7 @@ Intersection BoundingBox::IsInside(const Sphere& sphere) const
 {
     float distSquared = 0;
     float temp;
-    const Vector3& center = sphere.GetCenter();
+    const Vector3& center = sphere.m_center;
     
     if (center.m_x < m_min.m_x)
     {
@@ -235,7 +233,7 @@ Intersection BoundingBox::IsInside(const Sphere& sphere) const
         distSquared += temp * temp;
     }
     
-    float radius = sphere.GetRadius();
+    float radius = sphere.m_radius;
     if (distSquared >= radius * radius)
         return OUTSIDE;
     else if (center.m_x - radius < m_min.m_x || center.m_x + radius > m_max.m_x || center.m_y - radius < m_min.m_y ||
@@ -249,7 +247,7 @@ Intersection BoundingBox::IsInsideFast(const Sphere& sphere) const
 {
     float distSquared = 0;
     float temp;
-    const Vector3& center = sphere.GetCenter();
+    const Vector3& center = sphere.m_center;
     
     if (center.m_x < m_min.m_x)
     {
@@ -282,7 +280,7 @@ Intersection BoundingBox::IsInsideFast(const Sphere& sphere) const
         distSquared += temp * temp;
     }
     
-    float radius = sphere.GetRadius();
+    float radius = sphere.m_radius;
     if (distSquared >= radius * radius)
         return OUTSIDE;
     else
@@ -314,11 +312,15 @@ Intersection BoundingBox::IsInside(const Vector3 & start, const Vector3 & end) c
 		return INSIDE;
 }
 
-bool BoundingBox::GetTriangleArray(vector<float>& outPoints)
+float* BoundingBox::GetTriangleArray()
 {
-	outPoints.resize(12 * 9);
-	vector<float> points;
-	this->GetVertexs(points);
+	if (m_pointsArray.size() > 0)
+	{
+		return m_pointsArray.data();
+	}
+	m_pointsArray.resize(12 * 9);
+
+	float* points = this->GetVertexs();
 
 	float tmpP[4];
 	for (int i = 0; i < 12; i++)
@@ -330,50 +332,54 @@ bool BoundingBox::GetTriangleArray(vector<float>& outPoints)
 			tmpP[1] = points[index + 1];
 			tmpP[2] = points[index + 2];
 			tmpP[3] = 1;
-			outPoints[i * 9 + j * 3 + 0] = tmpP[0] / tmpP[3];
-			outPoints[i * 9 + j * 3 + 1] = tmpP[1] / tmpP[3];
-			outPoints[i * 9 + j * 3 + 2] = tmpP[2] / tmpP[3];
+			m_pointsArray[i * 9 + j * 3 + 0] = tmpP[0] / tmpP[3];
+			m_pointsArray[i * 9 + j * 3 + 1] = tmpP[1] / tmpP[3];
+			m_pointsArray[i * 9 + j * 3 + 2] = tmpP[2] / tmpP[3];
 		}
 	}
-	return m_pointsArray.size()>0;
+	return m_pointsArray.data();
 }
 
-bool BoundingBox::GetVertexs(vector<float>& outPoints)
+float* BoundingBox::GetVertexs()
 {
-	outPoints.resize(24);
-	outPoints[0] = m_max.m_x;
-	outPoints[1] = m_max.m_y;
-	outPoints[2] = m_max.m_z;
+	if (m_points.size() > 0)
+	{
+		return m_points.data();
+	}
+	m_points.resize(24);
+	m_points[0] = m_max.m_x;
+	m_points[1] = m_max.m_y;
+	m_points[2] = m_max.m_z;
 
-	outPoints[3] = m_min.m_x;
-	outPoints[4] = m_max.m_y;
-	outPoints[5] = m_max.m_z;
+	m_points[3] = m_min.m_x;
+	m_points[4] = m_max.m_y;
+	m_points[5] = m_max.m_z;
 
-	outPoints[6] = m_min.m_x;
-	outPoints[7] = m_min.m_y;
-	outPoints[8] = m_max.m_z;
+	m_points[6] = m_min.m_x;
+	m_points[7] = m_min.m_y;
+	m_points[8] = m_max.m_z;
 
-	outPoints[9] = m_max.m_x;
-	outPoints[10] = m_min.m_y;
-	outPoints[11] = m_max.m_z;
+	m_points[9] = m_max.m_x;
+	m_points[10] = m_min.m_y;
+	m_points[11] = m_max.m_z;
 
-	outPoints[12] = m_max.m_x;
-	outPoints[13] = m_min.m_y;
-	outPoints[14] = m_min.m_z;
+	m_points[12] = m_max.m_x;
+	m_points[13] = m_min.m_y;
+	m_points[14] = m_min.m_z;
 
-	outPoints[15] = m_max.m_x;
-	outPoints[16] = m_max.m_y;
-	outPoints[17] = m_min.m_z;
+	m_points[15] = m_max.m_x;
+	m_points[16] = m_max.m_y;
+	m_points[17] = m_min.m_z;
 
-	outPoints[18] = m_min.m_x;
-	outPoints[19] = m_max.m_y;
-	outPoints[20] = m_min.m_z;
+	m_points[18] = m_min.m_x;
+	m_points[19] = m_max.m_y;
+	m_points[20] = m_min.m_z;
 
-	outPoints[21] = m_min.m_x;
-	outPoints[22] = m_min.m_y;
-	outPoints[23] = m_min.m_z;
+	m_points[21] = m_min.m_x;
+	m_points[22] = m_min.m_y;
+	m_points[23] = m_min.m_z;
 
-	return outPoints.size()>0;
+	return m_points.data();
 }
 
 string BoundingBox::Tostring() const

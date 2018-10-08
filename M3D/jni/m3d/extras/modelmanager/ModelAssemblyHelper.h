@@ -10,11 +10,12 @@
 #define M3D_MODELASSEMBLYHELPER_H_
 #include "m3d/M3D.h"
 
-#include "m3d/base/Quaternion.h"
 #include "m3d/base/Vector2.h"
 #include "m3d/base/Vector3.h"
 #include "m3d/model/Model.h"
-#include "sview/views/View.h"
+#include "Sview/views/view.h"
+#include "m3d/scene/ModelNode.h"
+#include "m3d/base/Quaternion.h"
 
 using SVIEW::View;
 namespace M3D
@@ -82,13 +83,6 @@ public:
 	static void ComputePlaceMatrix(Model* model);
 
 	/**
-	* 求取sourceModel相对于父节点desModel的矩阵 并设置给sourceModel
-	* @param sourceModel 待设置模型
-	* @param desModel    目标装配
-	*/
-	static void ComputePlaceMatrix(Model* sourceModel, Model* desModel);
-
-	/**
 	 * 设置model世界矩阵wldMat
 	 * @param model
 	 * @param wldMat
@@ -107,21 +101,14 @@ public:
 	 * @param desModel		第二次选中的零件
 	 * @return	返回操作结果对应的代码
 	 */
-	static bool InsertInLast(View * view,Model* sourceModel, Model* desModel);
-	/**
-	*	将sourceModel插入到desModel的指定位置
-	* @param sourceModel 	待插入的零件
-	* @param iPos           零件的ID
-	* @param desModel		目标零件
-	* @return	返回操作结果对应的代码
-	*/
-	static bool InsertInPos(View* view, Model* sourceModel, int iPos, Model* parentModel);
+	static bool InsertBefore(View * view,Model* sourceModel, Model* desModel);
+
 	/**
 	 * 解除model模型与父节点联系
 	 * @param model 模型
 	 * @return 返回操作结果对应的代码
 	 */
-	//static bool DetachModel(Model* model);
+	static bool DetachModel(Model* model);
 
 	/**
 	 * 删除视图view中的model模型
@@ -139,8 +126,6 @@ public:
 	 */
 	static Model* AddModel(View * view,const string& fileName);
 
-	//static void FillAssembly(View* view,Model* model);
-
 	/**
 	 * 从ID获取模型
 	 * @param view 当前视图
@@ -149,19 +134,19 @@ public:
 	 */
 	static Model * GetModelFromId(View * view,int modelId);
 
-	///**
-	// * 获取模型父节点
-	// * @param model 模型
-	// * @return 模型对应的ModelNode节点指针
-	// */
-	//static ModelNode * GetParentNode(Model * model);
+	/**
+	 * 获取模型父节点
+	 * @param model 模型
+	 * @return 模型对应的ModelNode节点指针
+	 */
+	static ModelNode * GetParentNode(Model * model);
 
-	///**
-	// * 获取模型节点
-	// * @param model 模型
-	// * @return 模型对应的ModelNode节点指针
-	// */
-	//static ModelNode * GetModelNode(Model * model);
+	/**
+	 * 获取模型节点
+	 * @param model 模型
+	 * @return 模型对应的ModelNode节点指针
+	 */
+	static ModelNode * GetModelNode(Model * model);
 
 	/**
 	 * @brief 旋转装配模型
@@ -183,12 +168,6 @@ public:
 	 * @param scale 缩放量
 	 */
 	static void ScaleAssemblyModel(Model * model ,Vector3 & scale);
-
-	static void RequestShowAllModel(SceneManager* scene);
-
-	static void RequestShowAllAfterAddModel(SceneManager* scene,Model* addModel);
-
-	static bool IsModelInScene(SceneManager* scene, Model* model);
 private:
 	/**
 	 * @brief 获取模型世界包围盒

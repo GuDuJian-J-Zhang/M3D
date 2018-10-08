@@ -112,10 +112,10 @@ public:
 		bool allInside = true;
 		for (unsigned i = 0; i < NUM_FRUSTUM_PLANES; ++i)
 		{
-			float dist = m_planes[i].Distance(sphere.GetCenter());
-			if (dist < -sphere.GetRadius())
+			float dist = m_planes[i].Distance(sphere.m_center);
+			if (dist < -sphere.m_radius)
 				return OUTSIDE;
-			else if (dist < sphere.GetRadius())
+			else if (dist < sphere.m_radius)
 				allInside = false;
 		}
 
@@ -129,7 +129,7 @@ public:
 	{
 		for (unsigned i = 0; i < NUM_FRUSTUM_PLANES; ++i)
 		{
-			if (m_planes[i].Distance(sphere.GetCenter()) < -sphere.GetRadius())
+			if (m_planes[i].Distance(sphere.m_center) < -sphere.m_radius)
 				return OUTSIDE;
 		}
 

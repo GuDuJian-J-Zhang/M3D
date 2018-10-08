@@ -25,7 +25,6 @@ typedef enum
 	M_Read_IO_ERROR = 203,//!<io 函数错误
 	M_Read_OOM = 204,//!<内存分配失败
 	M_Read_ANALYSIS_ERROR = 205,//!<SVL 文件解析失败
-	M_Read_NOT_DEFINE_FILE = 206, //!<读取的文件格式不是规定类型
 
 }M3D_STATUS;
 

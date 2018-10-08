@@ -55,24 +55,11 @@ public:
      */
     void SetAxis(TRANSAXIS axis);
 
-	/**
-	* 设置偏移量
-	* @param fValue
-	*/
-	void SetMoveValue(float fValue);
-
-	/**
-	* 重新设置拖拽偏移信息
-	* @param fValue
-	*/
-	void ResetDragInfo();
-
-	virtual void ResetViewCamera();
 private:
     /**
      * 初始化相机
      */
-	virtual void InitCamera(bool useAni = true);
+	virtual void InitCamera();
 	virtual void InitModelViewCamera();
 	/**
 	 * 优化相机
@@ -88,20 +75,11 @@ private:
 	 * @return
 	 */
 	Model * GetSelectModel();
-
-	vector<Model*> GetSelectModels();
-
-	void SetIsChangerSceneBox(bool  state);
 private:
 	OPEMODE m_mode;//!< 操作模式
 	TRANSAXIS m_axis;//!<坐标轴
 	IntVector2 m_PriPointTwo1;//!<保存的上一次触摸操作时的屏幕点坐标
-	bool m_bDragStarted; //拖拽是否开始
-	map<Model*, Matrix3x4> m_mapSelectedModelInitWorldMatrix;//选中零件开始拖拽时的配置矩阵
-	Vector3 m_moveAxis;//拖拽方向
-	float m_fMoveValue;//拖拽量
-	bool m_isChangeSceneBox;
-	int m_coutChange;//辅助m_isChangeSceneBox，因为会两次调用touchmove,所以要加个计数
+
 
 };
 

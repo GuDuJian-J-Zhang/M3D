@@ -46,7 +46,6 @@ public:
 			int force_channels,
 			unsigned int reuse_texture_ID,
 			unsigned int flags);
-	virtual void GenerateMipMap();
 protected:
 	/**
 	 * @brief 更新纹理对象

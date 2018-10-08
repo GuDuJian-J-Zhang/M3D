@@ -1,4 +1,4 @@
-// All Rights Reserved. Copyright (C) 2014 HOTEAMSOFT, Ltd
+﻿// All Rights Reserved. Copyright (C) 2014 HOTEAMSOFT, Ltd
 /****************************************************************************
  *	@file		GroupManager.h 
  *
@@ -13,10 +13,6 @@
 #include "../SimulationCommon/SATools.h"
 #include <vector>
 class CGroup;
-namespace tinyxml2
-{
-	class XMLDocument;
-}
 
 typedef std::vector<CGroup*> GroupVector;
 
@@ -106,20 +102,7 @@ public:
 	//设置是否正在选中分组
 	********************************************************************/
 	void SetSelecting(bool bSelecting){m_bSelecting=bSelecting;}
-	/*****************************************************************//**
-	*	@brief	  设置组结构给管理器
-	*   @param[in] pData 热点数据
-	*	@retval 无
-	*   @Creator 17/09/18 qinyp
-	********************************************************************/
-	void setGroupData(char* pData);
-		/*****************************************************************//**
-	*	@brief	  读文件
-	*   @param[in] doc xml文档对象
-	*	@retval 无
-	*   @Creator 17/09/18 qinyp
-	********************************************************************/
-	void ReadFromXMLDocument(tinyxml2::XMLDocument& doc);
+
 protected:	
 	/*Group list*/
 	GroupVector				m_vecGroupList;		

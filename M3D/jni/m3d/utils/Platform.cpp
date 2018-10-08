@@ -11,7 +11,6 @@
 
 #ifdef _WIN32
 #include <windows.h>
-#include <sstream>
 #endif
 
 namespace M3D
@@ -30,12 +29,6 @@ namespace M3D
 #ifdef __IOS__
 #include <iconv.h>
 #endif
-
-
-#include "dlfcn.h"
-#include <sys/stat.h>
-#include "Utility.h"
-
 	/****************************************************************************
 	 *	@brief		取锟斤拷ushort锟酵ｏ拷2锟街节ｏ拷锟街凤拷某锟斤拷锟�
 	 *	@param[in]	strString				原锟街凤拷
@@ -157,11 +150,11 @@ namespace M3D
 		char tarBuf[tarBufLen];
 		memset(tarBuf, '\0', tarBufLen);
 
-	int errCode = 0;
-	int ret = 0;
-	ret = UCNVConvert2Android(UTF_8, UTF_32LE, tarBuf, tarBufLen, srcStr,
-			srcLen, &errCode);
-	string tmpstr = tarBuf;
+		int errCode = 0;
+		int ret = 0;
+		ret = UCNVConvert2Android(UTF_8, UTF_32LE, tarBuf,
+			tarBufLen, srcStr, srcLen, &errCode);
+		string tmpstr = tarBuf;
 
 		return tmpstr;
 	}
@@ -244,88 +237,109 @@ namespace M3D
 	}
 #endif
 
-void* Platform::pDL = dlopen("/system/lib/libicuuc.so", RTLD_LAZY);
-;
-char* convertFunName = NULL;
-int Platform::UCNVConvert2Android(const char* tarEncode, const char* srcEncode,
-		char* tarBuf, int32_t tarBufLen, const char* srcBuf, int32_t srcBufLen,
-		int32_t* pErrorCode) {
-	int ret = -1;
+
+	void* Platform::pDL= dlopen("/system/lib/libicuuc.so", RTLD_LAZY);;
+	char* convertFunName=NULL;
+	int Platform::UCNVConvert2Android(
+		const char* tarEncode,
+		const char* srcEncode,
+		char* tarBuf,
+		int32_t tarBufLen,
+		const char* srcBuf,
+		int32_t srcBufLen,
+		int32_t* pErrorCode
+	)
+	{
+		int ret = -1;
 #ifdef __IOS__
-	ret = code_convert(srcEncode, tarEncode, srcBuf, srcBufLen, tarBuf, tarBufLen);
+		ret = code_convert(srcEncode, tarEncode, srcBuf, srcBufLen, tarBuf, tarBufLen);
 #endif
 
 #ifdef __ANDROID__
-	//锟斤拷锟斤拷锟斤拷指锟斤拷
-	int (*ucnv_convert)(const char*, const char*, char*, int32_t, const char*,
+		//锟斤拷锟斤拷锟斤拷指锟斤拷
+		int(*ucnv_convert)(const char*, const char*, char*, int32_t, const char*,
 			int32_t, int32_t*) = 0;
 
-	//锟斤拷锟截讹拷态锟斤拷
-	char ver[50];
-	__system_property_get("ro.build.version.sdk", ver);
-	int verNo = atoi(ver);
-	if (verNo >= 26) //android 8.0 N =26;
-			{
-		convertFunName = "ucnv_convert_58";
-	} else if (verNo >= 24) //android 7.0 N =24 ; 7.1 verNo :25;
-			{
+		//锟斤拷锟截讹拷态锟斤拷
+		char ver[50];
+		__system_property_get("ro.build.version.sdk", ver);
+		int verNo = atoi(ver);
+		if (verNo >= 24) //android 7.0 N =24 ; 7.1 verNo :25;
+		{
 		convertFunName = "ucnv_convert_56";
-	} else if (verNo >= 23) //android 6.0 M =23;
-			{
-		convertFunName = "ucnv_convert_55";
-	} else if (verNo >= 21) //android 5.0 lollipop =21;android5.1 lollipop mr1 = 22
-			{
-		convertFunName = "ucnv_convert_53";
-	} else if (verNo >= 19) //android 4.4 kitkat and 4.4w kitkat watch
-			{
-		convertFunName = "ucnv_convert_51";
-	} else if (verNo >= 18) //jelly bean mr2 android 4.3
-			{
-		convertFunName = "ucnv_convert_50";
-	} else if (verNo >= 16) //jelly bean android4.2
-			{
-		convertFunName = "ucnv_convert_48";
-	} else if (verNo >= 14) //ice cream sandwich 4.0
-			{
-		convertFunName = "ucnv_convert_46";
-	} else if (verNo >= 9) {
-		convertFunName = "ucnv_convert_44";
-	} else if (verNo >= 8) {
-		convertFunName = "ucnv_convert_4_2";
-	}
+		}
+		else if (verNo >= 23) //android 6.0 M =23;
+		{
+			convertFunName = "ucnv_convert_55";
+		}
+		else if (verNo >= 21) //android 5.0 lollipop =21;android5.1 lollipop mr1 = 22
+		{
+			convertFunName= "ucnv_convert_53";
+		}
+		else if (verNo >= 19)//android 4.4 kitkat and 4.4w kitkat watch
+		{
+			convertFunName = "ucnv_convert_51";
+		}
+		else if (verNo >= 18)//jelly bean mr2 android 4.3
+		{
+			convertFunName = "ucnv_convert_50";
+		}
+		else if (verNo >= 16)//jelly bean android4.2
+		{
+			convertFunName = "ucnv_convert_48";
+		}
+		else if (verNo >= 14)//ice cream sandwich 4.0
+		{
+			convertFunName = "ucnv_convert_46";
+		}
+		else if (verNo >= 9)
+		{
+			convertFunName = "ucnv_convert_44";
+		}
+		else if (verNo >= 8)
+		{
+			convertFunName = "ucnv_convert_4_2";
+		}
 
-	ucnv_convert = (int (*)(const char*, const char*, char*, int32_t,
+		ucnv_convert = (int(*)(const char*, const char*, char*, int32_t,
 			const char*, int32_t, int32_t*))dlsym(pDL, convertFunName);
 
-	//使锟斤拷ucnv_convert锟斤拷锟斤拷锟斤拷锟阶拷锟斤拷址锟�
-if(	ucnv_convert) {
-		ret = ucnv_convert(tarEncode, srcEncode, tarBuf, tarBufLen, srcBuf, srcBufLen, pErrorCode);
-	}
-	else
-	{
-		LOGE("Platform  :ucnvConvert err: fun %s not found!",convertFunName);
-	}
+		//使锟斤拷ucnv_convert锟斤拷锟斤拷锟斤拷锟阶拷锟斤拷址锟�
+		if (ucnv_convert) {
+			ret = ucnv_convert(tarEncode, srcEncode, tarBuf, tarBufLen, srcBuf, srcBufLen, pErrorCode);
+		}
+		else
+		{
+			LOGE("Platform  :ucnvConvert err: fun %s not found!",convertFunName);
+		}
 #endif
-	return ret;
-}
+		return ret;
+	}
 
-/****************************************************************************
- *	@brief		锟斤拷锟斤拷系统icu锟斤拷谋锟斤拷锟阶拷锟斤拷锟斤拷锟�
- *	@param[in]	tarEncode				目锟斤拷锟斤拷锟�
- *	@param[in]	srcEncode				原锟斤拷锟斤拷
- *	@param[in]	tarBuf					目锟斤拷buf
- *	@param[in]	tarBufLen				目锟斤拷锟斤拷锟斤拷byte锟斤拷
- *	@param[in]	srcBuf					原buf
- *	@param[in]	srcBufLen				原锟斤拷锟斤拷byte锟斤拷
- *	@param[out]	pErrorCode				锟斤拷锟截的达拷锟斤拷锟斤拷
- *	@retval		ret						锟斤拷全转锟斤拷锟斤拷要锟斤拷锟街节筹拷锟饺ｏ拷byte锟斤拷
- *	@note		锟斤拷
- *	@attention	锟斤拷
- ****************************************************************************/
-int Platform::UCNVConvert(const char* tarEncode, const char* srcEncode,
-		char* tarBuf, int32_t tarBufLen, const char* srcBuf, int32_t srcBufLen,
-		int32_t* pErrorCode) {
-	int ret = -1;
+	/****************************************************************************
+	 *	@brief		锟斤拷锟斤拷系统icu锟斤拷谋锟斤拷锟阶拷锟斤拷锟斤拷锟�
+	 *	@param[in]	tarEncode				目锟斤拷锟斤拷锟�
+	 *	@param[in]	srcEncode				原锟斤拷锟斤拷
+	 *	@param[in]	tarBuf					目锟斤拷buf
+	 *	@param[in]	tarBufLen				目锟斤拷锟斤拷锟斤拷byte锟斤拷
+	 *	@param[in]	srcBuf					原buf
+	 *	@param[in]	srcBufLen				原锟斤拷锟斤拷byte锟斤拷
+	 *	@param[out]	pErrorCode				锟斤拷锟截的达拷锟斤拷锟斤拷
+	 *	@retval		ret						锟斤拷全转锟斤拷锟斤拷要锟斤拷锟街节筹拷锟饺ｏ拷byte锟斤拷
+	 *	@note		锟斤拷
+	 *	@attention	锟斤拷
+	 ****************************************************************************/
+	int Platform::UCNVConvert(
+		const char* tarEncode,
+		const char* srcEncode,
+		char* tarBuf,
+		int32_t tarBufLen,
+		const char* srcBuf,
+		int32_t srcBufLen,
+		int32_t* pErrorCode
+	)
+	{
+		int ret = -1;
 #ifdef __IOS__
 		ret = code_convert(srcEncode, tarEncode, srcBuf, srcBufLen, tarBuf, tarBufLen);
 #endif
@@ -346,66 +360,61 @@ int Platform::UCNVConvert(const char* tarEncode, const char* srcEncode,
 		char ver[50];
 		__system_property_get("ro.build.version.sdk", ver);
 		int verNo = atoi(ver);
-		//	LOGE("sys ver:%s",ver);
-		char* convertFunName;
+//			LOGE("sys ver:%s,verNo: %d",ver,verNo);
+		char* convertFunName=NULL;
 
-	if (verNo >= 26) //android 8.0 N =26;
-	{
-		convertFunName = "ucnv_convert_58";
-	} else if (verNo >= 24) //android 7.0 N =24 ; 7.1 verNo :25;
-			{
+		if (verNo >= 24) //android 7.0 N =24 ; 7.1 verNo :25;
+		{
 		convertFunName = "ucnv_convert_56";
-	} else if (verNo >= 23) //android 6.0 M =23;
-			{
-		convertFunName = "ucnv_convert_55";
-	} else if (verNo >= 21) //android 5.0 lollipop =21;android5.1 lollipop mr1 = 22
-			{
-		convertFunName = "ucnv_convert_53";
-	} else if (verNo >= 19) //android 4.4 kitkat and 4.4w kitkat watch
-			{
-		convertFunName = "ucnv_convert_51";
-	} else if (verNo >= 18) //jelly bean mr2 android 4.3
-			{
-		convertFunName = "ucnv_convert_50";
-	} else if (verNo >= 16) //jelly bean android4.2
-			{
-		convertFunName = "ucnv_convert_48";
-	} else if (verNo >= 14) //ice cream sandwich 4.0
-			{
-		convertFunName = "ucnv_convert_46";
-	} else if (verNo >= 9) {
-		convertFunName = "ucnv_convert_44";
-	} else if (verNo >= 8) {
-		convertFunName = "ucnv_convert_4_2";
-	}
+		}
+		else if (verNo >= 23) //android 6.0 M =23;
+		{
+			convertFunName = "ucnv_convert_55";
+		}
+		else if (verNo >= 21) //android 5.0 lollipop =21;android5.1 lollipop mr1 = 22
+		{
+			convertFunName = "ucnv_convert_53";
+		}
+		else if (verNo >= 19)//android 4.4 kitkat and 4.4w kitkat watch
+		{
+			convertFunName = "ucnv_convert_51";
+		}
+		else if (verNo >= 18)//jelly bean mr2 android 4.3
+		{
+			convertFunName = "ucnv_convert_50";
+		}
+		else if (verNo >= 16)//jelly bean android4.2
+		{
+			convertFunName = "ucnv_convert_48";
+		}
+		else if (verNo >= 14)//ice cream sandwich 4.0
+		{
+			convertFunName = "ucnv_convert_46";
+		}
+		else if (verNo >= 9)
+		{
+			convertFunName = "ucnv_convert_44";
+		}
+		else if (verNo >= 8)
+		{
+			convertFunName = "ucnv_convert_4_2";
+		}
 
 		ucnv_convert = (int(*)(const char*, const char*, char*, int32_t,
 			const char*, int32_t, int32_t*))dlsym(pDL, convertFunName);
 
-	//使锟斤拷ucnv_convert锟斤拷锟斤拷锟斤拷锟阶拷锟斤拷址锟�
-if(	ucnv_convert) {
-		ret = ucnv_convert(tarEncode, srcEncode, tarBuf, tarBufLen, srcBuf, srcBufLen, pErrorCode);
-	}
-	else
-	{
-		LOGE("Platform  :ucnvConvert err: fun %s not found!",convertFunName);
-	}
+		//使锟斤拷ucnv_convert锟斤拷锟斤拷锟斤拷锟阶拷锟斤拷址锟�
+		if (ucnv_convert) {
+			ret = ucnv_convert(tarEncode, srcEncode, tarBuf, tarBufLen, srcBuf, srcBufLen, pErrorCode);
+		}
+		else
+		{
+			LOGE("Platform  :ucnvConvert err: fun %s not found!",convertFunName);
+		}
 #endif
 		return ret;
 	}
-	/*****************************************************************
-	函数名	：UTF_8ToUnicode
-	功能	：UTF-8转换成Unicode
-	参数	：const char* strUTFText, (I)需要转换的字符串
-	返回值	：wstring 转换后的字符串
-	更新历史：
-	*****************************************************************/
-	wstring Platform::UTF_8ToUnicode(const char* strUTFText)
-	{
-		std::wstring wstrRet = L"";
-	 //TODO 移动端没有实现
-		return wstrRet;
-	}
+
 #else
 	/****************************************************************************
 	 *	@brief		将Windows的string转换为wstring   多字节编码转为Unicode编码
@@ -415,7 +424,7 @@ if(	ucnv_convert) {
 	 *	@note		无
 	 *	@attention	无
 	 ****************************************************************************/
-	wstring Platform::StringToWString(const std::string& i_Str, const char* srcEncode)
+	wstring Platform::StringToWString(const string& i_Str, const char* srcEncode)
 	{
 		int srcCodeType = CP_ACP;
 		if (strcmp(srcEncode, "utf8") ==0)
@@ -437,39 +446,6 @@ if(	ucnv_convert) {
 		return wstrTmp;
 	}
 
-	string Platform::ANSItoUTF8(const std::string &strAnsi)
-	{
-		//获取转换为宽字节后需要的缓冲区大小，创建宽字节缓冲区，936为简体中文GB2312代码页
-
-		unsigned int nLen = MultiByteToWideChar(CP_ACP, NULL, strAnsi.c_str(), -1, NULL, NULL);
-
-		wchar_t *wszBuffer = new wchar_t[nLen + 1];
-
-		nLen = MultiByteToWideChar(CP_ACP, NULL, strAnsi.c_str(), -1, wszBuffer, nLen);
-
-		wszBuffer[nLen] = 0;
-
-		//获取转为UTF8多字节后需要的缓冲区大小，创建多字节缓冲区
-
-		nLen = WideCharToMultiByte(CP_UTF8, NULL, wszBuffer, -1, NULL, NULL, NULL, NULL);
-
-		char *szBuffer = new char[nLen + 1];
-
-		nLen = WideCharToMultiByte(CP_UTF8, NULL, wszBuffer, -1, szBuffer, nLen, NULL, NULL);
-
-		szBuffer[nLen] = 0;
- 
-		string ret = szBuffer;
-
-		//内存清理
-
-		delete[]wszBuffer;
-
-		delete[]szBuffer;
-
-		return ret;
-	}
-
 	/****************************************************************************
 	 *	@brief		将Windows的wstring转换为string  Unicode编码转为多字节编码
 	 *	@param[in]	i_wstr					wstring类型字符串
@@ -478,7 +454,7 @@ if(	ucnv_convert) {
 	 *	@note		无
 	 *	@attention	无
 	 ****************************************************************************/
-	std::string Platform::WStringToString(const wstring& i_wstr, const char* srcEncode)
+	string Platform::WStringToString(const wstring& i_wstr, const char* srcEncode)
 	{
 		if (i_wstr.length() == 0)
 		{
@@ -495,7 +471,7 @@ if(	ucnv_convert) {
 			srcCodeType = CP_ACP;
 		}
 
-		std::string strTmp;
+		string strTmp;
 		int nLength = WideCharToMultiByte(srcCodeType, 0, i_wstr.c_str(), -1, NULL, NULL, NULL, NULL);
 		strTmp.resize(nLength);
 		LPSTR lpszStr = new char[nLength];
@@ -503,32 +479,6 @@ if(	ucnv_convert) {
 		strTmp = lpszStr;
 		delete[] lpszStr;
 		return strTmp;
-	}
-
-	/*****************************************************************
-	函数名	：UTF_8ToUnicode
-	功能	：UTF-8转换成Unicode
-	参数	：const char* strUTFText, (I)需要转换的字符串
-	返回值	：wstring 转换后的字符串
-	更新历史：
-	*****************************************************************/
-	wstring Platform::UTF_8ToUnicode(const char* strUTFText)
-	{
-		std::wstring wstrRet = L"";
-		if (NULL == strUTFText)
-			return wstrRet;
-
-		wchar_t* pUnicodeText;
-		int iTextbyte = MultiByteToWideChar(CP_UTF8, 0, strUTFText, -1, NULL, 0);
-		pUnicodeText = new wchar_t[iTextbyte];
-
-
-		memset(pUnicodeText, 0, iTextbyte);
-		::MultiByteToWideChar(CP_UTF8, 0, strUTFText, -1, pUnicodeText, iTextbyte);
-
-		wstrRet = pUnicodeText;
-		delete[]pUnicodeText;
-		return wstrRet;
 	}
 
 #endif

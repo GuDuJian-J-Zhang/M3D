@@ -1,8 +1,7 @@
 ﻿#include "m3d/Handler/Handler.h"
 #include "m3d/base/Matrix3x4.h"
 #include "m3d/scene/SceneNode.h"
-#include "m3d/action/RenderAction.h"
-#include "sview/views/View.h"
+
 namespace M3D
 {
 Handler::Handler() :
@@ -51,20 +50,21 @@ void Handler::RayPick(RayPickAction* action)
 
 }
 
-Color* Handler::GetDrawColor()
+Color& Handler::GetDrawColor()
 {
 	if (IsSelected())
 	{
 		//LOGE("shape is selected id:: %d",(int)this);
-		return Color::SelectColor;
+		Color selectedColor = Color::YELLOW;
+		return selectedColor;
 	}
 	else
-		return &m_Color;
+		return m_Color;
 }
 
 const  Color& Handler::GetRenderColor()
 {
-	return *this->GetDrawColor();
+	return this->GetDrawColor();
 }
 
 void Handler::FindVisiableObject(RenderAction* renderAction)
@@ -114,48 +114,6 @@ Matrix3x4 Handler::GetWorldTransform()
 Matrix3x4 Handler::ComputeTransform()
 {
 	return Matrix3x4::IDENTITY;
-}
-
-TouchEvent::TouchEvent(float* touchData, int touchPoints)
-{
-	this->_touchPoints = touchPoints;
-	_handled = false;
-	touchPointsData = touchData;
-}
-
-TouchEvent::TouchEvent()
-{
-	_handled = false;
-	_touchPoints = 0;
-	touchPointsData = NULL;
-}
-
-float TouchEvent::getX() const
-{
-	if (_touchPoints > 0)
-	{
-		return touchPointsData[0];
-	}
-	return 0;
-}
-
-float TouchEvent::getY() const
-{
-	if (_touchPoints > 0)
-	{
-		return touchPointsData[1];
-	}
-	return 0;
-}
-
-SVIEW::View* TouchEvent::GetView() const
-{
-	return m_view;
-}
-
-void TouchEvent::SetView(SVIEW::View* val)
-{
-	m_view = val;
 }
 
 }

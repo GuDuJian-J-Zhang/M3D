@@ -2,6 +2,15 @@
 
 namespace M3D
 {
- 
+Cylinder::Cylinder() :
+		Shape()
+{
+
+}
+
+Cylinder::~Cylinder()
+{
+
+}
 
 }

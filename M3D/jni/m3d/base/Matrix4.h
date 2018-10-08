@@ -80,44 +80,38 @@ public:
 	 * @brief  Multiply a Vector3 which is assumed to represent position.
 	 */
 	Vector3 operator *(const Vector3& rhs) const;
-	Vector3 Multiply(const Vector3& rhs) const;
+
 	/** 
 	 * @brief  Multiply a Vector4.
 	 */
 	Vector4 operator *(const Vector4& rhs) const;
-	Vector4 Multiply(const Vector4& rhs) const;
+
 	/** 
 	 * @brief  Add a matrix.
 	 */
 	Matrix4 operator +(const Matrix4& rhs) const;
-	Matrix4 Add(const Matrix4& rhs) const;
+
 	/** 
 	 * @brief  Subtract a matrix.
 	 */
 	Matrix4 operator -(const Matrix4& rhs) const;
-	Matrix4 Sub(const Matrix4& rhs) const;
 
 	/** 
 	 * @brief  Multiply with a scalar.
 	 */
 	Matrix4 operator *(float rhs) const;
-	Matrix4 Multiply(float rhs) const;
-
 	//按列存储的矩阵，乘法的计算为列乘行,和按行存储的矩阵相反 very important by xuli
 	/** 
 	 * @brief  Multiply a matrix.
 	 */
 	Matrix4 operator *(const Matrix4& rhs) const;
-	Matrix4 Multiply(const Matrix4& rhs) const;
 
 	/**
 	 * @brief  Multiply with a 3x4 matrix.
 	 */
 	Matrix4 operator *(const Matrix3x4& rhs) const;
-	Matrix4 Multiply(const Matrix3x4& rhs) const;
 
 	Matrix4 operator*(const Quaternion& rhs) const;
-	Matrix4 Multiply(const Quaternion& rhs) const;
 
 	/** 
 	 * @brief  Multiply with a 3x4 matrix.
@@ -188,8 +182,6 @@ public:
 	 * @brief  Return transpose
 	 */
 	Matrix4 Transpose() const;
-	
-	void Transposed();
 
 	void Ortho(float left, float right, float bottom, float top,
 			float nearPlane, float farPlane);
@@ -219,16 +211,6 @@ public:
 	 * @brief  Return as string.
 	 */
 	string Tostring() const;
-	M3D_ADDRESSTYPE Address()
-	{
-		//获取地址的真实方式
-		return TAddress(*this);
-	}	
-	
-	void FillByAddress(M3D_ADDRESSTYPE memoryAddress)
-	{
-		*this = *TFromAddress<Matrix4>(memoryAddress);
-	}
 
 	float m_m00; //!< 数据
 	float m_m01;

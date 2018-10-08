@@ -15,7 +15,6 @@
 
 namespace M3D
 {
-class Point;
 /**@class HandlerRotateCenter
  * @brief HandlerRotateCenter类
  *

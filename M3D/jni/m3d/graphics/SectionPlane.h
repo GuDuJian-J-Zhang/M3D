@@ -19,14 +19,10 @@
 #include "m3d/base/BoundingBox.h"
 #include "m3d/graphics/SectionLine.h"
 #include "m3d/graphics/CrossSection.h"
-#include "m3d/model/Model.h"
-
+#include "m3d/scene/SceneNode.h"
 namespace M3D
 {
 class SectionPlane;
-class Model;
-class SceneManager;
-class Ray;
 struct SectionDataBase
 {
 	vector< SectionLine* >m_scetionLinesData;
@@ -39,7 +35,7 @@ struct FigureSectionLine
 {
 	vector<Vector3> linesData;
 	SectionPlane * sectionPlane;
-	Model * boundingNode;
+	SceneNode * boundingNode;
 	float circumference;
 };
 
@@ -51,7 +47,7 @@ typedef Vector3 Point3D;
  *
  * 表示一个平面，包含定义平面的参数及可设置的绘制示意平面的数据（2个三角形）
  */
-class M3D_API SectionPlane : public Model
+class M3D_API SectionPlane
 {
 public:
 	SectionPlane();
@@ -69,8 +65,6 @@ public:
 
 	virtual ~SectionPlane();
 
-	virtual SHAPETYPE GetType(void);
-
 	/**
 	 * 获取交点
 	 * @param origin
@@ -78,16 +72,12 @@ public:
 	 * @return
 	 */
 	Point3D GetInsectPnt(const Point3D& origin, const Point3D& dir);
-	/**
-	* 通过矩阵变换剖面位置
-	*/
-	void SetDraggerTransform(Matrix3x4& transform);
 
 	/**
 	 *
 	 * @return
 	 */
-	IDTYPE GetID();
+	int GetID();
 	/**
 	 *
 	 * @param id
@@ -107,26 +97,17 @@ public:
 	 * 设置怕剖切面的辅助面显示标示
 	 * @param flag
 	 */
-	void SetShowPlaneRect(bool flag);
-	bool GetShowPlaneRect();
+	void SetShowPlaneRect(int flag);
 	/**
-	 * 设置剖切盖面显示标示
+	 * 设置怕剖切面显示标示
 	 * @param flag
 	 */
-	void SetShowClipPlane(bool flag);
-	bool GetShowClipPlane();
-    /**
-     * 设置剖切面显示标示
-     * @param flag
-     */
-    void SetShowCappingPlane(bool flag);
-    bool GetShowCappingPlane();
+	void SetShowCutPlane(bool flag);
 	/**
 	 *
 	 * @param name
 	 */
 	void SetName(string name);
-	string GetName();
 	//void setPlaneRect(Point3D* point1,Point3D* point2);
 
 	/**
@@ -163,8 +144,6 @@ public:
 	 * @return
 	 */
 	float* GetEquation();
-
-	bool IsPlaneAvaliable();
 
 	/**
 	 * 得到要显示面的顶点坐标值
@@ -234,37 +213,6 @@ public:
 	 * @param data
 	 */
 	void GetSectionLineInfo(void * data);
-	float* GetTransformPlaneParam();
-	BoundingBox GetSceneBox() const { return m_sceneBox; }
-	void SetSceneBox(BoundingBox val) { m_sceneBox = val; }
-	SceneManager* GetScene() const { return m_scene; }
-	void SetScene(SceneManager* val) { m_scene = val; }
-	/**
-	* 更新绘制数据
-	*/
-	void UpdateDrawData();
-
-	/**
-	* 得到要显示面的中心点
-	* @return
-	*/
-	Vector3 GetCenterPointArray();
-
-	virtual void OnMarkedDirty()
-	{
-		this->SetDraggerTransform(GetWorldTransform());
-	}
-
-	virtual void RayPick(RayPickAction* action);
-
-    bool Intersect(Ray& ray, Vector3& intersectPnt);
-	void SetCreateId(IDTYPE id);
-
-	IDTYPE GetCreateId();
-
-private:
-	void SetTransformPlaneParam(float A, float B, float C, float D);
-
 private:
 
 	void Init();
@@ -274,6 +222,13 @@ private:
 	 */
 	void GetParam();
 
+	/**
+	 * 更新绘制数据
+	 */
+	void UpdateDrawData();
+
+
+	int static m_MaxId;//!<
 
 	//平面参数
 //		float A;
@@ -281,8 +236,8 @@ private:
 //		float C;
 //		float D;
 
-	float m_transformEquation[4]; ///平面参数,A B C D顺序排列
 	float m_Equation[4]; ///平面参数,A B C D顺序排列
+	int m_Id;//!<
 	int m_GLClipPlaneID;//!<
 
 	Point3D m_Origin; //!<起始范围
@@ -294,9 +249,9 @@ private:
 
 	bool m_Enable; //!<是否可用
 
-	bool m_ShowPlaneRect; //!<是否显示平面长方形
-	bool m_ShowClipPlane; //!<是否显示盖面的截面（剖面时使用）
-    bool m_ShowCappingPlane; //!<是否显示剖面的截面（剖面时使用）
+	int m_ShowPlaneRect; //!<是否显示平面长方形
+	bool m_ShowCutPlane; //!<是否显示剖面的截面（剖面时使用）
+
 	///剖视平面相关
 	float m_Width;//!<宽
 	float m_Height;//!<高
@@ -316,8 +271,6 @@ private:
 
 	BoundingBox m_box;//!<
 
-	BoundingBox m_sceneBox;
-
 	Color m_edgeColor;//!<
 
 	Color m_faceColor;//!<
@@ -327,12 +280,8 @@ private:
 	//TODO:透明度
 	//TODO:颜色
 	// 
-	SceneManager* m_scene;
-	mutable Mutex m_mutex;//!<
-	Matrix3x4 m_innerTransform; //默认旋转从标准面变化过来的中间差值量
-	Vector3 m_tempCenter; //构建剖切面的中心点;
 
-	IDTYPE  m_createId;
+	mutable Mutex m_mutex;//!<
 
 };
 }

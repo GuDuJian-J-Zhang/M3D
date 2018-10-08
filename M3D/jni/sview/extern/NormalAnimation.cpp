@@ -10,14 +10,13 @@
 
 #include "m3d/scene/GroupNode.h"
 #include "m3d/scene/ShapeNode.h"
-#include "m3d/model/ModelShape.h"
 
 using namespace SVIEW;
 
 namespace M3D
 {
 
-HideShowAnimation::HideShowAnimation(IShape* shape,bool from, bool to)
+HideShowAnimation::HideShowAnimation(Shape* shape,bool from, bool to)
 :BaseAnimation()
 {
 	this->Reset();
@@ -67,7 +66,7 @@ void HideShowAnimation::Reset()
 	this->SetSpeedAndKeepTime();
 }
 
-void HideShowAnimation::SetState(IShape* shape, bool from,
+void HideShowAnimation::SetState(Shape* shape, bool from,
 		bool to)
 {
 
@@ -76,7 +75,7 @@ void HideShowAnimation::SetState(IShape* shape, bool from,
 	this->m_shape = shape;
 }
 
-ChangeColorAnimation::ChangeColorAnimation(IShape* shape,const Color& distColor):
+ChangeColorAnimation::ChangeColorAnimation(Shape* shape,const Color& distColor):
 	BaseAnimation()
 {
 	this->Reset();
@@ -132,7 +131,7 @@ void ChangeColorAnimation::Reset()
 }
 
 
-void ChangeColorAnimation::SetValue(IShape* shape,
+void ChangeColorAnimation::SetValue(Shape* shape,
 		const Color& distColor)
 {
 	vector<Color> states;
@@ -141,7 +140,7 @@ void ChangeColorAnimation::SetValue(IShape* shape,
 	this->SetValue(shape, states);
 }
 
-void ChangeColorAnimation::SetValue(IShape* shape,
+void ChangeColorAnimation::SetValue(Shape* shape,
 		const vector<Color>& frameStates)
 {
 	this->m_shape = shape;
@@ -150,7 +149,7 @@ void ChangeColorAnimation::SetValue(IShape* shape,
 }
 
 
-ChangePosAnimation::ChangePosAnimation(Model* shapeNode,const Vector3& fromPos, const Vector3& disPos)
+ChangePosAnimation::ChangePosAnimation(SceneNode* shapeNode,const Vector3& fromPos, const Vector3& disPos)
 :	BaseAnimation()
 {
 	this->Reset();
@@ -165,13 +164,7 @@ void ChangePosAnimation::OnFrame()
 {
 	if (this->shapeNode)
 	{
-		ModelShape* modelShape =shapeNode->GetModelShape();
-		if(modelShape)
-		{
-			Matrix3x4 origMatrix ;
-			(origMatrix).MultiTranslate(this->GetState());
-			modelShape->SetWorldMatrix(origMatrix);
-		}
+	   this->shapeNode->SetPosition(this->GetState());
 	}
 }
 
@@ -179,13 +172,7 @@ void ChangePosAnimation::OnStop()
 {
 	if (this->shapeNode)
 	{
-		ModelShape* modelShape =shapeNode->GetModelShape();
-		if(modelShape)
-		{
-			Matrix3x4 origMatrix ;
-			(origMatrix).MultiTranslate(this->m_fromPos + this->m_distance);
-			modelShape->SetWorldMatrix(origMatrix);
-		}
+		this->shapeNode->SetPosition(this->m_fromPos + this->m_distance);
 	}
 }
 
@@ -208,7 +195,7 @@ void ChangePosAnimation::Reset()
 	this->SetSpeedAndKeepTime();
 }
 
-void ChangePosAnimation::SetValue(Model* shapeNode,
+void ChangePosAnimation::SetValue(SceneNode* shapeNode,
 		const Vector3& from, const Vector3& to)
 {
 	this->m_fromPos = from;

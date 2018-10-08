@@ -1,6 +1,7 @@
 ﻿#include "m3d/model/ShapeSet.h"
 #include "m3d/model/Shape.h"
-#include "m3d/action/RenderAction.h"
+#include "m3d/model/Model.h"
+
 namespace M3D
 {
 ShapeSet::ShapeSet():Object()
@@ -53,7 +54,7 @@ void ShapeSet::AddShape(Shape* shape)
 {
 	if(shape)
 	{
-		((Shape*)shape)->SetCADNode(this);
+		shape->SetCADNode(this);
 		this->m_shapes.push_back(shape);
 	}
 }
@@ -109,13 +110,13 @@ ShapeSet* ShapeSet::GetParent()
 
 void ShapeSet::UpdataRelevateShape(Model* model)
 {
-	/*if(this->m_shapes.size()>0)
+	if(this->m_shapes.size()>0)
 	{
 		vector<Shape*> priShapes = this->GetShapes();
 		this->m_shapes.clear();
 		for(int i=0;i<priShapes.size();i++)
 		{
-			Shape* shape = model->GetContainShape(((Shape*)priShapes[i])->GetCopyObjId());
+			Shape* shape = model->GetContainShape(priShapes[i]->GetCopyObjId());
 			if(shape)
 			{
 				this->AddShape(shape);
@@ -130,7 +131,7 @@ void ShapeSet::UpdataRelevateShape(Model* model)
 		{
 			node->UpdataRelevateShape(model);
 		}
-	}*/
+	}
 }
 
 

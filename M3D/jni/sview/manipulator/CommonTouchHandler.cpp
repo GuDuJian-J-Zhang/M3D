@@ -28,71 +28,51 @@ CommonTouchHandler::~CommonTouchHandler()
 {
 
 }
-void CommonTouchHandler::InitCamera(bool useAni/* = true*/)
+void CommonTouchHandler::InitCamera()
 {
 	if (this->m_SceneManager)
 	{
-		this->SetUpDirection(Parameters::Instance()->m_upDirectionValue, m_pView);
 		CameraNode* camera = m_SceneManager->GetCamera();
-		//camera->SetOrthographic(true);
+		camera->ReSet();
+
+		camera->SetOrthographic(true);
 		BoundingBox& pBoundingBox = this->m_SceneManager->GetSceneBox();
-		if (this->GetRestoreCamera()) {
-			camera->ReSet();
-			float length = pBoundingBox.Length();
 
-			Vector3 center = pBoundingBox.Center();
-			m_oribitControlTarget = center;
-
-			center.m_z += pBoundingBox.Length() * CAMERA_POSFACTOR;
-
-			camera->SetWorldPosition(center);
-			length = this->m_SceneManager->GetDefaultFocusLength();
-
-			camera->SetNearClip(length * NEAR_CLIP_PLANE_FACTOR);
-			camera->SetFarClip(length * FAR_CLIP_PLANE_FACTOR);		
-
-			camera->SetFov(90);
-			camera->LookAt(pBoundingBox.Center(), Vector3(0, 1, 0), TS_WORLD); 
-
-			this->m_TrackBall.SetRotateSpeed(2.0f);
-		}
-		else
-		{
-			//½«ÉãÏñ»úÒÆ¶¯µ½ºÏÊÊÎ»ÖÃ
-			float length = pBoundingBox.Length();
-			Vector3 rotationCenter = camera->GetRotateCenter();
-			Vector3 cameraPos = camera->GetWorldPosition();
-
-			Vector3 direction = (cameraPos - rotationCenter).Normalized();
- 
-			camera->SetWorldPosition(
-				rotationCenter
-				+ direction
-				* pBoundingBox.Length() * CAMERA_POSFACTOR);
- 
-			length = this->m_SceneManager->GetDefaultFocusLength();
-
-			camera->SetNearClip(length * NEAR_CLIP_PLANE_FACTOR);
-			camera->SetFarClip(length * FAR_CLIP_PLANE_FACTOR);
-			//camera->SetFov(90);
-			//camera->LookAt(pBoundingBox.Center(), Vector3(0, 1, 0), TS_WORLD);
-		}
- 
 		Viewport viewport = camera->GetViewPort();
 		int screenHeight = viewport.GetRect().Height();
 		int screenWidth = viewport.GetRect().Width();
 
 		this->m_SceneManager->GetRenderManager()->WindowSizeChanged(screenWidth, screenHeight);
 
+		float length = pBoundingBox.Length();
+
+		Vector3 center = pBoundingBox.Center();
+		m_oribitControlTarget = center;
+
+		center.m_z += pBoundingBox.Length() * CAMERA_POSFACTOR;
+
+		camera->SetWorldPosition(center);
+		length = this->m_SceneManager->GetDefaultFocusLength();
+
+		camera->SetNearClip(length * NEAR_CLIP_PLANE_FACTOR);
+		camera->SetFarClip(length * FAR_CLIP_PLANE_FACTOR);
+
 		camera->SetZoom(this->m_SceneManager->GetDefaultZoom());
+
 		camera->SetInitRotateCenter(pBoundingBox.Center());
 
-		if (this->GetRestoreCamera()) {
-			if (m_pView)
-			{
-				m_pView->GetPerspectiveOperator()->Show(m_pView, this->GetDefaultView(), true, false, false, useAni);
-			}
+		camera->SetFov(90);
+
+		camera->LookAt(pBoundingBox.Center(), Vector3(0, 1, 0), TS_WORLD);
+
+		this->m_TrackBall.SetRotateSpeed(2.0f);
+
+		if (m_pView)
+		{
+			m_pView->GetPerspectiveOperator()->Show(m_pView, this->GetDefaultView(), true, false, false);
+			this->SetUpDirection(this->m_upDirection, m_pView);
 		}
+
 		const IntRect& rect = camera->GetViewPort().GetRect();
 		int width = rect.Width() > rect.Height() ? rect.Height() : rect.Width();
 		this->m_TrackBall.SetTrackWindow(width, width);
@@ -201,10 +181,9 @@ void CommonTouchHandler::OnTouchUp(float* p, int n)
 
 void CommonTouchHandler::OrbitControl()
 {
-	//m_SelectedNodes->Translate(m_TrackBall.mvMatrix.moveVector, m_TrackBall.mvMatrix.currPos);
-	
+	m_SelectedNodes->Translate(m_TrackBall.mvMatrix.moveVector, m_TrackBall.mvMatrix.currPos);
+
 	CameraNode * camera = m_SceneManager->GetCamera();
-	camera->Translate(m_TrackBall.mvMatrix.moveVector*-1, TS_LOCAL);
 
 	Vector3 movVec = m_TrackBall.mvMatrix.moveVector;
 
@@ -240,8 +219,8 @@ void CommonTouchHandler::OrbitControl()
 
 	camera->SetWorldPosition(position);
 	camera->LookAt(m_oribitControlTarget, quat * Vector3::UP);
-	//m_SelectedNodes->Zoom(m_TrackBall.mvMatrix.scaleFactor);
-	camera->ZoomView(1 / m_TrackBall.mvMatrix.scaleFactor);
+	m_SelectedNodes->Zoom(m_TrackBall.mvMatrix.scaleFactor);
+
 }
 
 void CommonTouchHandler::RotateAroundAxis()
@@ -267,10 +246,10 @@ void CommonTouchHandler::RotateAroundAxis()
 	camera->Translate(temp.Translation());
 	camera->Rotate(temp.Rotation());
 
-	//m_SelectedNodes->Translate(m_TrackBall.mvMatrix.moveVector, m_TrackBall.mvMatrix.currPos);
-	camera->Translate(m_TrackBall.mvMatrix.moveVector*-1, TS_LOCAL);
-	//m_SelectedNodes->Zoom(m_TrackBall.mvMatrix.scaleFactor);
-	camera->ZoomView(1 / m_TrackBall.mvMatrix.scaleFactor);
+	m_SelectedNodes->Translate(m_TrackBall.mvMatrix.moveVector, m_TrackBall.mvMatrix.currPos);
+
+	m_SelectedNodes->Zoom(m_TrackBall.mvMatrix.scaleFactor);
+
 }
 
 void CommonTouchHandler::FreeViewRotate()
@@ -278,10 +257,9 @@ void CommonTouchHandler::FreeViewRotate()
 	Quaternion rotation = m_TrackBall.mvMatrix.rotation.Inverse();
 	CameraNode * camera = m_SceneManager->GetCamera();
 	camera->RotateAroundCenter(rotation, TS_WORLD);
-	camera->Translate(m_TrackBall.mvMatrix.moveVector*-1, TS_LOCAL);
-	//m_SelectedNodes->Translate(m_TrackBall.mvMatrix.moveVector, m_TrackBall.mvMatrix.currPos);
-	//m_SelectedNodes->Zoom(m_TrackBall.mvMatrix.scaleFactor);
-	camera->ZoomView(1 / m_TrackBall.mvMatrix.scaleFactor);
+
+	m_SelectedNodes->Translate(m_TrackBall.mvMatrix.moveVector, m_TrackBall.mvMatrix.currPos);
+	m_SelectedNodes->Zoom(m_TrackBall.mvMatrix.scaleFactor);
 }
 
 void CommonTouchHandler::OnTouchMove(int moveType, float* p, int n)
@@ -340,57 +318,6 @@ void CommonTouchHandler::OnUpDataTouchIntent()
 	{
 		RotateAroundAxis();
 	}
-}
-
-void CommonTouchHandler::ResetViewCamera()
-{
-
-	if (this->m_SceneManager)
-	{
-		CameraNode* camera = m_SceneManager->GetCamera();
-		Vector3 originalPos = camera->GetWorldPosition();
-	//	camera->ReSet();
-
-		//camera->SetOrthographic(true);
-		BoundingBox& pBoundingBox = this->m_SceneManager->GetSceneBox();
-
-		Viewport viewport = camera->GetViewPort();
-		int screenHeight = viewport.GetRect().Height();
-		int screenWidth = viewport.GetRect().Width();
-
-		this->m_SceneManager->GetRenderManager()->WindowSizeChanged(screenWidth, screenHeight);
-
-		float length = pBoundingBox.Length();
-
-		Vector3 center = pBoundingBox.Center();
-		m_oribitControlTarget = center;
-
-		Vector3 direc = (originalPos-center).Normalized();
-		Vector3 curPos = center + pBoundingBox.Length() * CAMERA_POSFACTOR*direc;
-
-	//	center.m_z += pBoundingBox.Length() * CAMERA_POSFACTOR;
-
-		camera->SetWorldPosition(curPos);
-		length = this->m_SceneManager->GetDefaultFocusLength();
-
-		camera->SetNearClip(length * NEAR_CLIP_PLANE_FACTOR);
-		camera->SetFarClip(length * FAR_CLIP_PLANE_FACTOR);
-
-		camera->SetZoom(this->m_SceneManager->GetDefaultZoom());
-
-		camera->SetInitRotateCenter(pBoundingBox.Center());
-
-		camera->SetFov(90);
-
-		camera->LookAt(pBoundingBox.Center(), Vector3(0, 1, 0), TS_WORLD);
-
-		this->m_TrackBall.SetRotateSpeed(2.0f);
-		
-		const IntRect& rect = camera->GetViewPort().GetRect();
-		int width = rect.Width() > rect.Height() ? rect.Height() : rect.Width();
-		this->m_TrackBall.SetTrackWindow(width, width);
-	}
-
 }
 
 void CommonTouchHandler::OnTouchDown(float* p, int n)

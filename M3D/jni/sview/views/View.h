@@ -18,16 +18,12 @@
 #include "m3d/model/PMIData.h"
 #include "m3d/base/ControlInfo.h"
 #include "m3d/model/Model.h"
-
 #include "m3d/base/Mutex.h"
+#include "m3d/utils/LoggerHelper.h"
 #include "m3d/model/ModelView.h"
 #include "sview/manipulator/TouchHandler.h"
 #include "sview/io/Reader.h"
-
-#include "sview/io/SVL2AsynReader.h"
-
 #include "sview/extern/PerspectiveOperator.h"
-#include "animation/SimulationCommon/Animation_def.h"
 
 namespace M3D
 {
@@ -39,13 +35,9 @@ class GroupNode;
 class IDCreator;
 class ModelView;
 class MovedMatrixInfo;
+class WorkNodes;
 class Shape;
 class SceneGroundNode;
-class Texture;
-class AxisNode;
-class DraggerManager; 
-class SectionManager;
-class GroundNode;
 }
 
 using namespace M3D;
@@ -53,11 +45,9 @@ using namespace M3D;
 namespace NS_SimulationAnimation
 {
 	class CSimulationAnimationManager;
-	class CSBehaviorAction;
 }
 using NS_SimulationAnimation::CSimulationAnimationManager;
 class CTickTimer;
-class CAnimationCallBackFunction;
 
 typedef map<string, MovedMatrixInfo> SceneState;
 
@@ -94,18 +84,10 @@ private:
 	float m_readSegRange;//纪录一个文件占用百分比的长度
 	int m_readFileIndex;//纪录当前读取到第几个文件了
 	int m_readFileCount;//纪录总文件个数
-
-	mutable M3D::Mutex m_mutex;//!<线程锁
 };
 
     
 typedef void (*RefreshFun)(void* instanceClass);
-#ifdef WIN32
-    typedef void(_stdcall ModelSelectedCB)(int dwModelID,bool selected);
-#else
-    typedef void(ModelSelectedCB)(int dwModelID,bool selected);
-#endif
-
 
 /**@class View
  * @brief View类  负责和上层的交互操作
@@ -118,8 +100,7 @@ class M3D_API View: public IView
 public:
 	View();
 	virtual ~View();
-	Vector3 getRayIntersectNormal();
-	Vector3 getRayIntersectPos();
+
 	/**
 	 * 获取选择器
 	 * @return
@@ -144,12 +125,12 @@ public:
 	 * 获取PMI映射
 	 * @return
 	 */
-	map<int,PMIData*>* GetPMIMap();
+	map<int,PMIData*> GetPMIMap();
 	/**
 	 * 获取所有model的映射表
 	 * @return
 	 */
-    const map<string, Model*>& GetAllModelMap();
+    const map<string,Model*>& GetAllModelMap();
 
     /**
      * @brief 复位相机
@@ -158,7 +139,7 @@ public:
     /**
      * @brief 初始化相机
      */
-    void InitCamera(bool useAni = true);
+    void InitCamera();
 
     /**
      * 设置当前视图
@@ -199,21 +180,6 @@ public:
      * @return
      */
     ModelView * LoadModelView(string &xmlString);
-
-
-    /**
-     * string 与  ModelView 的转化
-     * @param modelView
-     * @return
-     */
-    string LoadStringNew(ModelView *modelView);
-    /**
-     * 加载所有模型视图
-     * @param xmlString
-     * @return
-     */
-    ModelView * LoadModelViewNew(string &jsonString);
-
     //视图相关
     /**
      * @brief 获取当前的状态存到View中去，一个view表示当前状态的快照
@@ -221,7 +187,6 @@ public:
      * @return ture表示成功
      */
      bool UpdateViewByCurrentScene(ModelView *modelView);
-	 bool UpdateSpecialViewByCurrentScene(ModelView *modelView);
 
      /**
       * 获取默认模型视图，如果不存在，则创建一个
@@ -265,14 +230,10 @@ public:
 	 * @brief java层，系统回调，刷新操作
 	 */
 	virtual void OnDraw();
-
-	virtual void RebindUIRenderFBO();
 	/**
 	 * @brief 执行刷新操作
 	 */
 	virtual void RequestDraw();
-
-	void RequestUILayerDrawCB(int refreshTime = 1);
 
 	/**
 	 * 开始渐进显示
@@ -288,8 +249,6 @@ public:
 
 	virtual M3D_STATUS ReadFiles(vector<string>& paths);
 
-	virtual M3D_STATUS ReadFile(char * fileBuffer, int length);
-
 		/**
 	 * @brief 读取操作
 	 * @param path 绝对路径
@@ -301,28 +260,8 @@ public:
      * @brief 保存文件
      * @param path 绝对路径
      */
-    virtual M3D_STATUS SaveFile(string &path);
-    /**
-     * @brief SVL文件保存为SVLX文件
-     * @param srcPath SVL路径
-     * @param targetPath SVLX路径
-     */
-    virtual M3D_STATUS SaveSVLFileToSVLX(const string& srcPath,const string &targetPath);
-    /**
-     * @brief 添加到SVLX文件
-     * @param srcPath 源文件路径
-     * @param svlxPath SVLX路径
-     * @param srcName 文件名称(完整-带后缀)
-     */
-    virtual M3D_STATUS AddFileToSVLX(const string& srcPath, const string &svlxPath,const string &srcName);
-
-    /**
-     * @brief 保存SVLX文件
-     * @param tmpPath 源文件解压后的临时路径
-     * @param srcPath 源SVLX路径
-     * @param srcName 压缩包中实际文件名
-     */
-    virtual M3D_STATUS SaveSVLXFile(const string& tmpPath,const string &srcPath,const string &srcName);
+    virtual void SaveFile(string &path);
+    
     /**
      * 获取当前读取进度
      * @return 当前读取进度
@@ -378,23 +317,7 @@ public:
 	 * @param isShowCutPlane  是否显示盖面
 	 */
 	void SetClipPlane(int direction, float position, bool isShowClipPlane,
-			bool isShowCappingPlane, bool isReverseClip);
-
-	/**
-	* @brief 设置多个剖切平面
-	* @param directionX YZ剖面方向
-	* @param directionY XZ剖面方向
-	* @param directionZ XY剖面方向
-	* @param positionX  YZ剖面位置
-	* @param positionY  XZ剖面位置
-	* @param positionZ  XY剖面位置
-	* @param isShowClipPlane 是否显示示意面
-	* @param isShowCapPlane  是否显示盖面
-	*/
-	void SetMultiClipPlane(int directionX, int directionY, int directionZ,
-		float positionX, float positionY, float positionZ, bool isShowClipPlane,
-		bool isShowCappingPlane, bool isReverseClip);
-
+			bool isShowCutPlane);
 	/**
 	 * @brief 清除所有的剖面
 	 */
@@ -408,21 +331,8 @@ public:
      * @return true表示成功 false表示失败
      */
     virtual bool SetExplosiveView(int stype,int pos = 100,bool useAnimation = false);
-	/**
-	* 设置爆炸视图
-	* @param stype
-	* @param pos
-	* @param useAnimation
-	* @param arrayModels 选择爆炸的功能
-	* @return true表示成功 false表示失败
-	*/
-	virtual bool SetExplosiveView(vector<Model*> arrayModels,int stype, int pos = 100, bool useAnimation = false);
-	
-	virtual bool SetExplosiveViewWithDirection(vector<Model*> arrayModels, int stype, int pos = 100, Vector3 direction = Vector3(0,0,0));
-	/*
-		设置值时，不带旋转的
-	*/
-	virtual bool SetExplosiveViewWithoutRestore(int stype, int pos = 100, bool useAnimation = false);
+
+    virtual bool SetExplosiveViewNoRestore(int stype,int pos = 100,bool useAnimation = false);
 
     virtual ExplosiveViewOperator* GetExplosiveView();
 
@@ -482,9 +392,6 @@ public:
 	 * @brief 重置场景到最初加载状态
 	 */
 	void RestoreView();
-	void RestoreView(bool useAni);
-
-	void RequestRestoreViewIfNeed();
 	/**
 	 * @brief 拾取操作，返回拾取到shape对应的ID，返回-1表示未拾取任何shape
 	 * @param winx 屏幕坐标x
@@ -493,11 +400,16 @@ public:
 	 * @return 拾取到shape的ID
 	 */
 	IShape* GetPickShape(float x, float y, int shapeType, int geoType);
+    
+    /**
+     * @brief 拾取操作，返回拾取到shape对应的ID，返回-1表示未拾取任何shape
+     * @param winx 屏幕坐标x
+     * @param winY 屏幕坐标y
+     * @param type 需要拾取的类型
+     * @return 拾取到shape
+     */
+    IShape* GetPickShapeObj(float x, float y, int shapeType, int geoType);
 
-	///框选操作
-	vector<IShape*> GetFramePickShape(const Vector2& leftTop, const Vector2& rightBottom, int shapeType,
-		int geoType,int framePickType);
- 
     /**
 	 * @brief 设置能够拾取到的类型
 	 * @param shapeType 允许拾取的类型
@@ -510,7 +422,7 @@ public:
 	 * @param y 屏幕坐标y
 	 * @return true 设置成功
 	 */
-	bool SetRotationCenter(float x, float y,int centerType=0);
+	bool SetRotationCenter(float x, float y);
 
 	/**
 	 * @brief 复位旋转中心
@@ -546,16 +458,12 @@ public:
 	 * @brief 复位选择其中所有的shape到最初加载位置
 	 */
 	void ResetSelectedShapes();
-	/**
-	* 设置所有PMI的显隐状态
-	* @param isVisible
-	*/
-	void SetAllPMISVisible(bool isVisible);
+
 	/**
 	 * @brief 复位ID为id的shape到最初加载位置
 	 * @param id
 	 */
-	void ResetSelectedShapes(M3D::IShape* shape);
+	void ResetSelectedShapes(M3D::Shape* shape);
 
 	///设置相关
 	/**
@@ -577,12 +485,9 @@ public:
 	 * @param x 屏幕坐标X
 	 * @param y 屏幕坐标Y
 	 * @param type 得到空间三维点类型，未实现功能
-	 * @param type 是否
 	 * @return 空间中的点
 	 */
-	Vector3 GetSelectedPoint(float x, float y, int type, bool inModel=true);
-
-	Vector3 GetUILayerSelectedPoint(float x, float y);
+	M3D::Vector3 GetSelectedPoint(float x, float y, int type);
 
 	/**
 	 * @brief 在空间中x，y，z位置创建handler
@@ -638,7 +543,7 @@ public:
 	 * @param type
 	 * @return 颜色对象
 	 */
-	Color GetShapeColor(int id,int type);
+	M3D::Color GetShapeColor(int id,int type);
 
 	/**
 	 * @brief 添加批注
@@ -763,6 +668,12 @@ public:
 	 * @return
 	 */
 	TouchHandlerType GetWalkThrough();
+
+	/**
+	 * 得到工作组节点
+	 * @return
+	 */
+	WorkNodes * GetWorkNodes(void);
 
 	/**
 	 * 获取id
@@ -921,21 +832,21 @@ public:
 	 * @param path
 	 * @return
 	 */
-	virtual IShape* GetShapeBySVLPath(const string& path);
+	virtual Shape* GetShapeBySVLPath(const string& path);
 
 	/**
 	 * @brief @see IView相关定义
 	 * @param path
 	 * @return
 	 */
-	virtual IShape* GetShapeByM3DPath(const string& path);
+	virtual Shape* GetShapeByM3DPath(const string& path);
     
 	/**
 	 * @brief @see IView相关定义
 	 * @param shapeId
 	 * @return
 	 */
-    virtual IShape* GetShape(int shapeId);
+    virtual Shape* GetShape(int shapeId);
  
     ///背景相关操作
     /**
@@ -944,7 +855,7 @@ public:
      * @param bottomColor 底部颜色
      * @return true设置成功，false设置失败
      */
-    virtual bool SetBackgroundColor(const Color& topColor,const Color& bottomColor);
+    virtual bool SetBackgroundColor(const M3D::Color& topColor,const M3D::Color& bottomColor);
     
     /**
      * 得到当前的背景色
@@ -952,7 +863,7 @@ public:
      * @param bottomColor 底部颜色
      * @return true获取成功 false获取失败
      */
-    virtual bool GetBackgroundColor(Color& topColor,Color& bottomColor);
+    virtual bool GetBackgroundColor(M3D::Color& topColor,M3D::Color& bottomColor);
 
     /**
      * 设置背景图片
@@ -974,27 +885,11 @@ public:
      */
     virtual bool GetBackgroundUseImage();
 
-	bool SetBackgroundTexture(Texture * texture);
-
-	bool AddBackgroundSkyBoxTexture(string name, Texture* texture);
-	void SetBackgroundUseSkyBox(bool useSkyBox);
-	bool GetBackgroundUseSkyBox();
-    bool GetBackgroundUseColor();
-	void SetBackgroundUseColor(bool useColor);
-	void KeepBackgroundState();
-	void RestoreBackgroundState();
-	bool GetInterBackgroundState();
-    void SetInterBackgroundState(bool isInter);
-	//使用json来配置场景信息
-	void LoadScene(const string& sceneInfo);
-
 	void UpdateDrawLimit();
 
 	void UpDateAnimationLimit();
 
     NS_SimulationAnimation::CSimulationAnimationManager* GetSimulationMgr();
-
-	void SetSimulationMgr(NS_SimulationAnimation::CSimulationAnimationManager* pSAManager);
 
     /**
      * 结束当前动画，包括持续旋转操作
@@ -1003,6 +898,13 @@ public:
      * 因此提供此接口
      */
     bool CloseSceneAnimation();
+
+    /**
+     * 获取日志
+     * @param classType
+     * @return
+     */
+    string& GetLogger(int classType);
 
     /**
      * 获取shape附加属性
@@ -1103,21 +1005,18 @@ public:
 	 */
 	void AddUserData(const string& key,const string& value);
 
-	/**
+    void IsUseStereoMode(bool state);
+    bool GetStereoModeState();
+    /**
 	 *
 	 * @param GLESVersion
 	 */
 	void InitRender(int GLESVersion);
+
 	bool ReadSingleModel(const string& path,Model* & singleModel);
-	
-	void IsUseStereoMode(bool state);
-	bool GetStereoModeState();
-	//以下为展示功能------
-	void StartRotateAndExplosiveTimer();
-	void EndRotateAndExplosiveTimer();
-	void RestoreShowMode();
-	void SetShowModeSpeed(float speed);
-	/**
+    /**
+     设置投影模式
+     
      @param projectionType 0-平行投影 1-透视投影
      */
 	void SetCameraProjectionType(int projectionType);
@@ -1131,99 +1030,9 @@ public:
      * 设置所有PMI的显隐状态
      * @param isVisible
      */
+    void SetAllPMISVisible(bool isVisible);
 	void FoucusView(BoundingBox& foucusBox, bool useAni);
 	PerspectiveOperator* GetPerspectiveOperator();
-    
-    map<int,vector<string> > GetFixPMIInfo();
-	int GetSVLXFileItem(const std::string& i_strFileName, unsigned int& o_bufSize, char** o_bufP, bool b_ByExt = true);
-    /**
-     文件移动到某位置
-     
-     @param i_strFileName 文件名
-     @param i_strOutFilePath 新路径
-     @param bByExt 是否识别后缀
-     @return
-     */
-    M3D_STATUS GetSVLXFileItemToFile(const std::string& i_strFileName, const std::string& i_strOutFilePath, bool bByExt);
-    
-    M3D_STATUS CopySVLXFileItemToFileByReOpen(const std::string& i_strFileName, const std::string& i_strOutFilePath, bool bByExt);
-	bool CreateNewReader();
-	void CloseReader();
-	//异步读取完成之后，是否SVLLib管理的内存
-	bool AsynReadClose();
-
-	//FOR 中广核
-
-	//打开场景，创建顶级节点
-	bool AsynReadOpenScene();
-
-	//从buffer中获取Model
-	Model* AsynGetModel(char* fileLength, int bufferLength, const string& filePath);
- 
-	//添加模型到上级模型中
-	Model* AsynCreateTopModel();
-
-	//添加模型到上级模型中
-	bool AsynAddModel(Model* parentModel,Model* addModel);
-	//删除模型从上级模型中
-	bool AsynRemoveModel(Model* removeModel);
-
-	bool SetAsynFillModelBuffer(char* fileLength,int bufferLength);
-
-	M3D_STATUS AsynFillModel(Model*  singleModel);
-
-	bool AsynResotreView();
-	
-	//viewmode info文件中viewmode节点状态存储
-	void KeepViewModeState();
-	void RestoreViewModeState();
-	M3D_STATUS LoadAttribute();
-	bool IsLoadAttribute();
-	void HasModelAttribute(Model* model, bool& bHas);
-
-	void OpenForceNormalEffect();
-	void CloseForceNormalEffect();
-
-	bool GetConstraintMode();
-
-	int GetWalkThroughDirection();
-	M3D::DraggerManager* GetDraggerManager();
-	M3D::SectionManager* GetSectionManager();
-	void UpdateAnimationInitTargetObjects(vector<TARGETOBJECTINFO*> &vcObjectInfo);
-	int GetAnimationInitTargetObjectsCount();
-
-	float GetUnitScale();
-	void InitAinmationPlayCB();
-
-	void SetModelSelectedCB(ModelSelectedCB* modelSelectedCB);
-
-	void NotifyModelSected(M3D::IShape* shape, bool selected);
-
-	void updateScreenBox();
-    
-    //批注数据解析
-    void ParseAnnotation(const string& value);
-    const string& GetGestureJsonData(const string& key);
-    void AddGestureJsonData(const string& key, const string& value);
-    const string& GetTextJsonData(const string& key);
-    
-    void AddTextJsonData(const string& key, const string& value);
-    
-    const string& GetSequenceJsonData(const string& key);
-    
-    void AddSequenceJsonData(const string& key, const string& value);
-    
-private:
-	CTimer m_rotateAndExplosiveTimer;
-	static void * RotateAndExplosiveTask(void * data);
-	static bool m_isNeedRotate ;
-	static bool m_excStep1 ;
-	static bool m_excStep2 ;
-	static bool isRotateComplete ;
-	static float explosivePercent ;
-	static float explorsiveSpeed ;
-
-	//----------------------------------
 private:
     //初始化动画，主要进行当前状态到动画播放状态的插值过渡效果
     void AnimationInit();
@@ -1259,14 +1068,6 @@ private:
 
 	M3D_STATUS ReadFilesSpeedMode(vector<string>& paths);
 
-	void ChechErrorPoint(M3D::Model* model);
-
-	void ShowModelViewAnimation(ModelView *pView);
-
-public:
-	float m_fUnitScale;
-	void SetUnitScale(float scale);
-
 public:
 	Reader* m_Reader;
 private:
@@ -1274,12 +1075,9 @@ private:
     string m_CurFilePath;//!<当前文件路径
 	bool allowDraw;
 	M3D::Model* m_Model;//!<模型
-	mutable M3D::Mutex m_mutex;//!<线程锁
+
 	map<string,string> m_userDatas;//用户自定义属性
-    map<string,string> m_allTextNoteJsonData;//所有文本批注json数据
-    map<string,string> m_allSequeNoteJsonData;//所有序号批注json数据
-    map<string,string> m_allGeasureNoteJsonData;//所有手势批注json数据
-    set<string> m_srcFiles;
+
 //    map<string,Model*> m_AllModelMap;
     //
     map<string,Model*> m_ColorChangedModelMap;//!<被改变颜色的模型列表 改变颜色操作后添加
@@ -1296,6 +1094,8 @@ private:
 	DraggerHandler * m_draggerHandler;//!<用于模型装配
 
 	bool m_isDragger;//!<正在拖拽
+
+	WorkNodes* m_pWorkNodeGroup;//!<work node
 	Selector* m_Selector;//!<选择筛选器
 	IDCreator* m_IDCreator;//!<ID创建器
 	Parameters* m_Parameters;//!<parameters
@@ -1306,7 +1106,6 @@ private:
     
     ModelView *m_curModelView;//!<当前视图
     
-	bool m_bNewCreate;
 
 	bool m_isAnimationPlayCamera;//!<动画所需的变量
 	bool m_isAnimationShowPMI;//!<动画所需的变量
@@ -1331,17 +1130,17 @@ private:
     TouchHandlerType  m_useWalkThrough;//!<
 
     RefreshFun m_RefreshFun;//!<
- 
+    
     BackgroundNode* m_backgroundNode;//!<背景节点
-    bool m_isInterBackground;//是否使用内部背景
+
     AxisNode* m_axisNode;//!<坐标轴节点
 
     SceneGroundNode * m_sceneGroundNode;//!<地面节点
 
     ExplosiveViewOperator* m_ExplosiveViewOperator;//!<爆炸操作
 
-	DraggerManager* _draggerManager;
-	SectionManager* _sectionManager;
+	mutable M3D::Mutex m_mutex;//!<线程锁
+
 	ModelView  *m_tempDefaultView;//!<默认视图
 
 	bool m_draggerInit;
@@ -1350,26 +1149,9 @@ private:
 
 	ViewReadListener* m_readListener;
 
-	//bool m_isSpeedModel; //!<浏览速度优先方式
+	bool m_isSpeedModel; //!<浏览速度优先方式
 
 	PerspectiveOperator* m_perpectiveOperator; //!< 视图切换操作类
-    map<int,vector<string> > m_fixPMIInfo;
-
-	//viewmode info文件中viewmode节点状态存储
-	TouchHandlerType m_viewModeTouchHandlerType;
-	Vector3 m_viewModeUpDirection;
-	bool m_viewModeOribit;
-	bool m_viewModeControlLockXY;
-	bool m_viewModeFreeLook;
- 
-	//纪录下读取时的包围盒
-	BoundingBox m_firstReadBox;
-
-	GroundNode * m_groundNode;//!<地面节点
-	CAnimationCallBackFunction* m_pAnimationCallBackFunction;//!<动画播放回退处理回退函数类
-
-
-	ModelSelectedCB* m_modelSelectedCB; //模型选中回调函数，
 };
 
 } ///namespace

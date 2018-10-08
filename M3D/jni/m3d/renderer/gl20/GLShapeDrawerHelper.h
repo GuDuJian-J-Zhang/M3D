@@ -10,13 +10,11 @@
 #define M3D_GLSHAPEDRAWERHELPER_H_
 #include "m3d/M3D.h"
 #include "m3d/renderer/GL20/GLDrawer20.h"
+#include "m3d/action/RenderAction.h"
 namespace M3D
 {
 class ShaderProgram;
-class BaseMaterial;
-class RenderAction;
-class DirectionalLight;
-
+class Material;
 /**
  * @class
  * @brief 渲染辅助类。主要是设置一些uniform量
@@ -33,7 +31,7 @@ public:
 	 * @param light
 	 * @param index
 	 */
-	static void SetLightUniform(ShaderProgram* shaderEffect,DirectionalLight * light,string index);
+	static void SetLightUniform(ShaderProgram* shaderEffect,Light * light,string index);
 	/**
 	 * 获取shader uniform量
 	 * @param action
@@ -46,7 +44,7 @@ public:
 	 * @param shaderEffect
 	 * @param material
 	 */
-	static void SetMaterialUniform(ShaderProgram* shaderEffect,BaseMaterial * material);
+	static void SetMaterialUniform(ShaderProgram* shaderEffect,Material * material);
 };
 }
 

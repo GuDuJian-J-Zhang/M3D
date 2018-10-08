@@ -36,7 +36,6 @@ CSInterpolator::CSInterpolator(CSAnimation *animation, const char *name)
 		strcpy(m_Name, name);
 	else
 		strcpy(m_Name, "");
-	m_pInterpolatorInstance = NULL;
 }
 
 
@@ -110,10 +109,7 @@ void CSInterpolator::SetTarget()
 	m_pTarget = GetAnimation()->GetTarget()->GetTargetKey();
 }
 
-CSInterpolator* CSInterpolator::Clone()
-{
-	return NULL;
-}
+
 
 CSInterpolatorPosition::CSInterpolatorPosition(CSAnimation *animation, const char *name) : CSInterpolator(animation, name)
 {
@@ -294,9 +290,7 @@ void *CSInterpolatorPosition::XMLCallback(CUtilityXMLTag *xt, bool open, void *m
 		}
 
    		current_animation->AddInterpolator(itp);
-		if (current_animation->GetTimeline() && current_animation->GetInterpolator(INTERPOLATOR_POS))
-			current_animation->GetTimeline()->AddTLRange();
- 
+
 	}
 	return 0;
 
@@ -403,9 +397,6 @@ void *CSInterpolatorPosition::XMLCallback_V1(CUtilityXMLTag *xt, bool open, void
 
 		current_animation->AddInterpolator(itpPos);
 		current_animation->AddInterpolator(itpRot);
-		if (current_animation->GetTimeline() && current_animation->GetInterpolator(INTERPOLATOR_POS))
-			current_animation->GetTimeline()->AddTLRange();
-
 	}
 	return 0;
 
@@ -642,20 +633,6 @@ void CSInterpolatorPosition::CalculateAllTangents()
 	}
 }
 
-CSInterpolator* CSInterpolatorPosition::Clone()
-{
-	CSInterpolator* pNewInterpolator = NULL;
-	pNewInterpolator = new CSInterpolatorPosition();
-	if(!pNewInterpolator)
-		return pNewInterpolator;
-	pNewInterpolator->SetInstancedInterpolator(NULL);
-	for (int i=0; i< GetArrayLength(); i++)
-	{
-		CKeyframe* pNewKeyFrame = m_pArray[i]->Clone();
-		pNewInterpolator->Append(pNewKeyFrame);
-	}
-	return pNewInterpolator;
-}
 
 void CSInterpolatorPosition::Evaluate(int keyframe, float fraction, bool &hasPos, AniPoint &pos, bool &hasQuat, AniQuat &quat, bool &hasScale, AniPoint &scale) 
 {	
@@ -864,8 +841,6 @@ void *CSInterpolatorColor::XMLCallback(CUtilityXMLTag *xt, bool open, void *m_pE
 		}
 
    		current_animation->AddInterpolator(itp);
-		if (current_animation->GetTimeline() && current_animation->GetInterpolator(INTERPOLATOR_COLOR))
-			current_animation->GetTimeline()->AddTLRange();
 	}
 	return 0;
 
@@ -903,21 +878,6 @@ void CSInterpolatorColor::CalculatePos(int keyframe, float fraction,  AniPoint &
 		res = colorarray[length-1]->m_cp;
 	else 
 		colorarray[keyframe]->Interpolate((CKeyframeChannel **)colorarray, keyframe, fraction, length, res);
-}
-
-CSInterpolator* CSInterpolatorColor::Clone()
-{
-	CSInterpolator* pNewInterpolator = NULL;
-	pNewInterpolator = new CSInterpolatorColor();
-	if(!pNewInterpolator)
-		return pNewInterpolator;
-	pNewInterpolator->SetInstancedInterpolator(NULL);
-	for (int i=0; i< GetArrayLength(); i++)
-	{
-		CKeyframe* pNewKeyFrame = m_pArray[i]->Clone();
-		pNewInterpolator->Append(pNewKeyFrame);
-	}
-	return pNewInterpolator;
 }
 
 void CSInterpolatorColor::Interpolate(int keyframe, float fraction)
@@ -989,20 +949,7 @@ void CSInterpolatorScale::CalculateAllTangents()
 	}
 }
 
-CSInterpolator* CSInterpolatorScale::Clone()
-{
-	CSInterpolator* pNewInterpolator = NULL;
-	pNewInterpolator = new CSInterpolatorScale();
-	if(!pNewInterpolator)
-		return pNewInterpolator;
-	pNewInterpolator->SetInstancedInterpolator(NULL);
-	for (int i=0; i< GetArrayLength(); i++)
-	{
-		CKeyframe* pNewKeyFrame = m_pArray[i]->Clone();
-		pNewInterpolator->Append(pNewKeyFrame);
-	}
-	return pNewInterpolator;
-}
+
 
 CSInterpolatorScale::CSInterpolatorScale(CSAnimation *animation, const char *name) : CSInterpolator(animation, name)
 {
@@ -1073,8 +1020,6 @@ void *CSInterpolatorScale::XMLCallback(CUtilityXMLTag *xt, bool open, void *m_pE
 		}
 
    		current_animation->AddInterpolator(itp);
-		if (current_animation->GetTimeline() && current_animation->GetInterpolator(INTERPOLATOR_SCALE))
-			current_animation->GetTimeline()->AddTLRange();
 	}
 	return 0;
 
@@ -1175,20 +1120,7 @@ CSInterpolatorQuatSquad::CSInterpolatorQuatSquad(CSAnimation *animationinstance,
  
 }
 
-CSInterpolator* CSInterpolatorQuatSquad::Clone()
-{
-	CSInterpolator* pNewInterpolator = NULL;
-	pNewInterpolator = new CSInterpolatorQuatSquad();
-	if(!pNewInterpolator)
-		return pNewInterpolator;
-	pNewInterpolator->SetInstancedInterpolator(NULL);
-	for (int i=0; i< GetArrayLength(); i++)
-	{
-		CKeyframe* pNewKeyFrame = m_pArray[i]->Clone();
-		pNewInterpolator->Append(pNewKeyFrame);
-	}
-	return pNewInterpolator;
-}
+
 
 void CSInterpolatorQuatSquad::AdjustQuaternions()
 {
@@ -1321,8 +1253,6 @@ void *CSInterpolatorQuatSquad::XMLCallback(CUtilityXMLTag *xt, bool open, void *
 		}
 
    		current_animation->AddInterpolator(itp);
-		if (current_animation->GetTimeline() && current_animation->GetInterpolator(INTERPOLATOR_QUATROT))
-			current_animation->GetTimeline()->AddTLRange();
 	}
 
 	return 0;
@@ -1538,8 +1468,6 @@ void *CSInterpolatorVisible::XMLCallback(CUtilityXMLTag *xt, bool open, void *m_
 		}
 
 		current_animation->AddInterpolator(itp);
-		if (current_animation->GetTimeline() && current_animation->GetInterpolator(INTERPOLATOR_VISIBLE))
-			current_animation->GetTimeline()->AddTLRange();
 	}
 	return 0;
 
@@ -1554,20 +1482,6 @@ CSInterpolator * CSInterpolatorVisible::CreateInstance(CSAnimation *ainst)
 }
 
 
-CSInterpolator* CSInterpolatorVisible::Clone()
-{
-	CSInterpolator* pNewInterpolator = NULL;
-	pNewInterpolator = new CSInterpolatorVisible();
-	if(!pNewInterpolator)
-		return pNewInterpolator;
-	pNewInterpolator->SetInstancedInterpolator(NULL);
-	for (int i=0; i< GetArrayLength(); i++)
-	{
-		CKeyframe* pNewKeyFrame = m_pArray[i]->Clone();
-		pNewInterpolator->Append(pNewKeyFrame);
-	}
-	return pNewInterpolator;
-}
 
 void CSInterpolatorVisible::Interpolate(int keyframe, float fraction)
 {
@@ -1644,9 +1558,20 @@ void CSInterpolatorVisible::Interpolate(int keyframe, float fraction)
 		GetAnimation()->GetBehaviorAction()->TransferVisible(plcIdPath, (char*)cName, OnOffFlg,fTran);
 		return;
 	}
-	else if (strcmp(m_pAnimation->GetTarget()->GetType(), TARGETOBJECTTYPE_IMAGE) == 0 || 
-		strcmp(m_pAnimation->GetTarget()->GetType(),TARGETOBJECTTYPE_ARROW) == 0)
+	if (strcmp(m_pAnimation->GetTarget()->GetType(), TARGETOBJECTTYPE_IMAGE) == 0)
 	{
+		strcpy(cName, m_pAnimation->GetName());
+		float fPos[3];
+		float fScale[3];
+		AniPoint imgPos = m_pAnimation->GetImgPos();
+		AniPoint imgScale = m_pAnimation->GetImgScale();
+		fPos[0] = imgPos.x;
+		fPos[1] = imgPos.y;
+		fPos[2] = imgPos.z;
+		fScale[0] = imgScale.x;
+		fScale[1] = imgScale.y;
+		fScale[2] = imgScale.z;
+
 		if (keyframe < (length-1))
 		{
 			strcpy(res, posarray[keyframe]->GetTarget());
@@ -1673,31 +1598,8 @@ void CSInterpolatorVisible::Interpolate(int keyframe, float fraction)
 				OnOffFlg = true;
 			}
 		}
-		if (strcmp(m_pAnimation->GetTarget()->GetType(), TARGETOBJECTTYPE_IMAGE) == 0)
-		{
-			strcpy(cName, m_pAnimation->GetName());
-			float fPos[3];
-			float fScale[3];
-			AniPoint imgPos = m_pAnimation->GetImgPos();
-			AniPoint imgScale = m_pAnimation->GetImgScale();
-			fPos[0] = imgPos.x;
-			fPos[1] = imgPos.y;
-			fPos[2] = imgPos.z;
-			fScale[0] = imgScale.x;
-			fScale[1] = imgScale.y;
-			fScale[2] = imgScale.z;
-			m_pAnimation->GetBehaviorAction()->TransferImage(plcIdPath, cName, fPos, fScale, OnOffFlg);
-		}
-		else if(strcmp(GetAnimation()->GetTarget()->GetType(),TARGETOBJECTTYPE_ARROW) == 0)
-		{
-			//将PMI所属实例的配置路径及PMIid从target中分离
-			char cPMIId[SA_BUFFER_SIZE_SMALL] = "";
-			m_pAnimation->GetTarget()->GetInsPathAndPMIIdByResolvedPath(plcIdPath,cPMIId);
-			strcpy(cName, TARGETOBJECTTYPE_ARROW);
-			strcat(cName,":");
-			strcat(cName,cPMIId);
-			m_pAnimation->GetBehaviorAction()->TransferVisible(plcIdPath, (char*)cName, OnOffFlg,fTran);
-		}
+
+		m_pAnimation->GetBehaviorAction()->TransferImage(plcIdPath, cName, fPos, fScale, OnOffFlg);
 		return;
 	}
 	//如果是最后一帧，设置透明度为0
@@ -1721,12 +1623,7 @@ void CSInterpolatorVisible::Interpolate(int keyframe, float fraction)
 		
 		if (strcmp(res,res2) == 0)
 		{
-			int * pTimeLineArray = GetAnimation()->GetTimeline()->GetTimelineArray();
-			int iKeyFrameTick = pTimeLineArray[keyframe];
-			float fCurrentTick = GetAnimation()->GetBehaviorAction()->GetCurrentTick();
-			float fPreTick = GetAnimation()->GetBehaviorAction()->GetPreTick();
-			if (GetAnimation()->GetBehaviorAction()->IsPlaying() && 
-				(fCurrentTick > iKeyFrameTick && fPreTick > iKeyFrameTick))
+			if(GetAnimation()->GetBehaviorAction()->IsPlaying())
 			{
 				return;
 			}
@@ -1918,8 +1815,6 @@ void * CSInterpolatorClip::XMLCallback( CUtilityXMLTag *xt, bool open, void *m_p
 		}
 
    		current_animation->AddInterpolator(itp);
-		if (current_animation->GetTimeline() && current_animation->GetInterpolator())
-			current_animation->GetTimeline()->AddTLRange();
  
 	}
 	return 0;
@@ -2005,21 +1900,6 @@ void CSInterpolatorClip::CalculatePos( int keyframe, float fraction, AniPoint &r
 
 		CURVE_ARRAY(keyframe)->Interpolate((CKeyframeChannel **)splinearray, keyframe, fraction, length, res);
 	}
-}
-
-CSInterpolator* CSInterpolatorClip::Clone()
-{
-	CSInterpolator* pNewInterpolator = NULL;
-	pNewInterpolator = new CSInterpolatorClip();
-	if(!pNewInterpolator)
-		return pNewInterpolator;
-	pNewInterpolator->SetInstancedInterpolator(NULL);
-	for (int i=0; i< GetArrayLength(); i++)
-	{
-		CKeyframe* pNewKeyFrame = m_pArray[i]->Clone();
-		pNewInterpolator->Append(pNewKeyFrame);
-	}
-	return pNewInterpolator;
 }
 
 void CSInterpolatorClip::CalculateAllTangents()
@@ -2142,8 +2022,6 @@ void * CSInterpolatorNormal::XMLCallback( CUtilityXMLTag *xt, bool open, void *m
 		}
 
 		current_animation->AddInterpolator(itp);
-		if (current_animation->GetTimeline() && current_animation->GetInterpolator(INTERPOLATOR_NORMAL))
-			current_animation->GetTimeline()->AddTLRange();
 	}
 	return 0;
 }
@@ -2189,20 +2067,6 @@ void CSInterpolatorNormal::CalculatePos( int keyframe, float fraction, AniPoint 
 		colorarray[keyframe]->Interpolate((CKeyframeChannel **)colorarray, keyframe, fraction, length, res);
 }
 
-CSInterpolator* CSInterpolatorNormal::Clone()
-{
-	CSInterpolator* pNewInterpolator = NULL;
-	pNewInterpolator = new CSInterpolatorNormal();
-	if(!pNewInterpolator)
-		return pNewInterpolator;
-	pNewInterpolator->SetInstancedInterpolator(NULL);
-	for (int i=0; i< GetArrayLength(); i++)
-	{
-		CKeyframe* pNewKeyFrame = m_pArray[i]->Clone();
-		pNewInterpolator->Append(pNewKeyFrame);
-	}
-	return pNewInterpolator;
-}
 
 
 /************************************************************************/
@@ -2279,8 +2143,6 @@ void *CSInterpolatorPivot::XMLCallback(CUtilityXMLTag *xt, bool open, void *m_pE
 		}
 
 		current_animation->AddInterpolator(itp);
-		if (current_animation->GetTimeline() && current_animation->GetInterpolator(INTERPOLATOR_PIVOT))
-			current_animation->GetTimeline()->AddTLRange();
 	}
 	return 0;
 
@@ -2310,21 +2172,6 @@ void CSInterpolatorPivot::CalculatePos(int keyframe, float fraction,  AniPoint &
 			res.Set(colorarray[keyframe+1]->m_cp);
 		//colorarray[keyframe]->Interpolate((CKeyframeChannel **)colorarray, keyframe, fraction, length, res);
 	}
-}
-
-CSInterpolator* CSInterpolatorPivot::Clone()
-{
-	CSInterpolator* pNewInterpolator = NULL;
-	pNewInterpolator = new CSInterpolatorPivot();
-	if(!pNewInterpolator)
-		return pNewInterpolator;
-	pNewInterpolator->SetInstancedInterpolator(NULL);
-	for (int i=0; i< GetArrayLength(); i++)
-	{
-		CKeyframe* pNewKeyFrame = m_pArray[i]->Clone();
-		pNewInterpolator->Append(pNewKeyFrame);
-	}
-	return pNewInterpolator;
 }
 
 void CSInterpolatorPivot::Interpolate(int keyframe, float fraction)
@@ -2407,8 +2254,6 @@ void *CSInterpolatorSound::XMLCallback(CUtilityXMLTag *xt, bool open, void *m_pE
 		}
 
 		current_animation->AddInterpolator(itp);
-		if (current_animation->GetTimeline() && current_animation->GetInterpolator(INTERPOLATOR_VISIBLE))
-			current_animation->GetTimeline()->AddTLRange();
 	}
 	return 0;
 
@@ -2420,21 +2265,6 @@ CSInterpolator * CSInterpolatorSound::CreateInstance(CSAnimation *ainst)
 	CSInterpolatorSound *i = new CSInterpolatorSound(ainst);
 	i->SetInstancedInterpolator((CSInterpolator *)this);
 	return ((CSInterpolator *)i);
-}
-
-CSInterpolator* CSInterpolatorSound::Clone()
-{
-	CSInterpolator* pNewInterpolator = NULL;
-	pNewInterpolator = new CSInterpolatorColor();
-	if(!pNewInterpolator)
-		return pNewInterpolator;
-	pNewInterpolator->SetInstancedInterpolator(NULL);
-	for (int i=0; i< GetArrayLength(); i++)
-	{
-		CKeyframe* pNewKeyFrame = m_pArray[i]->Clone();
-		pNewInterpolator->Append(pNewKeyFrame);
-	}
-	return pNewInterpolator;
 }
 
 void CSInterpolatorSound::GetFilePathName(char* cSoundFilePath)
@@ -2626,27 +2456,10 @@ void *CSInterpolatorInstanceCreate::XMLCallback(CUtilityXMLTag *xt, bool open, v
 
 			DeciperString(itp, litem, counter);
 		}
-        if (current_animation != NULL) {
-            current_animation->AddInterpolator(itp);
-        }
+		current_animation->AddInterpolator(itp);
 	}
 	return 0;
 
-}
-
-CSInterpolator* CSInterpolatorInstanceCreate::Clone()
-{
-	CSInterpolator* pNewInterpolator = NULL;
-	pNewInterpolator = new CSInterpolatorInstanceCreate();
-	if(!pNewInterpolator)
-		return pNewInterpolator;
-	pNewInterpolator->SetInstancedInterpolator(NULL);
-	for (int i=0; i< GetArrayLength(); i++)
-	{
-		CKeyframe* pNewKeyFrame = m_pArray[i]->Clone();
-		pNewInterpolator->Append(pNewKeyFrame);
-	}
-	return pNewInterpolator;
 }
 
 
@@ -2668,36 +2481,37 @@ void CSInterpolatorInstanceCreate::Reset()
 	//}
 }
 
+
 void CSInterpolatorInstanceCreate::Interpolate(int keyframe, float fraction)
 {
-	CSAnimation* pAnimation = GetAnimation();
-	if (pAnimation == NULL)
-		return;
-	CSBehaviorAction *pBehaviorAction = pAnimation->GetBehaviorAction();
-	if (pBehaviorAction == NULL)
-		return;
-	CKeyframe3String **posarray  = (CKeyframe3String **)GetArray();
-	int length = GetArrayLength();
-
-	char targetsegment[SA_BUFFER_SIZE_SMALL];
-	char targetinclude[SA_BUFFER_SIZE_SMALL];
-	char targetcolor[SA_BUFFER_SIZE_SMALL];
-
-	if (keyframe >= length-1)
-	{
-		strcpy(targetsegment, posarray[length-1]->GetTarget1());
-		strcpy(targetinclude, posarray[length-1]->GetTarget2());
-		strcpy(targetcolor, posarray[length-1]->GetTarget3());
-	}
-	else
-	{
-		strcpy(targetsegment, posarray[keyframe]->GetTarget1());
-		strcpy(targetinclude, posarray[keyframe]->GetTarget2());
-		strcpy(targetcolor, posarray[keyframe]->GetTarget3());
-	}
-	int nCurTick = pAnimation->GetCurrentTick();
-	if (nCurTick > pAnimation->GetFirstTick() && nCurTick < pAnimation->GetLastTick())
-		pBehaviorAction->TransferTool(0, targetsegment, targetinclude, targetcolor);//显示工具件
-	else
-		pBehaviorAction->TransferTool(1, targetsegment, targetinclude, targetcolor);//隐藏工具件
+    CSAnimation* pAnimation = GetAnimation();
+    if (pAnimation == NULL)
+        return;
+    CSBehaviorAction *pBehaviorAction = pAnimation->GetBehaviorAction();
+    if (pBehaviorAction == NULL)
+        return;
+    CKeyframe3String **posarray  = (CKeyframe3String **)GetArray();
+    int length = GetArrayLength();
+    
+    char targetsegment[SA_BUFFER_SIZE_SMALL];
+    char targetinclude[SA_BUFFER_SIZE_SMALL];
+    char targetcolor[SA_BUFFER_SIZE_SMALL];
+    
+    if (keyframe >= length-1)
+    {
+        strcpy(targetsegment, posarray[length-1]->GetTarget1());
+        strcpy(targetinclude, posarray[length-1]->GetTarget2());
+        strcpy(targetcolor, posarray[length-1]->GetTarget3());
+    }
+    else
+    {
+        strcpy(targetsegment, posarray[keyframe]->GetTarget1());
+        strcpy(targetinclude, posarray[keyframe]->GetTarget2());
+        strcpy(targetcolor, posarray[keyframe]->GetTarget3());
+    }
+    int nCurTick = pAnimation->GetCurrentTick();
+    if (nCurTick > pAnimation->GetFirstTick() && nCurTick < pAnimation->GetLastTick())
+        pBehaviorAction->TransferTool(0, targetsegment, targetinclude, targetcolor);// 显示工具
+    else
+        pBehaviorAction->TransferTool(1, targetsegment, targetinclude, targetcolor);// 隐藏工具
 }

@@ -1,6 +1,7 @@
 ﻿#include "m3d/graphics/HardWareVertexBuffer.h"
 #include "m3d/ResourceManager.h"
 #include "m3d/base/FileCacheManager.h"
+
 namespace M3D
 {
 
@@ -8,21 +9,19 @@ namespace M3D
 		GPUObject()
 	{
 		Init();
-
 	}
 
 	HardWareVertexBuffer::~HardWareVertexBuffer()
 	{
 		if (m_object)
 		{
-			if (m_bufferType == GPUObject::GPU_CACHE)
+			if(m_bufferType == GPUObject::GPU_CACHE)
 			{
-				if (this->m_resourceMgr)
+				if(this->m_resourceMgr)
 				{
-					this->m_resourceMgr->AddGLObject(m_object, ResourceManager::VBO);
+					this->m_resourceMgr->AddGLObject(m_object,ResourceManager::VBO);
 				}
-			}
-			else if (m_bufferType == GPUObject::DISK_CACHE)
+			}else if(m_bufferType == GPUObject::DISK_CACHE )
 			{
 
 			}
@@ -35,10 +34,7 @@ namespace M3D
 		m_vertexOffset = 0;
 		m_textureCoordsOffset = 0;
 
-		this->m_cacheBufferSize = 0;
-		this->m_BufferSize = 0;
-
-		m_bufferOffset = 0;
+		this->m_bufferSize = 0;
 		this->pBaseAddress = NULL;
 		m_bufferType = GPUObject::NO_CACHE;
 	}
@@ -46,42 +42,35 @@ namespace M3D
 	void HardWareVertexBuffer::SetSize(unsigned bufferSize, bool dynamic)
 	{
 		this->m_dynamic = dynamic;
-		this->m_cacheBufferSize = bufferSize;
-		this->m_BufferSize = bufferSize;
-	}
-
-	long  HardWareVertexBuffer::GetBufferSize()
-	{
-		return this->m_BufferSize;
+		this->m_bufferSize = bufferSize;
 	}
 
 	void HardWareVertexBuffer::SetData(const void* data)
 	{
-
+		
 	}
 
 	void HardWareVertexBuffer::WriteBuffer()
 	{
-		bool ret = false;
-		if (m_bufferType == GPUObject::GPU_CACHE)
+		bool ret =false;
+		if(m_bufferType == GPUObject::GPU_CACHE)
 		{
 			//这里修改内存文件数据
 			delete[] pBaseAddress;
 			pBaseAddress = NULL;
 
-		}
-		else if (m_bufferType == GPUObject::DISK_CACHE)
+		}else if(m_bufferType == GPUObject::DISK_CACHE )
 		{
-			CFileCacheManager* fileCacheMgr = m_resourceMgr->GetFileCacheMgr();
-			if (fileCacheMgr)
+			CFileCacheManager* fileCacheMgr = ResourceManager::Instance->GetFileCacheMgr();
+			if(fileCacheMgr)
 			{
 				unsigned long tObject = 0;
 				unsigned long bufferOffset = 0;
 
-				m_cacheBufferSize = fileCacheMgr->writeCache((void*)(pBaseAddress), m_cacheBufferSize,
+				m_bufferSize = fileCacheMgr->writeCache((void*)(pBaseAddress), m_bufferSize,
 					tObject, bufferOffset);
 
-				m_bufferOffset = bufferOffset;
+				m_bufferOffset  = bufferOffset;
 				m_object = tObject;
 			}
 			//这里修改内存文件数据
@@ -93,29 +82,23 @@ namespace M3D
 	bool HardWareVertexBuffer::SetDataRange(const void* data, unsigned start,
 		unsigned count, bool discard)
 	{
-		bool ret = false;
-		if (m_bufferType == GPUObject::GPU_CACHE)
+		bool ret =false;
+		if(m_bufferType == GPUObject::GPU_CACHE)
 		{
 			if (m_object)
 			{
-#ifdef WIN32
-				glBindBufferARB(GL_ARRAY_BUFFER_ARB, m_object);
-				glBufferSubDataARB(GL_ARRAY_BUFFER_ARB, start, count, data);
-				glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
-#else
 				glBindBuffer(GL_ARRAY_BUFFER, m_object);
 				glBufferSubData(GL_ARRAY_BUFFER, start, count, data);
 				glBindBuffer(GL_ARRAY_BUFFER, 0);
-#endif
+
 				ret = true;
 			}
-		}
-		else if (m_bufferType == GPUObject::DISK_CACHE)
+		}else if(m_bufferType == GPUObject::DISK_CACHE )
 		{
-			if (pBaseAddress)
+			if(pBaseAddress)
 			{
 				//将数据拷贝到内存映射区域中
-				memcpy(pBaseAddress + start, data, count);
+				memcpy(pBaseAddress+start,data,count);
 
 				ret = true;
 			}
@@ -129,50 +112,28 @@ namespace M3D
 		bool createState = true;
 		m_bufferType = cacheType;
 
-		if (m_bufferType == GPUObject::GPU_CACHE)
+		if(m_bufferType == GPUObject::GPU_CACHE)
 		{
-#ifdef WIN32
-			//调用OpenGL api 在显存上分配空间
-			glGenBuffersARB(1, &m_object);
-			glBindBufferARB(GL_ARRAY_BUFFER_ARB, m_object);
-			if (!pBaseAddress)
-			{
-				//预留空间，共每一次设置内存时使用
-				pBaseAddress = new unsigned char[m_cacheBufferSize];
-			}
-
-			if (this->m_dynamic)
-			{
-				glBufferDataARB(GL_ARRAY_BUFFER_ARB, m_cacheBufferSize, pBaseAddress, GL_DYNAMIC_DRAW);
-			}
-			else
-			{
-				glBufferDataARB(GL_ARRAY_BUFFER_ARB, m_cacheBufferSize, pBaseAddress, GL_STATIC_DRAW);
-			}
-
-			glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
-#else
 			//调用OpenGL api 在显存上分配空间
 			glGenBuffers(1, &m_object);
 			glBindBuffer(GL_ARRAY_BUFFER, m_object);
-			if (!pBaseAddress)
+
+			if(!pBaseAddress)
 			{
 				//预留空间，共每一次设置内存时使用
-				pBaseAddress = new unsigned char[m_cacheBufferSize];
+				pBaseAddress = new unsigned char[m_bufferSize];
 			}
 
-			if (this->m_dynamic)
+			if(this->m_dynamic)
 			{
-				glBufferData(GL_ARRAY_BUFFER, m_cacheBufferSize, pBaseAddress, GL_DYNAMIC_DRAW);
+				glBufferData(GL_ARRAY_BUFFER, m_bufferSize, pBaseAddress, GL_DYNAMIC_DRAW);
 			}
 			else
 			{
-				glBufferData(GL_ARRAY_BUFFER, m_cacheBufferSize, pBaseAddress, GL_STATIC_DRAW);
+				glBufferData(GL_ARRAY_BUFFER, m_bufferSize, pBaseAddress, GL_STATIC_DRAW);
 			}
 
 			glBindBuffer(GL_ARRAY_BUFFER, 0);
-#endif
-
 			//对显存分配空间结果检测
 			if (glGetError() == GL_OUT_OF_MEMORY)
 			{
@@ -180,12 +141,12 @@ namespace M3D
 				LOGE("HardWareVertexBuffer::Create() ERROR! 显存空间不足");
 			}
 		}
-		else if (m_bufferType == GPUObject::DISK_CACHE)
+		else if(m_bufferType == GPUObject::DISK_CACHE )
 		{
-			if (!pBaseAddress)
+			if(!pBaseAddress)
 			{
 				//预留空间，共每一次设置内存时使用
-				pBaseAddress = new unsigned char[m_cacheBufferSize];
+				pBaseAddress = new unsigned char[m_bufferSize];
 			}
 		}
 
@@ -194,13 +155,12 @@ namespace M3D
 
 	bool HardWareVertexBuffer::HasValue()
 	{
-		if (m_bufferType == GPUObject::GPU_CACHE)
+		if(m_bufferType == GPUObject::GPU_CACHE)
 		{
-			return (m_object > 0);
-		}
-		else if (m_bufferType == GPUObject::DISK_CACHE)
+			return (m_object>0);
+		}else if(m_bufferType == GPUObject::DISK_CACHE )
 		{
-			return (m_cacheBufferSize > 0);
+			return (m_bufferSize > 0);
 		}
 		return false;
 	}
@@ -212,21 +172,15 @@ namespace M3D
 
 	void* HardWareVertexBuffer::Bind()
 	{
-		if (m_bufferType == GPUObject::GPU_CACHE)
+		if(m_bufferType == GPUObject::GPU_CACHE)
 		{
-#ifdef WIN32
-			glBindBufferARB(GL_ARRAY_BUFFER_ARB, m_object);
-#else
 			glBindBuffer(GL_ARRAY_BUFFER, m_object);
-#endif
-
-		}
-		else if (m_bufferType == GPUObject::DISK_CACHE)
+		}else if(m_bufferType == GPUObject::DISK_CACHE )
 		{
-			if (!pBaseAddress)
+			if(!pBaseAddress)
 			{
-				CFileCacheManager* fileCacheMgr = m_resourceMgr->GetFileCacheMgr();
-				pBaseAddress = (unsigned char*)fileCacheMgr->getMapView(0, m_object, m_cacheBufferSize);
+				CFileCacheManager* fileCacheMgr = ResourceManager::Instance->GetFileCacheMgr();
+				pBaseAddress = (unsigned char*)fileCacheMgr->getMapView(0, m_object, m_bufferSize);
 				pBaseAddress += m_bufferOffset;
 			}
 			return pBaseAddress;
@@ -236,19 +190,13 @@ namespace M3D
 
 	void HardWareVertexBuffer::UnBind()
 	{
-		if (m_bufferType == GPUObject::GPU_CACHE)
+		if(m_bufferType == GPUObject::GPU_CACHE)
 		{
-#ifdef WIN32
-			glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
-#else
-			glBindBuffer(GL_ARRAY_BUFFER, 0);
-#endif
-			M3D_GL_ERROR_CHECK
-		}
-		else if (m_bufferType == GPUObject::DISK_CACHE)
+			glBindBuffer(GL_ARRAY_BUFFER,0);
+		}else if(m_bufferType == GPUObject::DISK_CACHE )
 		{
 			if (pBaseAddress) {
-				CFileCacheManager* fileCacheMgr = m_resourceMgr->GetFileCacheMgr();
+				CFileCacheManager* fileCacheMgr = ResourceManager::Instance->GetFileCacheMgr();
 				fileCacheMgr->unMapVew(pBaseAddress);
 				pBaseAddress = NULL;
 			}

@@ -45,8 +45,8 @@ public:
 	 * @param outIndexNum
 	 * @param outIndexBuf
 	 */
-	//void GetBuffer(int* outVertexNum, float** outVertexBuf, int* outIndexNum,
-	//		M3D_INDEX_TYPE** outIndexBuf);
+	void GetBuffer(int* outVertexNum, float** outVertexBuf, int* outIndexNum,
+			M3D_INDEX_TYPE** outIndexBuf);
 
 	/**
 	 * 添加点到折线中
@@ -61,10 +61,11 @@ public:
 
 private:
 
-	//float* m_VertexBuf; //!<顶点buf
-	//int m_VertexNum; //!<顶点数量
-	//M3D_INDEX_TYPE* m_IndexBuf; //!<索引buf
-	//int m_IndexNum; //!<索引数量
+	float* m_VertexBuf; //!<顶点buf
+	int m_VertexNum; //!<顶点数量
+	M3D_INDEX_TYPE* m_IndexBuf; //!<索引buf
+	int m_IndexNum; //!<索引数量
+
 	vector<Vector3> m_PointList;//!<点列表
 };
 

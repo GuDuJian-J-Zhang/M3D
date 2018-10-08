@@ -156,17 +156,6 @@ public:
 	{
 		return Vector4(m_normal, m_d);
 	}
-	M3D_ADDRESSTYPE Address()
-	{
-		//获取地址的真实方式
-		return TAddress(*this);
-	}
-
-
-	void FillByAddress(M3D_ADDRESSTYPE memoryAddress)
-	{
-		*this = *TFromAddress<Plane>(memoryAddress);
-	}
 
 	/**
 	 * @brief 计算射线与面的交点

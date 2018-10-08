@@ -9,13 +9,13 @@
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "../../jni/sview/views/View.cpp"
-            timestampString = "558666893.867193"
+            filePath = "../../jni/sview/io/XmlSceneSerializer.cpp"
+            timestampString = "485425443.867652"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "2247"
-            endingLineNumber = "2247"
-            landmarkName = "View::ShowModelView(int viewId, bool isAnni)"
+            startingLineNumber = "905"
+            endingLineNumber = "905"
+            landmarkName = "XmlSceneSerializer::CreateNoteStringFromDoc(ModelView * pView, XMLElement* viewElement)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -25,14 +25,14 @@
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "../../jni/sview/io/SVL2AsynReader.cpp"
-            timestampString = "558872953.071956"
+            filePath = "../../jni/animation/SimulationAnimation/CProcess.cpp"
+            timestampString = "488946481.925447"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1104"
-            endingLineNumber = "1104"
-            landmarkName = "unknown"
-            landmarkType = "0">
+            startingLineNumber = "952"
+            endingLineNumber = "952"
+            landmarkName = "CProcess::UpdateView(bool bUpdateModel/* = true*/, bool bUpdateCam/* = false*/, bool bCamAni"
+            landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -41,14 +41,14 @@
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "../../jni/sview/io/SVL2AsynReader.cpp"
-            timestampString = "559104953.3616281"
+            filePath = "../../jni/m3d/renderer/gl20/GLShapeDrawer20.cpp"
+            timestampString = "500279078.574931"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "4447"
-            endingLineNumber = "4447"
-            landmarkName = "unknown"
-            landmarkType = "0">
+            startingLineNumber = "1797"
+            endingLineNumber = "1797"
+            landmarkName = "GLShapeDrawer20::DrawNoteRenderPassGroup(RenderAction* action, RenderQueue* RenderStateArray)"
+            landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -57,13 +57,45 @@
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "../../jni/m3d/graphics/Section.cpp"
-            timestampString = "559615061.609031"
+            filePath = "../../jni/m3d/model/Model.cpp"
+            timestampString = "508993708.633111"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "326"
-            endingLineNumber = "326"
-            landmarkName = "Section::GetSectionPlaneList()"
+            startingLineNumber = "488"
+            endingLineNumber = "488"
+            landmarkName = "Model::AddModelView(ModelView* view)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "../../jni/m3d/graphics/CameraNode.cpp"
+            timestampString = "516527070.781368"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "231"
+            endingLineNumber = "231"
+            landmarkName = "CameraNode::SetFov(float fov)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "../../jni/m3d/model/ModelView.cpp"
+            timestampString = "518082088.696622"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "304"
+            endingLineNumber = "304"
+            landmarkName = "ModelView::SetNoteDataList(SHAPETYPE key, vector&lt;string&gt;&amp; noteDataList)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>

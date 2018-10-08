@@ -6,7 +6,6 @@
  */
 
 #include "m3d/renderer/gl20/Shader.h"
-#include "Utility.h"
 
 
 namespace M3D
@@ -58,8 +57,8 @@ bool Shader::CompileSourceCode(const char* sourceCode)
 				if (buf)
 				{
 					glGetShaderInfoLog(shader, infoLen, NULL, buf);
-					LOGI("Could not compile shader %d:\n%s\n", type, buf);
-					LOGI("%s",sourceCode);
+					LOGE("Could not compile shader %d:\n%s\n", type, buf);
+					LOGE("%s",sourceCode);
 					free(buf);
 				}
 				glDeleteShader(shader);

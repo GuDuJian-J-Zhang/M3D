@@ -17,7 +17,7 @@ class Vector3;
 class Edge;
 class Mesh;
 class Color;
-class BaseMaterial;
+class Material;
 class HardWareVertexBuffer;
 class HardWareIndexBuffer;
 
@@ -63,7 +63,7 @@ public:
 	 * 获取材质
 	 * @return
 	 */
-	virtual BaseMaterial* GetRenderMaterial();
+	virtual Material* GetRenderMaterial();
 
 	/**
 	 * 设置绘制时所需的面数据
@@ -217,8 +217,6 @@ public:
 	 * @return NULL 说明没有硬件缓存
 	 */
 	HardWareIndexBuffer* GetHardWareIndexBuffer();
-	bool RecesiveShadow() const { return m_recesiveShadow; }
-	void RecesiveShadow(bool val) { m_recesiveShadow = val; }
 private:
 	void Init();
 
@@ -247,14 +245,13 @@ protected:
 	HardWareVertexBuffer* m_hardWareVertexBuffer;  //!< 顶点数据在GPU端的缓存，可能包括顶点坐标、法向量、纹理等
 
 	int m_length;//!<数据的总长度
-	//int m_primitive;//!<表达图元的类型，0 点 1 线 2三角形
+	int m_primitive;//!<表达图元的类型，0 点 1 线 2三角形
 
 	//VBO 数据偏移量纪录
 	M3D_OFFSET_TYPE m_indexOffset; //!< 索引偏移量
 	M3D_OFFSET_TYPE  m_normalOffset; //!< 法向量偏移量
 	M3D_OFFSET_TYPE m_vertexOffset; //!< 顶点坐标偏移量
 	M3D_OFFSET_TYPE m_textureCoordsOffset; //!<纹理坐标数据偏移量
-	bool m_recesiveShadow;
 
 	//std::vector<Vector3> m_newTextureCoords;//TODO cdj
 	//int m_useIndexVertexNumber;//TODO cdj

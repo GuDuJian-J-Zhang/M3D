@@ -13,7 +13,7 @@
 namespace SVIEW
 {
 
-WalkthroughHandler::WalkthroughHandler():CommonTouchHandler()
+WalkthroughHandler::WalkthroughHandler():TouchHandler()
 {
 	m_cameraToCenterDis = 0.0001;
 	m_movSpeed = 0.00001;
@@ -28,7 +28,7 @@ WalkthroughHandler::WalkthroughHandler():CommonTouchHandler()
 	m_speedControlValue = 1.0f;
 	m_standardSpeed = 1.0f;
 	m_isOribteRotateState = true;
-	//this->m_TrackBall.SetRotateSpeed(0.3f);
+	this->m_TrackBall.SetRotateSpeed(0.3f);
 
 	this->m_useOribit = true;
 	m_phi =0.0;
@@ -43,65 +43,79 @@ WalkthroughHandler::~WalkthroughHandler()
 
 }
 
-void WalkthroughHandler::InitCamera(bool useAni)
+void WalkthroughHandler::InitCamera()
 {
-	CommonTouchHandler::InitCamera(useAni);
-	return;
-	//LOGI("reset");
-	//if(!this->m_SceneManager)
-	//{
-	//	return;
-	//}
-	//SceneManager* scene = m_SceneManager;
-	//CameraNode* camera = scene->GetCamera();
- //   camera->ReSet();
- //   camera->SetOrthographic(false);
-	//BoundingBox& pBoundingBox = scene->GetSceneBox();
-	//pBoundingBox.Clear();
-	//pBoundingBox = scene->GetSceneBox();//TODO 需要重新计算包围盒
-	//Viewport viewport =  camera->GetViewPort();
-	//int screenHeight =viewport.GetRect().Height();
-	//int screenWidth = viewport.GetRect().Width();
+	LOGI("reset");
+	if(!this->m_SceneManager)
+	{
+		return;
+	}
+	SceneManager* scene = m_SceneManager;
+	CameraNode* camera = scene->GetCamera();
+    camera->ReSet();
+    camera->SetOrthographic(false);
+    //scene->ResetCamera();
+    //
+	BoundingBox& pBoundingBox = scene->GetSceneBox();
+	pBoundingBox.Clear();
+	pBoundingBox = scene->GetSceneBox();//TODO 需要重新计算包围盒
 
-	//m_SceneManager->GetRenderManager()->WindowSizeChanged(screenWidth, screenHeight);
-	//float length = pBoundingBox.Length();
-	//m_standardSpeed = pBoundingBox.Length()/500.0f;//标准速度
-	//Vector3 center =  pBoundingBox.Center();
+	Viewport viewport =  camera->GetViewPort();
+	int screenHeight =viewport.GetRect().Height();
+	int screenWidth = viewport.GetRect().Width();
 
-	//center.m_z += pBoundingBox.Length() * CAMERA_POSFACTOR;
+	m_SceneManager->GetRenderManager()->WindowSizeChanged(screenWidth, screenHeight);
+ 
+	m_standardSpeed = pBoundingBox.Length()/500.0f;//标准速度
+	Vector3 center =  pBoundingBox.Center();
 
-	//camera->SetWorldPosition(center);
- //
-	//length = this->m_SceneManager->GetDefaultFocusLength();
+    //平行投影
+    if(camera->IsOrthographic())
+    {
+        center.m_z += pBoundingBox.Length()*8.5f;
+    }
+    else//垂直投影
+    {
+        center.m_z += pBoundingBox.Length()/**1.5f*/;
+    }
 
-	//camera->SetNearClip(length * NEAR_CLIP_PLANE_FACTOR);
-	//camera->SetFarClip(length * FAR_CLIP_PLANE_FACTOR);
+	camera->SetWorldPosition(center);
+    //
+    camera->SetFov(100.0f);
+ 
+	float defaultZoom = Parameters::Instance()->m_DefaultZoomFactor;
 
-	//camera->SetZoom(this->m_SceneManager->GetDefaultZoom());
+	defaultZoom = defaultZoom * screenHeight/screenWidth;
 
-	//camera->SetInitRotateCenter(pBoundingBox.Center());
+	if(screenHeight > screenWidth )
+	{
+		defaultZoom = defaultZoom *0.5*(screenWidth*1.0/screenHeight);
+	}
 
-	//camera->SetFov(90);
+    camera->SetZoom(defaultZoom);
 
-	//camera->LookAt(pBoundingBox.Center(), Vector3(0, 1, 0), TS_WORLD);
- //   
-	//this->m_TrackBall.SetRotateSpeed(2.0f);
- //   m_oribitControlTarget = pBoundingBox.Center() ;
- //
- //   OptimizeCamera();
+	camera->SetInitRotateCenter(pBoundingBox.Center());
 
- //   if(m_pView)
- //   {
-	//	m_pView->GetPerspectiveOperator()->Show(m_pView, PerspectiveData::FRONT,
- //                                                true, false, false);
+	camera->SetFov(90);
 
- //       this->SetUpDirection(this->m_upDirection,m_pView);
- //   }
+	camera->LookAt(pBoundingBox.Center(),Vector3(0,1,0),TS_WORLD);
+    
+    m_oribitControlTarget = pBoundingBox.Center() ;
+ 
+    OptimizeCamera();
 
- //   //optimize trackball
- //   const IntRect& rect = camera->GetViewPort().GetRect();
- //   int width = rect.Width()>rect.Height()?rect.Height():rect.Width();
- //   this->m_TrackBall.SetTrackWindow(width,width);
+    if(m_pView)
+    {
+		m_pView->GetPerspectiveOperator()->Show(m_pView, PerspectiveData::FRONT,
+                                                 true, false, false);
+
+        this->SetUpDirection(this->m_upDirection,m_pView);
+    }
+
+    //optimize trackball
+    const IntRect& rect = camera->GetViewPort().GetRect();
+    int width = rect.Width()>rect.Height()?rect.Height():rect.Width();
+    this->m_TrackBall.SetTrackWindow(width,width);
 //    LOGI("init camera pos ==%s",camera->GetWorldPosition().Tostring().c_str());
 }
 
@@ -171,8 +185,6 @@ void WalkthroughHandler::OptimizeCamera()
 		return;
 	}
 
-	CommonTouchHandler::OptimizeCamera();
-
 	if (this->m_vrModel)
 	{
 		SceneManager* scene = m_SceneManager;
@@ -182,8 +194,8 @@ void WalkthroughHandler::OptimizeCamera()
 		camera->SetRotateCenter(camera->GetPosition());
 		float length = pBoundingBox.Length();
 
-		//camera->SetNearClip(Min(1.0f, length*0.05));
-		//camera->SetFarClip(length*2.5);
+		camera->SetNearClip(Min(1.0f, length*0.05));
+		camera->SetFarClip(length*2.5);
 
 		this->m_TrackBall.SetRotateSpeed(0.5);
 		m_insideBoundingBox = true;
@@ -229,8 +241,8 @@ void WalkthroughHandler::OptimizeCamera()
 		this->m_TrackBall.SetRotateSpeed(0.5);
 		m_insideBoundingBox = false;
         
-        /*camera->SetNearClip(Min(5,length*0.1));
-        camera->SetFarClip(length*3.5);*/
+        camera->SetNearClip(Min(5,length*0.1));
+        camera->SetFarClip(length*3.5);
 	}
 	else
 	{
@@ -239,8 +251,8 @@ void WalkthroughHandler::OptimizeCamera()
 			camera->SetRotateCenter(camera->GetPosition());
 		}
   
-        //camera->SetNearClip(Min(1.0f,length*0.05));
-        //camera->SetFarClip(length*2.5);
+        camera->SetNearClip(Min(1.0f,length*0.05));
+        camera->SetFarClip(length*2.5);
 
 		this->m_TrackBall.SetRotateSpeed(0.5);
 		m_insideBoundingBox = true;
@@ -271,11 +283,11 @@ void WalkthroughHandler::RotateAroundAxis()
 		camera->Translate(temp.Translation());
 		camera->Rotate(temp.Rotation());
 
-		//m_SelectedNodes->Translate(m_TrackBall.mvMatrix.moveVector,
-		//		m_TrackBall.mvMatrix.currPos);
-		camera->Translate(m_TrackBall.mvMatrix.moveVector*-1, TS_LOCAL);
-		//m_SelectedNodes->Zoom(m_TrackBall.mvMatrix.scaleFactor);
-		camera->ZoomView(1 / m_TrackBall.mvMatrix.scaleFactor);
+		m_SelectedNodes->Translate(m_TrackBall.mvMatrix.moveVector,
+				m_TrackBall.mvMatrix.currPos);
+
+		m_SelectedNodes->Zoom(m_TrackBall.mvMatrix.scaleFactor);
+
 
 }
 
@@ -286,152 +298,151 @@ void WalkthroughHandler::FreeViewRotate()
 	CameraNode * camera = m_SceneManager->GetCamera();
 	camera->RotateAroundCenter(rotation, TS_WORLD);
 
-	//m_SelectedNodes->Translate(m_TrackBall.mvMatrix.moveVector, m_TrackBall.mvMatrix.currPos);
-	camera->Translate(m_TrackBall.mvMatrix.moveVector*-1, TS_LOCAL);
-	//m_SelectedNodes->Zoom(m_TrackBall.mvMatrix.scaleFactor);
-	camera->ZoomView(1 / m_TrackBall.mvMatrix.scaleFactor);
+	m_SelectedNodes->Translate(m_TrackBall.mvMatrix.moveVector, m_TrackBall.mvMatrix.currPos);
+
+	m_SelectedNodes->Zoom(m_TrackBall.mvMatrix.scaleFactor);
 }
 
 void WalkthroughHandler::OnUpDataTouchIntent()
 {
-	CommonTouchHandler::OnUpDataTouchIntent();
+
 }
 
-//void WalkthroughHandler::OnTouchUp(float* p, int n)
-//{
-//	if (Parameters::Instance()->m_IsConRotate)
-//	{
-//		if (1 == n)
-//		{
-//			if (m_TrackBall.m_angle > 3)
-//			{
-//				if (m_TrackBall.m_angle > 30)
-//				{
-//					m_TrackBall.mvMatrix.rotation.FromAngleAxis(30,m_TrackBall.m_axis);
-//				}
-//				this->StartKeepState();
-//			}
-//			else
-//			{
-//				this->EndKeepState();
-//			}
-//		}
-//		else if (2 == n)
-//		{
-//			TwoPointsUp(p, n);
-//		}
-//		else if (3 == n)
-//		{
-//
-//		}
-//	}
-//	else
-//	{
-//		if (1 == n)
-//		{
-//			this->EndKeepState();
-//			m_TrackBall.OnePointUp(p, n);
-//		}
-//		else if (2 == n)
-//		{
-//			TwoPointsUp(p, n);
-//		}
-//		else if (3 == n)
-//		{
-//
-//		}
-//		m_TrackBall.Reset();
-//	}
-//
-//	UpDataTouchIntent();
-//
-//	UpdateRenderQuality(false);
-//}
-//
-//void WalkthroughHandler::OnTouchMove(int moveType, float* p, int n)
-//{
-////	LOGI("one point move");
-//	OptimizeCamera();
-//	if (1 == n)
-//	{
-//		if(!m_isOribteRotateState)
-//		{
-//			updateOribitControlTarget();
-//			m_isOribteRotateState = true;
-//		}
-//		if (moveType == 1)
-//		{
-//			m_TrackBall.OnePointRotate(p, n);
-//		}
-//	}
-//	else if (2 == n)
-//	{
-//		TwoPointsMove(p, n);
-//	}
-//	else if (3 == n)
-//	{
-//
-//	}
-//	if (StateChanged())
-//	{
-//		UpDataTouchIntent();
-//		if (m_oribitMode)
-//		{
-//			if (this->m_useOribit)
-//			{
-//				if (n == 1)
-//				{
-//					if (m_insideBoundingBox && Parameters::Instance()->m_openFirstPersionCamera)
-//					{
-////					LOGI("inside scene");
-//						ControlCloseRangeByScreenCenter(); //场景内部以近点为目标点旋转
-//					}
-////				LOGI("oribit control");
-//					OrbitControl();
-//				}
-//			}
-//			else
-//			{
-//
-//				if (m_insideBoundingBox)
-//				{
-////				LOGI("lock Pointer");
-//					this->LockPointer();
-//				}
-//			}
-//		}
-//		else if(m_controlLockXY)
-//		{
-////			m_useOribit = false;
-//			RotateAroundAxis();
-//		}
-//		else if(m_freeViewMode)
-//		{
-//			FreeViewRotate();
-//		}
-//	}
-//
-//	UpdateRenderQuality(true);
-//}
-//
-//
-//void WalkthroughHandler::OnTouchDown(float* p, int n)
-//{
-//	OptimizeCamera();
-//	if (1 == n)
-//	{
-//		m_TrackBall.OnePointStart(p, n);
-//	}
-//	else if (2 == n)
-//	{
-//		TwoPointsStart(p, n);
-//	}
-//	else if (3 == n)
-//	{
-//
-//	}
-////	StartVirtualKeyControlTask();
-//}
+void WalkthroughHandler::OnTouchUp(float* p, int n)
+{
+	if (Parameters::Instance()->m_IsConRotate)
+	{
+		if (1 == n)
+		{
+			if (m_TrackBall.m_angle > 3)
+			{
+				if (m_TrackBall.m_angle > 30)
+				{
+					m_TrackBall.mvMatrix.rotation.FromAngleAxis(30,m_TrackBall.m_axis);
+				}
+				this->StartKeepState();
+			}
+			else
+			{
+				this->EndKeepState();
+			}
+		}
+		else if (2 == n)
+		{
+			TwoPointsUp(p, n);
+		}
+		else if (3 == n)
+		{
+
+		}
+	}
+	else
+	{
+		if (1 == n)
+		{
+			this->EndKeepState();
+			m_TrackBall.OnePointUp(p, n);
+		}
+		else if (2 == n)
+		{
+			TwoPointsUp(p, n);
+		}
+		else if (3 == n)
+		{
+
+		}
+		m_TrackBall.Reset();
+	}
+
+	UpDataTouchIntent();
+
+	UpdateRenderQuality(false);
+}
+
+void WalkthroughHandler::OnTouchMove(int moveType, float* p, int n)
+{
+//	LOGI("one point move");
+	OptimizeCamera();
+	if (1 == n)
+	{
+		if(!m_isOribteRotateState)
+		{
+			updateOribitControlTarget();
+			m_isOribteRotateState = true;
+		}
+		if (moveType == 1)
+		{
+			m_TrackBall.OnePointRotate(p, n);
+		}
+	}
+	else if (2 == n)
+	{
+		TwoPointsMove(p, n);
+	}
+	else if (3 == n)
+	{
+
+	}
+	if (StateChanged())
+	{
+		UpDataTouchIntent();
+		if (m_oribitMode)
+		{
+			if (this->m_useOribit)
+			{
+				if (n == 1)
+				{
+					if (m_insideBoundingBox && Parameters::Instance()->m_openFirstPersionCamera)
+					{
+//					LOGI("inside scene");
+						ControlCloseRangeByScreenCenter(); //场景内部以近点为目标点旋转
+					}
+//				LOGI("oribit control");
+					OrbitControl();
+				}
+			}
+			else
+			{
+
+				if (m_insideBoundingBox)
+				{
+//				LOGI("lock Pointer");
+					this->LockPointer();
+				}
+			}
+		}
+		else if(m_controlLockXY)
+		{
+//			m_useOribit = false;
+			RotateAroundAxis();
+		}
+		else if(m_freeViewMode)
+		{
+			FreeViewRotate();
+		}
+	}
+
+	UpdateRenderQuality(true);
+}
+
+
+void WalkthroughHandler::OnTouchDown(float* p, int n)
+{
+	OptimizeCamera();
+	if (1 == n)
+	{
+		m_TrackBall.OnePointStart(p, n);
+	}
+	else if (2 == n)
+	{
+		TwoPointsStart(p, n);
+	}
+	else if (3 == n)
+	{
+
+	}
+//	StartVirtualKeyControlTask();
+}
 
 void WalkthroughHandler::TwoPointsUp(float*pos, int n)
 {
@@ -488,7 +499,6 @@ void WalkthroughHandler::ControlCloseRangeByScreenCenter()
     Vector3 coordinate = camera->GetViewPort().ScreenToWorldPoint(screenCenter.m_x, screenCenter.m_y,0.5);
 // LOGI("screen center is %s",coordinate.Tostring().c_str());
     m_movSpeed = m_standardSpeed;
-//	m_movSpeed = m_movSpeed*m_firstPersionSpeed;
     
     //如果使用oribit摄像机
     m_oribitControlTarget = coordinate;
@@ -618,20 +628,19 @@ void WalkthroughHandler::VirtualKeyMove(float strSpeed,float sidSpeed)
 #ifdef BIMSPEED
 	if(IsNeedUpdateSpeed(direction))
 	{
-//	VirtualKeyControlSpeed();
+	VirtualKeyControlSpeed();
 	}
 	if (m_insideBoundingBox)
 	{
 		float dis = GetDirectionDistance(direction, 0);
-//		m_movSpeed = M3D::Min(m_movSpeed, dis / 800.0f);
-		m_movSpeed = dis / 800.0f*m_firstPersionSpeed;
+		m_movSpeed = M3D::Min(m_movSpeed, dis / 800.0f);
 //		LOGI("m_movSpeed MoveStraight ======================%f",m_movSpeed);
 		newPos = cameraPos + directionZ * (strSpeed) * m_movSpeed *0.3+directionX * (sidSpeed) * m_movSpeed *0.3;
 	}
 	else
 #endif
 	{
-		newPos = cameraPos + directionZ * (strSpeed) * m_movSpeed*m_firstPersionSpeed +directionX * (sidSpeed) * m_movSpeed*m_firstPersionSpeed;
+		newPos = cameraPos + directionZ * (strSpeed) * m_movSpeed +directionX * (sidSpeed) * m_movSpeed;
 	}
 	camera->SetWorldPosition(newPos);
 
@@ -864,7 +873,7 @@ void WalkthroughHandler::TwoPointsRotate(CameraNode * camera,float * pos,
 
 void WalkthroughHandler::LockPointer()
 {
-	if(Parameters::Instance()->m_upDirectionValue != Vector3::ZERO)
+	if(m_upDirection != Vector3::ZERO)
 	{
 		SceneManager* scene = m_SceneManager;
 
@@ -902,11 +911,10 @@ void WalkthroughHandler::LockPointer()
 	CameraNode * camera = m_SceneManager->GetCamera();
 	camera->RotateAroundCenter(rotation,TS_WORLD);
 
-	//m_SelectedNodes->Translate(m_TrackBall.mvMatrix.moveVector,
-	//		m_TrackBall.mvMatrix.currPos);
-	camera->Translate(m_TrackBall.mvMatrix.moveVector*-1, TS_LOCAL);
-	//m_SelectedNodes->Zoom(m_TrackBall.mvMatrix.scaleFactor);
-	camera->ZoomView(1 / m_TrackBall.mvMatrix.scaleFactor);
+	m_SelectedNodes->Translate(m_TrackBall.mvMatrix.moveVector,
+			m_TrackBall.mvMatrix.currPos);
+
+	m_SelectedNodes->Zoom(m_TrackBall.mvMatrix.scaleFactor);
 }
 
 void WalkthroughHandler::ConstraintMode(bool value)
@@ -1162,15 +1170,14 @@ void WalkthroughHandler::MoveStraight(float speed)
 	if (m_insideBoundingBox)
 	{
 		float dis = GetDirectionDistance(direction, 0);
-//		m_movSpeed = M3D::Min(m_movSpeed, dis / 800.0f);
-		m_movSpeed = dis / 800.0f*m_firstPersionSpeed;
+		m_movSpeed = M3D::Min(m_movSpeed, dis / 800.0f);
 //		LOGI("m_movSpeed MoveStraight ======================%f",m_movSpeed);
 		newPos = cameraPos + direction * (speed) * m_movSpeed *0.3;
 	}
 	else
 #endif
 	{
-		newPos = cameraPos + direction * (speed) * m_movSpeed*m_firstPersionSpeed;
+		newPos = cameraPos + direction * (speed) * m_movSpeed;
 	}
 	camera->SetWorldPosition(newPos);
 
@@ -1211,15 +1218,14 @@ void WalkthroughHandler::MoveSideways(float speed)
     if(m_insideBoundingBox)
     {
     	float dis = GetDirectionDistance(direction,0);
-//    	m_movSpeed = M3D::Min(m_movSpeed,dis/800.0f);///根据当前方向上的距离来指定最大速度
-		m_movSpeed = dis / 800.0f*m_firstPersionSpeed;
+    	m_movSpeed = M3D::Min(m_movSpeed,dis/800.0f);///根据当前方向上的距离来指定最大速度
  //   	LOGI("m_movSpeed MoveSideways ======================%f",m_movSpeed);
      newPos = cameraPos + direction*(speed)*m_movSpeed*0.3;
     }
     else
 #endif
     {
-    	 newPos = cameraPos + direction*(speed)*m_movSpeed*m_firstPersionSpeed;
+    	 newPos = cameraPos + direction*(speed)*m_movSpeed;
     }
     camera->SetWorldPosition(newPos);
     
@@ -1258,15 +1264,14 @@ void WalkthroughHandler::MoveUpAndDown(float speed)
 	if (m_insideBoundingBox)
 	{
 		float dis = GetDirectionDistance(direction, 0);
-		//m_movSpeed = M3D::Min(m_movSpeed, dis / 800.0f);///根据当前方向上的距离来指定最大速度
-		m_movSpeed = dis / 800.0f*m_firstPersionSpeed;
+		m_movSpeed = M3D::Min(m_movSpeed, dis / 800.0f);///根据当前方向上的距离来指定最大速度
 														//   	LOGI("m_movSpeed MoveSideways ======================%f",m_movSpeed);
 		newPos = cameraPos + direction*(speed)*m_movSpeed*0.3;
 	}
 	else
 #endif
 	{
-		newPos = cameraPos + direction*(speed)*m_movSpeed*m_firstPersionSpeed;
+		newPos = cameraPos + direction*(speed)*m_movSpeed;
 	}
 	camera->SetWorldPosition(newPos);
 

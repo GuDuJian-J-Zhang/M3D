@@ -8,7 +8,7 @@
 #include "ComText.h"
 #include "m3d/model/MeshData.h"
 #include "m3d/utils/MeshHelper.h"
-#include "m3d/action/RenderAction.h"
+
 namespace M3D
 {
 
@@ -49,11 +49,6 @@ void ComText::AddCText(CText* ct)
 	m_CTextList.push_back(ct);
 }
 
-
-const Color & ComText::GetShapeColor()
-{
-	return *this->GetColor();
-}
 
 void ComText::Init()
 {
@@ -105,10 +100,7 @@ void ComText::UpDataMesh()
 	this->m_VertexSet->SetUseIndex(false);
 
 	FTFont* font = CText::GetRender();
-	if (!font)
-	{
-		return;
-	}
+
 	vector<Vector3>* comTextsPnts = this->m_VertexSet->GetPositionArray();
 //	LOGI("ComText::UpDataMesh cTextCount:%d ",m_CTextList.size());
 

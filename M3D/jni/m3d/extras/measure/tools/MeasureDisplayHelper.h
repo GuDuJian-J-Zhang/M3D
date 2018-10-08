@@ -317,9 +317,6 @@ public:
 			Color& rect1Color, Color & rect2Color, Color& text1Color, Color & text2Color, string str1, string str2,
 			float fontSize, bool drawD3);
 
-
-	static void MeasureText(const string& measureText, float fontSize, const string& fontName, Vector2 & o_rect1Start, Vector2 & o_rect1End);
-
 	/**
 	 * @brief 创建矩形阴影
 	 * @param shape2DSet shape集合
@@ -430,10 +427,6 @@ public:
 
 	static void CreateAngleMark(const Vector3 & line1Start, const Vector3 & line1End, const Vector3& line2Start,
 			const Vector3 & line2End, float theta, vector<Vector3>& lines);
-
-	static void CreateDesignerAngleMark(const Vector3 & line1Start, const Vector3 & line1End, 
-		const Vector3& line2Start, const Vector3 & line2End, 
-		const Vector3& center,  float radius, float theta, vector<Vector3>& lines);
 
 	/**
 	 * @brief 从字符串获取附加属性值 //TODO

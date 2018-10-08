@@ -50,17 +50,11 @@ void GeometryBuffer::UpdataOGLObj()
 			glGenTextures(1,&OGLObj);
 			LOGI("Gen Texture,texture ID is %d",OGLObj);
 			glBindTexture(GL_TEXTURE_2D, OGLObj);
-			glBindTexture(GL_TEXTURE_2D, OGLObj);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, m_minFliter);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, m_magFliter);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, m_wrapS);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, m_wrapT);
-			//if (m_isMipMap)
-			//{
-			//	//glTexImage2D(GL_TEXTURE_2D,0,)
-			//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, m_minmapFliter);
-			//	glGenerateMipmap(GL_TEXTURE_2D);
-			//}
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+			glBindTexture(GL_TEXTURE_2D, 0);
 			if (OGLObj != 0)
 			{
 				resourceMgr->AddOGLTexture(imagePath, OGLObj);
@@ -82,23 +76,12 @@ void GeometryBuffer::UpdataOGLObj()
 void GeometryBuffer::Init()
 {
 	m_targetType = TEXTURE_TARGET;
-	//m_imagePath = "";
+	m_imagePath = "";
 	m_image = NULL;
 	this->m_textures[0] = 0;
-    m_minFliter = GL_LINEAR;
-    m_magFliter = GL_LINEAR;
-    m_wrapS = GL_CLAMP_TO_EDGE;
-    m_wrapT = GL_CLAMP_TO_EDGE;
+
 	this->SetImageParameter(TEXTURE_LOAD_RGBA,TEXTURE_FLAG_MIPMAPS);
 	this->MarkDirty();
-}
-
-void GeometryBuffer::GenerateMipMap()
-{
-	if (m_isMipMap)
-	{
-		glGenerateMipmap(GL_TEXTURE_2D);
-	}
 }
 
 }

@@ -97,7 +97,6 @@ public:
 	 */
 	static Vector3 VecSlerp(const Vector3& from, const Vector3& to,
 			float interPos);
-
 };
 }
 #endif /*M3D_TOOLS_H*/

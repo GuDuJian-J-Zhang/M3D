@@ -1,4 +1,4 @@
-﻿#include "m3d/M3D.h"
+#include "m3d/M3D.h"
 #include "m3d/utils/StringHelper.h"
 
 #include <stdio.h>
@@ -51,48 +51,23 @@ string StringHelper::ToLower(const string& src)
 vector<string> StringHelper::Split(const string &strTarget, const string &strDelimiter)
 {
 	if (("" == strTarget) || ("" == strDelimiter)) return vector<string>();
-	string str = strTarget;
-	std::string::size_type pos;
-	std::vector<std::string> result;
-	str += strDelimiter;//扩展字符串以方便操作
-	int size = str.size();
-
-	for (int i = 0; i < size; i++)
+	string strBefore = GetBefore(strTarget, strDelimiter);
+	string strAfter = GetAfter(strTarget, strDelimiter);
+	vector<string> vecResult;
+	while (false == strAfter.empty())
 	{
-		pos = str.find(strDelimiter, i);
-		if (pos < size)
+		vecResult.push_back(strBefore);
+		// これ以上分割できない場合は最後に分割したものを格納してループ終了
+		if (GetAfter(strAfter, strDelimiter).empty())
 		{
-			std::string s = str.substr(i, pos - i);
-			result.push_back(s);
-			i = pos + strDelimiter.size() - 1;
+			vecResult.push_back(strAfter);
+			break;
 		}
+		// まだ分割できる場合は新しいものを設定して続行
+		strBefore = GetBefore(strAfter, strDelimiter);
+		strAfter = GetAfter(strAfter, strDelimiter);
 	}
-	return result;
-}
-
-vector<string> StringHelper::SplitIngnoreEmpty(const string &strTarget,
-	const string &strDelimiter) {
-	if (("" == strTarget) || ("" == strDelimiter)) return vector<string>();
-	string str = strTarget;
-	std::string::size_type pos;
-	std::vector<std::string> result;
-	str += strDelimiter;//扩展字符串以方便操作
-	int size = str.size();
-
-	for (int i = 0; i < size; i++)
-	{
-		pos = str.find(strDelimiter, i);
-		if (pos < size)
-		{
-			std::string s = str.substr(i, pos - i);
-			if (s.size()>0)
-			{
-				result.push_back(s);
-			}
-			i = pos + strDelimiter.size() - 1;
-		}
-	}
-	return result;
+	return vecResult;
 }
 
 string StringHelper::GetBefore(const string &strTarget, const string &strKey)
@@ -168,52 +143,6 @@ string StringHelper::Repeat(const std::string &strTarget, const int &iCount)
 string StringHelper::subString(const string& src,int begin,int end)
 {
 	return src.substr(begin,end);
-}
-
-bool StringHelper::Startswith(const std::string& str, const std::string& start)
-{
-	int srclen = str.size();
-	int startlen = start.size();
-	if (srclen >= startlen)
-	{
-		string temp = str.substr(0, startlen);
-		if (temp == start)
-			return true;
-	}
-
-	return false;
-}
-
-bool StringHelper::Endswith(const std::string& str, const std::string& end)
-{
-	int srclen = str.size();
-	int endlen = end.size();
-	if (srclen >= endlen)
-	{
-		string temp = str.substr(srclen - endlen, endlen);
-		if (temp == end)
-			return true;
-	}
-
-	return false;
-}
-
-string StringHelper::Trim(const std::string& str)
-{
-	string ret;
-	//find the first position of not start with space or '\t'
-	string::size_type pos_begin = str.find_first_not_of(" \t");
-	if (pos_begin == string::npos)
-		return str;
-
-	//find the last position of end with space or '\t'
-	string::size_type pos_end = str.find_last_not_of(" \t");
-	if (pos_end == string::npos)
-		return str;
-
-	ret = str.substr(pos_begin, pos_end - pos_begin);
-
-	return ret;
 }
 
 }

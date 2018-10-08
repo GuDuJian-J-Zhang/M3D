@@ -1,0 +1,56 @@
+# Copyright (C) 2009 The Android Open Source Project
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+LOCAL_PATH := $(call my-dir)
+
+include $(CLEAR_VARS)
+
+LOCAL_STATIC_LIBRARES := stdc
+
+#LOCAL_MODULE_PATH := I:\Users\likun\workspace\bbb\libs
+#LOCAL_MODULE_TAGS := debug
+LOCAL_LDLIBS = -llog
+LOCAL_MODULE    := animation
+LOCAL_SRC_FILES :=  \
+	animation/SimulationAnimationPlay/AnimationPlayApi.cpp \
+	animation/SimulationAnimationPlay/AnimationHelper.cpp \
+	animation/SimulationCommon/UtilityTextParser.cpp \
+	animation/SimulationCommon/UtilityXMLParser.cpp \
+	animation/SimulationCommon/stdafx.cpp \
+	animation/SimulationCommon/utf_utils.cpp \
+	animation/SimulationCommon/vhash.cpp \
+	animation/SimulationCommon/vlist.cpp\
+	animation/SimulationAnimation/TickTimer.cpp \
+	animation/SimulationAnimation/SAnimation.cpp \
+	animation/SimulationAnimation/SBehaviorAction.cpp \
+	animation/SimulationAnimation/SInterpolator.cpp \
+	animation/SimulationAnimation/STimeline.cpp \
+	animation/SimulationAnimation/KeyFrame.cpp \
+	animation/SimulationAnimation/TimerManager.cpp \
+	animation/SimulationAnimation/SimulationAnimationManager.cpp \
+	animation/SimulationAnimation/stdafx.cpp \
+	animation/SimulationAnimation/CTimer.cpp \
+	animation/SimulationCommon/SAUtility.cpp \
+	animation/SimulationCommon/MatrixOperation.cpp \
+	animation/SimulationCommon/SATools.cpp \
+	animation/SimulationAnimation/AnimationSound.cpp \
+	animation/SimulationAnimation/AnimationStepManager.cpp \
+	animation/SimulationAnimation/ProcessManager.cpp \
+	animation/SimulationAnimation/CProcess.cpp \
+	animation/SimulationAnimation/Mutex.cpp \
+	animation/SimulationAnimation/Group.cpp \
+	animation/SimulationAnimation/GroupItem.cpp \
+	animation/SimulationAnimation/GroupManager.cpp \
+
+include $(BUILD_SHARED_LIBRARY)

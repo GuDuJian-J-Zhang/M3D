@@ -86,9 +86,8 @@ public:
   	*/	
 	static void CreateTargetString(const char *type, const char *path, char *result, bool addquotes = false);
 
-	/*! set target object value. */
-	void SetValue(const char *name, AniPoint *pos/* = 0*/, AniQuat *quat/* = 0*/, AniPoint *scale/* = 0*/, bool visible/* = true*/, float fTrans/* = -1.0*/);
-	void SetPos(float x, float y, float z) { m_Pos.Set(x, y, z); }
+ 	
+	void SetPos(float x, float y, float z) { m_Pos.Set(x,y,z); }
 	void SetQuat(float x, float y, float z, float w) { m_Quat.Set(x,y,z,w); }
 	void SetScale(float x, float y, float z) { m_Scale.Set(x,y,z); }
 	void SetVisible(bool bVisible) { m_bVisible = bVisible; }
@@ -141,8 +140,6 @@ class SA_API CProcess
 public:
 	CProcess(const int ID,const int nBehaviorActionID,const char *name = 0);
 	virtual ~CProcess(void);
-	void Reference();
-	void Release();
 	/*!	This method get process ID.  	*/
 	int		GetID() {return m_ID;};
 	void     SetID(int nID){m_ID = nID;}
@@ -186,7 +183,7 @@ public:
 	This method reset target object list
 	\param vecTarget: The vector of target object.
   	*/
-	void UpdateTargetList(std::vector<TARGETOBJECTINFO*>& vecTarget);
+	void UpdateTargetList(std::vector<TARGETOBJECTINFO>& vecTarget);
 	/*!
 	 Removes the given CProcessTargetObject from the list of target object and then deletes it.
      \param tinfo: Pass a pointer to the CProcessTargetObject you want to delete.
@@ -222,7 +219,7 @@ public:
 	/*! \return A pointer to the CProcessManager object associated with this process.*/
 	CProcessManager* GetProcessManager(){ return m_pProcessManager;};
 	/*! Sets the CProcessManager Object associated to this process. */  
-	void SetProcessManager(CProcessManager* pProcessManager);
+	void SetProcessManager(CProcessManager* pProcessManager){ m_pProcessManager = pProcessManager;};
 	/*! Return Name of the process. */  	
 	const char* GetName(){return m_Name;};
 	/*! Sets the Name of the process. */ 
@@ -234,7 +231,7 @@ public:
 	/*! Return ID of CSBehaviorAction associated with this process. */ 
 	const int GetBehaviorActionID(){ return m_nBehaviorActionID;};
 	/*! Sets the ID of CSBehaviorAction associated with this process. */ 
-	void SetBehaviorActionID(const int ID);
+	void SetBehaviorActionID(const int ID){m_nBehaviorActionID = ID;};
 	/*! Return A pointer to the CSBehaviorAction object associated with this process. */ 
 	CSBehaviorAction* GetBehaviorAction();
 	/*! This method get camera target object
@@ -266,21 +263,14 @@ public:
 	\param pProcessTargetObject(IN): A point to CProcessTargetObject object.
 	\param targetObjectInfo(OUT): A point to TARGETOBJECTINFO object.*/ 
 	void TargetObject2StructInfo(CProcessTargetObject*pProcessTargetObject, TARGETOBJECTINFO* targetObjectInfo);
-	//克隆
-	CProcess* Clone(CProcessManager* pParent);
 
-	bool IsPlay() { return m_bPlay; }
-	void SetIsPlay(bool bPlay) { m_bPlay = bPlay; }
 protected:
 	struct vlist_s *	m_TargetObjectList;					/*!< A pointer to the list of TargetObject. */
 	int					m_ID;								/*!< ID of this Process. */
-	UINT				m_ReferenceCount;
 	char				m_Name[SA_BUFFER_SIZE_SMALL];		/*!< Name of this Process. */
 	char				m_Desc[SA_BUFFER_SIZE_BIG];			/*!< Describe of this Process. */
 	int					m_nBehaviorActionID;				/*!< Relation CSBehaviorAction of this ProcessManager. */
-	CSBehaviorAction*   m_pBehaviorAction;
 	CProcessManager *	m_pProcessManager;					/*!< A pointer to relation CProcessManager of this Process. */
-	bool				m_bPlay;							/*!< Is play this processManager. */
 	
 };
 SA_NAMESPACE_END

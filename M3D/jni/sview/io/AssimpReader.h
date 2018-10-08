@@ -11,17 +11,14 @@
 #include "Reader.h"
 #include "m3d/model/Model.h"
 
-class aiScene;
-class aiNode;
+#include <assimp/Importer.hpp>      // C++ importer interface
+#include <assimp/scene.h>           // Output data structure
+#include <assimp/postprocess.h>     // Post processing flags
 
 namespace M3D
 {
-	class Model;
-	class BaseMaterial;
 	class Material;
 }
-using M3D::BaseMaterial;
-using M3D::Model;
 using M3D::Material;
 
 namespace SVIEW

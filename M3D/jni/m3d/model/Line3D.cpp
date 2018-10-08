@@ -15,8 +15,7 @@ void Line3D::Init()
 	m_EndArrowType = -1;
 	Color clr = Color::GRAY;
 	SetColor(clr);
-	m_lineWidth = LINE_WIDTH;
-	m_CanDelete = false;
+	m_lineWidth = 4;
 }
 
 Line3D::Line3D()
@@ -86,12 +85,13 @@ const Vector3& Line3D::GetPosition(void) const
 {
 	return this->m_StartPoint;
 }
-
-const Vector3& Line3D::GetEndPoint(void) const
-{
-	return this->m_EndPoint;
+/**
+* 获取结束位置
+* @return
+*/
+const Vector3& Line3D::GetEndPoint(void) const{
+    return this->m_EndPoint;
 }
-
 const Vector3 Line3D::GetDirection(void) const
 {
 	Vector3 vec = m_EndPoint - m_StartPoint;
@@ -262,11 +262,6 @@ void Line3D::CreateArrowBuffer(int arrowType, Vector3 point, Vector3 direct,
 	}
 }
 
-const Color & Line3D::GetShapeColor()
-{
-	return *this->GetColor();
-}
-
 void  Line3D::SetLineWidth(int width)
 {
 	this->m_lineWidth = width;
@@ -274,15 +269,6 @@ void  Line3D::SetLineWidth(int width)
 int  Line3D::GetLineWidth()
 {
 	return this->m_lineWidth;
-}
-
-void Line3D::SetCanDelete(bool bValue)
-{
-	m_CanDelete = bValue;
-}
-bool Line3D::GetCanDelete()
-{
-	return m_CanDelete;
 }
 
 }

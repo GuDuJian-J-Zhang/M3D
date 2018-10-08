@@ -1,5 +1,5 @@
 #include "Selector.h"
-#include "m3d/model/IShape.h"
+#include "m3d/model/Shape.h"
 #include "Utility.h"
 
 #include "m3d/SceneManager.h"
@@ -17,7 +17,7 @@ Selector::~Selector() {
 }
 
 void Selector::Set(IShape* shape) {
-	//LOGI("Selector::Set()");
+	LOGI("Selector::Set()");
 	Clear();
 	Add(shape);
 }
@@ -34,20 +34,18 @@ void Selector::Add(IShape* shape) {
 }
 
 void Selector::Remove(IShape* shape) {
-	if (shape)
-	{
-		//LOGI("BEGIN remove================");
-		shape->SetSelected(false);
-		vector<IShape*>::iterator iter = m_selectList.begin();
-		while (iter != m_selectList.end()) {
-			if (shape->GetID() == (*iter)->GetID()) {
-				m_selectList.erase(iter);
-				break;
-			}
-			iter++;
+	LOGI("BEGIN remove================");
+	shape->SetSelected(false);
+	vector<IShape*>::iterator iter = m_selectList.begin();
+	while (iter != m_selectList.end()) {
+		if (shape->GetID() == (*iter)->GetID()) {
+			m_selectList.erase(iter);
+			break;
 		}
-		m_scene->GetRenderManager()->RequestRedraw();
+		iter++;
 	}
+    
+	m_scene->GetRenderManager()->RequestRedraw();
 }
 
 bool Selector::Exist(IShape* shape) {
@@ -61,11 +59,13 @@ bool Selector::Exist(IShape* shape) {
     return false;
 }
 void Selector::Clear() {
+	LOGI("Selector::Clear()");
 	for (int i=0;i<m_selectList.size();i++){
 		IShape* shape = m_selectList[i];
 		shape->SetSelected(false);
 	}
 	m_selectList.clear();
+	LOGI("Selector::Clear() end.");
 	m_scene->GetRenderManager()->RequestRedraw();
 }
 
@@ -73,7 +73,7 @@ IShape* Selector::Get() {
 	return m_selectList.empty() ? NULL : m_selectList[0];
 }
 
-vector<IShape*>& Selector::GetAll() {
+vector<IShape*> Selector::GetAll() {
 	return m_selectList;
 }
 

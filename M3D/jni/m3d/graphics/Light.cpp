@@ -1,6 +1,6 @@
 ﻿
 #include "m3d/graphics/Light.h"
-#include "m3d/action/RenderAction.h"
+
 namespace M3D
 {
 
@@ -17,7 +17,6 @@ Light::Light():Shape()
 	m_specularIntensity = 1.0f;
 	m_diffuse = Color::WHITE;
 	m_intensity = 1.0f;
-	m_turnOn = true;
 }
 
 Light::~Light()
@@ -44,10 +43,10 @@ void Light::FindVisiableObject(RenderAction* renderAction)
 	}
 }
 
-//string Light::GetGeoInfo()
-//{
-//	return "Light :: TODO ";
-//}
+string Light::GetGeoInfo()
+{
+	return "Light :: TODO ";
+}
 
 
 void Light::InitProperties()

@@ -15,7 +15,7 @@
 #include "m3d/base/Vector3.h"
 #include "m3d/base/Ray.h"
 #include "m3d/base/Frustum.h"
-#include "m3d/model/IShape.h"
+#include "m3d/model/Shape.h"
 #include "m3d/renderer/GLESHead.h"
 
 
@@ -23,20 +23,6 @@ namespace M3D
 {
 class SceneManager;
 class CameraNode;
-class ModelShape;
-
-class RayPickIntersect
-{
-public:
-	RayPickIntersect()
-	{
-		m_zindex = 0;
-	}  
-	vector<Vector3> m_IntersectPnts; //!< 存储射线和三角面片交点
-	vector<Vector3> m_IntersectTriglePnts;// !< 存储和射线相交的三角面片法线
-	int m_zindex; //index 越大 优先级越高
-};
-
 
 /**
  * @class RayPickActionData
@@ -52,8 +38,6 @@ public:
 	 * @return 射线对象
 	 */
 	const Ray& GetCameraRay()const;
-
-	const Ray& GetOrigCameraRay()const;
 
 	const Frustum& GetFramePickFrustum()const;
 
@@ -73,24 +57,10 @@ private:
 private:
 	Ray m_cameraRay; //!< 经过view变换的ray
 	Ray m_modelRay;  //!< 经过modelview变换后的ray
-	Frustum m_framePickCameraFrustum;//!< 框选拾取椎体
-	Frustum m_modelframePickFrustum;  //!< 经过modelview变换后的ray
-
-
-	Ray m_frustumRightTopCameraRay; //!< 经过view变换的ray
-	Ray m_frustumRightBottomCameraRay; //!< 经过view变换的ray
-	Ray m_frustumLeftBottomCameraRay; //!< 经过view变换的ray
-	Ray m_frustumLeftTopcameraRay; //!< 经过view变换的ray
-
-	Ray m_frustumRightTopModelRay;  //!< 经过modelview变换后的ray
-	Ray m_frustumRightBottomModelRay;  //!< 经过modelview变换后的ray
-	Ray m_frustumLeftBottomModelRay;  //!< 经过modelview变换后的ray
-	Ray m_frustumLeftTopModelRay;  //!< 经过modelview变换后的ray
-
-	Ray m_origCameraRay;//!< 没有经过View变换的ray
+	Frustum m_framePickFrustum;//!< 框选拾取椎体
 
 	Matrix3x4 m_modelMatrix; //!< 模型空间变换矩阵
-	RayPickIntersect m_Intersect; //!< 存储射线和三角面片交点
+	vector<Vector3> m_IntersectPnts; //!< 存储射线和三角面片交点
 };
 
 /**
@@ -220,7 +190,7 @@ public:
 	 * @param scene 场景管理
 	 * @return 距离值
 	 */
-	static float GetScreenDis(const Vector3& pnt1,const Vector3& pnt2, CameraNode* camera);
+	static float GetScreenDis(const Vector3& pnt1,const Vector3& pnt2,SceneManager* scene);
 	/**
 	 * @brief 拾取边界线中的特征点
 	 * @param screenPnt 屏幕坐标
@@ -230,24 +200,6 @@ public:
 	 */
 	static bool PickFeaturePnt(Vector2& screenPnt,SceneManager* scene,Vector3& featureCoordinate);
 
-	M3D::Vector3 GetNearestPickPoint() const { return m_nearShapePoint; }
-	void SetNearestPickPoint(M3D::Vector3 val) { m_nearShapePoint = val; }
-	int GetInterctType() const { return m_interctType; }
-	void SetInterctType(int val) { m_interctType = val; }
-	bool GetUseclipPlane() const { return m_useclipPlane; }
-	void SetUseclipPlane(bool val) { m_useclipPlane = val; }
-	SceneManager* GetScene() const { return sceneManager; }
-	Vector2 GetScreentPoint() const { return m_screentPoint; }
-	void SetScreentPoint(Vector2 val) { m_screentPoint = val; }
-
-	void BeginOnceFramePick();
-
-	void IncreaseFramePickPntCount();
-
-	int GetOnceFramePickCount();
-
-	void IncreaseFramePickMatchPntCount();
-	int GetFramePickMatchPntCount();
 public:
 	/**
 	 * @brief 构造函数
@@ -267,27 +219,16 @@ public:
 	 * @param pos 模型交点
 	 */
 	void AddIntersectPnt(const Vector3& pos);
-
-	void AddIntersectTrianglePnts(const Vector3& normal);
-
-	void UpdataIntersecPnts(Matrix3x4& modelMatrix);
-
-	void UpdateGroupPickPnts();
-	Vector3 normal;
 	/**
 	 * @brief 通过模型矩阵，更新模型局部坐标系射线
 	 * @param modelMatrix 模型世界坐标系变换矩阵
 	 */
 	void UpdataModelRay(const Matrix3x4& modelMatrix);
-
-	void UpdataFramePickFrustum(const Matrix3x4& modelMatrix);
 	/**
 	 * @brief 得到最前端拾取对象
 	 * @return 拾取到的对象 NULL 表示没有拾取到
 	 */
 	IShape* GetNearPickShape();
-
-	IShape* GetFarPickShape();
 
 	vector<IShape*>& GetFramePickShapes();
 
@@ -325,7 +266,7 @@ public:
 	 * @param winY 屏幕坐标y
 	 */
 	void SetRay(int winx, int winY);
-	void SetRay(Ray & ray);
+
 	/**
 	 * @brief 设置射线 根据屏幕坐标点
 	 * @param screenPnt
@@ -336,11 +277,6 @@ public:
 	void SetFramePickSection(const Vector2& leftTop,const Vector2& rightBottom);
 	///设置框选类型
 	void SetFramePickType(int framePickType);
-
-	int GetFramePickType();
-
-	//满足当前框选条件了
-	bool FitFramePick();
 
 	/**
 	 * @brief 设置射线 根据屏幕坐标点
@@ -361,8 +297,6 @@ public:
 	*/
 	bool FrustumIntersetWithWorldBox(const BoundingBox& box);
 
-	bool FrustumIntersetWithModel(ModelShape* modelShape);
-
 	void AddToFramePickCollection(IShape* shape);
 
 	/**
@@ -374,10 +308,6 @@ public:
 	 * @return true有交点 false没有交点
 	 */
 	bool IsintersectRayAndTriangle(const Vector3& v0,const Vector3& v1,const Vector3& v2,Vector3& I);
-
-	bool IsintersecFrustumTriangle(const Vector3& v0, const Vector3& v1, const Vector3& v2);
-
-	bool IsPointInFrustum(const Vector3& v0);
 	/**
 	 * @brief 射线是否和线段相交
 	 * @param v0 线段起点
@@ -410,9 +340,9 @@ public:
 	 * @brief 将相交对象，加入缓存列表，供最后判断拾取先后关系使用
 	 * @param shape shape对象
 	 */
-	void AddShape(IShape* shape,int zIndex = 0);
+	void AddShape(IShape* shape);
 
-	//void AddFramePickShape(IShape* shape);
+	void AddFramePickShape(IShape* shape);
 
 	/**
 	 * @brief 得到拾取类型
@@ -485,16 +415,12 @@ public:
 	 */
 	float GetScreenDis(const Vector3& pnt1,const Vector3& pnt2);
 
-	void  BeginPickAsGroup(IShape* shape);
-	void EndPickAsGroup(IShape* shape, int zIndex= 0);
-	Vector3 rayIntersectNormal;
-	Vector3 rayIntersectPos;
 private:
 	virtual void OnExecute(SceneNode* node);
 	void Init();
 	void SetScene(SceneManager* sceneManager);
 private:
-	map<IShape*, RayPickIntersect > m_PickShapesMap; //!<存储所有相交的对象
+	map<IShape*, vector<Vector3> > m_PickShapesMap; //!<存储所有相交的对象
 	map<IShape*, map<int, vector<Vector3> > > m_MultiPickShapesMap; //!<存储所有的多选对象
 
 	float m_fRadius; //!<投影到屏幕后的阈值，判断投影到屏幕后的两个点之间的距离
@@ -509,21 +435,6 @@ private:
 	int m_framePickType; //!<框选类型 1 inside 全部在内部  2 intersect 相交即可
 
 	vector<IShape*> m_framePickShapesArrary; //!<存储所有框选相交的对象
-
-	Vector3 m_nearShapePoint;//拾取到的模型最近的点
-
-	int m_interctType; //求交类型 0 三角网格相交 1 线相交 2 点相交
-
-	bool m_useclipPlane;//是否需要考虑裁剪平面
-
-	bool m_pickAsGrroup; //作为组开始拾取
-	vector<Vector3> m_pickAsGroupIntersectPnts; //!< 存储射线和三角面片交点
-
-	Vector2 m_screentPoint;
-
-	int m_onceFramePickMatchCount; //!< 当前一次框选相交模型数量
-	int m_onceFramePickCount;
-
 };
 }
 

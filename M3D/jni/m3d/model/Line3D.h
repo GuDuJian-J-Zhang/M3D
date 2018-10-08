@@ -131,23 +131,13 @@ public:
 		return m_EndArrowBufferArray;
 	}
 
-	/**
-	* 得到渲染颜色
-	* @return
-	*/
-	virtual const  Color& GetShapeColor();
-
 	void SetLineWidth(int width);
 	int GetLineWidth();
-
-	void SetCanDelete(bool bValue);
-	bool GetCanDelete();
 public:
 	Vector3 m_StartPoint; //!< 起点
 	Vector3 m_EndPoint; //!< 终点
 
 private:
-	bool m_CanDelete; //圆弧形线在协同消息中是否需要删除
 	int m_lineWidth;
 	int m_StartArrowType; ///起点末端符号类型
 	int m_EndArrowType; ///终点末端符号类型

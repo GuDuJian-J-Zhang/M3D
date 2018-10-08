@@ -30,7 +30,6 @@ CSTimeline::CSTimeline(CSAnimation *animation)
 	m_StartTick = 0;
 	m_CurrentRelativeTick = 0;
 	m_bCheckRelativeFrame = true;
-	m_pTLRangeArray.TrimSize(0);
 }
 
  
@@ -141,55 +140,6 @@ int CSTimeline::DeleteKeyframe(int time)
 	return -1;
 }
 
-void CSTimeline::Adjust(int time, int delta, bool doall)
-{
-	if(m_pAnimation && m_pAnimation->IsLocked())
-	{
-		return;
-	}
-	for (int i=0;i<GetTimelineArrayLength();i++)
-	{
-		if (m_pTimelineArray[i] >= time)
-		{
-		    if (doall)
-		    {		    
-		    for (int j=i;j<GetTimelineArrayLength();j++)		    		    
-			m_pTimelineArray[j]+=delta;
-		    }
-		    else
-			m_pTimelineArray[i]+=delta;
-		    break;
-		}
-		
-	}
-
-	if(m_pAnimation && m_pAnimation->GetParentAnimation())
-	{
-		m_pAnimation->GetParentAnimation()->ResetFirstLastTickByChild();
-	}
-}
-
-void CSTimeline::AdjustRelative(int time, int delta)
-{
- 	for (int i=1;i<GetTimelineArrayLength();i++)
-	{
-		if (m_pTimelineArray[i] >= time)
-		{
- 		     Adjust(m_pTimelineArray[i],delta);
-
-		    for (int j=i+1;j<GetTimelineArrayLength();j++)
-		    {		   
-			     //int d= m_pTimelineArray[j] - m_pTimelineArray[j-1];
-			     //int delta = percent/100.0f * (float)d;
-			     Adjust(m_pTimelineArray[j],delta);
-		    }
-		    break;
-		}
-		
-	}
-}
-
-
 void CSTimeline::Serialize(CUtilityXMLGenerator *xmlgen)
 {
  		CUtilityXMLTag xmlt;	 
@@ -224,7 +174,6 @@ void *CSTimeline::XMLCallback(CUtilityXMLTag *xt, bool open, void *m_pExtraData)
 			itp->AddKeyframe(atoi(litem), replace);
 		}
    		//current_animation->SetTimeline(itp);
-		itp->AddTLRange();
 	}
 	return 0;
 }
@@ -357,17 +306,6 @@ bool CSTimeline::Evaluate(float currentFrame, int &interval, float &fraction)
 	return true;
 }
 
-CSTimeline* CSTimeline::Clone()
-{
-	CSTimeline *pNewTimeline=new CSTimeline;
-	memcpy(pNewTimeline,this,sizeof(this));
-	int nTimeCount=GetTimelineArrayLength();
-	int *pNewTime=new int[nTimeCount];
-	memcpy(pNewTime,GetTimelineArray(),sizeof(int)*nTimeCount);
-	pNewTimeline->SetTimeline(pNewTime,nTimeCount);
-	return pNewTimeline;
-}
-
 bool CSTimeline::GetTimelineInterval(int currentTime, int &interval)
 {
 	int *timeline = GetTimelineArray();
@@ -399,212 +337,4 @@ bool CSTimeline::GetTimelineInterval(int currentTime, int &interval)
 	}
 	return false;
 }
-/************************************************************************/
-/* 功能：添加某个动画中的所有时间线段
-/* 参数：无
-/* 返回值：无
-/* 创建：2014-10-11 zhangcc
-/************************************************************************/
-void CSTimeline::AddTLRange()
-{
-	for(int i = 0; i< m_pTLRangeArray.Count(); i++)
-	{
-		delete m_pTLRangeArray[i];
-	}
-	m_pTLRangeArray.TrimSize(0);
-	int iTimeLineArrayLength = GetTimelineArrayLength();
-	CTimeLineRange* ptlRange = new CTimeLineRange(this);
-	int i;
-	for (i = 0; i < iTimeLineArrayLength - 1; i++)
-	{
-		ptlRange->AddKeyFrameIndex(i);
-		if (m_pAnimation->IsAnimationInterval(i, i+1))
-		{
-			m_pTLRangeArray.Append(ptlRange);
-			ptlRange = new CTimeLineRange(this);
-		}
-	}
-	if (i == iTimeLineArrayLength - 1)
-	{
-		ptlRange->AddKeyFrameIndex(i);
-		m_pTLRangeArray.Append(ptlRange);
-	}
-}
-int CSTimeline::GetTLRangeByCurFrame(int iCurFrame, CTimeLineRange** pTLRange)
-{
-	int iTLRangeIndex = -1;
-	for (int i = 0; i < m_pTLRangeArray.Count(); i++)
-	{
-		int beginIndex = m_pTLRangeArray[i]->GetBeginKeyFrameIndex();
-		int endIndex = m_pTLRangeArray[i]->GetEndKeyFrameIndex();
-		int beginFrame = m_pTimelineArray[beginIndex];
-		int endFrame = m_pTimelineArray[endIndex];
-		if (iCurFrame >=beginFrame && iCurFrame <= endFrame)
-		{
-			*pTLRange = m_pTLRangeArray[i];
-			iTLRangeIndex = i;
-			break;
-		}
-	}
-	return iTLRangeIndex;
-}
-CTimeLineRange* CSTimeline::GetLastTLRange(int iCurTLRange)
-{
-	CTimeLineRange* pTLRange = NULL;
-	if (iCurTLRange < m_pTLRangeArray.Count())
-		pTLRange = m_pTLRangeArray[iCurTLRange - 1];
-	return pTLRange;
-}
-CTimeLineRange* CSTimeline::GetNextTLRange(int iCurTLRange)
-{
-	CTimeLineRange* pTLRange = NULL;
-	if (iCurTLRange < m_pTLRangeArray.Count() - 1)
-		pTLRange = m_pTLRangeArray[iCurTLRange + 1];
-	return pTLRange;
-}
-/************************************************************************/
-/* 调整动画                                                                     */
-/************************************************************************/
-void CSTimeline::Adjust(int iFrameType, int delta, int iAniType, 
-						  VIntArray& keyFrameIndexArray, VIntArray& keyFrameArray, VArray<CTimeLineRange*> tlRangeArray)
-{
-	if(m_pAnimation && m_pAnimation->IsLocked())
-	{
-		return;
-	}
-	if (iAniType == 0)
-	{
-		for (int i = 0; i < keyFrameIndexArray.Count(); i++)
-		{
-			int tmpIndex = keyFrameIndexArray[i];
-			if (tmpIndex < keyFrameArray.Count() && tmpIndex < m_pTimelineArray.Count())
-			{
-				m_pTimelineArray[tmpIndex] = keyFrameArray[tmpIndex] + delta;
-			}
-		}
-	}
-	else if (iAniType == 1)
-	{
-		for (int i = 0; i < tlRangeArray.Count(); i++)
-		{
-			CTimeLineRange* pTLRange = tlRangeArray[i];
-			if (pTLRange == NULL)
-				continue;
-			int iBeginIndex = pTLRange->GetBeginKeyFrameIndex();
-			int iEndIndex = pTLRange->GetEndKeyFrameIndex();
-			if (iBeginIndex >= keyFrameArray.Count() || iEndIndex >= keyFrameArray.Count())
-				continue;
-			
-			if (iFrameType == 0 || iFrameType == 1)
-			{
-				bool bBegin = true;
-				if (iFrameType == 1)
-					bBegin = false;
-				AdjustRelative(iBeginIndex, iEndIndex, bBegin, delta, keyFrameArray);
-			}
-			else
-			{
-				for (int idx = iBeginIndex; idx <= iEndIndex; idx++)
-				{
-					if (idx < keyFrameArray.Count() && idx < m_pTimelineArray.Count())
-					{
-						m_pTimelineArray[idx] = keyFrameArray[idx] + delta;
-					}
-				}
-			}
-		}
-	}
-	else
-	{
-		if (keyFrameArray.Count() > 0)
-		{
-			if (iFrameType == 0 || iFrameType == 1)
-			{
-				bool bBegin = true;
-				if (iFrameType == 1)
-					bBegin = false;
-				AdjustRelative(0, keyFrameArray.Count() - 1, bBegin, delta, keyFrameArray);
-			}
-			else
-			{
-				for (int i = 0; i <= keyFrameArray.Count() - 1; i++)
-				{
-					if (i < keyFrameArray.Count() && i < m_pTimelineArray.Count())
-					{
-						m_pTimelineArray[i] = keyFrameArray[i] + delta;
-					}
-				}
-			}
-		}
-	}
-}
-/************************************************************************/
-/* 等比例进行调整  
-/************************************************************************/
-void CSTimeline::AdjustRelative(int iBeginIndex, int iEndIndex, bool bBegin, int delta, VIntArray& keyFrameArray)
-{
-	if (iBeginIndex < keyFrameArray.Count() && iEndIndex < keyFrameArray.Count())
-	{
-		int beginKeyFrame = keyFrameArray[iBeginIndex];
-		int endKeyFrame = keyFrameArray[iEndIndex];
-		int intervalFrame = endKeyFrame - beginKeyFrame;
-		if (intervalFrame == 0)
-			return;
-		for (int i = iBeginIndex; i <= iEndIndex; i++)
-		{
-			int tmp = 0;
-			if (bBegin)
-				tmp = (endKeyFrame - keyFrameArray[i]) * delta / intervalFrame;
-			else
-				tmp = (keyFrameArray[i] - beginKeyFrame) * delta / intervalFrame;
-			if (i < m_pTimelineArray.Count())
-			{
-				m_pTimelineArray[i] = keyFrameArray[i] + tmp;	
-			}
-		}
-	}
-}
-//SA_NAMESPACE_END
-//动画中时间段的相关类
-CTimeLineRange::CTimeLineRange(CSTimeline* pTimeLine)
-{
-	m_tlKeyFrameIndexArray.TrimSize(0);
-	m_pTimeLine = pTimeLine;
-}
-CTimeLineRange::~CTimeLineRange()
-{
-	Clear();
-}
 
-void CTimeLineRange::AddKeyFrameIndex(int iKeyFrameIndex)
-{
-	m_tlKeyFrameIndexArray.Append(iKeyFrameIndex);
-}
-
-void CTimeLineRange::Clear()
-{
-	m_tlKeyFrameIndexArray.TrimSize(0);
-}
-
-int* CTimeLineRange::GetKeyFrameIndexArray()
-{
-	if (m_tlKeyFrameIndexArray.Count() > 0)
-		return &m_tlKeyFrameIndexArray[0];
-	else
-		return NULL;
-}
-int CTimeLineRange::GetBeginKeyFrameIndex()
-{
-	int iRet = -1;
-	if (m_tlKeyFrameIndexArray.Count() > 0)
-		iRet = m_tlKeyFrameIndexArray[0];
-	return iRet;
-}
-int CTimeLineRange::GetEndKeyFrameIndex()
-{
-	int iRet = -1;
-	int iCount = m_tlKeyFrameIndexArray.Count();
-	if (iCount > 0)
-		iRet = m_tlKeyFrameIndexArray[iCount - 1];
-	return iRet;
-}

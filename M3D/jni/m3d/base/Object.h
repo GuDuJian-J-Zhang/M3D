@@ -7,50 +7,18 @@
  */
 #ifndef     M3D_OBJECT_H_
 #define     M3D_OBJECT_H_
-#include 	"m3d/M3DExport.h"
-#include    "m3d/M3DMacros.h"
+#include 	"m3d/M3D.h"
+
 namespace M3D
 {
-	template <typename T>
-	inline void ReleaseMe(T& a)
-	{
-		if (a)
-		{
-			a->Release();
-			a = NULL;
-		}
-	};
-
-	template <typename T>
-	inline void AddRefMe(T const& a)
-	{
-		if (a)
-		{
-			a->AddRef();
-		}
-	};
-
-class M3D_API IObject
-{
-public:
-	/**
-	* @brief 引用计数加一
-	*/
-	virtual void AddRef(void) = 0;
-	/**
-	* @brief 引用计数减一
-	*/
-	virtual void Release(void) = 0;
-};
-
 /**
  * @class 计数引用内存管理
  */
-class M3D_API Object:public IObject
+class Object
 {
 public:
-	static IDTYPE OBJID;
-	static IDTYPE TEST_OBJ_COUNT;
+	static int OBJID;
+	static int TEST_OBJ_COUNT;
 public:
 	/**
 	 * @brief
@@ -61,15 +29,10 @@ public:
 	 */
 	virtual ~Object();
 
-	Object(const Object& orig);
-	Object& operator =(const Object& orig);
-
-
-
 	/**
 	 * @brief 引用计数加一
 	 */
-	virtual void AddRef(void);
+	void AddRef(void);
 	/**
 	 * @brief 引用计数减一
 	 */
@@ -82,8 +45,6 @@ public:
 	 * @brief
 	 */
 	virtual bool SetStates(const string& states);
-    
-    int GetRefrenceCount();
 
 protected:
 	/** 

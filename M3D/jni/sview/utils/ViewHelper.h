@@ -42,7 +42,7 @@ public:
 	 * @param shape
 	 * @return
 	 */
-	static bool SetShapePosByScreenPoint(const Vector2& screenPnt, IShape* shape,View* view);
+	static bool SetShapePosByScreenPoint(const Vector2& screenPnt,Shape* shape,View* view);
 
 	/**
 	 * 计算屏幕坐标反投影到空间中
@@ -60,7 +60,7 @@ public:
      * @param view
      * @return
      */
-    static Vector3 ScreenToWorldPointByShape(const Vector2& screenPnt, IShape* shape,View* view);
+    static Vector3 ScreenToWorldPointByShape(const Vector2& screenPnt,Shape* shape,View* view);
     
     /**
      * 计算屏幕坐标反投影shape包围盒中心点所在的平面上，获取shape对象所在的局部坐标系的点
@@ -69,9 +69,9 @@ public:
      * @param view
      * @return
      */
-    static Vector3 ScreenToLocalPointByShape(const Vector2& screenPnt, IShape* shape,View* view);
+    static Vector3 ScreenToLocalPointByShape(const Vector2& screenPnt,Shape* shape,View* view);
     
-    static Vector3 WorldPointToLocal(const Vector3& worldPnt, IShape* shape,View* view);
+    static Vector3 WorldPointToLocal(const Vector3& worldPnt,Shape* shape,View* view);
 
     static IntVector2 WorldPointToScreen(const Vector3& worldPnt,View* view);
 

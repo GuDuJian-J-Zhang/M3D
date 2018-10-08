@@ -29,6 +29,7 @@ string MoveModelOperation::ToJsonString()
 
 bool MoveModelOperation::OnExecute()
 {
+
 	LOGI("MoveModelCommand::OnExecute() BEGIN)");
 	bool msg = false;
 
@@ -38,24 +39,21 @@ bool MoveModelOperation::OnExecute()
 		Model * desMdl = m_desModel;
 		if(sourceMdl && desMdl)
 		{
-			sourceMdl->AddRef();
-
 			LOGI("ModelManager::MoveTo 1)");
-
-			Model * parent = (Model*)sourceMdl->GetParent();
-			if (parent)
+			msg = ModelAssemblyHelper::DetachModel(sourceMdl);
+			if(!msg )
 			{
-				parent->RemoveSubModel(sourceMdl);
+				return msg;
 			}
 
-			ModelAssemblyHelper::ComputePlaceMatrix(sourceMdl, desMdl);//设置配置矩阵
-
-			msg = ModelAssemblyHelper::InsertInLast(m_view,sourceMdl,desMdl);
-
-           m_AfterPlcpath = PathHelper::GetM3DPath(desMdl);
+			msg = ModelAssemblyHelper::InsertBefore(m_view,sourceMdl,desMdl);
+			if(!msg)
+			{
+				return msg;
+			}
+            m_AfterPlcpath = PathHelper::GetM3DPath(desMdl);
 			//m_AfterPlcpath = PathHelper::GetM3DPath(sourceMdl);
-
-			sourceMdl->Release();
+			ModelAssemblyHelper::ComputePlaceMatrix(sourceMdl);//设置配置矩阵
 		}
 
 		msg = true;

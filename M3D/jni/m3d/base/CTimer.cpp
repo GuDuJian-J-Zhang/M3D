@@ -141,7 +141,7 @@ void CTimer::StartTimer()
 
 void CTimer::StopTimer()
 {
-	if (m_timerThread && m_timerThread->IsStart())
+	if(m_timerThread && m_timerThread->IsStart())
 	{
 		m_timerThread->Keep(false);
 		m_timerThread->Stop();

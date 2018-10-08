@@ -17,12 +17,11 @@ ShaderParameter::ShaderParameter()
 }
 
 ShaderParameter::ShaderParameter(GLint location, GLenum type,
-		string name,int size)
+		string name)
 {
 	this->m_Type = type;
 	this->m_location = location;
 	this->m_name = name;
-	this->size = size;
 }
 
 ShaderParameter::~ShaderParameter()

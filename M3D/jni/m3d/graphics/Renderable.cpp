@@ -50,7 +50,7 @@ const Color& Renderable::GetRenderColor()
  * 获取材质
  * @return
  */
-BaseMaterial*  Renderable::GetRenderMaterial()
+Material*  Renderable::GetRenderMaterial()
 {
 	return NULL;
 }
@@ -257,7 +257,6 @@ void  Renderable::Init()
 
 	m_hardWareVertexBuffer = NULL;
 	m_hardWareIndexBuffer = NULL;
-	m_recesiveShadow = true;
 }
 
 bool Renderable::HardwarebufferValid(Mesh* mesh)

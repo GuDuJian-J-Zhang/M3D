@@ -8,7 +8,7 @@
  */
 #ifndef M3D_SHADER_H_
 #define M3D_SHADER_H_
-#include "m3d/M3DExport.h"
+#include "m3d/M3D.h"
 #include "m3d/renderer/gl20/ShaderParameter.h"
 #include "m3d/renderer/GLESHead.h"
 #include "m3d/graphics/GPUObject.h"

@@ -11,7 +11,7 @@
 #ifndef READER_H_
 #define READER_H_
 #include "sview/SView.h"
-#include "m3d/base/Mutex.h"
+#include "m3d/utils/LoggerHelper.h"
 
 namespace M3D {
 class Object;
@@ -20,8 +20,6 @@ class IVertexSet;
 class VertexSet;
 class Mesh;
 class IDCreator;
-class BaseMaterial;
-class Color;
 }
 using M3D::Object;
 using M3D::Model;
@@ -29,21 +27,11 @@ using M3D::IVertexSet;
 using M3D::VertexSet;
 using M3D::Mesh;
 using M3D::IDCreator;
-using M3D::BaseMaterial;
-using M3D::Color;
+using M3D::LoggerHelper;
 
 #define SHOW_READER_LOG false
 #define  READER_LOGI(...)  if(SHOW_READER_LOG) LOGI(__VA_ARGS__)
 #define  READER_LOGE(...)  if(SHOW_READER_LOG) LOGE(__VA_ARGS__)
-
-#ifdef __MOBILE__
-
-#define INDEX_MAX_COUNT 65535
-#endif
-
-#ifdef _WIN32
-#define INDEX_MAX_COUNT 4294967295
-#endif
 
 namespace SVIEW
 {
@@ -182,29 +170,6 @@ public:
 	void SetListener(ReaderListener* listener);
 	ReaderListener* GetListener();
 
-	bool IsAsynMode();
-	void SetAsynMode(bool asynMode);
-
-	/**
-	* 是否使用索引方式进行数据存储
-	* @return
-	*/
-	bool IsUseIndex();
-
-	/**
-	* 设置以索引方式进行数据存储
-	* @param useIndex
-	*/
-	void SetUseIndex(bool useIndex);
-
-	BaseMaterial * CovertColorToMaterial(Color& srcColor);
-
-	/**
-	* 通过索引个数和自身是否允许使用索引条件，判断能够使用索引
-	* @param indexNum
-	* @return
-	*/
-	bool CanUseIndex(int indexNum);
 //    /**
 //     * 得到读取过程中发送的消息
 //     * @return
@@ -223,13 +188,9 @@ protected:
     float m_readPercent;//!< 当前读取的百分比
 
     ReaderListener* m_readerListener;
-	mutable M3D::Mutex m_mutex;//!<线程锁
+
     View* m_view;
     static string defaultAnimationData;
-
-	bool m_isAnsyMode;//是否采用异步方式读取
-
-	bool m_isUseIndex; //!<是否使用索引方式进行数据存储
 };
 
 }

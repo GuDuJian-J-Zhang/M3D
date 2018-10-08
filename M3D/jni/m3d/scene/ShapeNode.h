@@ -9,7 +9,7 @@
 #ifndef M3D_SHAPE_NODE_H_
 #define M3D_SHAPE_NODE_H_
 
-#include "m3d/model/IShape.h"
+#include "m3d/model/Shape.h"
 #include "m3d/scene/SceneNode.h"
 
 namespace M3D
@@ -18,15 +18,12 @@ class M3D_API ShapeNode: public SceneNode
 {
 public:
 	ShapeNode();
-	ShapeNode(IShape* shape);
+	ShapeNode(Shape* shape);
 	virtual ~ShapeNode();
 	/**
 	 * @see SceneNode
 	 */
 	virtual int GetType(void);
-
-	virtual void OnMarkedDirty();
-
 	/**
 	 * @see SceneNode
 	 */
@@ -38,12 +35,12 @@ public:
 	/**
 	 * 设置关联的shape对象
 	 */
-	virtual void SetShape(IShape *object);
+	virtual void SetShape(Shape *object);
 	/**
 	 * 获取关联的shape
 	 * 对象
 	 */
-	IShape * GetShape(void);
+	Shape * GetShape(void);
 
 	/**
 	 * @see SceneNode
@@ -54,8 +51,6 @@ public:
 	 * @see SceneNode
 	 */
 	virtual void FindVisiableObject(RenderAction* renderAction);
-
-	virtual void Traverse(Action* action);
 
 	/**
 	 * @see SceneNode
@@ -68,7 +63,7 @@ protected:
 	virtual void RayPick(RayPickAction * action);
 
 protected:
-	IShape *m_shape; //!< 关联的shape对象
+	Shape *m_shape; //!< 关联的shape对象
 };
 }
 #endif // SHAPE_NODE_H

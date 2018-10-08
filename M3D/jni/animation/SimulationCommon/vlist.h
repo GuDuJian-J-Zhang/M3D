@@ -35,13 +35,8 @@ extern "C" {
 #define VLIST_SYS_CDECL 
 #endif
 
-#ifdef WIN32
-#define VLIST_API extern "C" __declspec(dllexport)
-#else
+
 #define VLIST_API extern "C"
-#endif // WIN32
-
-
 #define VLIST_CDECL
 
 #ifdef _MSC_VER

@@ -19,11 +19,10 @@ public:
 	Mutex();
 	/// Destruct.
 	~Mutex();
-#ifdef WIN32
-#else
+
 	Mutex(const Mutex& orig);
 	Mutex& operator =(const Mutex& orig);
-#endif // WIN32
+
 	/// Acquire the mutex. Block if already acquired.
 	void Acquire();
 	/// Release the mutex.
@@ -44,13 +43,11 @@ public:
 	~MutexLock();
 
 private:
-#ifdef WIN32
-#else
 	/// Prevent copy construction.
 	MutexLock(const MutexLock& rhs);
 	/// Prevent assignment.
 	MutexLock& operator =(const MutexLock& rhs);
-#endif // WIN32
+
 	/// Mutex reference.
 	Mutex& m_mutex;
 };

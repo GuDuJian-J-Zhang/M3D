@@ -8,12 +8,13 @@
  *		2015/07/20	创建。WangY@HOTEAMSOFT
  ****************************************************************************/
 #include "SAESHelper.h"
-
+ 
 #include <stdio.h>
 #include <stdlib.h>
 #include <stddef.h>
-#include "SAES.h"
 #include <string.h>
+#include "SAES.h"
+
 #define Byte unsigned char
 
 namespace SVIEW
@@ -64,11 +65,7 @@ int SAESHelper::aesEncrypt(string i_strMingwen, string& o_strMiwenHex)
 	string result = string("");
 	char ch_mingwen[1024] = { 0 };
 	char ch_miwen[1024] = { 0 };
-#ifdef WIN32
- 	strcpy_s(ch_mingwen, i_strMingwen.size() + 1, i_strMingwen.c_str());
-#else
 	strcpy(ch_mingwen, i_strMingwen.c_str());
-#endif
 	//aes->Cipher(ch_mingwen, ch_miwen);
 	int key[] = { 'H','o','t','e','a' ,'m' ,'s' ,'o' ,'f' ,'t' };//加密字符
 																 //aes->Cipher(ch_mingwen, ch_miwen);

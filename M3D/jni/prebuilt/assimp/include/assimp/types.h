@@ -88,17 +88,7 @@ namespace Intern		{
 #ifndef SWIG
 	struct ASSIMP_API AllocateFromAssimpHeap	{
 		// http://www.gotw.ca/publications/mill15.htm
-#ifdef WIN32
-// 		// new/delete overload
-// 		void *operator new    ( size_t num_bytes) /* throw( std::bad_alloc ) */;
-// 		void *operator new    ( size_t num_bytes, const std::nothrow_t& ) throw();
-// 		void  operator delete ( void* data);
-// 
-// 		// array new/delete overload
-// 		void *operator new[]    ( size_t num_bytes) /* throw( std::bad_alloc ) */;
-// 		void *operator new[]    ( size_t num_bytes, const std::nothrow_t& )  throw();
-// 		void  operator delete[] ( void* data);
-#else
+
 		// new/delete overload
 		void *operator new    ( size_t num_bytes) /* throw( std::bad_alloc ) */;
 		void *operator new    ( size_t num_bytes, const std::nothrow_t& ) throw();
@@ -108,7 +98,7 @@ namespace Intern		{
 		void *operator new[]    ( size_t num_bytes) /* throw( std::bad_alloc ) */;
 		void *operator new[]    ( size_t num_bytes, const std::nothrow_t& )  throw();
 		void  operator delete[] ( void* data);
-#endif
+
 	}; // struct AllocateFromAssimpHeap
 #endif
 } // namespace Intern

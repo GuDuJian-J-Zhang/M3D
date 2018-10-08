@@ -63,31 +63,26 @@ public:
 	 * @brief Multiply a Vector3.
 	 */
 	Vector3 operator *(const Vector3& rhs) const;
-	Vector3 Multiply(const Vector3& rhs) const;
 
 	/**
 	 * @brief Add a matrix.
 	 */
 	Matrix3 operator +(const Matrix3& rhs) const;
-	Matrix3 Add(const Matrix3& rhs) const;
 
 	/**
 	 * @brief Subtract a matrix.
 	 */
 	Matrix3 operator -(const Matrix3& rhs) const;
-	Matrix3 Sub(const Matrix3& rhs) const;
 
 	/**
 	 * @brief Multiply with a scalar.
 	 */
 	Matrix3 operator *(float rhs) const;
-	Matrix3 Multiply(float rhs) const;
 
 	/**
 	 * @brief Multiply a matrix.
 	 */
 	Matrix3 operator *(const Matrix3& rhs) const;
-	Matrix3 Multiply(const Matrix3& rhs) const;
 
 	/**
 	 * @brief Set scaling elements.
@@ -137,16 +132,7 @@ public:
 	 * @brief Bulk transpose matrices.
 	 */
 	static void BulkTranspose(float* dest, const float* src, unsigned count);
-	M3D_ADDRESSTYPE Address()
-	{
-		//获取地址的真实方式
-		return TAddress(*this);
-	}	
 
-	void FillByAddress(M3D_ADDRESSTYPE memoryAddress)
-	{
-		*this = *TFromAddress<Matrix3>(memoryAddress);
-	}
 	float m_m00; //!< 数据
 	float m_m01;
 	float m_m02;

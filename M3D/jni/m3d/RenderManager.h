@@ -13,6 +13,7 @@
 #include "m3d/base/Thread.h"
 #include "m3d/base/Mutex.h"
 #include "m3d/base/CTimer.h"
+
 #include "m3d/utils/CullerHelper.h"
 namespace M3D
 {
@@ -27,13 +28,97 @@ class RenderAction;
 class RenderEffect;
 class GLDrawerFunManager;
 class RenderManager;
-class ModelShape;
-class Model;
+class LShapeNode;
+class LSceneNode;
 class Action;
 class RayPickAction;
-class Octree;
-class EffectManager;
- 
+
+///场景划分，简单实现按照模型从大到小排序存储，后期更多优化后的存储方法
+class M3D_API SceneDivide
+{
+public:
+	SceneDivide(SceneManager* sceneMgr);
+
+	void AddNode(LShapeNode* node);
+
+	void Clear();
+
+	void Optimize();
+
+	virtual void FindVisiableObject(RenderAction* renderAction);
+
+	virtual void Traverse(Action* action);
+
+	virtual void RayPick(RayPickAction * action);
+
+	bool Dirty();
+
+	void MarkDirty();
+
+	static void CacheNode(void* data, LSceneNode* node);
+private:
+	static bool CompareByPlcWorldBoxLength(LShapeNode* node1,LShapeNode* node2);
+
+private:
+	vector<LShapeNode*> m_shapeNodesCache;//用来缓存所有可以现实的shape节点
+	bool m_dirty; //场景是否准备划分完毕
+	SceneManager* m_sceneMgr;
+};
+
+/**
+ * 多线程准备RenderAction测试
+ * TODO
+ */
+class RenderActionManager: public Thread
+{
+public:
+	static const int ITEMSCOUNT;
+public:
+
+	/**
+	 * Construct. Does not start the thread yet.
+	 * @param renderMgr
+	 */
+	RenderActionManager(RenderManager* renderMgr);
+
+	/**
+	 *  Destruct. If running, stop and wait for thread to finish.
+	 */
+	virtual ~RenderActionManager();
+
+	/**
+	 *  The function to run in the thread.
+	 */
+	virtual void ThreadFunction();
+
+	/**
+	 * 获取renderaction
+	 * @return
+	 */
+	RenderAction* GetAction();
+
+	RenderAction* GetWorkRenderAction();
+
+	void KeepFlag(bool finish);
+
+private:
+	mutable Mutex m_mutex;
+
+	RenderAction* m_RenderActions[3];
+
+	queue<RenderAction*> m_renderActionQueue; //!<缓存Action数据，同步与外界的交互
+
+	int m_workIndex; //!<返回正在使用的Action在队列中的位置
+
+	int m_prepareIndex; //!<正在准备的Action在队列中的位置
+
+	bool m_finish;//!<是否完成
+
+	RenderManager* m_renderMgr;//!<渲染管理器
+
+	SceneManager* m_pSceneManager;
+};
+
 typedef map<int, RenderEffect*> RenderEffectsMap;
 
 /**@class
@@ -47,19 +132,11 @@ public:
 	//Test
 	static bool isShowTriLine;
 
-	M3D::RenderAction* GetRenderAction() const;
-	void SetRenderAction(M3D::RenderAction* val);
-
-	M3D::CullerHelper& GetCullerHelper();
-
 public:
 	RenderManager(SceneManager* scene);
 
 	virtual ~RenderManager();
 
-
-
-	void ClearDelayDrawList();
 
 	/**
 	 * @brief 初始化渲染上下文
@@ -81,11 +158,6 @@ public:
 	 * @param height 窗口高度
 	 */
 	void WindowSizeChanged(int width, int height);
-
-	/************************************************************************/
-	/* 当所有的模型读取完成之后，强制更新整个场景的包围盒，来防止文件包围盒没有计算的情况                                                                     */
-	/************************************************************************/
-	void RequestUpdateWhenSceneBoxChanged();
 
 	/**
 	 * @brief 获得显示窗口的宽度
@@ -139,10 +211,6 @@ public:
 	 */
 	bool IsExcludeSmallModel();
 
-	void FindVisiableObject(RenderAction* renderAction);
-
-	void RebindUIRenderFBO();
-
 	/**
 	 * @brief 得到是否显示旋转中心状态
 	 */
@@ -170,6 +238,11 @@ public:
 	 */
 	void SetUseLowQuality(bool useLowQuality);
 
+	/**
+	 * 得到剔除工具类
+	 * @return 剔除工具类
+	 */
+	CullerHelper& GetCullerHelper();
 
 	/**
 	 * @brief TODO 多线程准备渲染队列
@@ -230,17 +303,6 @@ public:
 
 	SceneManager* GetSceneManager();
 
-	EffectManager* GetEffectManager();
-
-	string GetGlobalEffect();
-	void SetGlobalEffect(string effectName);
-
-	static void BeginCatchOpenGLError();
-	static string EndCatchOpenGLError();
-
-	bool IsForceNormalEffect();
-	void SetISForceNormalEffect(bool effectName);
-
 private:
 	/**
 	 * 复位
@@ -263,11 +325,6 @@ private:
 	 */
 	bool LimitDrawFPS();
 
-	/**
-	* 当窗口改变时，更改hub视口大小
-	* @return
-	*/
-	void ResizeHubViewport();
 
 private:
 	int m_maxFPS; //!<设置最大绘制帧率
@@ -284,7 +341,7 @@ private:
 
 	RenderEffectsMap m_renderEffectsMap; //!< TODO  渲染效果表，用于管理多个渲染效果
 
-	//RenderActionManager* m_renderActionMgr; //!<
+	RenderActionManager* m_renderActionMgr; //!<
 
 	RenderAction* m_renderAction; //!<渲染动作，用于遍历整个场景，准备渲染队列
 
@@ -317,6 +374,8 @@ private:
 
 	bool m_useDelayDraw;//!< 使用渐进显示方式绘制
 
+	SceneDivide* m_sceneDivide;//!< 场景划分类
+
 	static long m_LastLogTime; //!<
 	static long m_FrameCount; //!<
 
@@ -326,10 +385,6 @@ private:
 
 	timeval m_fpsstartTime; //!<
 	int dt;
-
-	EffectManager * m_effectManager;
-	string m_globalEffect;
-	bool m_isForceNormalEffect;
 };
 }
 #endif/*M3D_RENDER_H_*/

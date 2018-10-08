@@ -20,7 +20,7 @@ const float DELTA_ROT = 1.0E-10;
 class SceneNode;
 class Edge;
 class VertexSet;
-class DirectionalLight;
+class Light;
 class MeshVBO;
 class ModelVBO;
 class VBOData;
@@ -78,8 +78,8 @@ public:
 	//lights
 	static void ApplyLights(RenderAction* action);
 
-	static void	ApplyPointLight(DirectionalLight* lightData);
-	static void	ApplyDirLight(DirectionalLight* light);
+	static void	ApplyPointLight(Light* lightData);
+	static void	ApplyDirLight(Light* light);
 
 	//////////////////////////////////////////////////////////////////////////
 	//tools

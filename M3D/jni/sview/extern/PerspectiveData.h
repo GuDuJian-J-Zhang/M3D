@@ -32,17 +32,7 @@ public:
 
 	const static int DEFAULT = 7;
 
-	const static int BACKISOME = 8;
-
 	const static int CUSTOM = 9;
-
-	const static int UPFRONTLEFT = 10;   //上前左轴测图
-	const static int UPBEHINDRIGHT = 11;  //上后右轴测图
-	const static int UPBEHINDLEFT = 12; //上后左轴测图
-
-	const static int DOWNFRONTRIGHT = 13; //下前右轴测图
-	const static int DOWNFRONTLEFT = 14; //下前左轴测图
-	const static int DOWNBEHINDRIGHT = 15; //下后右轴测图
 
 	const static ControlInfo FRONT_MVMATRIX;
 	const static ControlInfo BACK_MVMATRIX;
@@ -56,15 +46,6 @@ public:
 	const static ControlInfo ISOMETRIC_MVMATRIX;
 
 	const static ControlInfo DEFAULT_MVMATRIX;
-
-	const static ControlInfo BACKISOME_MVMATRIX;  //后轴测图
-	const static ControlInfo UPFRONTLEFT_MVMATRIX;   //上前左轴测图
-	const static ControlInfo UPBEHINDRIGHT_MVMATRIX;   //上后右轴测图
-	const static ControlInfo UPBEHINDLEFT_MVMATRIX;   //上后左轴测图
-
-	const static ControlInfo DOWNFRONTRIGHT_MVMATRIX;   //下前右轴测图
-	const static ControlInfo DOWNFRONTLEFT_MVMATRIX;   //下前左轴测图
-	const static ControlInfo DOWNBEHINDRIGHT_MVMATRIX;   //下后右轴测图
 
 private:
 	const static float DISTRI; //扰动,防止矩阵不可逆

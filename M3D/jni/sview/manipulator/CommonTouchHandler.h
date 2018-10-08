@@ -61,9 +61,8 @@ public:
 	 * @brief 更新触摸类型
 	 */
 	virtual void OnUpDataTouchIntent();
-
-	virtual void ResetViewCamera();
  
+private:
 	/**
 	 * @brief
 	 */
@@ -71,7 +70,7 @@ public:
 	/**
 	 * @brief 初始化相机
 	 */
-	virtual void InitCamera(bool useAni = true);
+	virtual void InitCamera();
 	/**
 	 * @brief 优化相机
 	 */

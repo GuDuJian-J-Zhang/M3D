@@ -17,7 +17,7 @@ namespace M3D
 /**
  * @brief Rectangular area allocator.
  */
-class M3D_API AreaAllocator
+class AreaAllocator
 {
 public:
 	/**

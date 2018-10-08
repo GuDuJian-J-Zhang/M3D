@@ -145,12 +145,12 @@ string IView::GetDataManagerVersion()
 	return "ERROR";
 }
 
-IShape* IView::GetShapeBySVLPath(const string& path)
+Shape* IView::GetShapeBySVLPath(const string& path)
 {
 	return NULL;
 }
     
-IShape* IView::GetShape(int shapeId)
+Shape* IView::GetShape(int shapeId)
 {
     return NULL;
 }

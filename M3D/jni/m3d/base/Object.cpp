@@ -2,33 +2,18 @@
 
 namespace M3D
 {
-IDTYPE Object::OBJID = 1;
-IDTYPE Object::TEST_OBJ_COUNT =0;
+int Object::OBJID = 0;
+int Object::TEST_OBJ_COUNT =0;
 Object::Object(void)
 {
 	m_cRefrenceCount = 0;
-//  LOGE("TEST_OBJ_COUNT create %d", TEST_OBJ_COUNT++);
-}
-
-Object::Object(const Object& orig)
-{
-	*this = orig;
-}
-
-Object& Object::operator =(const Object& orig)
-{
-	if (this != &orig)
-	{
-		m_cRefrenceCount = 0;
-	}
-	return *this;
+//    LOGE("TEST_OBJ_COUNT create %d", TEST_OBJ_COUNT++);
 }
 
 Object::~Object()
 {
 //   LOGE("TEST_OBJ_COUNT release %d",TEST_OBJ_COUNT--);
 }
-
 
 void Object::AddRef(void)
 {
@@ -64,11 +49,6 @@ bool Object::SetStates(const string& states)
 
 	return ret;
 }
-    
-    int Object::GetRefrenceCount() { 
-        return m_cRefrenceCount;
-    }
-    
 
 }
 

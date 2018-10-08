@@ -27,7 +27,7 @@ OribitControlHandler::~OribitControlHandler()
 
 }
 
-void OribitControlHandler::InitCamera(bool useAni)
+void OribitControlHandler::InitCamera()
 {
 	if(!this->m_SceneManager)
 	{
@@ -47,8 +47,8 @@ void OribitControlHandler::InitCamera(bool useAni)
     if(m_pView)
     {
 		m_pView->GetPerspectiveOperator()->Show(m_pView, PerspectiveData::ISOMETRIC,
-                                                 true, false, false, useAni);
-        this->SetUpDirection(Parameters::Instance()->m_upDirectionValue,m_pView);
+                                                 true, false, false);
+        this->SetUpDirection(this->m_upDirection,m_pView);
     }
 
     const IntRect& rect = camera->GetViewPort().GetRect();

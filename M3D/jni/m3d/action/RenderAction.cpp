@@ -1,7 +1,7 @@
 ﻿#include "sview/views/Parameters.h"
 
 #include "m3d/action/RenderAction.h"
-#include "m3d/renderer/gl20/ShaderManager.h"
+
 #include "m3d/renderer/RenderContext.h"
 #include "m3d/scene/ShapeNode.h"
 #include "m3d/graphics/CameraNode.h"
@@ -11,7 +11,6 @@
 #include "m3d/scene/AxisNode.h"
 #include "m3d/model/Model.h"
 #include "m3d/model/Body.h"
-#include "m3d/model/Point.h"
 #include "m3d/model/Face.h"
 #include "m3d/model/Edge.h"
 #include "m3d/model/Note.h"
@@ -27,25 +26,15 @@
 #include "m3d/renderer/gl20/GLShapeDrawer20.h"
 #include "m3d/graphics/HardWareFrameBuffer.h"
 #include "m3d/extras/note/NoteGroup.h"
-#include "m3d/graphics/DirectionalLight.h"
+#include "m3d/graphics/Light.h"
 #include "m3d/scene/SceneGroundNode.h"
 #include "sview/views/Parameters.h"
-#include "../model/ModelShape.h"
-#include "m3d/renderer/effect/EffectManager.h"
-#include "m3d/scene/GroundNode.h"
-#include "m3d/graphics/Material.h"
-#include "m3d/graphics/PbrMaterial.h"
-
-#ifdef WIN32
-#include "m3d/UI/GUI.h"
-#endif //WIN32
-
 using SVIEW::Parameters;
 
 namespace M3D
 {
  ShaderProgram* RenderAction::m_currentSP = NULL;
- DirectionalLight RenderAction::m_light;
+ Light RenderAction::m_light;
 const int RenderEffect::RENDER_NORMALEFFCT = 0x00000000; //正常渲染
 const int RenderEffect::RENDER_OPACITYEDGE = 0x00000100; //不透明边界线渲染
 const int RenderEffect::RENDER_SECTION = 0x00000200; //盖面渲
@@ -62,11 +51,8 @@ const int RenderableType::RGT_PMI = 0x00000100;
 const int RenderableType::RGT_POINT = 0x00000200;
 
 const int RenderableType::RGT_NOTE = 0x00000400;
-const int RenderableType::RGT_ANNOTATION = 0x00000600;
 const int RenderableType::RGT_MEASURE = 0x00000800;
 const int RenderableType::RGT_HANDLER = 0x00001000;
-
-const int RenderableType::RGT_SHADOW = 0x00001200;
 
 const int RenderableType::RGT_SOLID_TRAN = RenderableType::RGT_SOLID
 		|RenderableType::RGT_TRANSPARENT;//!<实体透明显示
@@ -161,18 +147,59 @@ RenderAction::RenderAction(RenderManager* renderMgr) :
 	this->m_scene = NULL;
 
 	//构造显示对象存储组
- 
-	this->InitRenderQueueGroup(m_RenderQueueGroup);
-	this->InitRenderQueueGroup(m_DraggerRenderQueueGroup);
-	this->SetWorkingRenderQueueGroup(&m_RenderQueueGroup);
+	m_RenderQueueGroup.insert(
+			map<int, RenderQueue>::value_type(RenderableType::RGT_TRANSPARENT,
+					RenderQueue(RenderableType::RGT_TRANSPARENT)));
+	m_RenderQueueGroup.insert(
+			map<int, RenderQueue>::value_type(RenderableType::RGT_SOLID,
+					RenderQueue(RenderableType::RGT_SOLID)));
+
+	m_RenderQueueGroup.insert(
+			map<int, RenderQueue>::value_type(RenderableType::RGT_INTOP,
+					RenderQueue(RenderableType::RGT_INTOP)));
+
+	m_RenderQueueGroup.insert(
+			map<int, RenderQueue>::value_type(RenderableType::RGT_EDGELINE,
+					RenderQueue(RenderableType::RGT_EDGELINE)));
+
+	m_RenderQueueGroup.insert(
+			map<int, RenderQueue>::value_type(RenderableType::RGT_TRILINE,
+					RenderQueue(RenderableType::RGT_TRILINE)));
+
+	m_RenderQueueGroup.insert(
+			map<int, RenderQueue>::value_type(RenderableType::RGT_EDGELINEINTOP,
+					RenderQueue(RenderableType::RGT_EDGELINEINTOP)));
+
+	m_RenderQueueGroup.insert(
+			map<int, RenderQueue>::value_type(RenderableType::RGT_PMI,
+					RenderQueue(RenderableType::RGT_PMI)));
+
+	m_RenderQueueGroup.insert(
+			map<int, RenderQueue>::value_type(RenderableType::RGT_BOX,
+					RenderQueue(RenderableType::RGT_BOX)));
+
+	m_RenderQueueGroup.insert(
+			map<int, RenderQueue>::value_type(RenderableType::RGT_NOTE,
+					RenderQueue(RenderableType::RGT_NOTE)));
+
+	m_RenderQueueGroup.insert(
+			map<int, RenderQueue>::value_type(RenderableType::RGT_MEASURE,
+					RenderQueue(RenderableType::RGT_MEASURE)));
+
+	m_RenderQueueGroup.insert(
+			map<int, RenderQueue>::value_type(RenderableType::RGT_HANDLER,
+					RenderQueue(RenderableType::RGT_HANDLER)));
+
+	m_RenderQueueGroup.insert(
+			map<int, RenderQueue>::value_type(RenderableType::RGT_POINT,
+					RenderQueue(RenderableType::RGT_POINT)));
 
 	this->m_renderMgr = renderMgr;
 
 	this->m_shaderManager = NULL;
-    this->m_backgroundColor = NULL;
+
 	 m_clipPlane.resize(5);
 	 m_enableClip.resize(5,0.0f);
-	 m_bReverseClip = false;
 
 	this->InitRenderEffects();
 
@@ -209,7 +236,6 @@ void RenderAction::Reset()
 	m_depthMapFBO.SetResourceManager(resourceMgr);//!< Maincamera出的相机深度图，用来处理边框线
 
 	m_edgeDetectionFBO.SetResourceManager(resourceMgr);//!< 边缘检测帧缓存对象
-	m_clearDelayDrawFlag = true;
 }
 
 void RenderAction::Apply(SceneNode * node)
@@ -224,7 +250,7 @@ RenderManager* RenderAction::GetRenderManager()
 
 void RenderAction::UpdataRenderPara(Body* body)
 {
-	int bodyLodCount = body->GetLodCount() - 1;
+	int bodyLodCount = body->GetCount() - 1;
 	int specifyLodLevel = this->m_renderMgr->GetLodLevel();
 	//判断当前可用LOD和设定lod等级的关系，选取最佳的可以LOD等级作为绘制时使用的等级
 	int currentUseLod =
@@ -242,8 +268,8 @@ void RenderAction::PushRenderable(Renderable* renderable, int type)
 	}
 
 	//如果状态改变了，则进行缓存
-	map<int, RenderQueue>::iterator it = this->m_WorkingRenderQueueGroup->find(type);
-	if (it != this->m_WorkingRenderQueueGroup->end())
+	map<int, RenderQueue>::iterator it = this->m_RenderQueueGroup.find(type);
+	if (it != this->m_RenderQueueGroup.end())
 	{
 		it->second.Push(renderable);
 		this->m_priTypeCache = type;
@@ -261,36 +287,22 @@ void RenderAction::Begin()
 		it->second.Clear();
 		it++;
 	}
-
-	//清理拖拽器的显示队列
-	it = this->m_DraggerRenderQueueGroup.begin();
-	while (it != this->m_DraggerRenderQueueGroup.end())
-	{
-		it->second.Clear();
-		it++;
-	}
-
-	this->GetRenderImageboards().clear();
-
 	this->SetSection(NULL);
 	this->SetFPSNode(NULL);
 	this->SetAxisNode(NULL);
 	this->SetBackGroundNode(NULL);
 	this->SetNoteGroup(NULL);
 	this->SetMeasures(NULL);
-	this->ClearRenderBox();
-	this->SetHandlerGroupNode(NULL);
-	this->SetGroundNode(NULL);
+
 	//清除渐进显示队列中的内容
 	this->BeginPrepareDelayDraw();
 
-	this->SetWorkingRenderQueueGroup(&this->m_RenderQueueGroup);
+	if(SVIEW::Parameters::Instance()->m_simplityMode)
+	{
  
-	this->m_currentRenderImageQueueIndex = 0;
+	}
 	m_currentRenderCount = 0;
-	this->m_renderUIs.clear();
 
-	this->m_hudImages.clear();
 }
 
 void RenderAction::Execute()
@@ -308,40 +320,31 @@ void RenderAction::Execute()
 	}
 	else if( GLVersion== 2)
 	{
-//		GLint nStereoSupport;
-//		glGetIntegerv(GL_STEREO, &nStereoSupport);
 //		LOGI("execute es2");
 		//this->BeginDelayDraw();
 		GLDrawer20::InitialGL();
-		if (Parameters::Instance()->m_useStereo) //是否为VR模式
+
+
+		if (Parameters::Instance()->m_useStereo)
 		{
 			GLShapeDrawer20::SetFocalLength(this);
-			//float distance = (this->GetScene()->GetCamera()->GetWorldPosition() - this->GetScene()->GetSceneBox().Center()).Length()*0.03;
-			//this->GetScene()->GetCamera()->SetPupilDistance(distance);
-			////		this->GetScene()->GetCamera()->UpdatePupilCamera(distance);
+//			float distance = (this->GetScene()->GetCamera()->GetWorldPosition()
+//					- this->GetScene()->GetSceneBox().Center()).Length() * 0.03;
+//			this->GetScene()->GetCamera()->SetPupilDistance(distance);
+//		this->GetScene()->GetCamera()->UpdatePupilCamera(distance);
 			this->GetScene()->GetCamera()->SetCameraMode(1);
-            if (Parameters::Instance()->m_BackTransparent == false){
-                GLShapeDrawer20::DrawBackGround(this->GetBackGroundNode(), this);
-            }
+			GLShapeDrawer20::DrawBackGround(this->GetBackGroundNode(), this);
 			GLShapeDrawer20::DrawRenderPassGroup(this);
 			this->GetScene()->GetCamera()->SetCameraMode(2);
-            if (Parameters::Instance()->m_BackTransparent == false){
-                GLShapeDrawer20::DrawBackGround(this->GetBackGroundNode(), this);
-            }
+			GLShapeDrawer20::DrawBackGround(this->GetBackGroundNode(), this);
 			GLShapeDrawer20::DrawRenderPassGroup(this);
 		}
 		else
 		{
-            if (Parameters::Instance()->m_BackTransparent == false){
-                GLShapeDrawer20::DrawBackGround(this->GetBackGroundNode(), this);
-            }
-
+			GLShapeDrawer20::DrawBackGround(this->GetBackGroundNode(), this);
 			GLShapeDrawer20::DrawRenderPassGroup(this);
 		}
-		GLShapeDrawer20::DrawGroundNode(this->GetGroundNode(), this);
-		//绘制拖拽器
-		GLShapeDrawer20::DrawDraggerPass(this);
-		GLShapeDrawer20::DrawAxis(this->GetAxisNode(), this);		
+		GLShapeDrawer20::DrawAxis(this->GetAxisNode(), this);
 		GLShapeDrawer20::DrawFPS(this->GetFPSNode(), this);
 		this->GetScene()->GetCamera()->SetCameraMode(0);
 		//this->EndDelayDraw();
@@ -350,7 +353,7 @@ void RenderAction::Execute()
 
 void RenderAction::End()
 {
-	this->SetSceneBoxChanged(false);
+
 }
 
 void RenderAction::SetWorldMatrix(Matrix3x4* matrix)
@@ -419,7 +422,7 @@ bool RenderAction::IsImmediateDrawBegin()
 void RenderAction::ClearDelayDraw()
 {
 	m_immediatelyDrawBegin = false;
-	m_clearDelayDrawFlag = true;
+	this->m_delayDrawList.Clear();
 }
 
 void RenderAction::SetDelayDraw(bool delayDraw)
@@ -437,85 +440,6 @@ void RenderAction::AddToDelayDraw(Renderable* renderable)
 	this->m_delayDrawList.Push(renderable);
 }
 
-void RenderAction::AddFaceToDrawQueue(Face* renderable)
-{
-	RenderEffect* renderType = this->GetRenderEffect();
-	RenderableTypeGroup& dataType = renderType->GetRenderableTypeFilter();
-
-	renderable->SetRenderWorldMatrix(this->GetGLWorldMatrix());
-
-	if (dataType.Contain(RenderableType::RGT_SOLID))
-	{
-		if (this->m_delayDrawFlag)
-		{
-			AddToDelayDraw(renderable);
-		}
-		else
-		{
-			PrepareFaceMesh(renderable);
-		}
-	}
-}
-
-void RenderAction::InitRenderQueueGroup(map<int, M3D::RenderQueue>& renderQueueGroup)
-{
-	//构造存在坐标轴渲染的
-	renderQueueGroup.insert(
-		map<int, RenderQueue>::value_type(RenderableType::RGT_SHADOW,
-			RenderQueue(RenderableType::RGT_SHADOW)));
-	renderQueueGroup.insert(
-		map<int, RenderQueue>::value_type(RenderableType::RGT_TRANSPARENT,
-			RenderQueue(RenderableType::RGT_TRANSPARENT)));
-	renderQueueGroup.insert(
-		map<int, RenderQueue>::value_type(RenderableType::RGT_SOLID,
-			RenderQueue(RenderableType::RGT_SOLID)));
-
-	renderQueueGroup.insert(
-		map<int, RenderQueue>::value_type(RenderableType::RGT_INTOP,
-			RenderQueue(RenderableType::RGT_INTOP)));
-
-	renderQueueGroup.insert(
-		map<int, RenderQueue>::value_type(RenderableType::RGT_EDGELINE,
-			RenderQueue(RenderableType::RGT_EDGELINE)));
-
-	renderQueueGroup.insert(
-		map<int, RenderQueue>::value_type(RenderableType::RGT_TRILINE,
-			RenderQueue(RenderableType::RGT_TRILINE)));
-
-	renderQueueGroup.insert(
-		map<int, RenderQueue>::value_type(RenderableType::RGT_EDGELINEINTOP,
-			RenderQueue(RenderableType::RGT_EDGELINEINTOP)));
-
-	renderQueueGroup.insert(
-		map<int, RenderQueue>::value_type(RenderableType::RGT_PMI,
-			RenderQueue(RenderableType::RGT_PMI)));
-
-	renderQueueGroup.insert(
-		map<int, RenderQueue>::value_type(RenderableType::RGT_BOX,
-			RenderQueue(RenderableType::RGT_BOX)));
-
-	renderQueueGroup.insert(
-		map<int, RenderQueue>::value_type(RenderableType::RGT_NOTE,
-			RenderQueue(RenderableType::RGT_NOTE)));
-
-	renderQueueGroup.insert(
-		map<int, RenderQueue>::value_type(RenderableType::RGT_ANNOTATION,
-			RenderQueue(RenderableType::RGT_ANNOTATION)));
-
-	renderQueueGroup.insert(
-		map<int, RenderQueue>::value_type(RenderableType::RGT_MEASURE,
-			RenderQueue(RenderableType::RGT_MEASURE)));
-
-	renderQueueGroup.insert(
-		map<int, RenderQueue>::value_type(RenderableType::RGT_HANDLER,
-			RenderQueue(RenderableType::RGT_HANDLER)));
-
-	renderQueueGroup.insert(
-		map<int, RenderQueue>::value_type(RenderableType::RGT_POINT,
-			RenderQueue(RenderableType::RGT_POINT)));
-
-}
-
 void RenderAction::BeginPrepareDelayDraw()
 {
 	this->m_delayDrawList.Clear();
@@ -526,15 +450,14 @@ void RenderAction::SetAllowDelayDraw(bool allowDelayDraw)
 {
 	this->m_allowDelayDraw = allowDelayDraw;
 }
+    
+bool RenderAction::AllowDelayDraw()
+{
+    return this->m_allowDelayDraw;
+}
 
 bool RenderAction::ProcessDelayDraw()
 {
-	if (this->m_clearDelayDrawFlag)
-	{
-		m_delayDrawList.Clear();
-		m_clearDelayDrawFlag = false;
-		return false;
-	}
 	bool processState = false;
 	RenderabelArray& delayDrawList =  m_delayDrawList.GetRenderableArray();
 	if(delayDrawList.size()>0)
@@ -546,7 +469,7 @@ bool RenderAction::ProcessDelayDraw()
 		this->BeginDelayDraw();
 		m_delayOnceDrawList.Clear();
 		//从后向前删除m_delayDrawList里面的内容
-		if(delayDrawList.size()>this->m_delayDrawOnceCount && m_delayDrawOnceCount > 0)
+		if(delayDrawList.size()>this->m_delayDrawOnceCount)
 		{
 			RenderabelArray& onceDrawList = m_delayOnceDrawList.GetRenderableArray();
 			onceDrawList.assign(delayDrawList.begin()+(delayDrawList.size()- m_delayDrawOnceCount),delayDrawList.end());
@@ -562,25 +485,12 @@ bool RenderAction::ProcessDelayDraw()
 		{
 			GLShapeDrawer::ApplyCamera(this);
 			GLShapeDrawer::DrawSolidRenderPassGroup(this, &(m_delayOnceDrawList));
-		}
-		else
+		}else
 		{
-			map<int, RenderQueue>::iterator it = this->m_RenderQueueGroup.begin();
-			while (it != this->m_RenderQueueGroup.end())
-			{
-				it->second.Clear();
-				it++;
-			}
-
-			this->ClearDelayDraw();
-			this->FillDelayDrawRenderQueue(m_delayOnceDrawList, RenderableType::RGT_SOLID);
-			GLShapeDrawer20::DrawRenderPassGroup(this);
-		
-			/*GLShapeDrawer20::DoSection(this, true);
+			GLShapeDrawer20::DoSection(this, true);
 			GLShapeDrawer20::ApplyCamera(this);
 			GLShapeDrawer20::DrawSolidRenderPassGroup(this, &(m_delayOnceDrawList));
-			if (delayDrawList.size() == 0)
-				GLShapeDrawer20::DoSection(this, false);*/
+			GLShapeDrawer20:: DoSection(this, false);
 		}
 
 		processState = true;
@@ -618,79 +528,35 @@ void RenderAction::Optimize(){
 
 void RenderAction::BeginDelayDraw()
 {
-#ifdef WIN32
-//	if (!RenderContext::IsFramebufferSupported)
-//	{
-////		SVIEW::Parameters::Instance()->m_msaaNum = 0;
-//		return;
-//	}
-//	this->m_delayDrawFBO.Create();
-//	this->m_delayDrawFBO.GetFirstFBO();
-////	action->m_teethFBO.SetSize(intRect.m_right, intRect.m_bottom);
-//	if (Parameters::Instance()->m_msaaNum == 0)
-//	{
-//		this->m_delayDrawFBO.SetColorAttachmentAttribute(0, false, true);//不使用多重采样
-//	}
-//	else
-//	{
-//		this->m_delayDrawFBO.SetColorAttachmentAttribute(0, true, true);//使用多重采样
-//	}
-//	this->m_delayDrawFBO.CreateDepthAttachment(true);
-//	this->m_delayDrawFBO.LinkTextureColorAttachment(0);//0号挂载点
-//	this->m_delayDrawFBO.CheckStatus();
-//	this->m_delayDrawFBO.Resize();
-//	this->m_delayDrawFBO.Bind();
-
-
-
-	if (!RenderContext::IsFramebufferSupported)
-	{
-		//		SVIEW::Parameters::Instance()->m_msaaNum = 0;
-		return;
-	}
-
+	this->m_delayDrawFBO.GetFBO();
+	this->m_delayDrawFBO.GetFirstFBO();
+//	action->m_teethFBO.SetSize(intRect.m_right, intRect.m_bottom);
 	if (Parameters::Instance()->m_msaaNum == 0)
 	{
-		m_delayDrawFBO.SetParameters(1, true, true, true, true, false);
+		this->m_delayDrawFBO.SetColorAttachmentAttribute(0, false, true);//不使用多重采样
 	}
 	else
 	{
-		m_delayDrawFBO.SetParameters(1, true, true, true, true, true);
+		this->m_delayDrawFBO.SetColorAttachmentAttribute(0, true, true);//使用多重采样
 	}
-	m_delayDrawFBO.ReShape();
+	this->m_delayDrawFBO.CreateDepthAttachment(true);
+	this->m_delayDrawFBO.LinkTextureColorAttachment(0);//0号挂载点
+	this->m_delayDrawFBO.CheckStatus();
+	this->m_delayDrawFBO.Resize();
 	this->m_delayDrawFBO.Bind();
-	
-
-
-#else
-
-#endif
 }
 
 void RenderAction::EndDelayDraw()
 {
-	if (!RenderContext::IsFramebufferSupported)
-	{
-		//SVIEW::Parameters::Instance()->m_msaaNum = 0;
-		return;
-	}
 	//this->m_delayDrawFBO.UnBind();
-#ifdef WIN32
-	glBindFramebufferEXT(GL_READ_FRAMEBUFFER_EXT, m_delayDrawFBO.GetObject());
-	glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, this->m_delayDrawFBO.GetOriginalFBO());
+#ifdef _WIN32
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, m_delayDrawFBO.GetObject());
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, this->m_delayDrawFBO.GetFirstFBO());
 	const Viewport temp = m_scene->GetCamera()->GetViewPort();
-	glBlitFramebufferEXT(0, 0, temp.GetRect().m_right, temp.GetRect().m_bottom, 
+	glBlitFramebuffer(0, 0, temp.GetRect().m_right, temp.GetRect().m_bottom, 
 		0, 0, temp.GetRect().m_right, temp.GetRect().m_bottom, GL_COLOR_BUFFER_BIT, GL_LINEAR);
-	glBindFramebufferEXT(GL_READ_FRAMEBUFFER_EXT,0);
-	glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, 0);
-#else
-	//glBindFramebuffer(GL_READ_FRAMEBUFFER, m_delayDrawFBO.GetObject());
-	//glBindFramebuffer(GL_DRAW_FRAMEBUFFER, this->m_delayDrawFBO.GetOriginalFBO());
-	const Viewport temp = m_scene->GetCamera()->GetViewPort();
-	//glBlitFramebuffer(0, 0, temp.GetRect().m_right, temp.GetRect().m_bottom,
-	//	0, 0, temp.GetRect().m_right, temp.GetRect().m_bottom, GL_COLOR_BUFFER_BIT, GL_LINEAR);
-	//glBindFramebuffer(GL_READ_FRAMEBUFFER,0);
-	//glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+	glBindFramebuffer(GL_READ_FRAMEBUFFER,0);
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 #endif
 	//m_delayDrawFBO.RestoreOriginalFBO();
 	//m_delayDrawFBO.RestoreOriginalFBO();
@@ -758,11 +624,6 @@ CullerHelper& RenderAction::GetCullerHelper()
 
 RenderQueueGroup& RenderAction::GetRenderQueueGroup()
 {
-	if (this->m_WorkingRenderQueueGroup)
-	{
-		return *this->m_WorkingRenderQueueGroup;
-	}
-	//如果不存在则返回默认的渲染队列
 	return this->m_RenderQueueGroup;
 }
 
@@ -804,21 +665,22 @@ void RenderAction::InitRenderEffects()
 //	m_frameBffer.SetSize(1024,1024);
 //	m_teethFBO.SetSize(1024,1024);
 
-	DirectionalLight &tempLight = m_light;
+	Light &tempLight = m_light;
 	Color lambient(1, 1, 1, 1.0f);
 	Color ldiffuse(1, 1, 1, 1.0f);
-	Color lspecular(1.0, 1.0, 1.0, 1.0f);
+	Color lspecular(0.0, 0.0, 0.0, 1.0f);
 	Vector4 lpos(0.0, 0.0, 10.0, 0.0);
-	Vector3 lspotdir(0.0, 0.0, 1.0);
+	Vector3 lspotdir(0.0, 0.0, -1.0);
 	Color lambients(0.01, 0.10, 0.01, 1.0f);
 	float spotExponent = 100.0f, spotCutoff = 60.0f, spotCosCutoff = 0.5f, constantAttenuation = 1.0f,
 			linearAttenuation = 0.0005f, quadraticAttenuation = 0.0001f, intensity = 1.0;
 	tempLight.SetAmbient(lambient);
 	tempLight.SetDiffuse(ldiffuse);
 	tempLight.SetSpecular(lspecular);
-	tempLight.SetPositionOld(lpos);
+	tempLight.SetPosition(lpos);
 	tempLight.SetLightModelAmbient(lambients);
 	tempLight.SetSpecularIntensity(intensity);
+	tempLight.TurnOn();
 
 }
 
@@ -834,12 +696,12 @@ CameraNode* RenderAction::GetCamera()
 
 void RenderAction::PrepareRenderPMIS(Model* model)
 {
-	map<int, PMIData*>* modelPMIs = model->GetPMIs();
-	if (modelPMIs->size() > 0)
+	map<int, PMIData*>& modelPMIs = model->GetPMIs();
+	if (modelPMIs.size() > 0)
 	{
-		map<int, PMIData*>::iterator it = modelPMIs->begin();
+		map<int, PMIData*>::iterator it = modelPMIs.begin();
 		PMIData* pmi;
-		while (it != modelPMIs->end())
+		while (it != modelPMIs.end())
 		{
 			pmi = it->second;
 			if (pmi->IsVisible())
@@ -852,37 +714,10 @@ void RenderAction::PrepareRenderPMIS(Model* model)
 	}
 }
 
-void RenderAction::PrepareRenderPMIS(map<int, PMIData*>* modelPMIs)
+void RenderAction::PrepareRenderBox(Model* model)
 {
-	if (!modelPMIs)
-	{
-		return;
-	}
-	if (modelPMIs->size() > 0)
-	{
-		map<int, PMIData*>::iterator it = modelPMIs->begin();
-		PMIData* pmi;
-		while (it != modelPMIs->end())
-		{
-			pmi = it->second;
-			if (pmi->IsVisible())
-			{
-				pmi->FindVisiableObject(this);
-			}
-
-			it++;
-		}
-	}
-}
-
-void RenderAction::PrepareRenderBox(ModelShape* modelShape)
-{
-	if (modelShape->GetWorldBoundingBox().Defined())
-	{
-		this->MergeRenderBox(modelShape->GetWorldBoundingBox());
-		this->PushRenderable(NULL, RenderableType::RGT_BOX);
-	}
-	//model->SetRenderWorldMatrix(this->GetGLWorldMatrix());
+	model->SetRenderWorldMatrix(this->GetGLWorldMatrix());
+	this->PushRenderable(model, RenderableType::RGT_BOX);
 }
 
 void RenderAction::PrepareRenderSection(Section* section)
@@ -893,27 +728,6 @@ void RenderAction::PrepareRenderSection(Section* section)
 void  RenderAction::PrepareRenderNote(Note* note)
 {
    this->PushRenderable(note, RenderableType::RGT_NOTE);
-}
-
-void RenderAction::PrepareRenderAnnotation(Note* note)
-{
-	this->PushRenderable(note, RenderableType::RGT_ANNOTATION);
-}
-
-void RenderAction::PrepareRenderImage(ImageBoard* imageBoard)
-{
-	int currentImageQueueIndex = this->GetCurrentRenderImageQueueIndex();
-	if (currentImageQueueIndex == 0)
-	{
-		this->m_renderImageboards.push_back(imageBoard);
-	}
-	else if (currentImageQueueIndex ==1)
-	{
-		this->m_renderUIs.push_back(imageBoard);
-	}else if (currentImageQueueIndex == 2)
-	{
-		this->m_hudImages.push_back(imageBoard);
-	}
 }
 
 void RenderAction::PreapareRenderPoint(Point* point)
@@ -946,7 +760,7 @@ bool RenderAction::Merge(Face* faceRenderData)
 {
 	bool mergeState = false;
 	//获取需要合并的face的显示状态，当前仅有Color，后期扩展成Material
-	Color* drawColor = faceRenderData->GetDrawColor();
+	Color& drawColor = faceRenderData->GetDrawColor();
 	//为空说明第一次进行合并
 	//判断颜色状态是否和前一个Face相同，如果相同则进行面合并，如果不同则不进行合并
 	//后期增加获取Hash值，通过Hash值进行高效判断
@@ -959,14 +773,14 @@ bool RenderAction::Merge(Face* faceRenderData)
 		goto RET;
 	}
 	else if (m_mergeFaceCache == NULL
-			|| *drawColor != m_mergeFaceCache->GetRenderColor())
+			|| drawColor != m_mergeFaceCache->GetRenderColor())
 	{
 		//合并失败了，将faceRenderData赋值给m_mergeFace，供下一次合并时使用
 		if( faceRenderData->GetRenderMeshData()){
 			m_mergeFaceCache = faceRenderData;
 
 			VertexSet* meshData = faceRenderData->GetRenderMeshData()->GetRefMesh();
-			if(meshData->IsDirty())
+			if(meshData->IsDirty() && SVIEW::Parameters::Instance()->m_OpenGLESVersion > 1)
 			{
 				SceneManager* scene = this->m_scene;
 				//显示更新硬件缓存
@@ -979,7 +793,7 @@ bool RenderAction::Merge(Face* faceRenderData)
 	}
 	else
 	{
-		m_mergeFaceCache->MergeRenderMesh(faceRenderData->GetData());
+		m_mergeFaceCache->MergeRenderMesh(faceRenderData->GetRenderMeshData());
 		mergeState = true;
 	}
 
@@ -995,7 +809,7 @@ bool RenderAction::Merge(Edge* edge)
 	//后期增加获取Hash值，通过Hash值进行高效判断
 
 	//获取需要合并的face的显示状态，当前仅有Color，后期扩展成Material
-	Color* drawColor = edge->GetDrawColor();
+	Color& drawColor = edge->GetDrawColor();
 
 	//如果不可见，将当前合并缓存设置为空，等待下一次重新开始合并
 	if(!edge->IsVisible())
@@ -1007,7 +821,7 @@ bool RenderAction::Merge(Edge* edge)
 		goto RET;
 	}
 	else if (m_mergeEdgeCache == NULL
-			|| *drawColor != *m_mergeEdgeCache->GetDrawColor())
+			|| drawColor != m_mergeEdgeCache->GetDrawColor())
 	{
 		//合并失败了，将faceRenderData赋值给m_mergeFace，供下一次合并时使用
 		m_mergeEdgeCache = edge;
@@ -1029,11 +843,11 @@ void RenderAction::PrepareRenderEdges(Body* body)
 
 	if (dataType.Contain(RenderableType::RGT_EDGELINE))
 	{
-		vector<Edge*>* bodyEdges = body->GetEdges();
+		vector<Edge*>& bodyEdges = body->GetEdges();
 //		LOGE("Mrege body edge begin");
-		for (int i = 0; i < bodyEdges->size(); i++)
+		for (int i = 0; i < bodyEdges.size(); i++)
 		{
-			Edge* edge = bodyEdges->at(i);
+			Edge* edge = bodyEdges[i];
 			PrepareRenderEdges(edge);
 		}
 //		LOGE("Mrege body edge end");
@@ -1046,13 +860,14 @@ void RenderAction::PrepareRenderEdges(Edge* edge)
 	{
 		return;
 	}
-	edge->SetRenderWorldMatrix(this->GetGLWorldMatrix()); 
+	edge->SetRenderWorldMatrix(this->GetGLWorldMatrix());
 	this->PushRenderable(edge, RenderableType::RGT_EDGELINE);
 }
 
 bool RenderAction::ISFaceHasDrawData(Face* face)
 {
-	Mesh* meshdata = (Mesh*) face->GetData();
+	Mesh* meshdata = (Mesh*) face->GetData(
+			face->GetUseLevel(this));
 
 	if (meshdata != NULL)
 	{
@@ -1069,7 +884,6 @@ void RenderAction::PrepareRenderFace(Face* face)
 	//如果不存在显示数据，或者该显示数据能够合并到其他的face中去，则返回
 	if (!ISFaceHasDrawData(face))
 	{
-		face->SetRenderMeshData(NULL);
 		return;
 	}
 	else
@@ -1077,11 +891,34 @@ void RenderAction::PrepareRenderFace(Face* face)
 		//如果能够进行面合并，合并成功后返回。不将面加入显示队列，如果合并不成功则表示当前面不能够进行合并，当前面应该加入显示队列
 		if (Merge(face))
 		{
-			face->SetRenderMeshData(NULL);
 			return;
 		}
 	}
-	//this->AddFaceToDrawQueue(face);
+	RenderEffect* renderType = this->GetRenderEffect();
+	RenderableTypeGroup& dataType = renderType->GetRenderableTypeFilter();
+
+	face->SetRenderWorldMatrix(this->GetGLWorldMatrix());
+
+	if (dataType.Contain(RenderableType::RGT_SOLID))
+	{
+		if(this->m_delayDrawFlag && this->m_allowDelayDraw)
+		{
+			AddToDelayDraw(face);
+		}else
+		{
+			PrepareFaceMesh(face);
+		}
+	}
+
+	if (dataType.Contain(RenderableType::RGT_TRILINE))
+	{
+		FacePrepareLineMesh(face);
+	}
+
+//	if (dataType.Contain(RenderableType::RGT_EDGELINE))
+//	{
+//		FacePrepareEdgeLine(face);
+//	}
 
 //	if (dataType.IsContain(DrawableType::RGT_INTOP))
 //	{
@@ -1101,61 +938,20 @@ void RenderAction::PrepareRenderEdges(Face* face)
 
 void RenderAction::PrepareFaceMesh(Face* face)
 {
-	if (face->RecesiveShadow())
-	{
-		this->PushRenderable(face, RenderableType::RGT_SHADOW);
-	}
-
-	bool isTransparent = false;
-	if (face->GetMaterial())
-	{
-		BaseMaterial* material = face->GetMaterial();
-		if (material->GetMaterialType() == MaterialType_Phong|| material->GetMaterialType() == MaterialType_MatCap)
-		{
-			Material* temp = (Material*)material;
-			if (temp->Opacity() < 1.0)
-			{
-				this->PushRenderable(face, RenderableType::RGT_TRANSPARENT);
-				isTransparent = true;
-			}
-		}
-		else if (material->GetMaterialType() == MaterialType_Pbr)
-		{
-			PbrMaterial* temp = (PbrMaterial*)material;
-			if (temp->Opacity() < 1.0)
-			{
-				this->PushRenderable(face, RenderableType::RGT_TRANSPARENT);
-				isTransparent = true;
-			}
-		}
-	}
-	else if (face->GetDrawColor()->IsTransparent())
-	//			&& !face->IsSelected())
+	if (face->GetDrawColor().IsTransparent())
+//			&& !face->IsSelected())
 	{
 		this->PushRenderable(face, RenderableType::RGT_TRANSPARENT);
-		isTransparent = true;
 	}
-
-
-	if (!isTransparent)
+	else //if (!face->IsSelected())
 	{
 		this->PushRenderable(face, RenderableType::RGT_SOLID);
-	}
-
-	if (!Parameters::Instance()->m_IsShowBox && face->IsHightlight())
-	{
-		this->PushRenderable(face, RenderableType::RGT_INTOP);
 	}
 }
 
 void RenderAction::FacePrepareLineMesh(Face* face)
 {
 	this->PushRenderable(face, RenderableType::RGT_TRILINE);
-}
-
-bool RenderAction::GetSceneBoxChanged() const
-{
-	return m_isSceneBoxChanged;
 }
 
 void RenderAction::FacePrepareEdgeLine(Face* face)
@@ -1219,7 +1015,7 @@ LightList* RenderAction::GetLights()
 	return &this->m_lights;
 }
 
-void RenderAction::AddLight(DirectionalLight* light)
+void RenderAction::AddLight(Light* light)
 {
 	if(light)
 	{
@@ -1230,52 +1026,6 @@ void RenderAction::AddLight(DirectionalLight* light)
 void RenderAction::SetLights(LightList* lights)
 {
 	m_lights = *lights;
-}
-
-LightList* RenderAction::GetModelLights()
-{
-	return &this->m_modellights;
-}
-
-void RenderAction::AddModelLight(DirectionalLight* light)
-{
-	if (light)
-	{
-		m_modellights.push_back(light);
-	}
-}
-
-void RenderAction::SetModelLights(LightList* lights)
-{
-	m_modellights = *lights;
-}
-
-void RenderAction::ClearRenderBox()
-{
-	m_selectBox.Clear();
-}
-
-void RenderAction::MergeRenderBox(BoundingBox& mergeBox)
-{
-	if (mergeBox.Defined())
-	{
-		this->m_selectBox.Merge(mergeBox);
-	}
-}
-
-BoundingBox& RenderAction::GetRenderBox()
-{
-	return m_selectBox;
-}
-
-void RenderAction::SetGroundNode(GroundNode* groundNode)
-{
-	m_groundNode = groundNode;
-}
-
-GroundNode* RenderAction::GetGroundNode()
-{
-	return m_groundNode;
 }
 
 void RenderAction::SetBackGroundNode(BackgroundNode* backgroundColor)
@@ -1296,14 +1046,6 @@ void RenderAction::SetCullerMode(const CullerMode& cullerMode)
 void RenderAction::SetSection(Section* section)
 {
 	this->m_section = section;
-	//如果为空，则关闭剖切操作
-	if (!this->m_section)
-	{
-		for (int i = 0; i < 3; i++)
-		{
-			this->m_enableClip[i] = false;
-		}
-	}
 }
 
 Section* RenderAction::GetSection()
@@ -1420,6 +1162,7 @@ void RenderAction::SetRotateCenter(HandlerRotateCenter* rotateCenter)
 	this->m_rotateCenter = rotateCenter;
 }
 
+
 HandlerRotateCenter* RenderAction::GetRotateCenter()
 {
 	return this->m_rotateCenter;
@@ -1436,7 +1179,6 @@ ShaderManager * RenderAction::GetShaderMananger()
 	{
 		m_shaderManager = new ShaderManager;
 		m_shaderManager->SetCurrentAction(this);
-		m_shaderManager->Init();
 	}
 	return this->m_shaderManager;
 }
@@ -1462,17 +1204,15 @@ AxisNode* RenderAction::GetAxisNode()
 
 void RenderAction::ClearGLResource()
 {
-	//m_frameBffer.ClearResource();
-	//m_teethFBO.ClearResource();
-	//m_delayDrawFBO.ClearResource();
-	//m_depthMapFBO.ClearResource();
-	//m_edgeDetectionFBO.ClearResource();
+	m_frameBffer.ClearResource();
+	m_teethFBO.ClearResource();
+	m_delayDrawFBO.ClearResource();
+	m_depthMapFBO.ClearResource();
+	m_edgeDetectionFBO.ClearResource();
 
 	//在关闭模型后，清除临时渲染队列
 	this->m_delayDrawList.Clear();
 	this->m_delayDrawOnceCount = 0;
-
-	this->m_scene->GetRenderManager()->GetEffectManager()->ClearResource();
 }
 
 void RenderAction::ResizeFBOs(int width,int height)
@@ -1483,40 +1223,6 @@ void RenderAction::ResizeFBOs(int width,int height)
 	m_delayDrawFBO.SetSize(width,height);
 	m_depthMapFBO.SetSize(width,height);
 	m_edgeDetectionFBO.SetSize(width,height);
-
-	//UI端视口大小改变了
-	//m_frameBffer.DeatchFromPriFBO();
-	//m_teethFBO.DeatchFromPriFBO();
-	//m_delayDrawFBO.DeatchFromPriFBO();
-	//m_depthMapFBO.DeatchFromPriFBO();
-	//m_edgeDetectionFBO.DeatchFromPriFBO();
-	this->m_scene->GetRenderManager()->GetEffectManager()->SetSize(width, height);
-}
-
-void RenderAction::SetSceneBoxChanged(bool val)
-{
-	m_isSceneBoxChanged = val;
-}
-
-M3D::HandlerGroup* RenderAction::GetHandlerGroupNode() const
-{
-	return m_handlerGroupNode;
-}
-
-void RenderAction::SetHandlerGroupNode(HandlerGroup* val)
-{
-	m_handlerGroupNode = val;
-}
-
-map<int, M3D::RenderQueue>* RenderAction::GetWorkingRenderQueueGroup() const
-{
-	return m_WorkingRenderQueueGroup;
-}
-
-void RenderAction::SetWorkingRenderQueueGroup(map<int, M3D::RenderQueue>* val)
-{
-	this->m_priTypeCache = 0;
-	m_WorkingRenderQueueGroup = val;
 }
 
 void RenderQueue::Clear()
@@ -1611,9 +1317,6 @@ void RenderQueuePriority::InitialSectionEffect()
 void RenderQueuePriority::InitialNormalEffect()
 {
 	//控制渲染对象显示的优先级
-	//阴影
-	RenderTech* effectShadow = new RenderTech();
-	effectShadow->SetRenderGroupType(RenderableType::RGT_SHADOW);
 	RenderTech* effectEDGELINE = new RenderTech();
 	effectEDGELINE->SetRenderGroupType(RenderableType::RGT_EDGELINE);
 	//线
@@ -1640,10 +1343,6 @@ void RenderQueuePriority::InitialNormalEffect()
 	//批注
 	RenderTech* effectNote = new RenderTech();
 	effectNote->SetRenderGroupType(RenderableType::RGT_NOTE);
-
-	//批注
-	RenderTech* effectAnnotation = new RenderTech();
-	effectAnnotation->SetRenderGroupType(RenderableType::RGT_ANNOTATION);
 	//测量
 	RenderTech* effectMeasure = new RenderTech();
 	effectMeasure->SetRenderGroupType(RenderableType::RGT_MEASURE);
@@ -1657,7 +1356,6 @@ void RenderQueuePriority::InitialNormalEffect()
 	effectPoint->SetRenderGroupType(RenderableType::RGT_POINT);
 
 	//根据push的顺序依次取队列数据进行渲染
-	m_renderQueueTechs.push_back(effectShadow);
 	m_renderQueueTechs.push_back(effectEDGELINE);
 	m_renderQueueTechs.push_back(effectEDGELINEINTOP);
 	m_renderQueueTechs.push_back(effectTRILINE);
@@ -1668,7 +1366,6 @@ void RenderQueuePriority::InitialNormalEffect()
 	m_renderQueueTechs.push_back(effectPoint);
 	m_renderQueueTechs.push_back(effectINTOP);
 	m_renderQueueTechs.push_back(effectNote);
-	m_renderQueueTechs.push_back(effectAnnotation);
 	m_renderQueueTechs.push_back(effectMeasure);
 	m_renderQueueTechs.push_back(effectHandler);
 }

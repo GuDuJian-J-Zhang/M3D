@@ -15,6 +15,7 @@
 #include "m3d/M3D.h"
 #include "m3d/M3DStates.h"
 #include "m3d/model/Shape.h"
+
 namespace M3D
 {
 
@@ -42,6 +43,7 @@ public:
 	 * @param geoAttribute
 	 */
 	virtual void SetGeoAttribute(GeometryAttribute* geoAttribute);
+
 private:
 	GeometryAttribute* m_geoAttribute;
 };
@@ -65,7 +67,6 @@ private:
 	float m_fUMin; //!< 起始范围
 	float m_fUMax; //!< 终止范围
 	vector<Vector3> m_pntPoints; //!< 点列
-	vector<M3D_INDEX_TYPE> m_PntIndex; //!<纪录索引点，共保存的时候使用
 public:
 	SPolyLine(void);
 	virtual ~SPolyLine(void);
@@ -86,10 +87,6 @@ public:
 	M3D_STATUS SetPoints(const vector<Vector3>& i_pntPoints);
 	void GetDomain(float& o_fUMin, float& o_fUMax);
 	M3D_STATUS SetDomain(float i_fUMin, float i_fUMax);
-
-	void AddPointsIndex(M3D_INDEX_TYPE pointIndex);
-	vector<M3D_INDEX_TYPE>& GetPntIndex();
-	void SetPntIndex(vector<M3D_INDEX_TYPE>& val);
 };
 
 class M3D_API RefPolyLine: public IPolyLine

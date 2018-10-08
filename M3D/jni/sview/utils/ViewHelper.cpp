@@ -20,7 +20,6 @@
 
 
 #include "sview/views/View.h"
-#include "m3d/model/ModelShape.h"
 
 using namespace M3D;
 
@@ -38,7 +37,7 @@ ViewHelper::~ViewHelper()
 }
 
 bool ViewHelper::SetShapePosByScreenPoint(const Vector2& screenPnt,
-		IShape* shape, View* view)
+		Shape* shape, View* view)
 {
 	bool ret = false;
 	if (view)
@@ -51,12 +50,12 @@ bool ViewHelper::SetShapePosByScreenPoint(const Vector2& screenPnt,
 
 		if(shape)
 		{
-			Model* model  = static_cast<Model*>(shape);
-			if (model != NULL)
+			SceneNode *node = shape->GetSceneNode();
+			if (node != NULL)
 			{
 				//首先根据包围的中心点和摄像机的朝向，确定一张通过包围盒中心点的平面
 				//让平移操作在这张平面上进行，能够实现最佳的移动效果
-				BoundingBox& box = model->GetWorldBoundingBox();
+				BoundingBox& box = node->GetWorldBoundingBox();
 				Vector3 center = box.Center();
 				Plane plane(camera->GetScreenRay(screenPnt.m_x, screenPnt.m_y).GetDirection(),center);
 
@@ -64,11 +63,11 @@ bool ViewHelper::SetShapePosByScreenPoint(const Vector2& screenPnt,
 				worldPnt = plane.Project(worldPnt);
 
 				Vector3 localDis; //目标点
-				localDis = model->GetWorldTransform().Inverse()
+				localDis = node->GetParent()->GetWorldTransform().Inverse()
 						* worldPnt;
-				Vector3 localSrc = model->GetWorldTransform().Translation();//原始点
+				Vector3 localSrc = node->GetWorldTransform().Translation();//原始点
 				Vector3 mov = localDis - localSrc;
-				model->Translate(mov, TS_PARENT);
+				node->Translate(mov, TS_PARENT);
 				ret = true;
 			}
 		}
@@ -89,7 +88,7 @@ Vector3 ViewHelper::ScreenToWorldPoint(const Vector2& screenPnt, float depth,
 	return worldPnt;
 }
     
-Vector3 ViewHelper::ScreenToWorldPointByShape(const Vector2& screenPnt, IShape* shape,View* view)
+Vector3 ViewHelper::ScreenToWorldPointByShape(const Vector2& screenPnt,Shape* shape,View* view)
 {
 	Vector3 worldPnt;
     if (view)
@@ -101,29 +100,24 @@ Vector3 ViewHelper::ScreenToWorldPointByShape(const Vector2& screenPnt, IShape* 
         
         if(shape)
         {
-			Model* model = static_cast<Model*>(shape);
-			if (model != NULL)
-			{
+            SceneNode *node = shape->GetSceneNode();
+            if (node != NULL)
+            {
                 //首先根据包围的中心点和摄像机的朝向，确定一张通过包围盒中心点的平面
                 //让平移操作在这张平面上进行，能够实现最佳的移动效果
-				ModelShape* shapeNode =((Model*)shape)->GetModelShape();
-				if(shapeNode)
-				{
-				    BoundingBox& box = shapeNode->GetWorldBoundingBox();
-				                Vector3 center = box.Center();
-				                Plane plane(camera->GetScreenRay(screenPnt.m_x, screenPnt.m_y).GetDirection(),center);
-
-				                //将空间中的点投影到平面上
-				                worldPnt = plane.Project(worldPnt);
-				}
-
+                BoundingBox& box = node->GetWorldBoundingBox();
+                Vector3 center = box.Center();
+                Plane plane(camera->GetScreenRay(screenPnt.m_x, screenPnt.m_y).GetDirection(),center);
+                
+                //将空间中的点投影到平面上
+                worldPnt = plane.Project(worldPnt);
             }
         }
     }
     return worldPnt;
 }
     
-Vector3 ViewHelper::ScreenToLocalPointByShape(const Vector2& screenPnt, IShape* shape,View* view)
+Vector3 ViewHelper::ScreenToLocalPointByShape(const Vector2& screenPnt,Shape* shape,View* view)
 {
     Vector3 localPnt;
     if (view)
@@ -136,42 +130,37 @@ Vector3 ViewHelper::ScreenToLocalPointByShape(const Vector2& screenPnt, IShape* 
         
         if(shape)
         {
-			Model* model = static_cast<Model*>(shape);
-			if (model != NULL)
-			{
+            SceneNode *node = shape->GetSceneNode();
+            if (node != NULL)
+            {
                 //首先根据包围的中心点和摄像机的朝向，确定一张通过包围盒中心点的平面
                 //让平移操作在这张平面上进行，能够实现最佳的移动效果
-				ModelShape* shapeNode =((Model*)shape)->GetModelShape();
-									if(shapeNode)
-									{
-										  BoundingBox& box = shapeNode->GetWorldBoundingBox();
-										                Vector3 center = box.Center();
-										                Plane plane(camera->GetScreenRay(screenPnt.m_x, screenPnt.m_y).GetDirection(),center);
-
-										                //将空间中的点投影到屏幕上
-										                worldPnt = plane.Project(worldPnt);
-
-										                localPnt = model->GetWorldTransform().Inverse()
-										                * worldPnt;
-									}
-
+                BoundingBox& box = node->GetWorldBoundingBox();
+                Vector3 center = box.Center();
+                Plane plane(camera->GetScreenRay(screenPnt.m_x, screenPnt.m_y).GetDirection(),center);
+                
+                //将空间中的点投影到屏幕上
+                worldPnt = plane.Project(worldPnt);
+ 
+                localPnt = node->GetParent()->GetWorldTransform().Inverse()
+                * worldPnt;
             }
         }
     }
     return localPnt;
 }
     
-Vector3 ViewHelper::WorldPointToLocal(const Vector3& worldPnt, IShape* shape,View* view)
+Vector3 ViewHelper::WorldPointToLocal(const Vector3& worldPnt,Shape* shape,View* view)
 {
     Vector3 loaclPnt;
     if (view)
     {
         if(shape)
         {
-			Model* model = static_cast<Model*>(shape);
-			if (model != NULL)
-			{
-                loaclPnt =model->GetWorldTransform().Inverse()
+            SceneNode *node = shape->GetSceneNode();
+            if (node != NULL)
+            {
+                loaclPnt = node->GetParent()->GetWorldTransform().Inverse()
                 * worldPnt;
             }
         }

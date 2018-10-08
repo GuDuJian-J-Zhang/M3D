@@ -43,17 +43,13 @@ using M3D::GeometryAttribute;
 
 namespace M3D
 {
-	class Model;
 	class ShapeSet;
-	class BaseMaterial;
-	class ShapeProperty;
 	class Material;
+	class ShapeProperty;
 }
 using M3D::ShapeSet;
-using M3D::BaseMaterial;
 using M3D::Material;
 using M3D::ShapeProperty;
-using M3D::Model;
 
 class Stk_File;
 class Stk_Instance;
@@ -106,8 +102,6 @@ protected:
 	 */
 	Model* ReadFile(string file);
 
-	void ConvertModelColorToMaterial(Model * model);
-
 	/**@brief 获取实例数据
 	 * @param model 要填充的当前model
 	 * @param ins	当前实例
@@ -115,7 +109,7 @@ protected:
 	 * @param upInsColor	父实例的颜色
 	 */
 	void GetInstanceData(Model* model, Stk_Instance* ins
-			, STK_BOOL upHasColor,STK_RGBA32 upInsColor ,STK_BOOL upVisible);
+			, STK_BOOL upHasColor,STK_RGBA32 upInsColor ,string* pStrParentPlacePath );
 
 	/**@brief 获取原型数据
 	 * @param model 要填充的当前model
@@ -154,7 +148,7 @@ protected:
 	 * @param bodyColor
 	 * @param upInsColor
 	 */
-	void AddProtoMeshComDataToBody(Body* body, Stk_Mesh_Com *pMeshCom,int protoTypeLODCount,
+	void AddProtoMeshComDataToBody(Body* body,Stk_Mesh_Com *pMeshCom,int protoTypeLODCount,
 				STK_BOOL upHasColor,  const STK_RGBA32&  bodyColor, const STK_RGBA32&  upInsColor);
 	/**
 	 * 获取合并后的Face数据，当comMesh 使用同一颜色标记为真时使用
@@ -164,7 +158,7 @@ protected:
 	 * @param meshcolor
 	 * @param lodCount
 	 */
-	void  AddMergeFaceToBody(Body* body, VertexSet* bodymeshData, Stk_Mesh_Com *pMeshCom,
+	void  AddMergeFaceToBody(Body* body, Stk_Mesh_Com *pMeshCom,
 			STK_BOOL upHasColor,  const STK_RGBA32&  meshcolor, int lodCount);
 
 	/**
@@ -173,7 +167,7 @@ protected:
 	 * @param pMeshCom
 	 * @param readLODLevel
 	 */
-	void  AddLodDataToBody(Body* body, VertexSet* bodymeshData, Stk_Mesh_Com *pMeshCom,int readLODLevel);
+	void  AddLodDataToBody(Body* body, Stk_Mesh_Com *pMeshCom,int readLODLevel);
 
 	/**
 	 * 通过comMesh数据填充body
@@ -181,7 +175,7 @@ protected:
 	 * @param pMeshCom
 	 * @param lodCount
 	 */
-	void FillBody(Body* body, VertexSet* bodymeshData, Stk_Mesh_Com *pMeshCom,int lodCount);
+	void FillBody(Body* body, Stk_Mesh_Com *pMeshCom,int lodCount);
 	/**
 	 * 获取实例Face的数据
 	 * @param body
@@ -190,12 +184,8 @@ protected:
 	 * @param meshcolor
 	 * @param lodCount
 	 */
-	void AddFaceToBody(Body* body, VertexSet* bodyMesh, Stk_Mesh_Com *pMeshCom,
+	void AddFaceToBody(Body* body, Stk_Mesh_Com *pMeshCom,
 			STK_BOOL upHasColor,  const STK_RGBA32&  meshcolor, int lodCount);
-	/**
-	* 判断STK_Mesh是否有相同的颜色
-	*/
-	bool IsMeshHasUniColor(Stk_Mesh_Com *pMeshCom, STK_BOOL upHasColor, const STK_RGBA32& meshcolor);
 	/**
 	 * 获取实例Face的Lod显示数据
 	 * @param pFace
@@ -203,7 +193,7 @@ protected:
 	 * @param allMeshLOD
 	 * @param lodLevel
 	 */
-	void AddLodDataToFace(Face* pFace,Stk_Mesh_Face* pMeshFace, VertexSet* bodyMesh, Stk_Mesh_Com *pMeshCom,map<unsigned int, MeshLODInfo*>& allMeshLOD,
+	void AddLodDataToFace(Face* pFace,Stk_Mesh_Face* pMeshFace,Stk_Mesh_Com *pMeshCom,map<unsigned int, MeshLODInfo*>& allMeshLOD,
 			int lodLevel);
 	/**
 	 * 获取合并后实例的LOD数据
@@ -211,7 +201,7 @@ protected:
 	 * @param pMeshCom
 	 * @param readLodLevel
 	 */
-	void AddMergeLodDataToFace(Face* pFace, VertexSet* bodymeshData, Stk_Mesh_Com *pMeshCom, int readLodLevel);
+	void AddMergeLodDataToFace(Face* pFace, Stk_Mesh_Com *pMeshCom, int readLodLevel);
 
 	/**
 	 * 获取实例边界线数据
@@ -281,7 +271,7 @@ protected:
 	 * @param renderId
 	 * 内部存储类protoTypeMaterial的信息，在解析一个proto数据时不用每次都传递
 	 */
-	BaseMaterial*  GetMaterialById(unsigned int renderId);
+	Material*  GetMaterialById(unsigned int renderId);
 
 	/**
 	 *
@@ -347,8 +337,6 @@ private:
 	GeometryAttribute* GetToroidaifaceFromStk(Stk_GeometryAttribute* stk_geo);
 	GeometryAttribute* GetLineGeoFromStk(Stk_GeometryAttribute* stk_geo);
 	GeometryAttribute* GetEllipseGeoFromStk(Stk_GeometryAttribute* stk_geo);
-
-	void ReadTopProtoInfo(Stk_ProtoType* topProto, Model* topModel);
 
 	/**
 	 * 从model原型表中获取指定id的model
@@ -419,6 +407,12 @@ private:
 	void LoadReadConfig();
 
 	/**
+	 * 是否使用索引方式进行数据存储
+	 * @return
+	 */
+	bool IsUseIndex();
+
+	/**
 	 * 得到SVL文件中存储的xml格式动画字符串
 	 * @return
 	 */
@@ -429,6 +423,19 @@ private:
 	 * @param xmlData
 	 */
 	virtual void SetXMLAnimationData(const string& xmlData);
+
+     /**
+	 * 设置以索引方式进行数据存储
+	 * @param useIndex
+	 */
+	void SetUseIndex(bool useIndex);
+
+    /**
+     * 通过索引个数和自身是否允许使用索引条件，判断能够使用索引
+     * @param indexNum
+     * @return
+     */
+	bool CanUseIndex(int indexNum);
 
     /**
      * 将MeshFace中的索引数据加入 faceMeshData
@@ -511,7 +518,7 @@ private:
 	 * @param renderId
 	 * @return
 	 */
-	string GetSVLMaterialID(Stk_File* protoType,unsigned int renderID);
+	string GetSVLMaterialID(unsigned int renderID);
 
 	void SVLRenderToMaterial(Material* material,Stk_Render* stkRenderP);
 
@@ -525,7 +532,6 @@ private:
 private:
 	Stk_DocumentManager* m_stkDocMgr;  //!< 当前dm的文件对象
 	map<int, Model*> m_ModelMap;       //!< Model的表
-	map<string, Model*> m_modelPlcPathMap; //!< 根据装配路径进行缓存
 
 	bool m_IsSetDefaultColor;	//!< 是否设置默认颜色
 	bool m_IsUseLOD;//!< 是否使用LOD
@@ -536,6 +542,7 @@ private:
 	bool isHighPerformance;  //!<是否使用高性能模式
 
 	string m_xmlAnimatinData;//!<存储svl内部读取的动画文件
+	bool m_isUseIndex; //!<是否使用索引方式进行数据存储
 
 	bool m_readEdge;
 
@@ -550,7 +557,7 @@ private:
 
 	bool m_useCATIAMode;//!<使用catai方式构建节点
 
-	map<int,BaseMaterial*> m_protoTypeMaterialCache;
+	map<int,Material*> m_protoTypeMaterialCache;
 
 	int totaolInsCount;
 	int m_currentInsIndex;

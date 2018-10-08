@@ -29,17 +29,11 @@ public:
 	 * @param resourceMgr
 	 */
 	void SetResourceManager(ResourceManager* resourceMgr);
-	ResourceManager* GetResourceManager() { return m_resourceMgr; }
-	
-	int GetSvlId() const { return m_svlId; }
-	//用来设置SVLX 对象中对应的ID
-	void SetSvlId(int val) { m_svlId = val; }
+
 private:
 	void Init();
 protected:
 	ResourceManager* m_resourceMgr;//!<设置资源管理
-
-	int m_svlId;
 };
 }
 

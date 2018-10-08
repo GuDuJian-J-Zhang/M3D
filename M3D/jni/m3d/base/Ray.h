@@ -169,16 +169,6 @@ public:
 	 * @brief
 	 */
 	Vector3& GetOrigin() const;
-	M3D_ADDRESSTYPE Address()
-	{
-		//获取地址的真实方式
-		return TAddress(*this);
-	}
-
-	void FillByAddress(M3D_ADDRESSTYPE memoryAddress)
-	{
-		*this = *TFromAddress<Ray>(memoryAddress);
-	}
 
 	/**
 	 * @brief  Ray origin.

@@ -243,7 +243,7 @@ public:
 	/*!
 	This method clear init target object and insert with the given vector of target object information.
 	\param vecTarget: The vector of target object information.*/
-	void UpdateInitTargetObjectList(std::vector<TARGETOBJECTINFO*>& vecTarget);
+	void UpdateInitTargetObjectList(vector<TARGETOBJECTINFO>& vecTarget);
 	/*!
 	This method return A pointer to the list of target object.
   	*/
@@ -263,7 +263,8 @@ public:
   	*/
 	void Serialize_InitTargetObject(CUtilityXMLGenerator *xmlgen);
 
-	CAnimationCallBack* GetAnimationCallBack();
+	View* GetView();
+	void SetView(View* view);
 
 	/************************************************************************/
 	/* 功能：
@@ -282,9 +283,6 @@ public:
 	int WriteToFile(const unsigned short *filename);
 #endif
 	int WriteToFile(const char *filename);
-
-	//获取序列化为XML格式（UTF-8编码）的动画数据
-	bool GetDataBuffer(char** pBuffer,int& nBufferSize);
 	//
 	//	/*!
 	//	 Reads XML data containing animation tags from a file and loads it into memory.
@@ -346,6 +344,8 @@ protected:
 	float				m_fPlaySpeed;							/*!< Play speed. */
 
 	struct vlist_s *	m_InitTargetObjectList;					/*!< A pointer to init target object list. */
+
+	View* view;
 
 };
 SA_NAMESPACE_END

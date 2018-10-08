@@ -69,16 +69,10 @@ public:
 	Vector3 ScreenToWorldPoint(int x, int y, float depth) const;
 
 	Vector3 ScreenToWorldPoint(const Vector2& scrPnt, float depth) const;
-	M3D_ADDRESSTYPE Address()
-	{
-		//获取地址的真实方式
-		return TAddress(*this);
-	}
-
-	void FillByAddress(M3D_ADDRESSTYPE memoryAddress)
-	{
-		*this = *TFromAddress<Viewport>(memoryAddress);
-	}
+	/**
+	 * @brief
+	 */
+	Vector2 NormalizeScreenPnt();
 
 private:
 	/**

@@ -21,11 +21,6 @@ template <class C> void FreeClear( C & cntr ) {
     }
     cntr.clear();
 }
-
-class Face;
-class Body;
-class Model;
-
 /**
  * @class
  * @brief 剖切线计算和盖面计算辅助类
@@ -48,7 +43,7 @@ public:
 	 * @param data
 	 * @param node
 	 */
-	static void GetSectionLines(void* data, Model* node);
+	static void GetSectionLines(void* data, SceneNode* node);
 
 	/**
 	 * 获取与剖切面相交的model
@@ -188,7 +183,7 @@ public:
 	 * @param data
 	 * @param node
 	 */
-	static void GetFigureSectionLines(void* data, Model* node);
+	static void GetFigureSectionLines(void* data, SceneNode* node);
 
 	/**
 	 *获取与剖切面相交的model

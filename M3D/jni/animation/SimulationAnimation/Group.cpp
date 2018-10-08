@@ -1,4 +1,4 @@
-// All Rights Reserved. Copyright (C) 2014 HOTEAMSOFT, Ltd
+﻿// All Rights Reserved. Copyright (C) 2014 HOTEAMSOFT, Ltd
 /****************************************************************************
  *	@file		Group.cpp
  *
@@ -7,14 +7,13 @@
  *	@par	历史:
  *		2016-04-08 Create by hhw
 ****************************************************************************/
-#include "stdafx.h"
-#include "tinyxml/tinyxml2.h"
+#include "StdAfx.h"
 #include "Group.h"
 #include "GroupItem.h"
 #include <algorithm>
 #include "Resource.h"
 
-using namespace tinyxml2;
+
 CGroup::CGroup(const int ID,std::string strName)
 :m_ID(ID)
 {
@@ -116,29 +115,4 @@ bool CGroup::IsInGroup(std::string strPath)
 
 	}
 	return false;
-}
-void CGroup::WriteToFile(XMLElement *pGroupEle)
-{
-	//写入xml文件
-	if(!pGroupEle)
-		return;
-	pGroupEle->SetAttribute("ID",m_ID);
-	//名称
- 	string strGroupName;
-	SA_UTF8 utf8Obj(m_strName.c_str());
-	const utf8_char *cUTFBuffer =  utf8Obj.encodedText();
-	pGroupEle->SetAttribute("Name", cUTFBuffer);
-
-	std::vector<CGroupItem *>::iterator iter=m_vGroupItems.begin();
-	for (;iter!=m_vGroupItems.end();++iter)
-	{
-		CGroupItem *pGroupItem=*iter;
-		if (!pGroupItem)
-		{
-			continue;
-		}
-		XMLElement* pGroupItemEle = pGroupEle->GetDocument()->NewElement("GroupItem");
-		pGroupEle->LinkEndChild(pGroupItemEle);
-		pGroupItem->WriteToFile(pGroupItemEle);
-	}
 }

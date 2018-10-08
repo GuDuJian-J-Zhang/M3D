@@ -15,12 +15,7 @@
 
 #include "m3d/graphics/Texture.h"
 
-
-#include "m3d/graphics/BaseMaterial.h"
 #include "m3d/graphics/Material.h"
-#include "m3d/graphics/PbrMaterial.h"
-#include "m3d/graphics/ShaderMaterial.h"
-
 
 #include "m3d/graphics/Texture2D.h"
 #include "m3d/graphics/TextureCube.h"
@@ -31,9 +26,6 @@
 #include "m3d/graphics/GeometryBuffer.h"
 
 #include "m3d/base/FileCacheManager.h"
-#include "m3d/graphics/MaterialTemplateManager.h"
-#include "graphics/MatCapMaterial.h"
-#include "graphics/DepthMaterial.h"
 
 using namespace SVIEW;
 
@@ -87,7 +79,6 @@ InternationalManager::InternationalManager()
 	m_values_zh_rCN.insert(std::make_pair("ModelPropertiesSubModelNumber",MeasureTypeValue("子模型数量")));
 	m_values_zh_rCN.insert(std::make_pair("ModelPropertiesInstanceCount",MeasureTypeValue("实例数量")));
 	m_values_zh_rCN.insert(std::make_pair("ModelPropertiesModleViewCount",MeasureTypeValue("视图数量")));
-	m_values_zh_rCN.insert(std::make_pair("ModelPropertiesModleFaceCount", MeasureTypeValue("面数量")));
 	m_values_zh_rCN.insert(std::make_pair("ModelPropertiesPMICount",MeasureTypeValue("PMI数量")));
 	m_values_zh_rCN.insert(std::make_pair("ModelPropertiesLOD0PatchNumber",MeasureTypeValue("LOD0 面片数量",4 * cnParameter)));
 	m_values_zh_rCN.insert(std::make_pair("ModelPropertiesLOD1PatchNumber",MeasureTypeValue("LOD1 面片数量",4 * cnParameter)));
@@ -113,11 +104,11 @@ InternationalManager::InternationalManager()
 	m_values_en_rUS.insert(std::make_pair("PointLineToPolyLineDistance",MeasureTypeValue("Point PolyLine",15*enParameter)));
 	m_values_en_rUS.insert(std::make_pair("PointLineProjectDistance",MeasureTypeValue("Project",10*enParameter)));
 	m_values_en_rUS.insert(std::make_pair("PointLineMinDistance",MeasureTypeValue("Minimum",10*enParameter)));
-	m_values_en_rUS.insert(std::make_pair("PointLineToTerminalMaxDistance",MeasureTypeValue("Maximum To Terminal",20*enParameter)));
-	m_values_en_rUS.insert(std::make_pair("PointLineToTerminalMinDistance",MeasureTypeValue("Minimum To Terminal",20*enParameter)));
+	m_values_en_rUS.insert(std::make_pair("PointLineToTerminalMaxDistance",MeasureTypeValue("Minimum To Terminal",20*enParameter)));
+	m_values_en_rUS.insert(std::make_pair("PointLineToTerminalMinDistance",MeasureTypeValue("Maximum To Terminal",20*enParameter)));
 	m_values_en_rUS.insert(std::make_pair("PointFaceProjectDistance",MeasureTypeValue("Project",8*enParameter)));
-	m_values_en_rUS.insert(std::make_pair("PointFaceMaxDistance",MeasureTypeValue("Maximum",9*enParameter)));
-	m_values_en_rUS.insert(std::make_pair("PointFaceMinDistance",MeasureTypeValue("Minimum",9*enParameter)));
+	m_values_en_rUS.insert(std::make_pair("PointFaceMaxDistance",MeasureTypeValue("Minimum",9*enParameter)));
+	m_values_en_rUS.insert(std::make_pair("PointFaceMinDistance",MeasureTypeValue("Maximum",9*enParameter)));
 	m_values_en_rUS.insert(std::make_pair("LineLineParallelDistance",MeasureTypeValue("Parallel",9*enParameter)));
 	m_values_en_rUS.insert(std::make_pair("LineLineMinDistance",MeasureTypeValue("Minimum",10*enParameter)));
 	m_values_en_rUS.insert(std::make_pair("LineLineSkewLinesDistance",MeasureTypeValue("Skew Lines",11*enParameter)));
@@ -149,7 +140,6 @@ InternationalManager::InternationalManager()
 	m_values_en_rUS.insert(std::make_pair("ModelPropertiesSubModelNumber",MeasureTypeValue("Child Model Number")));
 	m_values_en_rUS.insert(std::make_pair("ModelPropertiesInstanceCount",MeasureTypeValue("Instance Number")));
 	m_values_en_rUS.insert(std::make_pair("ModelPropertiesModleViewCount",MeasureTypeValue("Modelview Number")));
-	m_values_en_rUS.insert(std::make_pair("ModelPropertiesModleFaceCount", MeasureTypeValue("ModelFace Number")));
 	m_values_en_rUS.insert(std::make_pair("ModelPropertiesPMICount",MeasureTypeValue("PMI Number")));
 	m_values_en_rUS.insert(std::make_pair("ModelPropertiesLOD0PatchNumber",MeasureTypeValue("LOD0 Patch Number",4 * cnParameter)));
 	m_values_en_rUS.insert(std::make_pair("ModelPropertiesLOD1PatchNumber",MeasureTypeValue("LOD1 patch Number",4 * cnParameter)));
@@ -232,7 +222,9 @@ MeasureTypeValue *InternationalManager:: GetCurrentMeasureTypeValue(string key)
 
 	return ret;
 }
- 
+
+ResourceManager* ResourceManager::Instance = NULL;
+
 const string ResourceManager::VoiceImagePath = "/data/pic/voicenote.png";
 
 Texture* ResourceManager::defaultVoiceImage = NULL;
@@ -261,10 +253,6 @@ const string ResourceManager::PointOImagePath = "/data/pic/pointo.png";
 
 const string ResourceManager::PntR2ImagePath = "/data/pic/pointr2.png";
 
-const string ResourceManager::AxisXImagePath = "/data/pic/AxisX.png";
-const string ResourceManager::AxisYImagePath = "/data/pic/AxisY.png";
-const string ResourceManager::AxisZImagePath = "/data/pic/AxisZ.png";
-
 Texture* ResourceManager::defaultPntTexture = NULL;
 
 Texture* ResourceManager::defaultPntTextureO = NULL;
@@ -277,64 +265,6 @@ const string ResourceManager::defaultSphereTexPath = "/data/pic/pointo.png";
 Texture* ResourceManager::defaultCubeMapTexture = NULL;
 const string ResourceManager::defaultCubeMapTexPath = "/data/pic/";
 
-void ResourceManager::GeneratePbrTextures()
-{
-	//specular
-	string path = Parameters::Instance()->m_appWorkPath
-		+ "/data/textures/papermill/specular/";
-	//string names[] = { "right", "left", "top", "bottom", "front", "back" };
-	string names[] = { "0", "1", "2", "3", "4", "5" };
-	vector<string> paths;
-	string textureKey = "";
-	for (int i = 0;i<6;i++)
-	{
-		string name = string("specular_")  + names[i]+ ".jpg";
-		string tempPath = path + name;
-		
-		paths.push_back(tempPath);
-		textureKey += name;
-	}
-	 defaultPBRSpecularTexture =  GetOrCreateCubeMappingTexture(textureKey, paths);
-	 defaultPBRSpecularTexture->AddRef();
-	 defaultPBRSpecularTexture->MipMap(true);
-	 defaultPBRSpecularTexture->MinFliter(GL_LINEAR_MIPMAP_LINEAR);
-	 defaultPBRSpecularTexture->WrapS(GL_CLAMP_TO_EDGE);
-	 defaultPBRSpecularTexture->WrapT(GL_CLAMP_TO_EDGE);
-	 defaultPBRSpecularTexture->IsGammaInput(true);
-	 
-	 //diffuse
-	 path = Parameters::Instance()->m_appWorkPath
-		 + "/data/textures/papermill/diffuse/";
-	  paths.clear();
-	 textureKey = "";
-	 for (int i = 0; i < 6; i++)
-	 {
-		 string name = "diffuse_" + names[i] + ".bmp";
-		 string tempPath = path + name;
-
-		 paths.push_back(tempPath);
-		 textureKey += name;
-	 }
-	defaultPBRDiffuseTexture = GetOrCreateCubeMappingTexture(textureKey, paths);
-	defaultPBRDiffuseTexture->AddRef();
-	defaultPBRDiffuseTexture->IsGammaInput(true);
-
-	path = Parameters::Instance()->m_appWorkPath
-		+ "/data/textures/papermill/";
-	paths.clear();
-	textureKey = "";
-	
-	string name = "brdfLUT.png";
-	string tempPath = path + name;		 
-	textureKey += name;
-
-	defaultPBRLUTTexture = GetOrCreateTexture(tempPath);
-	defaultPBRLUTTexture->MipMap(false);
-	defaultPBRLUTTexture->WrapS(GL_CLAMP_TO_EDGE);
-	defaultPBRLUTTexture->WrapT(GL_CLAMP_TO_EDGE);
-	defaultPBRLUTTexture->SetImageParameter(TEXTURE_LOAD_RGBA, 0);
-	defaultPBRLUTTexture->AddRef();
-}
 Texture* ResourceManager::GetDefaultPointTexture(int type)
 {
 	Texture* texture = NULL;
@@ -411,6 +341,15 @@ Texture * ResourceManager::GetDefaultSphereMap()
 	return texture;
 }
 
+//ResourceManager* ResourceManager::GetInstance()
+//{
+//	if (Instance == NULL)
+//	{
+//		Instance = new ResourceManager();
+//	}
+//	return Instance;
+//}
+
 ResourceManager::ResourceManager()
 {
 	memset(m_OGLObjIDS,1,OGLOBJ_MAX_NUM*sizeof(true));
@@ -418,11 +357,7 @@ ResourceManager::ResourceManager()
 	cubeMappingTexture=NULL;
 
 	m_fileCacheMgr = NULL;
-	defaultPBRSpecularTexture = NULL;
-	defaultPBRDiffuseTexture = NULL;
-	defaultPBRLUTTexture = NULL;
-	GeneratePbrTextures();
-	m_materialTemplateManager = NULL;
+
 	this->Clear();
 }
 
@@ -430,24 +365,6 @@ ResourceManager::~ResourceManager()
 {
 	this->Clear();
 
-	if (defaultPBRDiffuseTexture)
-	{
-		defaultPBRDiffuseTexture->Release();
-		defaultPBRDiffuseTexture = NULL;
-	}
-	if (defaultPBRSpecularTexture)
-	{
-		defaultPBRSpecularTexture->Release();
-		defaultPBRSpecularTexture = NULL;
-	}
-	if (defaultPBRLUTTexture)
-	{
-		defaultPBRLUTTexture->Release();
-		defaultPBRLUTTexture = NULL;
-	}
-#ifdef WIN32
-	//ReleaseGLObjects();
-#endif
 	delete m_fileCacheMgr;
 	m_fileCacheMgr = NULL;
 }
@@ -455,14 +372,15 @@ ResourceManager::~ResourceManager()
 Texture* ResourceManager::GetTexture(string key)
 {
 	Texture* texture = NULL;
-
-	map<string, Texture*>::iterator it = m_allTextures.find(key);
-
-	if (it != m_allTextures.end())
-	{
-		texture = it->second;
-	}
-
+    LOGI("m_allTextures.size %d",m_allTextures.size());
+    if (m_allTextures.size() > 0) {
+        map<string, Texture*>::iterator it = m_allTextures.find(key);
+        
+        if (it != m_allTextures.end())
+        {
+            texture = it->second;
+        }
+    }
 	return texture;
 }
 
@@ -490,13 +408,12 @@ Texture* ResourceManager::GetOrCreateTexture(string key, int type)
 		}
 		texture->SetResourceManager(this);
 		texture->SetName(key);
-		texture->SetPath(key);
+		texture->SetImagePath(key);
 		this->AddTexture(key,texture);
 	}
 
 	return texture;
 }
- 
 bool ResourceManager::AddTexture(string key, Texture* texture)
 {
 	bool addState = false;
@@ -538,11 +455,11 @@ bool ResourceManager::RemoveTexture(string key)
 	return removeState;
 }
 
-BaseMaterial* ResourceManager::GetMaterial(string key)
+Material* ResourceManager::GetMaterial(string key)
 {
-	BaseMaterial* material = NULL;
+	Material* material = NULL;
 
-	map<string, BaseMaterial*>::iterator it = m_allMaterials.find(key);
+	map<string, Material*>::iterator it = m_allMaterials.find(key);
 
 	if (it != m_allMaterials.end())
 	{
@@ -552,43 +469,12 @@ BaseMaterial* ResourceManager::GetMaterial(string key)
 	return material;
 }
 
-BaseMaterial* ResourceManager::GetOrCreateMaterial(string key,int type)
+Material* ResourceManager::GetOrCreateMaterial(string key)
 {
-	BaseMaterial* material = this->GetMaterial(key);
+	Material* material = this->GetMaterial(key);
 	if(!material)
 	{
-		switch (type)
-		{
-		case MaterialType::MaterialType_Base:
-			material = new BaseMaterial();
-			break;
-		case MaterialType::MaterialType_Phong:
-			material = new Material();
-			break;
-		case MaterialType::MaterialType_MatCap:
-			material = new MatCapMaterial();
-			break;
-		case MaterialType::MaterialType_Pbr:
-			material = new PbrMaterial();
-			break;
-		case MaterialType::MaterialType_Inner:
-			material = new InnerMaterial;
-			break;
-		case MaterialType::MaterialType_Depth:
-			material = new DepthMaterial;
-			break;
-		case MaterialType::MaterialType_Shader:
-		
-		case 101:
-		case 102:
-		case 103:
-		case 104:
-			material = new ShaderMaterial();
-			break;
-		default:
-			material = new Material();
-			break;
-		}
+		material = new Material();
 		material->SetName(key);
 		material->SetResourceManager(this);
 
@@ -598,15 +484,15 @@ BaseMaterial* ResourceManager::GetOrCreateMaterial(string key,int type)
 	return material;
 }
 
-bool ResourceManager::AddMaterial(string key,  BaseMaterial* material)
+bool ResourceManager::AddMaterial(string key,  Material* material)
 {
 	bool addState = false;
 
-	map<string, BaseMaterial*>::iterator it = m_allMaterials.find(key);
+	map<string, Material*>::iterator it = m_allMaterials.find(key);
 
 	if (it == m_allMaterials.end())
 	{
-		m_allMaterials.insert(map<string, BaseMaterial*>::value_type(key, material));
+		m_allMaterials.insert(map<string, Material*>::value_type(key, material));
 		material->AddRef();
 		addState = true;
 	}
@@ -618,7 +504,7 @@ bool ResourceManager::RemoveMaterial(string key)
 {
 	bool removeState = false;
 
-	map<string, BaseMaterial*>::iterator it = m_allMaterials.find(key);
+	map<string, Material*>::iterator it = m_allMaterials.find(key);
 
 	if (it != m_allMaterials.end())
 	{
@@ -629,24 +515,6 @@ bool ResourceManager::RemoveMaterial(string key)
 	}
 
 	return removeState;
-}
-
-bool ResourceManager::AddImage(const string & path, Image * image)
-{
-	bool addState = true;
-	if (this->GetImage(path))
-	{
-		addState = false;
-	}
-	else
-	{
-		if (image)
-		{
-			m_allImages.insert(map<string, Image*>::value_type(path, image));
-			AddRefMe(image);
-		}
-	}
-	return addState;
 }
 
 Image* ResourceManager::GetImage(const string& path)
@@ -871,12 +739,12 @@ Model* ResourceManager::GetModel(int key)
 void ResourceManager::Clear()
 {
 	//释放材质资源
-	map<string, BaseMaterial*>::iterator materialIt = m_allMaterials.begin();
+	map<string, Material*>::iterator materialIt = m_allMaterials.begin();
 
-	vector<BaseMaterial*> materialsCaches;
+	vector<Material*> materialsCaches;
 	while (materialIt != m_allMaterials.end())
 	{
-		BaseMaterial* material = materialIt->second;
+		Material* material = materialIt->second;
 		if (material != NULL)
 		{
 			materialsCaches.push_back(material);
@@ -886,7 +754,7 @@ void ResourceManager::Clear()
 
 	for(int i=0;i<materialsCaches.size();i++)
 	{
-			BaseMaterial* material = materialsCaches[i];
+			Material* material = materialsCaches[i];
 			material->Release();
 	}
 
@@ -904,48 +772,29 @@ void ResourceManager::Clear()
 		}
 		textureIt++;
 	}
+    m_allTextures.clear();
+    
 	for(int i=0;i<textureCaches.size();i++)
 	{
 		Texture* material = textureCaches[i];
 		material->Release();
 	}
-	m_allTextures.clear();
-
-	{
-		textureCaches.clear();
-		map<string, Texture*>::iterator textureCubeIt = m_cubeMappingTextures.begin();
-		while (textureCubeIt != m_cubeMappingTextures.end())
-		{
-			Texture* texture = textureCubeIt->second;
-			if (texture != NULL&& textureCubeIt->first != "default")
-			{
-				textureCaches.push_back(texture);
-				m_cubeMappingTextures.erase((textureCubeIt++));
-			}
-			else
-				textureCubeIt++;
-		}
-		for (int i = 0; i < textureCaches.size(); i++)
-		{
-			Texture* material = textureCaches[i];
-			material->Release();
-		}		
-	}
-
+	
 
 	//释放图片资源
-	map<string, Image*>::iterator imageIt = m_allImages.begin();
+//	map<string, Image*>::iterator imageIt = m_allImages.begin();
 
-	while (imageIt != m_allImages.end())
-	{
-		Image* image = imageIt->second;
-		if (image != NULL)
-		{
-			ReleaseMe(image);
-			imageIt->second = NULL;
-		}
-		imageIt++;
-	}
+//	while (imageIt != m_allImages.end())
+//	{
+//		Image* image = imageIt->second;
+//		if (image != NULL)
+//		{
+//			delete image;
+//			imageIt->second = NULL;
+//		}
+//
+//		imageIt++;
+//	}
 
 	m_allImages.clear();
 
@@ -974,86 +823,40 @@ void ResourceManager::Clear()
 	}
 }
 
-//void ResourceManager::CreateCubeMappingTexture(const string& filePath)
-//{
-//	if(this->cubeMappingTexture == NULL){
-//		cubeMappingTexture = new TextureCube(filePath);
-//	}
-//
-//	if(this->cubeMappingTexture->GetPath() != filePath)
-//	{
-//		delete cubeMappingTexture;
-//
-//		cubeMappingTexture = new TextureCube(filePath);
-//	}
-//	cubeMappingTexture->SetResourceManager(this);
-//}
-
-Texture* ResourceManager::GetOrCreateCubeMappingTexture(string name ,vector<string> & filePathes)
+void ResourceManager::CreateCubeMappingTexture(const string& filePath)
 {
-	Texture* texture = NULL;
+	if(this->cubeMappingTexture == NULL){
+		cubeMappingTexture = new TextureCube(filePath);
+	}
+
+	if(this->cubeMappingTexture->GetImagePath() != filePath)
+	{
+		delete cubeMappingTexture;
+
+		cubeMappingTexture = new TextureCube(filePath);
+	}
+	cubeMappingTexture->SetResourceManager(this);
+}
+
+void ResourceManager::CreateCubeMappingTexture(string name ,vector<string> & filePathes)
+{
 	map<string,Texture*>::iterator it;
 	it = m_cubeMappingTextures.find(name);
 	if(it == m_cubeMappingTextures.end())
 	{
-		TextureCube * tempCubeMappingTexture = new TextureCube();
-
-		vector<Image*> cubeImages;
-		for (int i =0;i<filePathes.size();i++)
-		{
-			//创建六个图片
-			Image* image = this->GetImage(filePathes.at(i));
-			if (!image)
-			{
-				string& filePath = filePathes.at(i);
-				image = new Image();
-				image->SetPath(filePathes.at(i));
-				this->AddImage(filePath,image);
-			}
-			cubeImages.push_back(image);
-		}
-		tempCubeMappingTexture->SetCubeImages(cubeImages);
+		TextureCube * tempCubeMappingTexture = new TextureCube(filePathes);
+		tempCubeMappingTexture->SetResourceManager(this);
 
 		m_cubeMappingTextures.insert(make_pair(name,tempCubeMappingTexture));
-		tempCubeMappingTexture->SetResourceManager(this);
-		texture = tempCubeMappingTexture;
-		texture->AddRef();
-		texture->SetResourceManager(this);
 	}
 	else
 	{
-		return it->second;
-		
-	}
-	
-	LOGI("ResourceManager::CreateCubeMappingTexture END");
-	return texture;
-}
-
-Texture* ResourceManager::GetOrCreateCubeMappingTexture(string name, vector<Image*> & cubeImages)
-{
-	Texture* texture = NULL;
-	map<string, Texture*>::iterator it;
-	it = m_cubeMappingTextures.find(name);
-	if (it == m_cubeMappingTextures.end())
-	{
-		TextureCube * tempCubeMappingTexture = new TextureCube();
-
-		tempCubeMappingTexture->SetCubeImages(cubeImages);
-		m_cubeMappingTextures.insert(make_pair(name, tempCubeMappingTexture));
-		tempCubeMappingTexture->SetResourceManager(this);
-		texture = tempCubeMappingTexture;
-		texture->AddRef();
-		texture->SetResourceManager(this);
-	}
-	else
-	{
-		return it->second;
-
+		LOGI("Exist %s texture");
+		return;
 	}
 
 	LOGI("ResourceManager::CreateCubeMappingTexture END");
-	return texture;
+
 }
 
 Texture * ResourceManager::GetDefaultCubeMap()
@@ -1061,26 +864,14 @@ Texture * ResourceManager::GetDefaultCubeMap()
 	Texture* texture = NULL;
 	if (!defaultCubeMapTexture)
 	{
-		vector<Image*> cubeImages;
-		for (int i = 0; i < 6; i++)
+		vector<string> filePathes;
+		for(int i = 0;i<6;i++)
 		{
-			string imagePath = Parameters::Instance()->m_appWorkPath + defaultCubeMapTexPath + IntToString(i) + ".jpg";
-
-			//创建六个图片
-			Image* image = this->GetImage(imagePath);
-			if (!image)
-			{
-				image = new Image();
-				image->SetPath(imagePath);
-				this->AddImage(imagePath, image);
-			}
-			cubeImages.push_back(image);
+		string imagePath = Parameters::Instance()->m_appWorkPath + defaultCubeMapTexPath+ IntToString(i)+".jpg";
+		LOGE(imagePath.c_str());
+		filePathes.push_back(imagePath);
 		}
-
-		TextureCube* cubeMap = new TextureCube();
-		cubeMap->SetCubeImages(cubeImages);
-
-		defaultCubeMapTexture = cubeMap;
+		defaultCubeMapTexture = new TextureCube(filePathes);
 
 		string name = "default";
 		m_cubeMappingTextures.insert(make_pair(name,defaultCubeMapTexture));
@@ -1133,12 +924,7 @@ void ResourceManager::ReleaseGLObjects()
 		if (objectId > 0)
 		{
 			glDeleteTextures(1, &objectId);
-			//glFinish();
-			//GLboolean ret;
-			//ret =  glIsTexture(objectId);
-			//GLboolean s= ret;
 		}
-		//glFinish();
 	}
 	this->m_GLTextureObjCache.clear();
 
@@ -1163,18 +949,6 @@ void ResourceManager::ReleaseGLObjects()
 		}
 	}
 	this->m_GLRenderBufferObjCache.clear();
-
-	//清除ShaderProgram
-
-	for (int i = 0; i < m_GLShaderProgramObjCache.size(); i++)
-	{
-		unsigned objectId = m_GLShaderProgramObjCache[i];
-		if (objectId > 0)
-		{
-			glDeleteProgram(objectId);
-		}
-	}
-	this->m_GLShaderProgramObjCache.clear();
 }
 
 void ResourceManager::AddGLObject(unsigned objectId,int type)
@@ -1195,34 +969,16 @@ void ResourceManager::AddGLObject(unsigned objectId,int type)
 	{
 		this->m_GLRenderBufferObjCache.push_back(objectId);
 	}
-	else if (type == ResourceManager::SHADER_PROGRAM)
-	{
-		m_GLShaderProgramObjCache.push_back(objectId);
-	}
 }
 
 CFileCacheManager*  ResourceManager::GetFileCacheMgr()
 {
 	if (!m_fileCacheMgr)
 	{
-		//m_fileCacheMgr = new CFileCacheManager();
+		m_fileCacheMgr = new CFileCacheManager();
 	}
 
 	return m_fileCacheMgr;
-}
-
-map<string, BaseMaterial*>& ResourceManager::GetAllMaterials()
-{
-	return m_allMaterials;
-}
-
-MaterialTemplateManager* ResourceManager::GetMaterialTemplateManager()
-{
-	if (!m_materialTemplateManager)
-	{
-		m_materialTemplateManager = new MaterialTemplateManager(this);
-	}
-	return m_materialTemplateManager;
 }
 
 }

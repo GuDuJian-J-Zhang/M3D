@@ -9,13 +9,12 @@
 #ifndef M3D_MATERIAL_H_
 #define M3D_MATERIAL_H_
 
-//#include "m3d/base/Color.h"
-//
-//#include "m3d/model/Image.h"
-//#include "m3d/renderer/RenderContext.h"
-//#include "m3d/graphics/Resource.h"
-//#include "m3d/base/StringHash.h"
-#include "m3d/graphics/InnerMaterial.h"
+#include "m3d/base/Color.h"
+
+#include "m3d/model/Image.h"
+#include "m3d/renderer/RenderContext.h"
+#include "m3d/graphics/Resource.h"
+
 namespace M3D
 {
 
@@ -25,7 +24,7 @@ class TextureCube;
 
 //copy from assimp
 
-enum M3D_API TextureOp
+enum TextureOp
 {
 	/** T = T1 * T2 */
 	TextureOp_Multiply = 0x0,
@@ -47,7 +46,7 @@ enum M3D_API TextureOp
 
 };
 
-enum M3D_API TextureMapMode
+enum TextureMapMode
 {
     /** A texture coordinate u|v is translated to u%1|v%1
      */
@@ -70,7 +69,7 @@ enum M3D_API TextureMapMode
 
 };
 
-enum M3D_API TextureMapping
+enum TextureMapping
 {
     /** The mapping coordinates are taken from an UV channel.
 	 *
@@ -97,7 +96,7 @@ enum M3D_API TextureMapping
 
 };
 
-enum M3D_API TextureType
+enum TextureType
 {
 	/** Dummy value.
 	 *
@@ -193,7 +192,7 @@ enum M3D_API TextureType
 
 };
 
-enum M3D_API ShadingMode
+enum ShadingMode
 {
     /** Flat shading. Shading is done on per-face base,
      *  diffuse only. Also known as 'faceted shading'.
@@ -248,13 +247,11 @@ enum M3D_API ShadingMode
 
 };
 
-
-
 /**@class
  * @brief 材质类
  *
  */
-class M3D_API Material:public InnerMaterial
+class M3D_API Material:public Resource
 {
 public:
 	Material();
@@ -264,44 +261,37 @@ public:
 	 *
 	 * @param ambient
 	 */
-	void SetAmbient( Color& ambient);
+	void SetAmbient(const Color& ambient);
 
 	/**
 	 *
 	 * @param diffuse
 	 */
-	void SetDiffuse( Color& diffuse);
+	void SetDiffuse(const Color& diffuse);
 
 	/**
 	 *
 	 * @param diffuse
 	 */
-	void setSpecular( Color& diffuse);
-	/**
-	*
-	* @param ambient
-	*/
-	void SetEmissive(Color& emissive);
+	void setSpecular(const Color& diffuse);
 
 	/**
 	 *
 	 * @return
 	 */
-	 Color& GetAmbient();
+	const Color& GetAmbient() const;
 
 	/**
 	 *
 	 * @return
 	 */
-	 Color& GetDiffuse();
+	const Color& GetDiffuse() const;
 
 	/**
 	 *
 	 * @return
 	 */
-	 Color& GetSpecular();
-
-	 Color& GetEmissive();
+	const Color& GetSpecular() const;
 
 	/**
 	 * 设置着色模式
@@ -355,24 +345,12 @@ public:
 	/**
 	 * 设置纹理
 	 */
-	void SetDiffuseMap(Texture* texture);
+	void SetTexture(Texture* texture);
 	/**
 	 * 获得纹理
 	 * @return
 	 */
-	Texture* GetDiffuseMap();
-
-	void SetSpecularMap(Texture* texture);
-	Texture* GetSpecularMap();
-
-	void SetEmissiveMap(Texture * texture);
-	Texture* GetEmissiveMap();
-
-	void SetNormalMap(Texture* texture);
-	Texture* GetNormalMap();
-
-	void SetEvnMap(Texture* texture);
-	Texture* GetEvnMap();
+	Texture* GetTexture();
 
 	/**
 	 * 设置凹凸映射纹理
@@ -390,13 +368,26 @@ public:
 	 *
 	 * @param texture
 	 */
-	void SetAmbientMap(Texture* texture);
+	void SetAmbientTexture(Texture* texture);
 
 	/**
 	 *
 	 * @return
 	 */
-	Texture * GetAmbientMap();
+	Texture * GetAmbientTexture();
+
+	/**
+	 *
+	 * @param name
+	 */
+	void SetName(const string& name);
+
+	/**
+	 *
+	 * @return
+	 */
+	const string& GetName()const;
+
 	/**
 	 * @brief 创建2D纹理坐标转换矩阵
 	 */
@@ -425,34 +416,15 @@ public:
 	 */
 	float GetShininess();
 
-	Texture* GetReflectiveTextureTexture();
-	void SetReflectiveTexture(Texture* texture);
+private:
+	void Init();
 
-	M3D::EnvTextureMappingType EnvTextureMapping() const { return m_envTextureMapping; }
-	void EnvTextureMapping(M3D::EnvTextureMappingType val) { m_envTextureMapping = val; }
-	Vector2& NormalMapScale() { return m_normalMapScale; }
-	void NormalMapScale(Vector2 val) { m_normalMapScale = val; }
-	Texture* DisplacementMap()  { return m_displacementMap; }
-	void DisplacementMap(Texture* val);
-	Texture* MatcapMap();
-	void MatcapMap(Texture* val);
-	float DisplacementScale() const { return m_displacementScale; }
-	void DisplacementScale(float val) { m_displacementScale = val; }
-	float DisplacementBias() const { return m_displacementBias; }
-	void DisplacementBias(float val) { m_displacementBias = val; }
-	float Opacity() const { return m_opacity; }
-	void Opacity(float val) { m_opacity = val; }
-protected:
-	void Init();	
-
-protected:
+private:
 	Color m_ambient; //!<环境光系数
 
 	Color m_Diffuse; //!<漫反射系数
 
 	Color m_Specular;//!<镜面系数
-
-	Color m_emissive;
 
 	ShadingMode m_shadingMode;//!<着色模式
 
@@ -470,30 +442,12 @@ protected:
 
 	Texture* m_bumpmap; //!<凹凸映射
 
-	Texture* m_normalMap;//! 法线贴图
-	Vector2 m_normalMapScale;
-
-	Texture* m_displacementMap;
-	float m_displacementScale;
-	float m_displacementBias;
-
-	Texture* m_specularMap;//镜面反射贴图
+	string m_name;//!<名称
 
 
-    Texture* m_reflectiveTexture;
-    
 	Matrix4* m_textureTransform;//!<Texture2D的变换矩阵，如果存在的话
 
-	float m_shininess;//!<shininess	
-
-	EnvTextureMappingType m_envTextureMapping;
-
-	float m_opacity;
-
-	Texture* m_matcapMap;
-
-	Texture* m_emissiveMap;
-	
+	float m_shininess;//!<shininess
 };
 }
 

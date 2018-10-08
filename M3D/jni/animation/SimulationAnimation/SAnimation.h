@@ -68,21 +68,7 @@ public:
 		\param starttime Start time (in ticks) to evaluate animation from */
 	virtual bool Animate(float currenttime, float starttime);
 
-	/*! This method deletes a given keyframe in the timeline and interpolators for this animation.
-		\param keyframe Number of keyframe
- 	*/
-	void DeleteKeyframe(int keyframe);
 
-	/*! Copies the next or previous keyframe to the given target keyframe.
- 		\param keyframe The keyframe to copy to.
-		\param next Pass false for the previous keyframe and true for the next keyframe. */
-	void DuplicateNextOrPrevious(int keyframe, bool next, bool bStep = false);
-
-	/*! This method makes a copy of <i>newkeyframe</i> and then replaces <i>oldkeyframe</i> with the copy.
- 		\param newkeyframe Keyframe to copy to
-		\param oldkeyframe Keyframe to copy from */
-	void Duplicate(int newkeyframe, int oldkeyframe, bool bAddTLRange = true);
-	
 	/*!	This method writes XML data to a buffer. */
 	virtual void Serialize(CUtilityXMLGenerator *xmlgen, CUtilityXMLTag *xmlt);
 	/*!	This method writes XML data to a buffer. */
@@ -108,25 +94,19 @@ public:
 
  	/*! \return A value of 1 if the animation will be looped or 0 if the animation stops when it reaches the
 	end of the timeline.*/
-	int GetLoop(bool bSteps = false);
+	int GetLoop() { return m_Loop; }
 
 	/*! Use this method to indicate if animation is looped or plays once.
 	\param loop Pass 1 if the animation should loop or 0 if the animation should stop when it reaches the end of
 	the timeline.*/
-	void SetLoop(int loop, bool bSteps=false);
+	void SetLoop(int loop) {  m_Loop = loop; }
 
-	void SetLoopChild(int bLock, bool bSteps);
 	/*! \return A pointer to the timeline associated to this animation. */
 	CSTimeline *GetTimeline() { return m_pTimeline; }
 
 	/*! This method associates the passed timeline with this animation. 
 	\param timeline The timeline to be associated with this animation.*/
 	void SetTimeline( CSTimeline *timeline);
- 
-	/*! In special cases, you may want an animation that references this animation without changing it. Use 
-	this method to create such an animation.
-		\return A pointer to newly created animation that refers to this animation. */
-	CSAnimation * CreateInstance();
 
 	/*! \return A pointer to the list of interpolators for this animation.*/
  	struct vlist_s * GetInterpolatorList() { return m_InterpolatorList; }
@@ -145,7 +125,6 @@ public:
 	/*! Adds an animation to the child animation list.
 	\param childanimation The child animation to be added.*/
 	void AddChildAnimation(CSAnimation *childanimation);
-	void DelChildAnimation(CSAnimation *childanimation);
 
 	/*! \return Parent animation for this animation. */
  	CSAnimation *GetParentAnimation() { return m_pParentAnimation; }
@@ -161,14 +140,7 @@ public:
 	/*! \return A pointer to target object of this animation. */
 	NS_SimulationAnimation::STargetObject * GetTarget() { return m_Target; } 
 
- 	/*! \return A pointer to the animation that this animation references. */
-	CSAnimation * GetInstancedAnimation() { return m_pInstancedAnimation; }
-
-	/*! Sets pointer to animation that you want this animation to reference. 
-	\param animation A pointer to the animation to reference.*/
-	void SetInstancedAnimation(CSAnimation *animation) { m_pInstancedAnimation = animation; CloneAnimation(); }
-
-	/*! Stop the animation if it is currently running and resets all the interpolators associated with this animation.  */
+ 	/*! Stop the animation if it is currently running and resets all the interpolators associated with this animation.  */
  	void Reset();
 
 	void SetTargetByKey(long key);
@@ -212,21 +184,6 @@ public:
 
  	/*! \return The current "tick" (i.e. frame) as reported by the behavior manager. */
 	float GetCurrentTick(); 
-	
- 	/*! Adjusts keyframe intervals by the given number of ticks.
-		\param keyframe Start keyframe to adjust.
-		\param delta Amount of ticks to offset the keyframe time.
-		\param doall Pass true to adjust all keyframes after the start keyframe. 
-		\param relative Adjust keyframes all keyframes after the given keyframe so that they
-		will also have an additional delta offset between the next keyframe. 
-	*/
- 	void AdjustKeyframe(int keyframe, int delta, bool doall = true, bool relative = false);
-	
- 	/*! This method set disassociates the current timeline from this animation and clears the interpolator list without
-	deleting any of the previous associated timeline or interpolator objects.
- 	*/
-	void CleanWithoutDelete();
-
 
  	/*! \return True if the animation is flagged to only run for one update.*/
 	bool ExecuteOnce() { return m_bExecuteOnce; }
@@ -239,21 +196,11 @@ public:
  	void Evaluate(float currenttick, bool &hasPos, AniPoint &pos, bool &hasQuat, AniQuat &quat, bool &hasScale, AniPoint &scale);
 	//显示轨迹线
 	void DrawTrochoid();
-	//动画反转
-	int Reversion(bool bStep = true);
-	void ReversionTimeLineRange(VIntArray& keyFrameIndexArray);
-	bool IsAnimationInterval(int iFirstFrame, int iSecondFrame);//判断两个关键帧中间是否有间隔
-	bool IsAniIntervalByHKeyFrame(CSInterpolator * pInterpolator, int iFirstFrame, int iSecondFrame);
-	//动画镜像
-	int MirrorImageSingle(int nTick);
-	int MirrorImage(bool bStep);
-	int MirrorImageSelect(CTimeLineRange* pTimeLineRange);
+
 	void ResetFirstLastTickByChild();
 	bool IsExpanded(){ return m_bExpanded;};
 	void SetExpanded(bool bExpanded){ m_bExpanded = bExpanded;};
 	bool IsChild(CSAnimation* pAnimation,bool bSteps = true);
-	void SetLockedStatus(bool bLocked, bool bSteps = true);
-	void SetLockedStatusChild(bool bLock, bool bSteps);
 	bool HasChildLocked(bool bSteps);
 	bool IsLocked(bool bSteps = true);
 
@@ -267,22 +214,11 @@ public:
 	AniPoint GetImgPos(){return m_imgPos;}
 	void SetImgScale(AniPoint& scale){m_imgScale.x = scale.x; m_imgScale.y = scale.y; m_imgScale.z = scale.z;}
 	AniPoint GetImgScale(){return m_imgScale;}
-	void AddHKeyFrame(bool bCopyPrevious=false, bool bLinear=true);
 
 	//根据偏移量创建动画
 	CSAnimation *CreatOffsetAnimation(AniPoint localPos,AniQuat localQuat,AniPoint localScale,AniPoint offsetPos,AniQuat offsetQuat,AniPoint offsetScale,NS_SimulationAnimation::STargetObject *target);
 	CSAnimation *GetGroupAnimation(){return m_pGroupAnimation;}
 	void SetGroupAnimation(CSAnimation *pGroupAnimation){m_pGroupAnimation=pGroupAnimation;}
-	//克隆
-	CSAnimation* Clone(CSBehaviorAction* pBehaviorAction);
-	//复制关键帧到指定位置
-	bool CopyKeyFrame(int srcTickIndex, int targetTick);
-	//是否要分割
-	bool IsCanSlice();
-	bool Slice();
-
-	bool GetCollisionFlg();
-	void SetCollisionFlg(bool bCollisionFlg);
 protected:
 
  	/*! This is a helper function for Animate().  It checks that the current
@@ -290,10 +226,7 @@ protected:
 		\param currenttick Current Time in ticks of animation */
 	virtual bool AnimateInternal(float currenttick);
 
- 	/*! Creates an animation instance. */
-	void CloneAnimation();
-
-	/*!	This method writes XML Data for this animation's target to a buffer. */
+ 	/*!	This method writes XML Data for this animation's target to a buffer. */
  	virtual void SerializeTarget(CUtilityXMLTag *xmlt);
 
 	CSAnimation*			m_pInstancedAnimation; 				/*!< A pointer to the referenced animation (if any). */

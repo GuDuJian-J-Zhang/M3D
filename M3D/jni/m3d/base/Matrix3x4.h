@@ -13,7 +13,7 @@
 
 namespace M3D
 {
-class Matrix4;
+
 /** 
  * @brief 3x4 matrix for scene node transform calculations. 
  */
@@ -190,14 +190,6 @@ public:
 				(m_m20 * rhs.m_x + m_m21 * rhs.m_y + m_m22 * rhs.m_z + m_m23));
 	}
 
-	Vector3 Multiply(const Vector3& rhs) const
-	{
-		return Vector3(
-			(m_m00 * rhs.m_x + m_m01 * rhs.m_y + m_m02 * rhs.m_z + m_m03),
-			(m_m10 * rhs.m_x + m_m11 * rhs.m_y + m_m12 * rhs.m_z + m_m13),
-			(m_m20 * rhs.m_x + m_m21 * rhs.m_y + m_m22 * rhs.m_z + m_m23));
-	}
-
 	/**
 	 * @brief Multiply a Vector4.
 	 */
@@ -212,17 +204,6 @@ public:
 						+ m_m23 * rhs.m_w));
 	}
 
-	Vector3 Multiply(const Vector4& rhs) const
-	{
-		return Vector3(
-			(m_m00 * rhs.m_x + m_m01 * rhs.m_y + m_m02 * rhs.m_z
-				+ m_m03 * rhs.m_w),
-				(m_m10 * rhs.m_x + m_m11 * rhs.m_y + m_m12 * rhs.m_z
-					+ m_m13 * rhs.m_w),
-					(m_m20 * rhs.m_x + m_m21 * rhs.m_y + m_m22 * rhs.m_z
-						+ m_m23 * rhs.m_w));
-	}
-
 	/**
 	 * @brief Add a matrix.
 	 */
@@ -233,14 +214,7 @@ public:
 				m_m12 + rhs.m_m12, m_m13 + rhs.m_m13, m_m20 + rhs.m_m20,
 				m_m21 + rhs.m_m21, m_m22 + rhs.m_m22, m_m23 + rhs.m_m23);
 	}
-	Matrix3x4 Add(const Matrix3x4& rhs) const
-	{
-		return Matrix3x4(m_m00 + rhs.m_m00, m_m01 + rhs.m_m01, m_m02 + rhs.m_m02,
-			m_m03 + rhs.m_m03, m_m10 + rhs.m_m10, m_m11 + rhs.m_m11,
-			m_m12 + rhs.m_m12, m_m13 + rhs.m_m13, m_m20 + rhs.m_m20,
-			m_m21 + rhs.m_m21, m_m22 + rhs.m_m22, m_m23 + rhs.m_m23);
-	}
- 
+
 	/**
 	 * @brief Subtract a matrix.
 	 */
@@ -250,13 +224,6 @@ public:
 				m_m03 - rhs.m_m03, m_m10 - rhs.m_m10, m_m11 - rhs.m_m11,
 				m_m12 - rhs.m_m12, m_m13 - rhs.m_m13, m_m20 - rhs.m_m20,
 				m_m21 - rhs.m_m21, m_m22 - rhs.m_m22, m_m23 - rhs.m_m23);
-	}
-	Matrix3x4 Sub(const Matrix3x4& rhs) const
-	{
-		return Matrix3x4(m_m00 - rhs.m_m00, m_m01 - rhs.m_m01, m_m02 - rhs.m_m02,
-			m_m03 - rhs.m_m03, m_m10 - rhs.m_m10, m_m11 - rhs.m_m11,
-			m_m12 - rhs.m_m12, m_m13 - rhs.m_m13, m_m20 - rhs.m_m20,
-			m_m21 - rhs.m_m21, m_m22 - rhs.m_m22, m_m23 - rhs.m_m23);
 	}
 
 	/**
@@ -268,12 +235,7 @@ public:
 				m_m10 * rhs, m_m11 * rhs, m_m12 * rhs, m_m13 * rhs, m_m20 * rhs,
 				m_m21 * rhs, m_m22 * rhs, m_m23 * rhs);
 	}
-	Matrix3x4 Multiply(float rhs) const
-	{
-		return Matrix3x4(m_m00 * rhs, m_m01 * rhs, m_m02 * rhs, m_m03 * rhs,
-			m_m10 * rhs, m_m11 * rhs, m_m12 * rhs, m_m13 * rhs, m_m20 * rhs,
-			m_m21 * rhs, m_m22 * rhs, m_m23 * rhs);
-	}
+
 	/**
 	 * @brief Multiply a matrix.
 	 */
@@ -291,21 +253,6 @@ public:
 				m_m20 * rhs.m_m01 + m_m21 * rhs.m_m11 + m_m22 * rhs.m_m21,
 				m_m20 * rhs.m_m02 + m_m21 * rhs.m_m12 + m_m22 * rhs.m_m22,
 				m_m20 * rhs.m_m03 + m_m21 * rhs.m_m13 + m_m22 * rhs.m_m23 + m_m23);
-	}
-	Matrix3x4 Multiply(const Matrix3x4& rhs) const
-	{
-		return Matrix3x4(m_m00 * rhs.m_m00 + m_m01 * rhs.m_m10 + m_m02 * rhs.m_m20,
-			m_m00 * rhs.m_m01 + m_m01 * rhs.m_m11 + m_m02 * rhs.m_m21,
-			m_m00 * rhs.m_m02 + m_m01 * rhs.m_m12 + m_m02 * rhs.m_m22,
-			m_m00 * rhs.m_m03 + m_m01 * rhs.m_m13 + m_m02 * rhs.m_m23 + m_m03,
-			m_m10 * rhs.m_m00 + m_m11 * rhs.m_m10 + m_m12 * rhs.m_m20,
-			m_m10 * rhs.m_m01 + m_m11 * rhs.m_m11 + m_m12 * rhs.m_m21,
-			m_m10 * rhs.m_m02 + m_m11 * rhs.m_m12 + m_m12 * rhs.m_m22,
-			m_m10 * rhs.m_m03 + m_m11 * rhs.m_m13 + m_m12 * rhs.m_m23 + m_m13,
-			m_m20 * rhs.m_m00 + m_m21 * rhs.m_m10 + m_m22 * rhs.m_m20,
-			m_m20 * rhs.m_m01 + m_m21 * rhs.m_m11 + m_m22 * rhs.m_m21,
-			m_m20 * rhs.m_m02 + m_m21 * rhs.m_m12 + m_m22 * rhs.m_m22,
-			m_m20 * rhs.m_m03 + m_m21 * rhs.m_m13 + m_m22 * rhs.m_m23 + m_m23);
 	}
 
 	/**
@@ -340,35 +287,7 @@ public:
 						+ m_m23 * rhs.m_m33, rhs.m_m30, rhs.m_m31, rhs.m_m32,
 				rhs.m_m33);
 	}
-	Matrix4 Multiply(const Matrix4& rhs) const
-	{
-		return Matrix4(
-			m_m00 * rhs.m_m00 + m_m01 * rhs.m_m10 + m_m02 * rhs.m_m20
-			+ m_m03 * rhs.m_m30,
-			m_m00 * rhs.m_m01 + m_m01 * rhs.m_m11 + m_m02 * rhs.m_m21
-			+ m_m03 * rhs.m_m31,
-			m_m00 * rhs.m_m02 + m_m01 * rhs.m_m12 + m_m02 * rhs.m_m22
-			+ m_m03 * rhs.m_m32,
-			m_m00 * rhs.m_m03 + m_m01 * rhs.m_m13 + m_m02 * rhs.m_m23
-			+ m_m03 * rhs.m_m33,
-			m_m10 * rhs.m_m00 + m_m11 * rhs.m_m10 + m_m12 * rhs.m_m20
-			+ m_m13 * rhs.m_m30,
-			m_m10 * rhs.m_m01 + m_m11 * rhs.m_m11 + m_m12 * rhs.m_m21
-			+ m_m13 * rhs.m_m31,
-			m_m10 * rhs.m_m02 + m_m11 * rhs.m_m12 + m_m12 * rhs.m_m22
-			+ m_m13 * rhs.m_m32,
-			m_m10 * rhs.m_m03 + m_m11 * rhs.m_m13 + m_m12 * rhs.m_m23
-			+ m_m13 * rhs.m_m33,
-			m_m20 * rhs.m_m00 + m_m21 * rhs.m_m10 + m_m22 * rhs.m_m20
-			+ m_m23 * rhs.m_m30,
-			m_m20 * rhs.m_m01 + m_m21 * rhs.m_m11 + m_m22 * rhs.m_m21
-			+ m_m23 * rhs.m_m31,
-			m_m20 * rhs.m_m02 + m_m21 * rhs.m_m12 + m_m22 * rhs.m_m22
-			+ m_m23 * rhs.m_m32,
-			m_m20 * rhs.m_m03 + m_m21 * rhs.m_m13 + m_m22 * rhs.m_m23
-			+ m_m23 * rhs.m_m33, rhs.m_m30, rhs.m_m31, rhs.m_m32,
-			rhs.m_m33);
-	}
+
 	/**
 	 * @brief Set translation elements.
 	 */
@@ -478,14 +397,6 @@ public:
 
 	void MultiScale(const Vector3& scale);
 
-	void LeftMultiTranslate(const Vector3& mov);
-
-	void LeftMultiRotatiton(const Quaternion& rotation);
-
-	void LeftMultiScale(float scale);
-
-	void LeftMultiScale(const Vector3& scale);
-
 	/**
 	 * @brief Test for equality with another matrix with epsilon.
 	 */
@@ -503,8 +414,6 @@ public:
 		return true;
 	}
 
-	void GetLookAt(Vector3& eye, Vector3& center, Vector3& up, float lookDistance=1.0f) const;
-
 	/**
 	 * @brief Return decomposition to translation, rotation and scale.
 	 */
@@ -514,16 +423,6 @@ public:
 	 * @brief Return inverse.
 	 */
 	Matrix3x4 Inverse() const;
-	M3D_ADDRESSTYPE Address()
-	{
-		//获取地址的真实方式
-		return TAddress(*this);
-	}
-
-	void FillByAddress(M3D_ADDRESSTYPE memoryAddress)
-	{
-		*this = *TFromAddress<Matrix3x4>(memoryAddress);
-	}
 
 	/**
 	 * @brief Return float data.

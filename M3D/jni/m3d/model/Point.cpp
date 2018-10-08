@@ -7,7 +7,7 @@
 #include "m3d/graphics/MeshBoard.h"
 #include "m3d/utils/ShapeHelper.h"
 #include "m3d/ResourceManager.h"
-#include "m3d/action/RenderAction.h"
+
 using namespace SVIEW;
 
 namespace M3D
@@ -196,7 +196,7 @@ void Point::UpdateRenderData(RenderAction* renderAction)
 		if (!m_pointImage)
 		{
 			Vector2 pointSize(this->m_size, this->m_size);
-			//pointSize = ShapeHelper::GetCommonSize(renderAction->GetScene(), pointSize);
+			pointSize = ShapeHelper::GetCommonSize(renderAction->GetScene(), pointSize);
 			m_pointImage = new ImageBoard(this->GetCoordinate(), pointSize);
 			m_pointImage->SetTexture(renderAction->GetScene()->GetResourceManager()->GetDefaultPointTexture(this->m_drawType));
 		}
@@ -208,7 +208,7 @@ void Point::UpdateRenderData(RenderAction* renderAction)
 		if (!m_meshboard)
 		{
 			Vector2 pointSize(this->m_size, this->m_size);
-			//ShapeHelper::GetCommonSize(renderAction->GetScene(), pointSize);
+			ShapeHelper::GetCommonSize(renderAction->GetScene(), pointSize);
 			m_meshboard = new MeshBoard(this->GetCoordinate(), pointSize);
 		}
 
@@ -230,12 +230,7 @@ Body* Point::GetBody()
 
 const Color&  Point::GetRenderColor()
 {
-	return *this->GetDrawColor();
-}
-
-const Color & Point::GetShapeColor()
-{
-	return *this->GetColor();
+	return this->GetDrawColor();
 }
 
 ImageBoard* Point::GetImageboard()
@@ -260,7 +255,7 @@ void Point::SetSize(float size)
 
 float Point::GetSize()
 {
-	return this->m_size*4;
+	return this->m_size;
 }
 
 int Point::GetDrawType()

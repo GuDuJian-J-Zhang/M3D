@@ -17,30 +17,6 @@ const ControlInfo PerspectiveData::BOTTOM_MVMATRIX = ControlInfo(0.70710677,0.70
 const ControlInfo PerspectiveData::ISOMETRIC_MVMATRIX = ControlInfo(
 	0.88047838, 0.36470398, -0.27984396, -0.11591448);
 
-const ControlInfo PerspectiveData::BACKISOME_MVMATRIX = ControlInfo(
-	0.27984396, -0.11591448, 0.88047838, -0.36470398);
-//上前左
-const ControlInfo PerspectiveData::UPFRONTLEFT_MVMATRIX = ControlInfo(
-	-0.88047838, -0.36470398, -0.27984396, -0.11591448);
-//上后右
-const ControlInfo PerspectiveData::UPBEHINDRIGHT_MVMATRIX = ControlInfo(
-	0.27984396, -0.11591448, -0.88047838, -0.36470398);
-
-//上后左
-const ControlInfo PerspectiveData::UPBEHINDLEFT_MVMATRIX = ControlInfo(
-	0.27984396, -0.11591448, 0.88047838, 0.36470398);
-//下前右
-const ControlInfo PerspectiveData::DOWNFRONTRIGHT_MVMATRIX = ControlInfo(
-	0.88047838, -0.36470398, -0.27984396, -0.11591448);
-
-//下前左
-const ControlInfo PerspectiveData::DOWNFRONTLEFT_MVMATRIX = ControlInfo(
-	-0.88047838, 0.36470398, -0.27984396, -0.11591448);
-
-//下后右
-const ControlInfo PerspectiveData::DOWNBEHINDRIGHT_MVMATRIX = ControlInfo(
-	0.27984396, -0.11591448, -0.88047838, 0.36470398);
-
 const ControlInfo PerspectiveData::DEFAULT_MVMATRIX = ControlInfo(
 	0.88047838, 0.36470398, -0.27984396, -0.11591448);
 }

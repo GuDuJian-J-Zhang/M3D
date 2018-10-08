@@ -22,9 +22,16 @@ string PathHelper::GetSVLPath(Model* model)
 	string svlPath;
 	if(model)
 	{
-		const string& m3dPath = model->GetPlcPath();
-		return PathHelper::M3DPathToSVLPath(m3dPath);
+		if(model->GetSceneNode())
+		{
+			if(model->GetSceneNode()->GetParent())
+			{
+				const string m3dPath = model->GetSceneNode()->GetParent()->GetName();
+				return PathHelper::M3DPathToSVLPath(m3dPath);
+			}
+		}
 	}
+
 	return svlPath;
 }
 
@@ -42,12 +49,16 @@ string PathHelper::GetM3DPath(Model* model)
 {
 	if(model)
 	{
-		return model->GetPlcPath();
+		if(model->GetSceneNode())
+		{
+			if(model->GetSceneNode()->GetParent())
+			{
+				return model->GetSceneNode()->GetParent()->GetName();
+			}
+		}
 	}
-	else
-	{
-		return "";
-	}
+
+	return "";
 }
 
 
@@ -114,7 +125,6 @@ string PathHelper::SVLPathDecToHex(const string& decPPath)
     string ret (newPlcPath);
     return "PATH|"+ret;
 }
-
 string PathHelper::SVLPathToM3D(const string& svlPath)
 {
 	return M3D_PATH_PRE + svlPath;
@@ -135,82 +145,43 @@ string PathHelper::M3DPathToAnimation(const string& m3dPath)
 
 string PathHelper::AnimationPathToM3D(const string& animationPath)
 {
-	char newPlcPath[256] =
-	{ 0 };
-	char *cPlcIdP = NULL;
-	char srcPath[256] =
-	{ 0 };
-	char targetPath[256] =
-	{ 0 };
-	int wiPlcId = 0;
+    char newPlcPath[256] =
+    { 0 };
+    char *cPlcIdP = NULL;
+    char srcPath[256] =
+    { 0 };
+    char targetPath[256] =
+    { 0 };
+    int wiPlcId = 0;
+    
+    strcpy(srcPath, animationPath.c_str());
+    cPlcIdP = strtok(srcPath, "\\");
+    while (cPlcIdP != NULL)
+    {
+        wiPlcId = strtoul(cPlcIdP, NULL, 10);
+        wiPlcId &= 0x00FFFFFF;
+        if (strcmp(newPlcPath, "") == 0)
+        {
+            sprintf(targetPath, "%x", wiPlcId);
+        }
+        else
+        {
+            sprintf(targetPath, "%s|%x", newPlcPath, wiPlcId);
+        }
+        
+        strcpy(newPlcPath, targetPath);
+        cPlcIdP = strtok(NULL, "\\");
+    }
+    
+    if (strlen(newPlcPath) > 0 && newPlcPath[0] != '0')
+    {
+        sprintf(targetPath, "0|%s", newPlcPath);
+    }
+    
+    string ret(targetPath);
+    
+    return PathHelper::M3D_PATH_PRE + "PATH|" + ret;
 
-	strcpy(srcPath, animationPath.c_str());
-	cPlcIdP = strtok(srcPath, "\\");
-	while (cPlcIdP != NULL)
-	{
-		wiPlcId = strtoul(cPlcIdP, NULL, 10);
-		wiPlcId &= 0x00FFFFFF;
-		if (strcmp(newPlcPath, "") == 0)
-		{
-			sprintf(targetPath, "%x", wiPlcId);
-		}
-		else
-		{
-			sprintf(targetPath, "%s|%x", newPlcPath, wiPlcId);
-		}
-
-		strcpy(newPlcPath, targetPath);
-		cPlcIdP = strtok(NULL, "\\");
-	}
-
-	if (strlen(newPlcPath) > 0 && newPlcPath[0] != '0')
-	{
-		sprintf(targetPath, "0|%s", newPlcPath);
-	}
-
-	string ret(targetPath);
-
-	return PathHelper::M3D_PATH_PRE + "PATH|" + ret;
-}
-
-string PathHelper::HotSpotPathToM3D(const string& HotspotPath)
-{
-	char newPlcPath[256] =
-	{ 0 };
-	char *cPlcIdP = NULL;
-	char srcPath[256] =
-	{ 0 };
-	char targetPath[256] =
-	{ 0 };
-	int wiPlcId = 0;
-
-	strcpy(srcPath, HotspotPath.c_str());
-	cPlcIdP = strtok(srcPath, "|");
-	while (cPlcIdP != NULL)
-	{
-		wiPlcId = strtoul(cPlcIdP, NULL, 10);
-		wiPlcId &= 0x00FFFFFF;
-		if (strcmp(newPlcPath, "") == 0)
-		{
-			sprintf(targetPath, "%x", wiPlcId);
-		}
-		else
-		{
-			sprintf(targetPath, "%s|%x", newPlcPath, wiPlcId);
-		}
-
-		strcpy(newPlcPath, targetPath);
-		cPlcIdP = strtok(NULL, "|");
-	}
-
-	if (strlen(newPlcPath) > 0 && newPlcPath[0] != '0')
-	{
-		sprintf(targetPath, "0|%s", newPlcPath);
-	}
-
-	string ret(targetPath);
-
-	return PathHelper::M3D_PATH_PRE + "PATH|" + ret;
 }
 
 int PathHelper::GetPathLevel(const string& m3dPath)
@@ -219,11 +190,11 @@ int PathHelper::GetPathLevel(const string& m3dPath)
 			PathHelper::M3DPathToSVLPath(m3dPath),
 			"|");
 
-	//LOGE("path : %s",m3dPath.c_str());
+	LOGE("path : %s",m3dPath.c_str());
 
 	int level = findKeyVector.size();
 
-	//LOGE("level : %d",level);
+	LOGE("level : %d",level);
 
 	return level;
 }

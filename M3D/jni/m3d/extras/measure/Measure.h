@@ -29,16 +29,11 @@ public:
 	static const  int MEASURE_TYPE_LINE_LINE_DISTANCE ;  //!<线到线距离
 	static const  int MEASURE_TYPE_LINE_FACE_DISTANCE ;  //!<线到面距离
 	static const  int MEASURE_TYPE_FACE_FACE_DISTANCE ;  //!<面到面距离
-	static const  int MEASURE_TYPE_SHAFT_SHAFT_DISTANCE;  //!<圆心轴到圆心轴距离
-	static const  int MEASURE_TYPE_CENTER_CENTER_DISTANCE;  //!<中心到中心距离
 
 	///角度类型
 	const static int MEASURE_TYPE_LINE_LINE_ANGLE ; //!<两条非平行线间的夹角
 	const static int MEASURE_TYPE_FACE_FACE_ANGLE ; //!<两个面间的夹角
 	const static int MEASURE_TYPE_LINE_FACE_ANGLE; //!<直线与平面之间的夹角
-
-	const static int MEASURE_TYPE_CRICLE_DIAMETRE; //!<圆直径
-	const static int MEASURE_TYPE_CRICLE_RADIUS; //!<圆半径
 
 	const static int MEASURE_TYPE_PNT_COORD ; //!<点的坐标值
 	const static int MEASURE_TYPE_LINE_LENGTH ; //!<边线的长度
@@ -46,7 +41,6 @@ public:
 	const static int MEASURE_TYPE_FACE_PROPERTY ; //!<面的属性
 	const static int MEASURE_TYPE_APERTURE_PROPERTY ; //!<孔的圆心、直径（半径）、深度
 	const static int MEASURE_TYPE_MODEL_PROPERTY;//!<模型属性
-	const static int MEASURE_TYPE_MODEL_STATISTICS;//!<模型统计
 
 	const static int MEASURE_TYPE_TEXT_NOTE ; //!<文本批注
 	const static int MEASURE_TYPE_VOICE_NOTE; //!<语音批注

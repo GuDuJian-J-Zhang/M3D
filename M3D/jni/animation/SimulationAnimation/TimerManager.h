@@ -11,15 +11,7 @@
 
 #ifndef _TIMERMANAGER_H
 #define _TIMERMANAGER_H
-#ifdef WIN32
-//#include <windows.h>
-//#include <mmsystem.h>
-//#include <stdint.h> // portable: uint64_t   MSVC: __int64 
-#else
-#include <pthread.h>
-#include <unistd.h>
-#include <sys/time.h>
-#endif
+
 #ifdef USE_PACK_8
 #pragma pack(push)
 #pragma pack(8)
@@ -28,18 +20,16 @@
 #define	LOCK_MUTEX(_m_)	EnterCriticalSection ((CRITICAL_SECTION *)_m_)
 #define	UNLOCK_MUTEX(_m_) LeaveCriticalSection ((CRITICAL_SECTION *)_m_)
 
-
-
+#include <pthread.h>
 #include "../SimulationCommon/SATools.h"
 #include "SADefine.h"
-
+#include <unistd.h>
+#include <sys/time.h>
 
 //SA_NAMESPACE_BEGIN
 class CTimerClient;
 class CTickTimer;
-namespace NS_SimulationAnimation {
-	class Mutex;
-}
+
 /****************************************************************************
 *	动画时钟信息处理类
 ****************************************************************************/
@@ -93,11 +83,7 @@ protected:
 
 	//add
 private:
-#ifdef WIN32
-	static NS_SimulationAnimation::Mutex *m_Mutex;
-#else
 	static pthread_mutex_t * m_Mutex;
-#endif
 	static CTimerManager * m_pCTimerManager;
 public:
 	/*! \returns A pointer to the current CTimerManager object (the timer manager).  This method creates one if none exists. */

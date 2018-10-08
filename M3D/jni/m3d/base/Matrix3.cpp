@@ -227,14 +227,7 @@ Vector3  Matrix3::operator * (const Vector3& rhs) const
         m_m20 * rhs.m_x + m_m21 * rhs.m_y + m_m22 * rhs.m_z
     );
 }
-Vector3  Matrix3::Multiply(const Vector3& rhs) const
-{
-	return Vector3(
-		m_m00 * rhs.m_x + m_m01 * rhs.m_y + m_m02 * rhs.m_z,
-		m_m10 * rhs.m_x + m_m11 * rhs.m_y + m_m12 * rhs.m_z,
-		m_m20 * rhs.m_x + m_m21 * rhs.m_y + m_m22 * rhs.m_z
-	);
-}
+
 /// Add a matrix.
 Matrix3  Matrix3::operator + (const Matrix3& rhs) const
 {
@@ -250,20 +243,7 @@ Matrix3  Matrix3::operator + (const Matrix3& rhs) const
         m_m22 + rhs.m_m22
     );
 }
-Matrix3  Matrix3::Add(const Matrix3& rhs) const
-{
-	return Matrix3(
-		m_m00 + rhs.m_m00,
-		m_m01 + rhs.m_m01,
-		m_m02 + rhs.m_m02,
-		m_m10 + rhs.m_m10,
-		m_m11 + rhs.m_m11,
-		m_m12 + rhs.m_m12,
-		m_m20 + rhs.m_m20,
-		m_m21 + rhs.m_m21,
-		m_m22 + rhs.m_m22
-	);
-}
+
 /// Subtract a matrix.
 Matrix3  Matrix3::operator - (const Matrix3& rhs) const
 {
@@ -279,20 +259,7 @@ Matrix3  Matrix3::operator - (const Matrix3& rhs) const
         m_m22 - rhs.m_m22
     );
 }
-Matrix3  Matrix3::Sub (const Matrix3& rhs) const
-{
-	return Matrix3(
-		m_m00 - rhs.m_m00,
-		m_m01 - rhs.m_m01,
-		m_m02 - rhs.m_m02,
-		m_m10 - rhs.m_m10,
-		m_m11 - rhs.m_m11,
-		m_m12 - rhs.m_m12,
-		m_m20 - rhs.m_m20,
-		m_m21 - rhs.m_m21,
-		m_m22 - rhs.m_m22
-	);
-}
+
 /// Multiply with a scalar.
 Matrix3  Matrix3::operator * (float rhs) const
 {
@@ -308,20 +275,7 @@ Matrix3  Matrix3::operator * (float rhs) const
         m_m22 * rhs
     );
 }
-Matrix3  Matrix3::Multiply(float rhs) const
-{
-	return Matrix3(
-		m_m00 * rhs,
-		m_m01 * rhs,
-		m_m02 * rhs,
-		m_m10 * rhs,
-		m_m11 * rhs,
-		m_m12 * rhs,
-		m_m20 * rhs,
-		m_m21 * rhs,
-		m_m22 * rhs
-	);
-}
+
 /// Multiply a matrix.
 Matrix3  Matrix3::operator * (const Matrix3& rhs) const
 {
@@ -336,19 +290,5 @@ Matrix3  Matrix3::operator * (const Matrix3& rhs) const
         m_m20 * rhs.m_m01 + m_m21 * rhs.m_m11 + m_m22 * rhs.m_m21,
         m_m20 * rhs.m_m02 + m_m21 * rhs.m_m12 + m_m22 * rhs.m_m22
     );
-}
-Matrix3  Matrix3::Multiply(const Matrix3& rhs) const
-{
-	return Matrix3(
-		m_m00 * rhs.m_m00 + m_m01 * rhs.m_m10 + m_m02 * rhs.m_m20,
-		m_m00 * rhs.m_m01 + m_m01 * rhs.m_m11 + m_m02 * rhs.m_m21,
-		m_m00 * rhs.m_m02 + m_m01 * rhs.m_m12 + m_m02 * rhs.m_m22,
-		m_m10 * rhs.m_m00 + m_m11 * rhs.m_m10 + m_m12 * rhs.m_m20,
-		m_m10 * rhs.m_m01 + m_m11 * rhs.m_m11 + m_m12 * rhs.m_m21,
-		m_m10 * rhs.m_m02 + m_m11 * rhs.m_m12 + m_m12 * rhs.m_m22,
-		m_m20 * rhs.m_m00 + m_m21 * rhs.m_m10 + m_m22 * rhs.m_m20,
-		m_m20 * rhs.m_m01 + m_m21 * rhs.m_m11 + m_m22 * rhs.m_m21,
-		m_m20 * rhs.m_m02 + m_m21 * rhs.m_m12 + m_m22 * rhs.m_m22
-	);
 }
 }

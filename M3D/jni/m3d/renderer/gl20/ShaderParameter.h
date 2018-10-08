@@ -8,7 +8,7 @@
  */
 #ifndef SHADERPARAMETER_H_
 #define SHADERPARAMETER_H_
-#include "m3d/M3DExport.h"
+#include"m3d/M3D.h"
 #include "m3d/renderer/GLESHead.h"
 namespace M3D
 {
@@ -20,12 +20,11 @@ class M3D_API ShaderParameter
 {
 public:
 	ShaderParameter();
-	ShaderParameter(GLint location,GLenum type,string name ,int size = 1);
+	ShaderParameter(GLint location,GLenum type,string name );
 	virtual ~ShaderParameter();
 	GLint m_location;//!<位置
 	GLenum m_Type;//!<类型
 	string m_name;//!<名字
-	int size;//!<可以判断是不是数组
 };
 
 } /* namespace M3D */

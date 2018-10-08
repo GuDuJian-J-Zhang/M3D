@@ -8,7 +8,7 @@
 #include "sview/views/Parameters.h"
 #include "m3d/SceneManager.h"
 #include "m3d/ResourceManager.h"
-#include "m3d/action/RenderAction.h"
+
 using namespace SVIEW;
 
 namespace M3D

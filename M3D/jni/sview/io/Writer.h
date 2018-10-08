@@ -9,18 +9,18 @@
  */
 #ifndef  M3D__Writer__
 #define  M3D__Writer__
-#include "M3D/M3DExport.h"
+#include "m3d/M3D.h"
 #include "sview/SView.h"
 
 namespace M3D {
     class Model;
-	class Model;
+	class IModel;
     class TriMeshData;
     class IDCreator;
     class Operation;
 }
 using M3D::Model;
-using M3D::Model;
+using M3D::IModel;
 using M3D::TriMeshData;
 using M3D::IDCreator;
 using M3D::Operation;

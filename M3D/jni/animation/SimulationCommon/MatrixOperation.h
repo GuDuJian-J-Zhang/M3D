@@ -3,8 +3,8 @@
 #define _MATRIXOPERATION_H
 // 包含矩阵转置、求逆、相乘几个通用操作
 // 武汉大学.遥感信息工程学院.卢昊
-#include "SATools.h"
-class SA_API MatrixOperation
+
+class MatrixOperation
 {
 public:
 	//////////////////////////////////////////////////////////////////////////

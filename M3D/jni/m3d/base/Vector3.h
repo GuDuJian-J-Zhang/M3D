@@ -8,6 +8,7 @@
  */
 #ifndef M3D_VECTOR3_H_
 #define M3D_VECTOR3_H_
+
 #include "m3d/base/Vector2.h"
 
 namespace M3D
@@ -41,7 +42,7 @@ public:
 	}
 
 	/**
-	 * @brief Construct from a two-dimensional vector (for M3D).
+	 * @brief Construct from a two-dimensional vector (for Urho2D).
 	 */
 	Vector3(const Vector2& vector) :
 			m_x(vector.m_x), m_y(vector.m_y), m_z(0.0f)
@@ -57,7 +58,7 @@ public:
 	}
 
 	/**
-	 * @brief Construct from two-dimensional coordinates (for M3D).
+	 * @brief Construct from two-dimensional coordinates (for Urho2D).
 	 */
 	Vector3(float x, float y) :
 			m_x(x), m_y(y), m_z(0.0f)
@@ -88,23 +89,19 @@ public:
 	 */
 	bool operator ==(const Vector3& rhs) const
 	{
-		return M3D::Equals(m_x,rhs.m_x)&& M3D::Equals(m_y,rhs.m_y) && M3D::Equals(m_z,rhs.m_z);
+		return m_x == rhs.m_x && m_y == rhs.m_y && m_z == rhs.m_z;
 	}
 	/**
 	 * @brief Test for inequality with another vector without epsilon.
 	 */
 	bool operator !=(const Vector3& rhs) const
 	{
-		return !M3D::Equals(m_x, rhs.m_x) || !M3D::Equals(m_y, rhs.m_y) || !M3D::Equals(m_z, rhs.m_z);
+		return m_x != rhs.m_x || m_y != rhs.m_y || m_z != rhs.m_z;
 	}
 	/**
 	 * @brief Add a vector.
 	 */
 	Vector3 operator +(const Vector3& rhs) const
-	{
-		return Vector3(m_x + rhs.m_x, m_y + rhs.m_y, m_z + rhs.m_z);
-	}
-	Vector3 Add(const Vector3& rhs) const
 	{
 		return Vector3(m_x + rhs.m_x, m_y + rhs.m_y, m_z + rhs.m_z);
 	}
@@ -115,18 +112,10 @@ public:
 	{
 		return Vector3(-m_x, -m_y, -m_z);
 	}
-	Vector3 Negative () const
-	{
-		return Vector3(-m_x, -m_y, -m_z);
-	}
 	/**
 	 * @brief Subtract a vector.
 	 */
 	Vector3 operator -(const Vector3& rhs) const
-	{
-		return Vector3(m_x - rhs.m_x, m_y - rhs.m_y, m_z - rhs.m_z);
-	}	
-	Vector3 Sub(const Vector3& rhs) const
 	{
 		return Vector3(m_x - rhs.m_x, m_y - rhs.m_y, m_z - rhs.m_z);
 	}
@@ -137,18 +126,10 @@ public:
 	{
 		return Vector3(m_x * rhs, m_y * rhs, m_z * rhs);
 	}
-	Vector3 Multiply(float rhs) const
-	{
-		return Vector3(m_x * rhs, m_y * rhs, m_z * rhs);
-	}
 	/**
 	 * @brief Multiply with a vector.
 	 */
 	Vector3 operator *(const Vector3& rhs) const
-	{
-		return Vector3(m_x * rhs.m_x, m_y * rhs.m_y, m_z * rhs.m_z);
-	}
-	Vector3 Multiply(const Vector3& rhs) const
 	{
 		return Vector3(m_x * rhs.m_x, m_y * rhs.m_y, m_z * rhs.m_z);
 	}
@@ -159,10 +140,6 @@ public:
 	{
 		return Vector3(m_x / rhs, m_y / rhs, m_z / rhs);
 	}
-	Vector3 Divide(float rhs) const
-	{
-		return Vector3(m_x / rhs, m_y / rhs, m_z / rhs);
-	}
 	/**
 	 * @brief Divide by a vector.
 	 */
@@ -170,10 +147,7 @@ public:
 	{
 		return Vector3(m_x / rhs.m_x, m_y / rhs.m_y, m_z / rhs.m_z);
 	}
-	Vector3 Divide(const Vector3& rhs) const
-	{
-		return Vector3(m_x / rhs.m_x, m_y / rhs.m_y, m_z / rhs.m_z);
-	}
+
 	/**
 	 * @brief Add-assign a vector.
 	 */
@@ -184,24 +158,11 @@ public:
 		m_z += rhs.m_z;
 		return *this;
 	}
-	Vector3& Added(const Vector3& rhs)
-	{
-		m_x += rhs.m_x;
-		m_y += rhs.m_y;
-		m_z += rhs.m_z;
-		return *this;
-	}
+
 	/**
 	 * @brief Subtract-assign a vector.
 	 */
 	Vector3& operator -=(const Vector3& rhs)
-	{
-		m_x -= rhs.m_x;
-		m_y -= rhs.m_y;
-		m_z -= rhs.m_z;
-		return *this;
-	}	
-	Vector3& Subed(const Vector3& rhs)
 	{
 		m_x -= rhs.m_x;
 		m_y -= rhs.m_y;
@@ -219,13 +180,7 @@ public:
 		m_z *= rhs;
 		return *this;
 	}
-	Vector3& Multiplyed(float rhs)
-	{
-		m_x *= rhs;
-		m_y *= rhs;
-		m_z *= rhs;
-		return *this;
-	}
+
 	/**
 	 * @brief Multiply-assign a vector.
 	 */
@@ -236,13 +191,7 @@ public:
 		m_z *= rhs.m_z;
 		return *this;
 	}
-	Vector3& Multiplyed(const Vector3& rhs)
-	{
-		m_x *= rhs.m_x;
-		m_y *= rhs.m_y;
-		m_z *= rhs.m_z;
-		return *this;
-	}
+
 	/**
 	 * @brief Divide-assign a scalar.
 	 */
@@ -254,14 +203,7 @@ public:
 		m_z *= invRhs;
 		return *this;
 	}
-	Vector3& Divided(float rhs)
-	{
-		float invRhs = 1.0f / rhs;
-		m_x *= invRhs;
-		m_y *= invRhs;
-		m_z *= invRhs;
-		return *this;
-	}
+
 	/**
 	 * @brief Divide-assign a vector.
 	 */
@@ -272,13 +214,7 @@ public:
 		m_z /= rhs.m_z;
 		return *this;
 	}
-	Vector3& Divided(const Vector3& rhs)
-	{
-		m_x /= rhs.m_x;
-		m_y /= rhs.m_y;
-		m_z /= rhs.m_z;
-		return *this;
-	}
+
 	/**
 	 * @brief Normalize to unit length.
 	 */
@@ -402,16 +338,7 @@ public:
 		else
 			return *this;
 	}
-	M3D_ADDRESSTYPE Address()
-	{
-		//获取地址的真实方式
-		return TAddress(*this);
-	}	
-	
-	void FillByAddress(M3D_ADDRESSTYPE memoryAddress)
-	{
-		*this = *TFromAddress<Vector3>(memoryAddress);
-	}
+
 	/**
 	 * @brief Return float data.
 	 */

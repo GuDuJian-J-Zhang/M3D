@@ -38,7 +38,7 @@ private:
 	virtual void OnTouchDown(float* p, int n);
 
 private:
-	virtual void InitCamera(bool useAni = true);
+	virtual void InitCamera();
 	virtual void OptimizeCamera();
 	void TwoPointsUp(float*pos, int n);
 	void TwoPointsMove(float*, int n = 2);

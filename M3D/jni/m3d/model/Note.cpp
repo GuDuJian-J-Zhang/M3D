@@ -13,7 +13,7 @@
 #include "m3d/action/RayPickAction.h"
 #include "m3d/base/Vector3.h"
 #include "sview/views/Parameters.h"
-#include "m3d/action/RenderAction.h"
+
 using namespace SVIEW;
 
 namespace M3D
@@ -233,7 +233,7 @@ void Note::RayPick(RayPickAction* action)
 {
 	if (!this->IsVisible() || !action->CanPickShape(this->GetType()))
 	{
-		//return;
+		return;
 	}
 	//判断线是否有交点
 	Vector3 intersectPos;
@@ -253,11 +253,11 @@ void Note::RayPick(RayPickAction* action)
 	//判断文字是否有交点
 	//首先将射线变换到billboard校正后的位置
 	MutexLock lock(m_mutex);
-	if(m_imageBoardList.size() == 0){
-		Ray billboardRay = action->GetData()->GetModelRay();
-		Matrix3x4 modelMatrixInverse = m_bindBillboard.GetWorldMatrix().Inverse();
-		billboardRay = billboardRay.Transformed(modelMatrixInverse);
+	Ray billboardRay = action->GetData()->GetModelRay();
+	Matrix3x4 modelMatrixInverse = m_bindBillboard.GetWorldMatrix().Inverse();
+	billboardRay = billboardRay.Transformed(modelMatrixInverse);
 
+	if(m_imageBoardList.size() == 0){
 		for (int i = 0; i < m_ComTexts.size(); i++)
 		{
 			ComText* comText = m_ComTexts.at(i);
@@ -282,6 +282,7 @@ void Note::RayPick(RayPickAction* action)
 				break;
 			}
 		}
+
 	}
 
 	for (int i = 0; i < m_imageBoardList.size(); i++) ///图片列表
@@ -328,36 +329,6 @@ void Note::FindVisiableObject(RenderAction* renderAction)
 		}
 //		LOGI("FindVisiableObject 1");
 		renderAction->PrepareRenderNote(this);
-	}
-}
-
-void Note::SetVisiableObject(RenderAction* renderAction)
-{
-	if (this->IsVisible())
-	{
-		this->SetRenderWorldMatrix(renderAction->GetGLWorldMatrix());
-
-		//准备点的显示数据
-		//		LOGI("FindVisiableObject 10");
-		for (int i = 0; i < m_PointList.size(); i++) ///点列表
-		{
-			m_PointList[i]->UpdateRenderData(renderAction);
-		}
-		//		LOGI("FindVisiableObject 11");
-		if (this->IsDirty() && m_imageBoardList.size() == 0)
-		{
-			this->m_isDirty = false;
-			this->m_bindBillboard.SetCenter(this->GetTextsCenter());
-		}
-
-		this->m_bindBillboard.GetGLWorldMatrix(renderAction);
-
-		MutexLock lock(m_mutex);
-		//		LOGI("FindVisiableObject 12");
-		for (int i = 0; i < m_imageBoardList.size(); i++) ///图片列表
-		{
-			m_imageBoardList[i]->UpdateRenderData(renderAction);
-		}
 	}
 }
 
@@ -433,16 +404,6 @@ Billboard* Note::GetBillBoard()
 vector<ImageBoard*>& Note::GetImageBoards()
 {
 	return this->m_imageBoardList;
-}
-
-Vector3 Note::GetImageBoardPosition()
-{
-	Vector3 position;
-	if (m_imageBoardList.size() > 0)
-	{
-		position = m_imageBoardList[0]->GetPosition();
-	}
-	return position;
 }
 
 string Note::GetTextValue()

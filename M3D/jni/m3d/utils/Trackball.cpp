@@ -19,18 +19,6 @@ int Trackball::TIMES = 10;
 int Trackball::KEEPINGSTATETIMES = Trackball::TIMES;
 float Trackball::CURRENTMODELSIZE = 1000.0f;
 float Trackball::DrawLimit = 0.0f;
-Trackball* Trackball::instance = NULL;
-
-Trackball* Trackball::Instance()
-{
-	if (Trackball::instance == NULL)
-	{
-		Trackball::instance = new Trackball();
-	}
-
-	return Trackball::instance;
-}
-
 Trackball::Trackball(void)
 {
 	m_iWidth = m_iHeight = 400;
@@ -50,8 +38,6 @@ Trackball::Trackball(void)
 	m_rotateSpeed = 1.5f;
 
 	m_screenDepth = 0.5;
-
-	pCamera = NULL;
 }
 
 Trackball::~Trackball(void)
@@ -106,7 +92,8 @@ void Trackball::Tracking(int iDx, int iDy, Vector3 *axis, float *fAngle)
 		*fAngle = 0.0f;
 		return;
 	}
- 
+	//priPointOneX += iDx;
+	//priPointOneY += iDy;
 	m_Stop = ScreenToVector(m_iWidth / 2 + iDx, m_iHeight / 2 + iDy);
 	*axis = m_Start.CrossProduct(m_Stop); // cross product
 
@@ -145,7 +132,7 @@ void Trackball::TwoPointsStart(float*pos, int n)
 
 	m_PirDistance = TwoPointsDis(pos);
 
-	CameraNode* camera = GetCamera();
+	CameraNode* camera = pSceneManager->GetCamera();
 
 	if (!camera->IsOrthographic())
 	{
@@ -173,7 +160,7 @@ void Trackball::OnePointsMove(float* pos, int n)
 			Trackball::KEEPINGSTATETIMES = Trackball::TIMES;
 			Trackball::MOVESTATE = 1;
 
-			CameraNode* camera = GetCamera();
+			CameraNode* camera = pSceneManager->GetCamera();
 
 			m_cacheCurPointNear  = this->ScreenToDepthVector(currentPnt);
 			m_cachePriPoint = this->ScreenToDepthVector(m_PriPointOneScale);
@@ -208,7 +195,7 @@ void Trackball::OnePointsScale(float* pos, int n)
 
 			Trackball::KEEPINGSTATETIMES = Trackball::TIMES;
 
-			const IntRect& intRect = GetCamera()->GetViewPort().GetRect();
+			const IntRect& intRect = this->pSceneManager->GetCamera()->GetViewPort().GetRect();
 
 			m_cacheCurPointNear == this->ScreenToDepthVector(m_PriPointOneScaleCenter);
 	
@@ -313,8 +300,8 @@ float Trackball::TwoPointsDis(float*pos, int n)
 }
 float Trackball::TwoPointsTrackingAngle(float*pos, int n)
 {
-	double priRadians = atan2((float)m_PriPointTwo1.m_y - m_PriPointTwo2.m_y,
-		(float)m_PriPointTwo1.m_x - m_PriPointTwo2.m_x);
+	double priRadians = atan2(m_PriPointTwo1.m_y - m_PriPointTwo2.m_y,
+			m_PriPointTwo1.m_x - m_PriPointTwo2.m_x);
 	double delta_x = pos[0] - pos[n];
 	double delta_y = pos[1] - pos[n + 1];
 	double radians = atan2(delta_y, delta_x);
@@ -326,7 +313,7 @@ Vector3 Trackball::ScreenToDepthVector(const IntVector2& scrVector)
 	Vector3 depthVector;
 	if (pSceneManager != NULL)
 	{
-		CameraNode* camera =GetCamera();
+		CameraNode* camera = pSceneManager->GetCamera();
 			///乘上camera->GetView()将点转换到摄像机eye坐标系，进行求两次的变化量,由于此处摄像机采用继承的方式实现，没有采用节点挂载的方式
 			//此处的部分变换处理算法，待调整为节点挂载的方式后重构。。 TODO
 		depthVector = camera->GetView()*camera->GetViewPort().ScreenToWorldPoint(scrVector.m_x, scrVector.m_y, m_screenDepth);
@@ -340,16 +327,10 @@ void Trackball::AdjustScaleToMoveVector(const IntVector2& scrVector)
 {
 	if (pSceneManager != NULL)
 	{
-		CameraNode* camera = GetCamera();
+		CameraNode* camera = pSceneManager->GetCamera();
 		float scaleFactor = mvMatrix.scaleFactor;
 
-#ifdef __MOBILE__
-        static float baseScaleFactor = 0.1f;
-#else
-          static float baseScaleFactor = 0.0001f;
-#endif
-        
-		if (!camera->IsOrthographic() && fabs(scaleFactor -1.0f) > baseScaleFactor)
+		if (!camera->IsOrthographic() && fabs(scaleFactor -1.0f) > 0.0001f)
 		{
 			Vector3 movTarget =
 				camera->GetViewPort().ScreenToWorldPoint(
@@ -357,13 +338,12 @@ void Trackball::AdjustScaleToMoveVector(const IntVector2& scrVector)
 					m_screenDepth);
  
 			Vector3 cameraPos = camera->GetPosition();
-            camera->SetWorldPosition( cameraPos + mvMatrix.moveVector);
+
 			Vector3 sceneCenter = camera->GetRotateCenter();
 
 			float moveSpeed = 0.0f;
 			float moveFactor = 1.0f;
-			float stepLength = Min(pSceneManager->GetSceneBox().Length()*0.01f,50.0f);
-			if ((cameraPos - sceneCenter).Length()> stepLength)
+			if ((cameraPos - sceneCenter).Length()>pSceneManager->GetSceneBox().Length()*0.01f)
 			{
 				moveSpeed = (cameraPos - sceneCenter).Length()*0.1f;
 				moveFactor = moveSpeed * scaleFactor * (scaleFactor > 1 ? -1 : 1);
@@ -371,7 +351,7 @@ void Trackball::AdjustScaleToMoveVector(const IntVector2& scrVector)
 			else 
 			{
 				//当距离距离过近之后，只允许
-				moveSpeed = stepLength;
+				moveSpeed = pSceneManager->GetSceneBox().Length()*0.01f;
 				//if (scaleFactor > 1)
 				{
 					moveFactor = moveSpeed * scaleFactor * (scaleFactor > 1 ? -1 : 1);
@@ -391,8 +371,6 @@ void Trackball::AdjustScaleToMoveVector(const IntVector2& scrVector)
 void Trackball::SetSceneManager(SceneManager* pSceneManager)
 {
 	this->pSceneManager = pSceneManager;
-
-	this->SetCamera(pSceneManager->GetCamera());
 }
 
 

@@ -1,4 +1,4 @@
-/**@file
+﻿/**@file
  *@brief	场景节点管理类
  *@author	XL
  *@date		2014-1-7
@@ -17,15 +17,15 @@
 #include "m3d/graphics/MovedMatrixInfo.h"
 #include "m3d/Handler/HandlerGroup.h"
 #include "m3d/action/Action.h"
+#include "m3d/action/RenderAction.h"
 #include "m3d/graphics/Renderable.h"
-
-
 
 namespace M3D
 {
+
 class Model;
 class SceneNode;
-class Model;
+class LSceneNode;
 class GroupNode;
 class RenderManager;
 class ResourceManager;
@@ -35,31 +35,14 @@ class HandlerGroup;
 class Handler;
 class Section;
 class GlueObj;
-class ModelShape;
+
 class ModelView;
-class DirectionalLight;
+class Light;
 class SectionPlane;
-class Octree;
-class ExtendInfoManager;
-class RenderAction;
-class NoteGroup;
-class AnnotationGroup;
-class MeasureGroup;
-class Ray;
-class SectionNode;
-typedef vector<DirectionalLight*> LightList;
-class LightManager;
-class CameraGroup;
-class CameraManager;
-class LightGroup;
-class ScreenUILayerGroup;
 
-#ifdef WIN32
-class GUI;
-#endif // WIN32
+typedef vector<Light*> LightList;
 
-
-class M3D_API SceneManager
+class SceneManager
 {
 	friend class NodesManager;
 	friend class RenderManager;
@@ -68,7 +51,7 @@ class M3D_API SceneManager
 public:
 	SceneManager(void);
 	virtual ~SceneManager(void);
-	vector<Vector3> triglePnts;
+
 	/**@brief 复位显示到最初加载状态
 	 *
 	 */
@@ -111,22 +94,11 @@ public:
 	NoteGroup *GetNoteGroup();
 
 	/**
-	*
-	* @return 返回Annotation组
-	* @see M3D::HandlerGroup
-	*/
-	AnnotationGroup *GetAnnotationGroup();
-
-	/**
 	 *
 	 * @return 返回测量组
 	 * @see M3D::MeasureGroup
 	 */
 	MeasureGroup *GetMeasureGroup();
-
-	LightGroup* GetLightGroup();
-
-	CameraGroup* GetCameraGroup();
 
 	/**
 	 * 取得场景树的根节点
@@ -146,6 +118,8 @@ public:
 	 */
 	RenderManager * GetRenderManager();
 
+	void FoucusView(BoundingBox& foucusBox, bool useAni);
+
 	/**
 	 * @brief 是否显示剖面
 	 * @param flag true显示，false不显示
@@ -156,9 +130,13 @@ public:
 	 * 设置剖面，后期通过重写View废弃掉
 	 * @param planes
 	 */
-	//void SetSections(const vector<SectionPlane*> planes);
- 
-	SectionNode* GetSectionNode();
+	void SetSections(const vector<SectionPlane*> planes);
+
+	/**
+	 * @brief 获取存储剖面信息的节点  @see M3D::SectionNode
+	 * @return SectionNode节点指针
+	 */
+	Section * GetSection();
 
 	/**
 	 * @brief 外部添加进入的action
@@ -170,10 +148,9 @@ public:
 	 * @brief 设置旋转中心
 	 * @param x 屏幕坐标x
 	 * @param y 屏幕坐标y
-	 *@param centerType = 0,正常模式，=1 围绕摄像机自身
 	 * @return true 设置成功
 	 */
-	bool SetRotationCenter(float x, float y,int centerType = 0);
+	bool SetRotationCenter(float x, float y);
 
 	/**
 	 * @brief 复位旋转中心
@@ -189,12 +166,8 @@ public:
 	 * @return 拾取到shape的ID
 	 */
 	IShape* GetPickShape(float winx, float winY, int shapeType, int geoType);
-	IShape* GetPickShape(M3D::Ray& ray, int shapeType, int geoType);
-	IShape* GetPickShape(Vector2& screentPnt, int shapeType, int geoType);
-	IShape* GetFarPickShape(M3D::Ray& ray, int shapeType, int geoType);
 
-	//处理VR菜单事件
-	bool ProcessVREvent();
+	IShape* GetPickShape(Vector2& screentPnt, int shapeType, int geoType);
 
 	vector<IShape*> GetFramePickShape(const Vector2& leftTop, const Vector2& rightBottom,
 		int shapeType,
@@ -234,12 +207,9 @@ public:
 	 * @brief 获得拾取到的点坐标
 	 * @param x 屏幕坐标X
 	 * @param y 屏幕坐标Y
-	 * @param inModel
 	 * @return 空间中点三维坐标
 	 */
-	Vector3 GetPickPoint(float x, float y, bool inModel = true);
-	Vector3 GetPickNormal();
-	Vector3 GetUILayerPickPoint(float x, float y);
+	Vector3 GetPickPoint(float x, float y);
 
 	/**
 	 *
@@ -250,7 +220,7 @@ public:
 	 * @return
 	 */
 	bool GetPickPoint(Vector2& screenPnt, Vector3& pnt, bool inModel);
-	bool GetPickPoint(Ray & ray, Vector3 & pnt, bool inModel);
+
 	/**
 	 * @brief 在空间中vec位置创建类型为Type的Handler
 	 * @param vec 创建handler的位置
@@ -288,7 +258,7 @@ public:
 	 * @param Type 添加shape类型
 	 * @return 添加成功shape的ID
 	 */
-	IShape* CreateShape(const Vector3& vec, int Type);
+	Shape* CreateShape(const Vector3& vec, int Type);
 	/**
 	 * @brief 添加shape
 	 * @param x 空间坐标X
@@ -303,7 +273,7 @@ public:
 	 * @param id 移除shape的ID
 	 * @return tru表示移除成功，false表示移除失败
 	 */
-	bool RemoveShape(IDTYPE id);
+	bool RemoveShape(int id);
 
 	/**
 	 * @brief 获取ID为id，类型为type的shape在空间中的当前位置
@@ -311,7 +281,7 @@ public:
 	 * @param type 待获取shape的类型
 	 * @param pos  传出shape的当前位置
 	 */
-	void GetShapePos(IDTYPE id, int type, Vector3& pos);
+	void GetShapePos(int id, int type, Vector3& pos);
 
 	/**
 	 * 获取shape的颜色
@@ -319,7 +289,7 @@ public:
 	 * @param type
 	 * @return
 	 */
-	Color GetShapeColor(IDTYPE id, int type);
+	Color GetShapeColor(int id, int type);
 
 	/**
 	 * @brief 显示旋转中心
@@ -340,6 +310,31 @@ public:
 	void SetCamera(CameraNode* camera);
 
 	/**
+	 * 添加灯光
+	 * @param light
+	 */
+	void AddLight(Light* light);
+
+	/**
+	 * 移除index号灯光
+	 * @param index
+	 */
+	void RemoveLight(int index);
+
+	/**
+	 * 得到所有的灯光
+	 * @return
+	 */
+	LightList* GetLights();
+
+	/**
+	 * 得到index号灯光
+	 * @param index
+	 * @return
+	 */
+	Light* GetLight(int index);
+
+	/**
 	 * 锁定场景,使线程独占场景资源
 	 * 当在外部修改场景内容时调用，能够对渲染线程进行锁定
 	 * 防止写冲突
@@ -357,22 +352,21 @@ public:
 	 * @param path
 	 * @return
 	 */
-	IShape* GetShape(const string& path);
+	Shape* GetShape(const string& path);
 
 	/**
 	 * 在NodesManager中查找ID为id的shape
 	 * @param shapeID 要查找shape的id
 	 * @return 返回shape的地址
 	 */
-	IShape* GetShape(IDTYPE shapeID);
+	Shape* GetShape(int shapeID);
 	/**
 	 * 通过名称查找节点
 	 * @param name
 	 * @return
 	 */
-	Model* GetNode(const string& name);
+	SceneNode* GetNode(const string& name);
 
-	void AddModelCachePath(Model* model);
 	/**
 	 * 获取整个场景的包围盒
 	 */
@@ -394,19 +388,34 @@ public:
 	 * 将shape对象从shapemap中移除
 	 * @param shape
 	 */
-	void RemoveShapeIDFromMap(IShape* shape);
+	void RemoveShapeIDFromMap(Shape* shape);
 	/**
 	 * 更新shape对象的id到map缓存中，方便根据shape的id进行快速查找
 	 * @param shape
 	 */
-	void AddShapeIDToMap(IShape* shape);
+	void AddShapeIDToMap(Shape* shape);
+
+	/**
+	 * 创建ModelNOde节点，根据Model对象创建
+	 * @param model
+	 * @param currPath
+	 * @param n
+	 * @return
+	 */
+	GroupNode* CreateModelNodes(Model* model, string currPath, int n);
 
 	/**
 	 * 重启索引map列表，在添加model对象后
 	 * @param model
 	 */
 	void ReIndexIDMapAfterAddModel(Model* model);
- 
+
+	/**
+	 * 重启索引map列表，在删除model对象是
+	 * @param model
+	 */
+	void ReIndexIDMapAfterDeleteModel(Model* model);
+
 	/**
 	 * 得到资源管理器
 	 * @return
@@ -416,7 +425,7 @@ public:
 	/**
 	* @brief 在场景中加载新Model后使用一次
 	*/
-	void OptimizeScene(bool isAsynMode);
+	void OptimizeScene();
 
 	///更新整个场景，在每一次绘制前
 	void UpdateScene();
@@ -429,7 +438,7 @@ public:
 
 	///得到场景默认的缩放比例
 	float GetDefaultZoom();
- 
+
 	///得到默认焦距大小
 	float GetDefaultFocusLength();
 
@@ -439,120 +448,61 @@ public:
 	*/
 	bool SetRotationCenter(float x, float y, float z);
 	bool SetRotationCenter(const Vector3& vec);
-
-	/************************************************************************/
-	/* 通过模型更新场景，包括扩展场景包围盒：如果传来的模型不在场景中，则扩展包围盒                                                                     */
-	/************************************************************************/
-	bool UpdateSceneByModel(Model* model);
-	void UpdateSceneByModel(vector<Model*>models);
-
-	/************************************************************************/
-	/* 当所有的模型读取完成之后，强制更新整个场景的包围盒，来防止文件包围盒没有计算的情况                                                                     */
-	/************************************************************************/
-	void RequestUpdateWhenSceneBoxChanged();
- 
-	void OptimizeCameraView(bool fitShowView = false);
- 
-	void AsynUpdateModelCacheInfo(Model* mdoel,bool add, bool addSub = true);
-
-	bool AsynAddModelToParent(Model* parentModel, Model* mdoel);
-	bool AsynRemoveModelFromeScene(Model* parentModel, Model* model);
-
-	ExtendInfoManager* GetExtendInfoManager();
-
-	BoundingBox GetOcTreeWorldBoundingBox();
-
-	CameraManager * GetCameraManager();
-
-	LightManager* GetLightManager();
-
-	ScreenUILayerGroup* GetScreenUILayerGroup();
-
-	SectionNode* GetSectionNode(int ID); 
-
-	SectionNode* CreateSingleSectionNode(int ID);
-
-	void AddSectionNode(SectionNode* node);
-
-#ifdef WIN32
-	GUI* GetGUI();
-#endif // WIN32
-
-	CameraNode* GetHudCamera() const;
-	void SetHudCamera(CameraNode* val);
-
-	BoundingBox& GetHudLayerBox(){ return m_HudLayerBox; }
-	void SetHudLayerBox(BoundingBox& val) { m_HudLayerBox = val; }
-	//选中的面片焦点及对应的发现
-	Vector3 rayIntersectNormal;
-	Vector3 rayIntersectPos;
+    /************************************************************************/
+    /* 通过模型更新场景，包括扩展场景包围盒：如果传来的模型不在场景中，则扩展包围盒                                                                     */
+    /************************************************************************/
+    void UpdateSceneByModel(Model* model);
+    void UpdateSceneByModel(vector<Model*>models);
 private:
-	void OnRequestUpdateWhenSceneBoxChanged();
-
-
-	void ReIndexIDMapAfterAddSingleModel(Model* model);
-
-	/**
-	* 重启索引map列表，在删除model对象是
-	* @param model
-	*/
-	void ReIndexIDMapAfterDeleteModel(Model* model);
-
-	void ReIndexIDMapAfterDeleteSingleModel(Model* model);
-	/**
-	* 删除名称查找节点
-	* @param name
-	*/
-	void RemoveModelCachePath(Model* model);
 	/**
 	 * 计算包围盒回调函数
 	 * @param data
 	 * @param node
 	 */
-	static void ComputeBox(void* data, Model* node);
+	static void ComputeBox(void* data, SceneNode* node);
 
 	/**
 	 * 计算轻量化浏览的包围盒回调函数
 	 * @param data
 	 * @param node
 	 */
-	static void ComputeLBox(void* data, Model* node);
-
-	static void AddNodeToOCTree(void* data, Model* node);
-
-	void AddNodeToOCTree(Model* node);
+	static void ComputeLBox(void* data, LSceneNode* node);
 
 	/**
 	 * 更新硬件缓存资源，CallbackAction回调函数
 	 * @param data
 	 * @param node
 	 */
-	static void UpdataHardWareBuffer(void* data, Model* node);
+	static void UpdataHardWareBuffer(void* data, LSceneNode* node);
 
 	/**
 	 * 复位模型回调函数
 	 * @param data
 	 * @param node
 	 */
-	static void ResetModelNodesCallback(void* data, Model* node);
+	static void ResetModelNodesCallback(void* data, SceneNode* node);
 
 	/**
 	 * 更新scenenode节点路径map回调函数
 	 * @param data
 	 * @param node
 	 */
-	static void SetNodeToMap(void* data, Model* node);
+	static void SetNodeToMap(void* data, SceneNode* node);
 
 	/**
 	 * 更新硬件缓存
 	 */
 	void UpdateHardwareBuffer();
 
-	void BeginDiskCache();
-
-	void EndDiskCache();
-
 	void Init();
+
+	/**
+	 * 根据名称和类型，获取场景节点
+	 * @param type
+	 * @param name
+	 * @return
+	 */
+	SceneNode* GetNodes(int type, const string& name);
 
 	bool RestoreRotationCenter(SceneNode* node);
 
@@ -568,8 +518,6 @@ private:
 
 	BoundingBox GetFitViewSceneBox();
 
-	list<SectionNode*> m_sceneNodeList;
-
 protected:
 	SceneNode *m_pSceneRoot; //!<场景根节点
 	CameraNode* m_camera; //!<摄像机
@@ -578,58 +526,24 @@ protected:
 	RenderManager * m_RenderMgr; //!<渲染器
 	int m_iSelectType; //!<拾取类型
 	Model * m_TopModel; //!<顶级模型
-
+	LightList lights; //!<所有灯光
 	mutable Mutex m_mutex; //!<线程资源同步锁，用于同步绘制线程和UI线程之间的资源竞争
 
 	HandlerGroup* m_handlerGroup; //!<交互节点 TODO
 
 	NoteGroup* m_noteGroup; //!<存储批注的节点组
-	SectionNode* m_sectionNode;
-
-	AnnotationGroup* m_annotationGroup;//!<存储标注的节点组
 
 	MeasureGroup* m_measureGroup; //!< 存储测量临时对象
 
-	LightGroup* m_lightGroup;//!挂载场景的灯光节点
-	CameraGroup* m_cameraGroup;
-
 	ResourceManager* m_resourceMgr; //!<资源管理器
 
-	map<string, Model*> m_NodesMap; //!<string 存储node对应的path，NodesMap存储所有的路径对应的节点，
-	map<IDTYPE, IShape*> m_ShapesIDMap; //!<缓存shape用于快速查找
+	map<string, SceneNode*> m_NodesMap; //!<string 存储node对应的path，NodesMap存储所有的路径对应的节点，
+	map<int, Shape*> m_ShapesIDMap; //!<缓存shape用于快速查找
 
 	GlueObj* m_glueObj; //!<java或者oc粘合层对象
 
 	bool m_isModelDirty; //!<场景内模型发生了变化
-
-	vector<ModelShape*> m_frustumQueryResulets; //八叉树场景划分查询结果
-	Octree* m_ocTree;
-
-	ExtendInfoManager* m_extendinfoMgr; //信息扩展管理器
-
-	bool m_SceneBoxChanged;
-
-	CameraNode* m_hudCamera; //HubCamera
-
-	BoundingBox m_HudLayerBox;
-
-#ifdef WIN32
-
-	GUI* m_gui;
-
-#endif // WIN32
-
-	/************************************************************************/
-	/* 郑煤机项目添加                                                       */
-	/************************************************************************/
-	//场景单位换算 add by zhouyunpeng 
-	float m_unitScale;
-	//---------------------------------
-	LightManager* m_lightManager;
-
-	CameraManager* m_cameraManager;
-public:
-	void SetUnitScale(float scale);
+	Section* m_section;
 };
 }
 

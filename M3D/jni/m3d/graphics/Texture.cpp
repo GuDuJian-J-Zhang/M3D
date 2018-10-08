@@ -3,11 +3,13 @@
 #include "m3d/ResourceManager.h"
 namespace M3D
 {
+string Texture::APKPath = "";
+
 Texture::~Texture()
 {
 	if (this->m_image)
 	{
-		this->m_image->Release();
+		delete this->m_image;
 		this->m_image = NULL;
 	}
 
@@ -37,48 +39,25 @@ void Texture::Init()
 	m_image = NULL;
 	this->m_textures[0] = 0;
 	this->m_name = "";
-	m_isMipMap = false;
-	m_minFliter = GL_LINEAR;
-	m_magFliter = GL_LINEAR;
-	m_wrapS = GL_REPEAT;
-	m_wrapT = GL_REPEAT;
-	m_textureEncoding = TEXEL_ENCODING_TYPE_LINEAR;
-	m_minmapFliter = GL_LINEAR_MIPMAP_LINEAR;
-	m_gammaInput = false;
-	
 	this->MarkDirty();
 }
 
-void Texture::SetPath(const string& fileName)
+void Texture::Read(const string& fileName)
 {
+	//LOGI("MTextureImage::Read step1");
 	if (this->m_image == NULL)
 	{
+		//LOGI("MTextureImage::Read step2");
 		this->m_image = new Image;
-		this->m_image->AddRef();
 	}
-	this->m_image->SetPath(fileName);
-	this->MarkDirty();
+	//LOGI("MTextureImage::Read step3");
+	this->m_image->Read(fileName);
+	//LOGI("MTextureImage::Read step4");
 }
 
-string Texture::GetPath()
+void Texture::SetData(const void* data)
 {
-	if (this->m_image)
-	{
-		return this->m_image->GetPath();
-	}
-	return "";
-}
 
-void Texture::SetData(unsigned char* data, int length)
-{
-	if (this->m_image == NULL)
-	{
-		this->m_image = new Image;
-		this->m_image->AddRef();
-	}
-
-	this->m_image->SetData(data,length);
-	this->MarkDirty();
 }
 
 unsigned int Texture::GetID()
@@ -91,7 +70,9 @@ unsigned int Texture::GetOGLObj()
 {
 	if (m_isTextureDirty)
 	{
+		LOGI("dirty");
 		this->UpdataOGLObj();
+
 		m_isTextureDirty = false;
 	}
 
@@ -124,22 +105,21 @@ void Texture::MarkDirty()
 	m_isTextureDirty = true;
 }
 
-//void Texture::SetImagePath(const string& imagePath)
-//{
-//	m_imagePath = imagePath;
-//	this->MarkDirty();
-//}
-//
-//const string& Texture::GetImagePath() const
-//{
-//	return m_imagePath;
-//}
+void Texture::SetImagePath(const string& imagePath)
+{
+	m_imagePath = imagePath;
+	LOGI(" Texture:: SetImagePath()%s", m_imagePath.c_str());
+	this->MarkDirty();
+}
+
+const string& Texture::GetImagePath() const
+{
+	return m_imagePath;
+}
 
 void Texture::SetImage(Image* image)
 {
-	ReleaseMe(this->m_image);
 	this->m_image = image;
-	AddRefMe(this->m_image);
 	if (this->m_image)
 	{
 		this->MarkDirty();
@@ -149,32 +129,6 @@ void Texture::SetImage(Image* image)
 Image* Texture::GetImage()
 {
 	return this->m_image;
-}
-
-void Texture::GenerateMipMap()
-{
-
-}
-
-void Texture::NeedUpdate()
-{
-	MarkDirty();
-}
-
-bool Texture::Equals(Texture* texture)
-{
-	if (this->GetPath() == "" && texture->GetPath() == ""
-		&& this->GetImage() == NULL && texture->GetImage() == NULL)
-	{
-		return true;
-	}
-
-	if (this->GetPath() != texture->GetPath() || this->GetImage() != texture->GetImage())
-	{
-		return false;
-	}
-
-	return true;
 }
 
 }

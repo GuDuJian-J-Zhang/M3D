@@ -26,25 +26,20 @@
 #include "m3d/utils/M3DTools.h"
 #include "sview/views/Parameters.h"
 
-namespace SVIEW
-{
+namespace SVIEW {
 
-XmlSceneSerializer::XmlSceneSerializer()
-{
+XmlSceneSerializer::XmlSceneSerializer() {
 	m_Doc = NULL;
 }
 
-XmlSceneSerializer::~XmlSceneSerializer()
-{
-	if (m_Doc != NULL)
-	{
+XmlSceneSerializer::~XmlSceneSerializer() {
+	if (m_Doc != NULL) {
 		delete m_Doc;
 		m_Doc = NULL;
 	}
 }
 
-bool XmlSceneSerializer::CreateDocument()
-{
+bool XmlSceneSerializer::CreateDocument() {
 	LOGI("XmlSceneSerializer::CreateDocument()");
 	m_Doc = new XMLDocument();
 
@@ -55,8 +50,7 @@ bool XmlSceneSerializer::CreateDocument()
 	return true;
 }
 
-bool XmlSceneSerializer::CreateModel()
-{
+bool XmlSceneSerializer::CreateModel() {
 	LOGI("XmlSceneSerializer::CreateModel()");
 
 	//SVL
@@ -81,17 +75,14 @@ bool XmlSceneSerializer::CreateModel()
 /**
  * @note 加载xml文件到doc。
  */
-bool XmlSceneSerializer::Load(string& xmlPath, bool createIfNotFound)
-{
+bool XmlSceneSerializer::Load(string& xmlPath, bool createIfNotFound) {
 	bool success = false;
 	m_Doc = new XMLDocument();
-	tinyxml2::XMLError xmlerror= m_Doc->LoadFile(xmlPath.c_str());
+	tinyxml2::XMLError xmlerror = m_Doc->LoadFile(xmlPath.c_str());
 
-	if(xmlerror == tinyxml2::XML_SUCCESS)
-	{
+	if (xmlerror == tinyxml2::XML_SUCCESS) {
 		success = true;
-	}else
-	{
+	} else {
 		LOGI("XmlSceneSerializer::Load errid:%d", xmlerror);
 		delete m_Doc;
 		m_Doc = NULL;
@@ -99,62 +90,57 @@ bool XmlSceneSerializer::Load(string& xmlPath, bool createIfNotFound)
 
 	return success;
 }
-string XmlSceneSerializer::LoadStringFromModelView()
-{
+string XmlSceneSerializer::LoadStringFromModelView() {
 	tinyxml2::XMLPrinter printer;
 	m_Doc->Accept(&printer);
 	std::string xmltext = printer.CStr();
 	return xmltext;
 }
 
-ModelView * XmlSceneSerializer::LoadModelViewFromXml(string &xmlString){
-	 ModelView* curView = NULL;
-    const char* xml = xmlString.c_str();
-    XMLDocument* myDocument = new XMLDocument();
-    if(myDocument->Parse(xml) == tinyxml2::XML_SUCCESS)
-    {
-    	    //SVL
-    	    XMLElement* svlElement = myDocument->FirstChildElement("SVL");
-    	    assert(svlElement !=NULL);
+ModelView * XmlSceneSerializer::LoadModelViewFromXml(string &xmlString) {
+	ModelView* curView = NULL;
+	const char* xml = xmlString.c_str();
+	XMLDocument* myDocument = new XMLDocument();
+	if (myDocument->Parse(xml) == tinyxml2::XML_SUCCESS) {
+		LOGI("XML_SUCCESS");
+		//SVL
+		XMLElement* svlElement = myDocument->FirstChildElement("SVL");
+		assert(svlElement !=NULL);
+//    	    LOGI("SVL");
+		//Model
+		XMLElement* modelElement = svlElement->FirstChildElement("Model");
+		assert(modelElement !=NULL);
+//    	    LOGI("Model");
+		//Views
+		XMLElement* viewsElement = modelElement->FirstChildElement("Views");
+		assert(viewsElement !=NULL);
+//    	    LOGI("Views");
+		XMLElement* curViewElement = viewsElement->FirstChildElement("View");
+//    	    LOGI("View");
+		if (curViewElement != NULL) {
+			curView = GetViewFromElement(curViewElement);
+//    	        LOGI("curView: %d",curView->GetID());
+		}
+	} else {
+		LOGE("XmlSceneSerializer::view file format error !!!");
+	}
 
-    	    //Model
-    	    XMLElement* modelElement = svlElement->FirstChildElement("Model");
-    	    assert(modelElement !=NULL);
+	delete myDocument;
 
-    	    //Views
-    	    XMLElement* viewsElement = modelElement->FirstChildElement("Views");
-    	    assert(viewsElement !=NULL);
-
-    	    XMLElement* curViewElement = viewsElement->FirstChildElement("View");
-
-    	    if (curViewElement != NULL) {
-    	        curView = GetViewFromElement(curViewElement);
-    	    }
-    }else
-    {
-    	  LOGE("XmlSceneSerializer::view file format error !!!");
-    }
-
-    delete myDocument;
-
-    return curView;
+	return curView;
 }
-bool XmlSceneSerializer::Save(string& xmlPath)
-{
+bool XmlSceneSerializer::Save(string& xmlPath) {
 
 	//LOGI("save Error");
 	bool ret = false;
-	if (m_Doc != NULL)
-	{
+	if (m_Doc != NULL) {
 
 		//如果未找到目录，逐级创建
 		int lastSpliterPos = xmlPath.find_last_of('\\');
-		if (lastSpliterPos == -1)
-		{
+		if (lastSpliterPos == -1) {
 			lastSpliterPos = xmlPath.find_last_of('/');
 		}
-		if (lastSpliterPos != -1)
-		{
+		if (lastSpliterPos != -1) {
 			string xmlPathDir = xmlPath.substr(0, lastSpliterPos);
 
 			//创建目录
@@ -163,12 +149,9 @@ bool XmlSceneSerializer::Save(string& xmlPath)
 
 		m_Doc->SaveFile(xmlPath.c_str());
 		int errorID = m_Doc->ErrorID();
-		if (errorID == 0)
-		{
+		if (errorID == 0) {
 			ret = true;
-		}
-		else
-		{
+		} else {
 			LOGE("save xml file err:%d %s", errorID, m_Doc->GetErrorStr1());
 		}
 	}
@@ -176,13 +159,7 @@ bool XmlSceneSerializer::Save(string& xmlPath)
 	return ret;
 }
 
-bool XmlSceneSerializer::CreateViews(vector<ModelView *>* viewList)
-{
-	if(!viewList)
-	{
-		return false;
-	}
-
+bool XmlSceneSerializer::CreateViews(vector<ModelView *>* viewList) {
 	bool ret = false;
 	assert(m_Doc != NULL);
 
@@ -199,26 +176,22 @@ bool XmlSceneSerializer::CreateViews(vector<ModelView *>* viewList)
 	assert(viewsElement !=NULL);
 
 	vector<float> floatList;
-	char outStr[BUFSIZ] =
-	{ 0 };
+	char outStr[BUFSIZ] = { 0 };
 	memset(outStr, 0, BUFSIZ);
 
-	for (int vIndex = 0; vIndex < viewList->size(); vIndex++)
-	{
+	for (int vIndex = 0; vIndex < viewList->size(); vIndex++) {
 		ModelView *pView = viewList->at(vIndex);
 		assert(viewsElement !=NULL);
 
 		LOGI(
-				"XmlSceneSerializer::CreateViews: %s %d", pView->GetName().c_str(), pView);
+				"XmlSceneSerializer::CreateViews: %s %d,%d", pView->GetName().c_str(), pView->GetID(), pView->GetViewType());
 		//View
 		XMLElement* viewElement = m_Doc->NewElement("View");
 		viewElement->SetAttribute("ID", pView->GetID());
 		viewElement->SetAttribute("Name", pView->GetName().c_str());
-
 		bool needSave = false;
 		memset(outStr, 0, BUFSIZ);
-		switch (pView->GetViewType())
-		{
+		switch (pView->GetViewType()) {
 		case ModelView::DefaultView:
 			needSave = true;
 			sprintf(outStr, "%s", "DefaultView");
@@ -231,17 +204,14 @@ bool XmlSceneSerializer::CreateViews(vector<ModelView *>* viewList)
 			sprintf(outStr, "%s", "UserView");
 			break;
 		}
-		if (!needSave)
-		{
+		if (!needSave) {
 			continue;
 		}
 
 		viewElement->SetAttribute("Type", outStr);
 		viewsElement->InsertEndChild(viewElement);
-
 		memset(outStr, 0, BUFSIZ);
-		if (Parameters::Instance()->m_viewRecordCamera)
-		{
+		if (Parameters::Instance()->m_viewRecordCamera) {
 			//获得视图中的相机参数？
 			const CameraNode &camera_info = pView->GetCamera();
 			//准备相机节点
@@ -294,32 +264,27 @@ bool XmlSceneSerializer::CreateViews(vector<ModelView *>* viewList)
 			XMLElement* lightsElement = m_Doc->NewElement("Lights");
 			viewsElement->InsertEndChild(lightsElement);
 		}
-
 		//TODO:backgroundColor
 		XMLElement* backgroundColorElement = m_Doc->NewElement(
 				"BackgroundColor");
 		viewElement->InsertEndChild(backgroundColorElement);
 
 		//Notes
-		if (Parameters::Instance()->m_viewRecordNotes)
-		{
+		if (Parameters::Instance()->m_viewRecordNotes) {
 			XMLElement* noteElement = m_Doc->NewElement("Notes");
 			viewElement->InsertEndChild(noteElement);
 
-			if (noteElement != NULL)
-			{
+			if (noteElement != NULL) {
 				this->CreateGestureNote(noteElement, pView);
 			}
 			map<SHAPETYPE, vector<string> > & noteDataMap = pView->GetNoteMap();
 			LOGI("noteMap size %d", noteDataMap.size());
 			for (map<SHAPETYPE, vector<string> >::iterator it =
-					noteDataMap.begin(); it != noteDataMap.end(); it++)
-			{
+					noteDataMap.begin(); it != noteDataMap.end(); it++) {
 				vector<string> &noteDataList = it->second;
 				//			assert(noteDataList != NULL);
 
-				for (int i = 0; i < noteDataList.size(); i++)
-				{
+				for (int i = 0; i < noteDataList.size(); i++) {
 					LOGE("step 1");
 					LOGI("noteDataList.size()", noteDataList.size());
 					//			XMLText * noteText = m_Doc->NewText(noteDataList.at(i).c_str());
@@ -328,13 +293,9 @@ bool XmlSceneSerializer::CreateViews(vector<ModelView *>* viewList)
 					const char* xml = noteDataList.at(i).c_str();
 					XMLDocument doc;
 					doc.Parse(xml);
-					XMLNode* newNode = doc.RootElement();
-					if (newNode != NULL)
-					{
-						XMLNode * subNode = Clone(newNode, m_Doc);
-						noteElement->LinkEndChild(subNode);
-					}
 
+					XMLNode * subNode = Clone(doc.RootElement(), m_Doc);
+					noteElement->LinkEndChild(subNode);
 				}
 
 				//tinyxml2::XMLPrinter priter;
@@ -370,16 +331,15 @@ bool XmlSceneSerializer::CreateViews(vector<ModelView *>* viewList)
 		//Explosive
 		XMLElement* explosiveElement = m_Doc->NewElement("Explosive");
 
-//            int direction = pView->getExplosiveType();
-//            int percent = pView->getExplosivePercent();
-//            explosiveElement->SetAttribute("Direction", direction);
-//            explosiveElement->SetAttribute("Percent", percent);
+			int direction = pView->getExplosiveType();
+			int percent = pView->getExplosivePercent();
+			explosiveElement->SetAttribute("Direction", direction);
+			explosiveElement->SetAttribute("Percent", percent);
 
 		viewElement->InsertEndChild(explosiveElement);
 
 		vector<int> pmiIdList = pView->GetPMIList();
-		if (pmiIdList.size() > 0)
-		{
+		if (pmiIdList.size() > 0) {
 			memset(outStr, 0, BUFSIZ);
 			XmlSceneSerializer::StringFromIntList(pmiIdList, outStr);
 			pmiElement->SetValue(outStr);
@@ -388,24 +348,15 @@ bool XmlSceneSerializer::CreateViews(vector<ModelView *>* viewList)
 		//SectionPlanes
 		XMLElement* sectionPlanesElement = m_Doc->NewElement("SectionPlanes");
 		viewElement->InsertEndChild(sectionPlanesElement);
-//        sectionPlanesElement->SetAttribute("DirectionX",
-//                pView->m_DirectionX);
-//        sectionPlanesElement->SetAttribute("PercentX",
-//                pView->m_PercentageX);
-//        sectionPlanesElement->SetAttribute("DirectionY",
-//                                           pView->m_DirectionY);
-//        sectionPlanesElement->SetAttribute("PercentY",
-//                                           pView->m_PercentageY);
-//        sectionPlanesElement->SetAttribute("DirectionZ",
-//                                           pView->m_DirectionZ);
-//        sectionPlanesElement->SetAttribute("PercentZ",
-//                                           pView->m_PercentageZ);
+
+		sectionPlanesElement->SetAttribute("Direction",
+				pView->GetSectionPlaneDirection());
+		sectionPlanesElement->SetAttribute("Percent",
+				pView->GetSectionPlanePercentage());
 		sectionPlanesElement->SetAttribute("ShowSectionPlane",
-				pView->GetShowClipSectionPlane());
+				pView->GetShowCutSectionPlane());
 		sectionPlanesElement->SetAttribute("ShowCappingPlane",
 				pView->GetShowSectionCappingPlane());
-        sectionPlanesElement->SetAttribute("ShowReverseClipping",
-                                           pView->IsReverseClipping());
 //		vector<int> spIdList = pView->GetSectionPlaneIDList();
 //		if (spIdList.size() > 0)
 //		{
@@ -414,8 +365,7 @@ bool XmlSceneSerializer::CreateViews(vector<ModelView *>* viewList)
 //			sectionPlanesElement->SetValue(outStr);
 //		}
 
-		if (Parameters::Instance()->m_viewRecordModel)
-		{
+		if (Parameters::Instance()->m_viewRecordModel) {
 			//instances
 			LOGI("Instances %d", pView->GetInstanceAttributeMap().size());
 			XMLElement* instancesElement = m_Doc->NewElement("Instances");
@@ -423,8 +373,7 @@ bool XmlSceneSerializer::CreateViews(vector<ModelView *>* viewList)
 
 			for (map<int, InstanceAttribute>::const_iterator it =
 					pView->GetInstanceAttributeMap().begin();
-					it != pView->GetInstanceAttributeMap().end(); it++)
-			{
+					it != pView->GetInstanceAttributeMap().end(); it++) {
 				//MovedMatrixInfo* mi = &it->second;//todo:保存id，修改视图类结构存储instanceAtt属性？
 				InstanceAttribute ia = it->second;
 				//id etc
@@ -466,16 +415,13 @@ bool XmlSceneSerializer::CreateViews(vector<ModelView *>* viewList)
 	return ret;
 }
 
-void XmlSceneSerializer::CreateNote(Note *pNote)
-{
-	if (NULL == pNote)
-	{
+void XmlSceneSerializer::CreateNote(Note *pNote) {
+	if (NULL == pNote) {
 		LOGE("Note is Null!");
 		return;
 	}
 
-	if (m_Doc == NULL)
-	{
+	if (m_Doc == NULL) {
 		LOGE("m_Doc is NULL!");
 		return;
 	}
@@ -514,8 +460,7 @@ void XmlSceneSerializer::CreateNote(Note *pNote)
 //      break;
 //      }
 
-	if (curNoteElement != NULL)
-	{
+	if (curNoteElement != NULL) {
 		notesElement->InsertEndChild(curNoteElement);
 	}
 
@@ -523,12 +468,10 @@ void XmlSceneSerializer::CreateNote(Note *pNote)
 }
 
 XMLElement*
-XmlSceneSerializer::CreateTextNote(Note *pNote)
-{
+XmlSceneSerializer::CreateTextNote(Note *pNote) {
 
-	LOGI("XmlSceneSerializer::CreateTextNote begin");
-	char outStr[BUFSIZ] =
-	{ 0 };
+	LOGE("XmlSceneSerializer::CreateTextNote begin");
+	char outStr[BUFSIZ] = { 0 };
 	memset(outStr, 0, BUFSIZ);
 	XMLElement *curNoteElement = m_Doc->NewElement("TextNote");
 
@@ -655,9 +598,8 @@ XmlSceneSerializer::CreateTextNote(Note *pNote)
 	 * */
 	XMLElement* comTextsElement = m_Doc->NewElement("CompositeTexts");
 	curNoteElement->InsertEndChild(comTextsElement);
-	LOGI("pNote->m_ComTexts.size() %d", pNote->m_ComTexts.size());
-	for (int iComText = 0; iComText < pNote->m_ComTexts.size(); iComText++)
-	{
+	LOGE("pNote->m_ComTexts.size() %d", pNote->m_ComTexts.size());
+	for (int iComText = 0; iComText < pNote->m_ComTexts.size(); iComText++) {
 		ComText *curComText = pNote->m_ComTexts.at(iComText);
 		XMLElement *comTextElement = m_Doc->NewElement("CompositeText");
 		comTextsElement->InsertEndChild(comTextElement);
@@ -668,8 +610,7 @@ XmlSceneSerializer::CreateTextNote(Note *pNote)
 		LOGI("texts count:%d", curComText->GetCTextList().size());
 
 		for (int iCText = 0; iCText < curComText->GetCTextList().size();
-				iCText++)
-		{
+				iCText++) {
 			CText *curText = curComText->GetCTextList().at(iCText);
 			XMLElement *curTextElement = m_Doc->NewElement("Text");
 			textsElement->InsertEndChild(curTextElement);
@@ -783,17 +724,16 @@ XmlSceneSerializer::CreateTextNote(Note *pNote)
 
 	}
 
-	LOGI("XmlSceneSerializer::CreateTextNote end");
+	LOGE("XmlSceneSerializer::CreateTextNote end");
 
 	return curNoteElement;
 }
 
 XMLElement*
-XmlSceneSerializer::CreateGestureNote(XMLElement* viewElement, ModelView*pView)
-{
+XmlSceneSerializer::CreateGestureNote(XMLElement* viewElement,
+		ModelView*pView) {
 	int i = 0;
-	char outStr[BUFSIZ] =
-	{ 0 };
+	char outStr[BUFSIZ] = { 0 };
 	memset(outStr, 0, BUFSIZ);
 	XMLElement *curNoteElement = m_Doc->NewElement("GestureNote");
 	curNoteElement->SetAttribute("ID", "0"); //pNote->GetNoteID().c_str());
@@ -809,8 +749,7 @@ XmlSceneSerializer::CreateGestureNote(XMLElement* viewElement, ModelView*pView)
 	XMLElement *polylinesElement = m_Doc->NewElement("Polylines");
 	curNoteElement->InsertEndChild(polylinesElement);
 
-	while (i < pView->GetGestureNotePolyLines().size())
-	{
+	while (i < pView->GetGestureNotePolyLines().size()) {
 
 		XMLElement *polylineElement = m_Doc->NewElement("Polyline");
 		polylinesElement->InsertEndChild(polylineElement);
@@ -829,8 +768,7 @@ XmlSceneSerializer::CreateGestureNote(XMLElement* viewElement, ModelView*pView)
 
 		PolyLine polyLine = pView->GetGestureNotePolyLines().at(i);
 		vector<Vector3> pointList = polyLine.GetPointList();
-		for (int k = 0; k < pointList.size(); k++)
-		{
+		for (int k = 0; k < pointList.size(); k++) {
 			Vector3 vector3 = pointList.at(k);
 			//创建Point
 			{
@@ -881,18 +819,15 @@ XmlSceneSerializer::CreateGestureNote(XMLElement* viewElement, ModelView*pView)
 //	return retView;
 //}
 void XmlSceneSerializer::CreateNoteStringFromDoc(ModelView * pView,
-		XMLElement* viewElement)
-{
+		XMLElement* viewElement) {
 	LOGI("CreateTextNoteStringFromDoc");
 
 	vector<string> noteList;
 	XMLElement * notes = viewElement->FirstChildElement("Notes");
-	if (notes)
-	{
+	if (notes) {
 		LOGI("CreateTextNoteStringFromDoc have notes");
 		XMLElement* textnote = notes->FirstChildElement("TextNote");
-		while (textnote)
-		{
+		while (textnote) {
 			LOGI("CreateTextNoteStringFromDoc have textNotes");
 //			const char* xml;
 //			XMLDocument doc;
@@ -915,8 +850,7 @@ void XmlSceneSerializer::CreateNoteStringFromDoc(ModelView * pView,
 
 		//LOGI("CreateVoiceNoteStringFromDoc have notes");
 		XMLElement* voicenote = notes->FirstChildElement("VoiceNote");
-		while (voicenote)
-		{
+		while (voicenote) {
 			LOGI("CreateVoiceNoteStringFromDoc have vocieNotes");
 			tinyxml2::XMLPrinter priter;
 			voicenote->Accept(&priter);
@@ -932,8 +866,7 @@ void XmlSceneSerializer::CreateNoteStringFromDoc(ModelView * pView,
 		noteList.clear();
 
 		XMLElement* sequenceNote = notes->FirstChildElement("SequenceNote");
-		while (sequenceNote)
-		{
+		while (sequenceNote) {
 			LOGI("CreateTextNoteStringFromDoc have sequenceNote");
 			tinyxml2::XMLPrinter priter;
 			sequenceNote->Accept(&priter);
@@ -944,68 +877,71 @@ void XmlSceneSerializer::CreateNoteStringFromDoc(ModelView * pView,
 			sequenceNote = sequenceNote->NextSiblingElement("SequenceNote");
 		}
 
-		if(noteList.size()>0)
-			pView->SetNoteDataList(SHAPE_SEQUENCE_NUMBER_NOTE,noteList);
-
-
+		if (noteList.size() > 0)
+			pView->SetNoteDataList(SHAPE_SEQUENCE_NUMBER_NOTE, noteList);
 		noteList.clear();
 
-		XMLElement* threeDGestureNote = notes->FirstChildElement("ThreeDGestureNote");
-		while (threeDGestureNote)
-		{
+		XMLElement* threeDGestureNote = notes->FirstChildElement(
+				"ThreeDGestureNote");
+		while (threeDGestureNote) {
 			LOGI("CreateTextNoteStringFromDoc have threeDGestureNote");
 			tinyxml2::XMLPrinter priter;
 			threeDGestureNote->Accept(&priter);
 			string threeDGestureNoteString = priter.CStr();
 			noteList.push_back(threeDGestureNoteString);
-			LOGI(" threeDGestureNoteStringList element %s", threeDGestureNoteString.c_str());
-			threeDGestureNote = threeDGestureNote->NextSiblingElement("ThreeDGestureNote");
+			LOGI(
+					" threeDGestureNoteStringList element %s", threeDGestureNoteString.c_str());
+			threeDGestureNote = threeDGestureNote->NextSiblingElement(
+					"ThreeDGestureNote");
 		}
 
-		if(noteList.size()>0)
-			pView->SetNoteDataList(SHAPE_THREED_GESTURE_NOTE,noteList);
+		if (noteList.size() > 0)
+			pView->SetNoteDataList(SHAPE_THREED_GESTURE_NOTE, noteList);
 
-        
-        vector<PolyLine> polyLineList;
-        vector<Color> colors;
-        XMLElement* gestureNote = notes->FirstChildElement("GestureNote");
-        while (gestureNote)
-        {
-            XMLElement* poylinesElement = gestureNote->FirstChildElement("Polylines");
-            assert(poylinesElement !=NULL);
-            
-            XMLElement* polylineElement = poylinesElement->FirstChildElement("Polyline");
-            while (polylineElement != NULL) {
-                
-                vector<float>floatList;
-                floatList.clear();
-                StringToFloatList(polylineElement->Attribute("Color"), floatList);
-                Color insColor(floatList[0],floatList[1],floatList[2],floatList[3]);
-                colors.push_back(insColor);
-                PolyLine polyLine =  PolyLine();
-                XMLElement* pointElement = polylineElement->FirstChildElement("Point");
-                while (pointElement != NULL) {
-                    vector<float>outFloatList;
-                    outFloatList.clear();
-                    StringToFloatList(pointElement->GetText(), outFloatList);
-                    Vector3 vec3(outFloatList[0], outFloatList[1],
-                                  outFloatList[2]);
-                    polyLine.AddPoint(vec3);
-                    pointElement = pointElement->NextSiblingElement("Point");
-                }
-                polyLineList.push_back(polyLine);
-                polylineElement = polylineElement->NextSiblingElement("Polyline");
-            }
-            gestureNote = gestureNote->NextSiblingElement("GestureNote");
-        }
-        pView->SetGestureNotePolyLines(polyLineList);
-        pView->SetGestureNotePolyLineColors(colors);
+		vector<PolyLine> polyLineList;
+		vector<Color> colors;
+		XMLElement* gestureNote = notes->FirstChildElement("GestureNote");
+		while (gestureNote) {
+			XMLElement* poylinesElement = gestureNote->FirstChildElement(
+					"Polylines");
+			assert(poylinesElement !=NULL);
+
+			XMLElement* polylineElement = poylinesElement->FirstChildElement(
+					"Polyline");
+			while (polylineElement != NULL) {
+
+				vector<float> floatList;
+				floatList.clear();
+				StringToFloatList(polylineElement->Attribute("Color"),
+						floatList);
+				Color insColor(floatList[0], floatList[1], floatList[2],
+						floatList[3]);
+				colors.push_back(insColor);
+				PolyLine polyLine = PolyLine();
+				XMLElement* pointElement = polylineElement->FirstChildElement(
+						"Point");
+				while (pointElement != NULL) {
+					vector<float> outFloatList;
+					outFloatList.clear();
+					StringToFloatList(pointElement->GetText(), outFloatList);
+					Vector3 vec3(outFloatList[0], outFloatList[1],
+							outFloatList[2]);
+					polyLine.AddPoint(vec3);
+					pointElement = pointElement->NextSiblingElement("Point");
+				}
+				polyLineList.push_back(polyLine);
+				polylineElement = polylineElement->NextSiblingElement(
+						"Polyline");
+			}
+			gestureNote = gestureNote->NextSiblingElement("GestureNote");
+		}
+		pView->SetGestureNotePolyLines(polyLineList);
+		pView->SetGestureNotePolyLineColors(colors);
 	}
 
 }
 ModelView*
-XmlSceneSerializer::GetViewFromElement(XMLElement* viewElement)
-{
+XmlSceneSerializer::GetViewFromElement(XMLElement* viewElement) {
 	LOGI("GetViewFromElement");
 	vector<float> outFloatList;
 
@@ -1015,33 +951,26 @@ XmlSceneSerializer::GetViewFromElement(XMLElement* viewElement)
 	string viewTypeStr = viewElement->Attribute("Type");
 	ModelView::ViewTypeEnum viewType;
 	//Undefine = -1, DefaultView = 0, OrignalView = 1, UserView = 2,
-	if (viewTypeStr == "DefaultView")
-	{
+	if (viewTypeStr == "DefaultView") {
 		viewType = ModelView::DefaultView;
-	}
-	else if (viewTypeStr == "UserView")
-	{
+	} else if (viewTypeStr == "UserView") {
 		viewType = ModelView::UserView;
-	}
-	else
-	{
+	} else {
 		viewType = ModelView::Undefine; //todo:需报错
 	}
 
 	retView->SetViewType(viewType);
 
-	//准备相机节点
 	XMLElement* cameraElement = viewElement->FirstChildElement("Camera");
-	if(cameraElement)
-	{
+	if (cameraElement) {
 		CameraNode camera_info;
 		Vector3 pos;
 		StringToPoint(cameraElement->Attribute("Position"), pos);
 		camera_info.SetPosition(pos);
 
 		outFloatList.clear();
-		XmlSceneSerializer::StringToFloatList(cameraElement->Attribute("Rotation"),
-				outFloatList);
+		XmlSceneSerializer::StringToFloatList(
+				cameraElement->Attribute("Rotation"), outFloatList);
 		Quaternion rotation;
 		rotation.m_x = outFloatList.at(0);
 		rotation.m_y = outFloatList.at(1);
@@ -1050,7 +979,8 @@ XmlSceneSerializer::GetViewFromElement(XMLElement* viewElement)
 		camera_info.SetRotation(rotation);
 
 		camera_info.SetZoom(cameraElement->FloatAttribute("ZoomFactor"));
-		camera_info.SetOrthographic(cameraElement->BoolAttribute("Orthographic"));
+		camera_info.SetOrthographic(
+				cameraElement->BoolAttribute("Orthographic"));
 		camera_info.SetNearClip(cameraElement->FloatAttribute("NearClip"));
 		camera_info.SetFarClip(cameraElement->FloatAttribute("FarClip"));
 		camera_info.SetFov(cameraElement->FloatAttribute("FOV"));
@@ -1073,11 +1003,9 @@ XmlSceneSerializer::GetViewFromElement(XMLElement* viewElement)
 
 	//PMI ids
 	XMLElement* pmiRefsElement = viewElement->FirstChildElement("PMIs");
-	if (NULL != pmiRefsElement)
-	{
+	if (NULL != pmiRefsElement) {
 		const char* idsStr = pmiRefsElement->GetText();
-		if (idsStr != NULL)
-		{
+		if (idsStr != NULL) {
 			vector<int> pmiIdList;
 			StringToIntList(idsStr, pmiIdList);
 			retView->SetPMIIds(pmiIdList);
@@ -1087,16 +1015,14 @@ XmlSceneSerializer::GetViewFromElement(XMLElement* viewElement)
 	XMLElement* sectionElement = viewElement->FirstChildElement(
 			"SectionPlanes");
 	if (NULL != sectionElement) {
-//        retView->SetSectionPlaneDirection(
-//                sectionElement->IntAttribute("Direction"));
-//        retView->SetSectionPlanePercentage(
-//                sectionElement->FloatAttribute("Percent"));
-//        retView->SetSectionPlaneDirectionAndPercentage(sectionElement->IntAttribute("DirectionX"), sectionElement->IntAttribute("DirectionY"), sectionElement->IntAttribute("DirectionZ"), sectionElement->FloatAttribute("PercentX"), sectionElement->FloatAttribute("PercentY"), sectionElement->FloatAttribute("PercentZ"));
-		retView->SetShowClipSectionPlane(
+		retView->SetSectionPlaneDirection(
+				sectionElement->IntAttribute("Direction"));
+		retView->SetSectionPlanePercentage(
+				sectionElement->FloatAttribute("Percent"));
+		retView->SetShowCutSectionPlane(
 				sectionElement->BoolAttribute("ShowSectionPlane"));
 		retView->SetShowSectionCappingPlane(
 				sectionElement->BoolAttribute("ShowCappingPlane"));
-        retView->SetReverseClipping(sectionElement->BoolAttribute("ShowReverseClipping"));
 	}
 
 	//Explosive
@@ -1108,51 +1034,49 @@ XmlSceneSerializer::GetViewFromElement(XMLElement* viewElement)
 
 		LOGI(
 				"GetViewFromElement --- direction: %d;percent: %d", direction, percent);
-//        retView->setExplosiveType(direction);
-//        retView->setExplosivePercent(percent);
+		retView->setExplosiveType(direction);
+		retView->setExplosivePercent(percent);
 
 	}
 
 	//Instances
 	XMLElement* instancesElement = viewElement->FirstChildElement("Instances");
-	if(instancesElement)
-	{
+	if (instancesElement) {
 		XMLElement* curInstanceElement = instancesElement->FirstChildElement(
+				"Instance");
+		while (curInstanceElement != NULL) {
+			InstanceAttribute ia;
+			ia.id = curInstanceElement->IntAttribute("ID");
+			ia.path = curInstanceElement->Attribute("Path");
+			ia.visible = curInstanceElement->BoolAttribute("Visible");
+			ia.hasColor = curInstanceElement->BoolAttribute("HasColor");
+			StringToColor(curInstanceElement->Attribute("Color"), ia.insColor);
+			ia.materialId = curInstanceElement->IntAttribute("MaterialID");
+			//PlaceMatrix
+			outFloatList.clear();
+			XmlSceneSerializer::StringToFloatList(
+					curInstanceElement->Attribute("PlaceMatrix"), outFloatList);
+			ia.placeMatrix.Set(outFloatList.data());
+			retView->AddInstanceAttribute(ia.id, ia);
+			curInstanceElement = curInstanceElement->NextSiblingElement(
 					"Instance");
-			while (curInstanceElement != NULL)
-			{
-				InstanceAttribute ia;
-				ia.id = curInstanceElement->IntAttribute("ID");
-				ia.path = curInstanceElement->Attribute("Path");
-				ia.visible = curInstanceElement->BoolAttribute("Visible");
-				ia.hasColor = curInstanceElement->BoolAttribute("HasColor");
-				StringToColor(curInstanceElement->Attribute("Color"), ia.insColor);
-				ia.materialId = curInstanceElement->IntAttribute("MaterialID");
-				//PlaceMatrix
-				outFloatList.clear();
-				XmlSceneSerializer::StringToFloatList(
-						curInstanceElement->Attribute("PlaceMatrix"), outFloatList);
-				ia.placeMatrix.Set(outFloatList.data());
-				retView->AddInstanceAttribute(ia.id, ia);
-				curInstanceElement = curInstanceElement->NextSiblingElement("Instance");
 
-		//		LOGI("ID:%d", ia.id);
-		//		LOGI("Path:%s", ia.path.c_str());
-		//		LOGI("Visible:%b", ia.visible);
-		//		LOGI("Color:%f %f %f %f", ia.insColor.m_r,ia.insColor.m_g,ia.insColor.m_b,ia.insColor.m_a);
-		//		LOGI("MaterialID:%d", ia.materialId);
-		//		//LOGI("PlaceMatrix:%d", ia.id);
-		//		LOGI("PlaceMatrix:");
-		//		LogFloatArray(outFloatList.data(),outFloatList.size());
-			}
+			//		LOGI("ID:%d", ia.id);
+			//		LOGI("Path:%s", ia.path.c_str());
+			//		LOGI("Visible:%b", ia.visible);
+			//		LOGI("Color:%f %f %f %f", ia.insColor.m_r,ia.insColor.m_g,ia.insColor.m_b,ia.insColor.m_a);
+			//		LOGI("MaterialID:%d", ia.materialId);
+			//		//LOGI("PlaceMatrix:%d", ia.id);
+			//		LOGI("PlaceMatrix:");
+			//		LogFloatArray(outFloatList.data(),outFloatList.size());
+		}
 	}
 
 	return retView;
 }
 
 //从doc中获取所有视图对象
-void XmlSceneSerializer::LoadAllModelView(vector<ModelView*>* pOutViewList)
-{
+void XmlSceneSerializer::LoadAllModelView(vector<ModelView*>* pOutViewList) {
 	LOGI("XmlSceneSerializer::LoadAllModelView");
 	bool foundView = false;
 
@@ -1170,8 +1094,7 @@ void XmlSceneSerializer::LoadAllModelView(vector<ModelView*>* pOutViewList)
 
 	XMLElement* curViewElement = viewsElement->FirstChildElement("View");
 
-	while (curViewElement != NULL)
-	{
+	while (curViewElement != NULL) {
 		ModelView* curView = GetViewFromElement(curViewElement);
 		pOutViewList->push_back(curView);
 		curViewElement = curViewElement->NextSiblingElement("View");
@@ -1179,8 +1102,8 @@ void XmlSceneSerializer::LoadAllModelView(vector<ModelView*>* pOutViewList)
 }
 
 Note&
-XmlSceneSerializer::GetNoteFromElement(XMLElement* noteElement, Note& textNote)
-{
+XmlSceneSerializer::GetNoteFromElement(XMLElement* noteElement,
+		Note& textNote) {
 	LOGI("XmlSceneSerializer::GetNoteFromElement");
 	vector<float> outFloatList;
 
@@ -1221,12 +1144,10 @@ XmlSceneSerializer::GetNoteFromElement(XMLElement* noteElement, Note& textNote)
 	 </Leaders>
 	 * */
 	XMLElement* leadersElement = noteElement->FirstChildElement("Leaders");
-	if (leadersElement != NULL)
-	{
+	if (leadersElement != NULL) {
 		XMLElement *curLeaderElement = leadersElement->FirstChildElement(
 				"Leader");
-		while (curLeaderElement != NULL)
-		{
+		while (curLeaderElement != NULL) {
 			int leaderType = curLeaderElement->IntAttribute("Type");
 
 			XMLElement *terminatorElement = curLeaderElement->FirstChildElement(
@@ -1257,8 +1178,7 @@ XmlSceneSerializer::GetNoteFromElement(XMLElement* noteElement, Note& textNote)
 			vector<Vector3> tmpPointList;
 			vector<M3D_INDEX_TYPE> tmpIndexList;
 			int iTmpIndex = 0;
-			while (curPointElement != NULL)
-			{
+			while (curPointElement != NULL) {
 				outFloatList.clear();
 				StringToFloatList(curPointElement->Value(), outFloatList);
 				Vector3 tmpPoint(outFloatList[0], outFloatList[1],
@@ -1304,20 +1224,17 @@ XmlSceneSerializer::GetNoteFromElement(XMLElement* noteElement, Note& textNote)
 	 * */
 	XMLElement* comTextsElement = noteElement->FirstChildElement(
 			"CompositeTexts");
-	if (comTextsElement != NULL)
-	{
+	if (comTextsElement != NULL) {
 		int i = 0;
 		XMLElement *comTextElement = comTextsElement->FirstChildElement(
 				"CompositeText");
-		while (comTextElement != NULL)
-		{
+		while (comTextElement != NULL) {
 			ComText *pComText = new ComText();
 			//TODO:pComText->SetIsFaceToCamera(comTextElement->BoolAttribute("isFaceToCamera"));
 			XMLElement *textsElement = comTextElement->FirstChildElement(
 					"Texts");
 			XMLElement *pTextElement = textsElement->FirstChildElement("Text");
-			while (pTextElement != NULL)
-			{
+			while (pTextElement != NULL) {
 				CText *pText = new CText();
 
 				pText->SetText(pTextElement->Attribute("Value"));
@@ -1374,13 +1291,11 @@ XmlSceneSerializer::GetNoteFromElement(XMLElement* noteElement, Note& textNote)
 }
 
 XMLNode*
-XmlSceneSerializer::Clone(XMLNode* node, XMLDocument* doc)
-{
+XmlSceneSerializer::Clone(XMLNode* node, XMLDocument* doc) {
 	XMLNode* newNode = node->ShallowClone(doc);
 	XMLNode* nextChild = node->FirstChild();
 
-	while (nextChild)
-	{
+	while (nextChild) {
 		newNode->LinkEndChild(Clone(nextChild, doc));
 		nextChild = nextChild->NextSibling();
 	}
@@ -1392,8 +1307,7 @@ XmlSceneSerializer::Clone(XMLNode* node, XMLDocument* doc)
  * @return
  */
 vector<Note*>&
-XmlSceneSerializer::LoadAllNotes(vector<Note*>& outNoteList)
-{
+XmlSceneSerializer::LoadAllNotes(vector<Note*>& outNoteList) {
 	//SVL
 	XMLElement* svlElement = m_Doc->FirstChildElement("SVL");
 	assert(svlElement !=NULL);
@@ -1407,8 +1321,7 @@ XmlSceneSerializer::LoadAllNotes(vector<Note*>& outNoteList)
 	assert(modelElement !=NULL);
 
 	XMLElement* curNoteElement = notesElement->FirstChildElement("TextNote");
-	while (curNoteElement != NULL)
-	{
+	while (curNoteElement != NULL) {
 		Note *pNote = new Note();
 		GetNoteFromElement(curNoteElement, *pNote);
 		outNoteList.push_back(pNote);
@@ -1419,8 +1332,7 @@ XmlSceneSerializer::LoadAllNotes(vector<Note*>& outNoteList)
 }
 
 void XmlSceneSerializer::LoadAllGestureNotes(vector<PolyLine>& polyLineList,
-		vector<Color>& colors)
-{
+		vector<Color>& colors) {
 	//SVL
 	XMLElement* svlElement = m_Doc->FirstChildElement("SVL");
 	assert(svlElement !=NULL);
@@ -1434,24 +1346,21 @@ void XmlSceneSerializer::LoadAllGestureNotes(vector<PolyLine>& polyLineList,
 	assert(modelElement !=NULL);
 
 	XMLElement* curNoteElement = notesElement->FirstChildElement("GestureNote");
-	while (curNoteElement != NULL)
-	{
+	while (curNoteElement != NULL) {
 		XMLElement* poylinesElement = curNoteElement->FirstChildElement(
 				"Polylines");
 		assert(poylinesElement !=NULL);
 
 		XMLElement* polylineElement = poylinesElement->FirstChildElement(
 				"Polyline");
-		while (polylineElement != NULL)
-		{
+		while (polylineElement != NULL) {
 			Color insColor;
 			StringToColor(polylineElement->Attribute("Color"), insColor);
 			colors.push_back(insColor);
 			PolyLine polyLine = PolyLine();
 			XMLElement* pointElement = polylineElement->FirstChildElement(
 					"Point");
-			while (pointElement != NULL)
-			{
+			while (pointElement != NULL) {
 
 				Vector3 vec3;
 				StringToPoint(pointElement->GetText(), vec3);
@@ -1466,21 +1375,18 @@ void XmlSceneSerializer::LoadAllGestureNotes(vector<PolyLine>& polyLineList,
 }
 
 vector<Note*>&
-XmlSceneSerializer::LoadAllViewNotes(vector<Note*>& outNoteList)
-{
+XmlSceneSerializer::LoadAllViewNotes(vector<Note*>& outNoteList) {
 
 	return outNoteList;
 }
 
-void XmlSceneSerializer::StringFromPoint(M3D::Vector3& point, char* outStr)
-{
+void XmlSceneSerializer::StringFromPoint(M3D::Vector3& point, char* outStr) {
 	sprintf(outStr, "%f %f %f", point.m_x, point.m_y, point.m_z);
 	//LOGI("StringFromPoint:%s",outStr);
 }
 
 void XmlSceneSerializer::StringToPoint(const char* inStr,
-		M3D::Vector3& outPoint)
-{
+		M3D::Vector3& outPoint) {
 	const char spliter[] = " ";
 	//split str in c
 	char str[1000];
@@ -1489,31 +1395,24 @@ void XmlSceneSerializer::StringToPoint(const char* inStr,
 	unsigned int index = 0;
 	parts[index] = strtok(str, spliter);
 
-	while (parts[index] != 0)
-	{
+	while (parts[index] != 0) {
 		++index;
 		parts[index] = strtok(0, spliter);
 	}
 
-	if (parts[2] != 0)
-	{
+	if (parts[2] != 0) {
 		outPoint.m_x = atof(parts[0]);
 		outPoint.m_y = atof(parts[1]);
 		outPoint.m_z = atof(parts[2]);
 	}
 }
 
-void XmlSceneSerializer::StringFromIntList(vector<int>& intList, char* outStr)
-{
-	for (int i = 0; i < intList.size(); i++)
-	{
+void XmlSceneSerializer::StringFromIntList(vector<int>& intList, char* outStr) {
+	for (int i = 0; i < intList.size(); i++) {
 		int id = intList.at(i);
-		if (i == 0)
-		{
+		if (i == 0) {
 			sprintf(outStr, "%d", id);
-		}
-		else
-		{
+		} else {
 			sprintf(outStr, "%s %d", outStr, id);
 		}
 	}
@@ -1523,8 +1422,7 @@ void XmlSceneSerializer::StringFromIntList(vector<int>& intList, char* outStr)
 
 vector<int>&
 XmlSceneSerializer::StringToIntList(const char* intListStr,
-		vector<int>& outIntList)
-{
+		vector<int>& outIntList) {
 	LOGI("StringToIntList:'%s'", intListStr);
 	const char spliter[] = " ";
 	const int nlen = strlen(intListStr);
@@ -1532,8 +1430,7 @@ XmlSceneSerializer::StringToIntList(const char* intListStr,
 	strcpy(pstr, intListStr);
 
 	char * pvalue = strtok(pstr, spliter);
-	while (pvalue)
-	{
+	while (pvalue) {
 		outIntList.push_back((int) atoi(pvalue));
 		pvalue = strtok(NULL, spliter);
 	}
@@ -1542,8 +1439,7 @@ XmlSceneSerializer::StringToIntList(const char* intListStr,
 
 }
 
-void XmlSceneSerializer::StringToColor(const char* hexStr, Color& targetColor)
-{
+void XmlSceneSerializer::StringToColor(const char* hexStr, Color& targetColor) {
 	string tmpStr(hexStr);
 	std::transform(tmpStr.begin(), tmpStr.end(), tmpStr.begin(),
 			[](unsigned char c)
@@ -1558,32 +1454,25 @@ void XmlSceneSerializer::StringToColor(const char* hexStr, Color& targetColor)
 }
 
 void XmlSceneSerializer::StringFromFloatList(vector<float>& floatList,
-		char* outStr)
-{
-	for (int i = 0; i < floatList.size(); i++)
-	{
+		char* outStr) {
+	for (int i = 0; i < floatList.size(); i++) {
 		float value = floatList.at(i);
-		if (i == 0)
-		{
+		if (i == 0) {
 			sprintf(outStr, "%f", value);
-		}
-		else
-		{
+		} else {
 			sprintf(outStr, "%s %f", outStr, value);
 		}
 	}
 	//LOGI("XmlHelper::floatListToString :%s", outStr);
 }
 
-void XmlSceneSerializer::StringFromColor(Color &color, char* outStr)
-{
+void XmlSceneSerializer::StringFromColor(Color &color, char* outStr) {
 	sprintf(outStr, "#%x%x%x", color.m_r, color.m_g, color.m_b);
 }
 
 vector<float>&
 XmlSceneSerializer::StringToFloatList(const char* floatListStr,
-		vector<float>& outFloatList)
-{
+		vector<float>& outFloatList) {
 	const char spliter[] = " ";
 
 	int nlen = strlen(floatListStr);
@@ -1591,8 +1480,7 @@ XmlSceneSerializer::StringToFloatList(const char* floatListStr,
 	strcpy(pstr, floatListStr);
 
 	char * pvalue = strtok(pstr, spliter);
-	while (pvalue)
-	{
+	while (pvalue) {
 		outFloatList.push_back((float) atof(pvalue));
 		pvalue = strtok(NULL, spliter);
 	}

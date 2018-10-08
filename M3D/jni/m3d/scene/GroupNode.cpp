@@ -1,9 +1,9 @@
 ﻿#include "m3d/M3D.h"
 #include "m3d/scene/SceneNode.h"
-#include "m3d/model/Model.h"
+#include "m3d/scene/LSceneNode.h"
 #include "m3d/scene/ShapeNode.h"
 #include "m3d/graphics/CameraNode.h"
-#include "m3d/graphics/DirectionalLight.h"
+#include "m3d/graphics/Light.h"
 #include "m3d/scene/GroupNode.h"
 #include "m3d/Action/RaypickAction.h"
 
@@ -73,7 +73,7 @@ void SArrayList::RemoveNode(const string& name)
 
 void SArrayList::RemoveNode(const SceneNode* node)
 {
-	for (int i = 0; i < m_DataArray.size(); i++)	
+	for (int i = 0; i < m_DataArray.size(); i++)
 		{
 			if (m_DataArray[i] == node)
 			{
@@ -148,6 +148,105 @@ void SArrayList::DetachChild(SceneNode* child)
 	}
 }
 
+LGroupNode::LGroupNode(void)
+{
+
+}
+
+LGroupNode::~LGroupNode(void)
+{
+	for (int i = 0; i < m_children.size(); i++)
+	{
+		m_children[i]->Release();
+	}
+	m_children.resize(0);
+}
+
+int LGroupNode::GetType(void)
+{
+	return GROUP_NODE;
+}
+
+void LGroupNode::RayPick(RayPickAction * action)
+{
+	if (action->IsFinish())
+	{
+		return;
+	}
+
+	for (int i = 0; i < m_children.size(); i++)
+	{
+		m_children[i]->RayPick(action);
+	}
+}
+
+void LGroupNode::Traverse(Action* action)
+{
+	if (action->IsFinish())
+	{
+		return;
+	}
+	action->Apply(this);
+
+	for (int i = 0; i < m_children.size(); i++)
+	{
+		m_children[i]->Traverse(action);
+	}
+}
+
+void LGroupNode::FindVisiableObject(RenderAction* renderAction)
+{
+	if (renderAction->IsFinish())
+	{
+		return;
+	}
+	renderAction->Apply(this);
+
+	for (int i = 0; i < m_children.size(); i++)
+	{
+		m_children[i]->FindVisiableObject(renderAction);
+	}
+}
+
+void LGroupNode::AddChild(LSceneNode *child)
+{
+	child->AddRef();
+	m_children.push_back(child);
+}
+
+vector<LSceneNode*>& LGroupNode::GetChildren()
+{
+	return m_children;
+}
+
+int LGroupNode::Size()
+{
+	return m_children.size();
+}
+
+void LGroupNode::ComputeBox()
+{
+	if (!m_bdBox.Defined())
+	{
+		BoundingBox tempBox;
+		for (int i = 0; i < m_children.size(); i++)
+		{
+			BoundingBox& subBox = m_children[i]->GetWorldBoundingBox();
+
+			if (subBox.Defined())
+			{
+				tempBox.Merge(subBox);
+			}
+		}
+
+		if (tempBox.Defined())
+		{
+			tempBox.Transform(this->GetWorldTransform());
+			m_bdBox = tempBox ;
+		}
+	}
+}
+ 
 GroupNode::GroupNode(void) :
 		SceneNode()
 {
@@ -213,12 +312,9 @@ void GroupNode::Traverse(Action* action)
 
 void GroupNode::FindVisiableObject(RenderAction* renderAction)
 {
-	if (this->IsVisible())
+	for (int i = 0; i < m_pChildrenList->Size(); i++)
 	{
-		for (int i = 0; i < m_pChildrenList->Size(); i++)
-		{
-			m_pChildrenList->GetSceneNode(i)->FindVisiableObject(renderAction);
-		}
+		m_pChildrenList->GetSceneNode(i)->FindVisiableObject(renderAction);
 	}
 }
 

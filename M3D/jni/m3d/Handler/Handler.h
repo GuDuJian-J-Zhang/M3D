@@ -13,83 +13,19 @@
 #define HANDLER_H
 #include "m3d/M3DMacros.h"
 #include "m3d/model/Shape.h"
+#include "m3d/action/RenderAction.h"
 #include "m3d/graphics/Renderable.h"
-
-namespace SVIEW
-{
-	class View;
-}
-
 namespace M3D
 {
 class Mesh;
 class VertexSet;
-class RenderAction;
 
+//触摸操作封装
 class M3D_API TouchEvent
 {
-public:
-	enum EventType {
-		NONE = 0,
-		PUSH = 1 << 0,
-		RELEASE = 1 << 1,
-		DOUBLECLICK = 1 << 2,
-		DRAG = 1 << 3,
-		MOVE = 1 << 4,
-		KEYDOWN = 1 << 5,
-		KEYUP = 1 << 6,
-		FRAME = 1 << 7,
-		RESIZE = 1 << 8,
-		SCROLL = 1 << 9,
-		PEN_PRESSURE = 1 << 10,
-		PEN_ORIENTATION = 1 << 11,
-		PEN_PROXIMITY_ENTER = 1 << 12,
-		PEN_PROXIMITY_LEAVE = 1 << 13,
-		CLOSE_WINDOW = 1 << 14,
-		QUIT_APPLICATION = 1 << 15,
-		USER = 1 << 16
-	};
 
-public:
-	TouchEvent();
-
-	TouchEvent(float* touchData, int touchPoints);
-
-
-	float getX() const;
-	float getY() const;
-
-	void setHandled(bool handled)
-	{
-		_handled = handled;
-	}
-
-	bool getHandled()
-	{
-		return _handled;
-	}
-	/** Set whether this event has been handled by an event handler or not.*/
-	void setHandled(bool handled) const { _handled = handled; }
-
-	/** Get whether this event has been handled by an event handler or not.*/
-	bool getHandled() const { return _handled; }
-
-	/** set the event type. */
-	void setEventType(EventType Type) { _eventType = Type; }
-
-	/** get the event type. */
-	virtual EventType getEventType() const { return _eventType; }
-
-	SVIEW::View* GetView() const;
-	void SetView(SVIEW::View* val);
-protected:
-	SVIEW::View* m_view;
-private:
-	EventType _eventType;
-	int _touchPoints;
-	float* touchPointsData;
-	mutable bool _handled;
 };
+
 
 /**@class Handler
  * @brief Handler类
@@ -123,7 +59,7 @@ public:
 	 * @see Shape
 	 * @return
 	 */
-	virtual Color* GetDrawColor();
+	virtual Color& GetDrawColor();
 
 	/**
 	 * @see Shape

@@ -17,6 +17,7 @@
 #include <typeinfo>
 
 #include "sview/views/View.h"
+
 #include "SBehaviorAction.h"
 #include "SAnimation.h"
 #include "STimeline.h"
@@ -32,8 +33,7 @@
 #include "../SimulationCommon/vhash.h"
 #include "SimulationAnimationManager.h"
 #include "AnimationSound.h"
-#include "m3d/utils/Platform.h"
-#include "Mutex.h"
+
 
 SA_NAMESPACE_BEGIN
 
@@ -522,8 +522,6 @@ CSBehaviorAction::CSBehaviorAction(int ID, int tps, int delay,const char *name, 
 	//m_bStopPlayAfterCollision = false;
 
 	//GetAnimationPlayApi() = new AnimationPlayApi();
-	m_pSimulationAnimationManager = NULL;
-	m_mutex = new Mutex();
  }
 
 CSBehaviorAction::~CSBehaviorAction()
@@ -539,16 +537,6 @@ CSBehaviorAction::~CSBehaviorAction()
 	//	delete GetAnimationPlayApi();
 	//	GetAnimationPlayApi() = NULL;
 	//}
-	if(m_pSimulationAnimationManager)
-	{
-		vlist_remove((vlist_s*)m_pSimulationAnimationManager->GetBehaviorActionList(), this);
-		m_pSimulationAnimationManager = NULL;
-	}
-	if (m_mutex)
-	{
-		delete m_mutex;
-		m_mutex = NULL;
-	}
 }
 
 
@@ -558,7 +546,7 @@ bool CSBehaviorAction::Transfer(INT type,const char* plcIdPath, const float fPiv
 	{
 		if (IsPlayPosRot() && GetAnimationPlayApi())
 		{
-        	GetAnimationPlayApi()->Play(type,plcIdPath, fPivot, fMtxAA);
+        	GetAnimationPlayApi()->Play(type,plcIdPath, fPivot, fMtxAA,GetView());
 		}
 		
 	}
@@ -577,7 +565,7 @@ bool CSBehaviorAction::TransferVisible(const char* plcIdPath, const char* name,b
 		if (GetAnimationPlayApi() && 
 			((strstr(plcIdPath,"ZOOM")==NULL && IsPlayVisible()) || ( strstr(plcIdPath,"ZOOM") && IsCameraPlay())) )
 		{
-    		GetAnimationPlayApi()->PlayVisible(plcIdPath, name, bOnOff,fTran);
+    		GetAnimationPlayApi()->PlayVisible(plcIdPath, name, bOnOff,fTran,GetView());
 		}
 	}
     catch(...)
@@ -597,7 +585,7 @@ bool CSBehaviorAction::TransferColor(const char* plcIdPath, const char* name,con
 	{
 		if (IsPlayColor() && GetAnimationPlayApi())
 		{
-			GetAnimationPlayApi()->PlayColor(plcIdPath, name, fColor);
+			GetAnimationPlayApi()->PlayColor(plcIdPath, name, fColor,GetView());
 		}
 
 	}
@@ -635,7 +623,7 @@ bool CSBehaviorAction::TransferImage(const char* plcIdPath, const char* name, co
 	{
 		if(GetAnimationPlayApi())	//正在播放动画...
 		{
-			GetAnimationPlayApi()->PlayAnimationImage(plcIdPath, name, fImgPos, fImgScaleFactor, bOnOffFlg);
+			GetAnimationPlayApi()->PlayAnimationImage(plcIdPath, name, fImgPos, fImgScaleFactor, bOnOffFlg,GetView());
 		}
 
 	}
@@ -653,7 +641,7 @@ bool CSBehaviorAction::TransferCamera(const char* plcIdPath,INT TrfType, const f
 	{
 		if(IsCameraPlay() && GetAnimationPlayApi())
 		{
-			GetAnimationPlayApi()->PlayCamera(plcIdPath, TrfType, fPivot, fMtxAA,iCamType);
+			GetAnimationPlayApi()->PlayCamera(plcIdPath, TrfType, fPivot, fMtxAA,iCamType,GetView());
 		}
 	}
     catch (...)
@@ -673,7 +661,7 @@ bool CSBehaviorAction::TransferClipPlane(INT type,const char* plcIdPath, const c
 	{
 		if (IsPlayClip() && GetAnimationPlayApi())
 		{
-			GetAnimationPlayApi()->PlayClipPlane(type,plcIdPath, name, fNormal, fPos, bOnOff);
+			GetAnimationPlayApi()->PlayClipPlane(type,plcIdPath, name, fNormal, fPos, bOnOff,GetView());
 		}
 	}
 	catch (...)
@@ -820,9 +808,9 @@ void CSBehaviorAction::Continue()
 	{
 		if(IsPlayCollision())
 		{
-			GetAnimationPlayApi()->InitColisionData();
+			GetAnimationPlayApi()->InitColisionData(GetView());
 		}
-		GetAnimationPlayApi()->playBegin(this);
+		GetAnimationPlayApi()->playBegin(GetView());
 	}
 	
 	m_bPlaybackIsInterrupted = false;
@@ -847,9 +835,9 @@ void CSBehaviorAction::ContinueReverse()
 	{
 		if(IsPlayCollision())
 		{
-			GetAnimationPlayApi()->InitColisionData();
+			GetAnimationPlayApi()->InitColisionData(GetView());
 		}
-		GetAnimationPlayApi()->playBegin(this);
+		GetAnimationPlayApi()->playBegin(GetView());
 	}
 
 	m_bPlaybackIsInterrupted = false;
@@ -880,7 +868,7 @@ void CSBehaviorAction::Stop(bool bPlaybackIsInterrupted/* = false*/)
 
 		m_bPlaying = false;
 		m_bCameraUpdated = false;
-		GetAnimationPlayApi()->playEnd(this);
+		GetAnimationPlayApi()->playEnd(GetView());
 		SetReversePlay(false);
 	}
 }
@@ -1183,9 +1171,10 @@ int CSBehaviorAction::GetFreeName()
 bool CSBehaviorAction::Tick( float request_time, float actual_time )
 {
 	m_PreTick = m_CurrentTick;
-    if(GetAnimationPlayApi())
+    SVIEW::View* view = GetView();
+    if(view)
     {
-		GetAnimationPlayApi()->LockView(true);
+        view->Lock();
     }
     
 	if(!m_bReversePlay)
@@ -1212,10 +1201,10 @@ bool CSBehaviorAction::Tick( float request_time, float actual_time )
 					m_pSimulationAnimationManager->GetAnimationStepManager()->PlayFinishCB(this);
 				}
                 
-				if (GetAnimationPlayApi())
-				{
-					GetAnimationPlayApi()->LockView(false);
-				}
+                if(view)
+                {
+                    view->UnLock();
+                }
 				
 				return true;
 			}
@@ -1239,9 +1228,7 @@ bool CSBehaviorAction::Tick( float request_time, float actual_time )
 				ExecuteAnimations(m_CurrentTick, 0.0f);
 				APP_Show_Time( &m_StartTime );  
 				m_StartTime -= (GetLastTick()-GetCurrentTick())/GetTicksPerSecond(); 
-				//重新播放声音
-				PlaySoundSA(false);
-				//PlaySoundSA(true);
+
 			}
 			else
 			{
@@ -1252,10 +1239,10 @@ bool CSBehaviorAction::Tick( float request_time, float actual_time )
 					m_pSimulationAnimationManager->GetAnimationStepManager()->PlayFinishCB(this);
 				}
                 
-				if (GetAnimationPlayApi())
-				{
-					GetAnimationPlayApi()->LockView(false);
-				}
+                if(view)
+                {
+                    view->UnLock();
+                }
 				
 				return true;
 			}
@@ -1273,10 +1260,10 @@ bool CSBehaviorAction::Tick( float request_time, float actual_time )
 	//else
     ExecuteAnimations(GetCurrentTick(),-1);
     
-	if (GetAnimationPlayApi())
-	{
-		GetAnimationPlayApi()->LockView(false);
-	}
+    if(view)
+    {
+        view->UnLock();
+    }
     
   	return true;
 
@@ -1291,13 +1278,13 @@ void CSBehaviorAction::Reset()
 }
 void CSBehaviorAction::Lock()
 {
-    m_mutex->Acquire();
+    m_mutex.Acquire();
 }
 
 void CSBehaviorAction::UnLock()
 {
 //    pthread_mutex_unlock(m_Mutex);
-    m_mutex->Release();
+    m_mutex.Release();
 }
  
 void CSBehaviorAction::ExecuteAnimations(float currentframe, float startframe)
@@ -1329,7 +1316,7 @@ void CSBehaviorAction::ExecuteAnimations(float currentframe, float startframe)
 	    vlist_remove(m_ScheduledAnimationList,temp);
 	END_LIST_ITERATION(deletionlist);
 	delete_vlist(deletionlist);
-	
+	CSBehaviorAction::UnLock();
 
 	if(GetAnimationPlayApi())
 	{
@@ -1340,7 +1327,7 @@ void CSBehaviorAction::ExecuteAnimations(float currentframe, float startframe)
 			{
 				if(!IsPlaying())
 				{
-					GetAnimationPlayApi()->InitColisionData();
+					GetAnimationPlayApi()->InitColisionData(GetView());
 				}
 				bool bCollisionFound = false;
 				START_LIST_ITERATION(STargetObject, m_TargetObjectList);
@@ -1367,9 +1354,8 @@ void CSBehaviorAction::ExecuteAnimations(float currentframe, float startframe)
 			}
 		}
 
-		GetAnimationPlayApi()->updateView(this);
+		GetAnimationPlayApi()->updateView(this,GetView());
 	}
-	CSBehaviorAction::UnLock();
 }
 
 CSAnimation * CSBehaviorAction::FindAnimation(const char *target, const char *interpolatortype,bool bFirstInterpolator)
@@ -1450,7 +1436,7 @@ bool CSBehaviorAction::IsAnimation(const CSAnimation *pAnimation)
 
 void CSBehaviorAction::DeleteAllAnimations()
 {
-	CSBehaviorAction::Lock();
+
 	if (IsPlaying())
 		Stop();	
 
@@ -1481,7 +1467,6 @@ void CSBehaviorAction::DeleteAllAnimations()
 	m_FirstTick = 0;
 	m_fPlayBeginTick = 0;
 	m_fPlayEndTick = 0;
-	CSBehaviorAction::UnLock();
 }
 
 bool CSBehaviorAction::DeleteAnimation(CSAnimation *animation)
@@ -1586,7 +1571,7 @@ bool CSBehaviorAction::DeleteAnimation(CSAnimation *animation)
 		//清空干涉信息
 		if(IsPlayCollision())
 		{
-			GetAnimationPlayApi()->ClearColisionData();
+			GetAnimationPlayApi()->ClearColisionData(GetView());
 		}
 	}
 	return bRet;
@@ -1624,29 +1609,6 @@ void CSBehaviorAction::WriteToFile(const wchar_t *filename)
  	fp = wfopen(filename, L"w");
 	fwrite(xmlgen.GetBuffer(), 1, xmlgen.GetBufferSize(), fp);
 	fclose(fp);
-}
-
-bool CSBehaviorAction::GetDataBuffer(char** pBuffer, int& nBufferSize)
-{
-	bool bRet = true;
-	CUtilityXMLGenerator xmlgen;
-	xmlgen.Reset();
-	Serialize(&xmlgen);
-	xmlgen.Finalize();
-
-	//int nSize = fwrite(xmlgen.GetBuffer(), 1, xmlgen.GetBufferSize()-1, fp);
-	//保存为UTF-8编码
-	SA_UTF8 utf8Obj(xmlgen.GetBuffer());
-	const utf8_char *cUTFBuffer = utf8Obj.encodedText();
-
-	char UTF8BOM[4] = { '\xEF','\xBB','\xBF','\0' };
-	nBufferSize = 3 + (int)utf8Obj.length() + 1;
-	*pBuffer = new char[nBufferSize];
-	strcpy(*pBuffer, UTF8BOM);
-	strcat(*pBuffer, (const char*)cUTFBuffer);
-	(*pBuffer)[nBufferSize - 1] = 0;
-
-	return bRet;
 }
 
 void *CSBehaviorAction::XMLCallback(CUtilityXMLTag *xt, bool open, void *m_pExtraData)
@@ -1719,59 +1681,6 @@ void *CSBehaviorAction::XMLCallback(CUtilityXMLTag *xt, bool open, void *m_pExtr
 		
 	}
 	return pSimulationAnimation;
-}
-
-void *CSBehaviorAction::XMLCallbackSelf(CUtilityXMLTag *xt, bool open, void *m_pExtraData)
-{
-	char Name[SA_BUFFER_SIZE_SMALL] = { 0 };
-	char Version[SA_BUFFER_SIZE_SMALL] = { 0 };
-	char Company[SA_BUFFER_SIZE_SMALL] = { 0 };
-	int fps;
-	int delay;
-	int ID;
-
-	
-	CSBehaviorAction *pBehaviorAction = (CSBehaviorAction *)m_pExtraData;
-	if (open)
-	{
-		/*if (!xt->GetProperty("AssemblyPath", AssemblyPath))
-		strcpy(AssemblyPath, "");*/
-		if (!xt->GetProperty("Name", pBehaviorAction->m_Name))
-			strcpy(pBehaviorAction->m_Name, "");
-		//if (!xt->GetProperty("Version", Version))
-		//	strcpy(Version, "");
-		strcpy(Version, pBehaviorAction->GetVersion());
-		if (!xt->GetProperty("Company", pBehaviorAction->m_Company))
-			strcpy(pBehaviorAction->m_Company, "HoteamSoft");
-		if (!xt->GetProperty("TicksPerSecond", pBehaviorAction->m_Tps))
-			pBehaviorAction->m_Tps = 10;
-		if (!xt->GetProperty("Delay", pBehaviorAction->m_Delay))
-			pBehaviorAction->m_Delay = 10;
-
-		if (!xt->GetProperty("ID", pBehaviorAction->m_ID))
-			pBehaviorAction->m_ID = 0;
-
-		//if(strcmp(Version, VERSION))
-		//{
-		//	AfxMessageBox(_T("动画打开失败（版本不兼容）"));
-		//	return NULL;//版本不兼容
-		//}
-		if (SATools::VersionCompare("2.0", Version) > 0)
-		{
-			CUtilityXMLParser* pUtilityXMLParser = xt->GetXMLParser();
-			pUtilityXMLParser->SetTagCallback("Animation", CSAnimation::XMLCallback_V1, pBehaviorAction);
-			pUtilityXMLParser->SetTagCallback("PosInterpolator", CSInterpolatorPosition::XMLCallback_V1, pBehaviorAction);
-			pUtilityXMLParser->SetTagCallback("TargetObject", STargetObject::XMLCallback_V1, pBehaviorAction);
-			pUtilityXMLParser->SetTagCallback("AttSwitchInterpolator", CSInterpolatorVisible::XMLCallback, pBehaviorAction);
-		}
-
-		return m_pExtraData;
-	}
-	else
-	{
-
-	}
-	return 0;
 }
 
 CSBehaviorAction* CSBehaviorAction::ReadFromFile(const char *filename){
@@ -1850,66 +1759,29 @@ int CSBehaviorAction::GetTicksPerSecond()
 
 CSBehaviorAction* CSBehaviorAction::ProcessXMLData(const char *buffer)
 {
-	//如果是UTF-8编码，转换成ANSI编码
-	bool isCreateSABuffer = false;
-	char	*pSABuffer = NULL;
-#ifdef _WIN32
-	if (buffer[0] == '\xEF' && buffer[1] == '\xBB' && buffer[2] == '\xBF')
-	{
-		wstring wsrSA = Platform::StringToWString(buffer + 3);
-		string srSA = Platform::WStringToString(wsrSA, "auto");
-
-		int size = srSA.size() + 1;
-		pSABuffer = new char[size];
-
-		memset(pSABuffer, 0, size);
-		strcpy(pSABuffer, srSA.c_str());
-		isCreateSABuffer = true;
-	}
-	else
-	{
-		pSABuffer = (char*)buffer;
-	}
-#else
-	SA_UTF8 utf8Obj;
-	if (buffer[0] == '\xEF' && buffer[1] == '\xBB' && buffer[2] == '\xBF')
-	{
-		pSABuffer = (char*)buffer;
-	}
-	else
-	{
-		utf8Obj.append(buffer);
-		pSABuffer = (char*)utf8Obj.encodedText();
-		isCreateSABuffer = true;
-	}
-#endif
-	DeleteAllAnimations();
  	CUtilityXMLParser xp;
 
 	CSBehaviorAction* pSimulationAnimation = NULL;
 	char doctype[SA_BUFFER_SIZE_SMALL] = {0};
-	xp.FindDocType(doctype, pSABuffer/*buffer*/);
-	xp.SetupParseBuffer(pSABuffer/*buffer*/);
+	xp.FindDocType(doctype, buffer);
+	xp.SetupParseBuffer(buffer);
  	
 	//xp.SetTagCallback("BehaviorAction", CSBehaviorAction::XMLCallback, (void*)pAssemblyModelId);
-	xp.SetTagCallback("Animdef", CSBehaviorAction::XMLCallbackSelf, this);
-	xp.SetTagCallback("BehaviorManager", CSBehaviorAction::XMLCallbackSelf, this);
-	xp.SetTagCallback("Animation", CSAnimation::XMLCallback, this);
-	xp.SetTagCallback("PosInterpolator", CSInterpolatorPosition::XMLCallback, this);
-	xp.SetTagCallback("Timeline", CSTimeline::XMLCallback, this);
-	xp.SetTagCallback("TargetObject", STargetObject::XMLCallback, this);
-	xp.SetTagCallback("QuatRotInterpolator", CSInterpolatorQuatSquad::XMLCallback, this);
-	xp.SetTagCallback("VisibleInterpolator", CSInterpolatorVisible::XMLCallback, this);
-	xp.SetTagCallback("ColorInterpolator", CSInterpolatorColor::XMLCallback, this);
-	xp.SetTagCallback("PivotInterpolator", CSInterpolatorPivot::XMLCallback, this);
-	xp.SetTagCallback("SoundInterpolator", CSInterpolatorSound::XMLCallback, this);
-	xp.SetTagCallback("NormalInterpolator", CSInterpolatorNormal::XMLCallback, this);
-	xp.SetTagCallback("InstanceCreateInterpolator", CSInterpolatorInstanceCreate::XMLCallback, this);
+	xp.SetTagCallback("Animdef", CSBehaviorAction::XMLCallback, &pSimulationAnimation);
+	xp.SetTagCallback("BehaviorManager", CSBehaviorAction::XMLCallback, &pSimulationAnimation);
+	xp.SetTagCallback("Animation", CSAnimation::XMLCallback, &pSimulationAnimation);
+	xp.SetTagCallback("PosInterpolator", CSInterpolatorPosition::XMLCallback, &pSimulationAnimation);
+	xp.SetTagCallback("Timeline", CSTimeline::XMLCallback, &pSimulationAnimation);
+	xp.SetTagCallback("TargetObject", STargetObject::XMLCallback, &pSimulationAnimation);
+	xp.SetTagCallback("QuatRotInterpolator", CSInterpolatorQuatSquad::XMLCallback, &pSimulationAnimation);
+	xp.SetTagCallback("VisibleInterpolator", CSInterpolatorVisible::XMLCallback, &pSimulationAnimation);
+	xp.SetTagCallback("ColorInterpolator", CSInterpolatorColor::XMLCallback, &pSimulationAnimation);
+	xp.SetTagCallback("PivotInterpolator", CSInterpolatorPivot::XMLCallback, &pSimulationAnimation);
+	xp.SetTagCallback("SoundInterpolator", CSInterpolatorSound::XMLCallback, &pSimulationAnimation);
+	xp.SetTagCallback("NormalInterpolator", CSInterpolatorNormal::XMLCallback, &pSimulationAnimation);
+	xp.SetTagCallback("InstanceCreateInterpolator", CSInterpolatorInstanceCreate::XMLCallback, &pSimulationAnimation);
 	xp.ProcessXMLData();
-	if (isCreateSABuffer)
-	{
-		delete[] pSABuffer;
-	}
+
 	return pSimulationAnimation;
 }
 
@@ -2318,7 +2190,7 @@ bool CSBehaviorAction::EvaluateCollision(STargetObject* pTargetObject)
 	strcpy(plcIdPath, pTargetObject->GetResolvedPath());
 	if(GetAnimationPlayApi())
 	{
-		bCollisionFound = GetAnimationPlayApi()->Collision(plcIdPath);
+		bCollisionFound = GetAnimationPlayApi()->Collision(plcIdPath,GetView());
 	}
 
 	return bCollisionFound;;
@@ -2410,105 +2282,31 @@ bool  CSBehaviorAction::TransferTool(int nType, const char* plcIdPath, const cha
 {
 	if(GetAnimationPlayApi())	//正在播放动画...
 	{
-		GetAnimationPlayApi()->PlayToolAnimation(nType, plcIdPath, strToolPath, strParentPath);
+		GetAnimationPlayApi()->PlayToolAnimation(nType, plcIdPath, strToolPath, strParentPath,GetView());
 	}
 	// 表示更新
 	return true;
 }
 
-CSBehaviorAction* NS_SimulationAnimation::CSBehaviorAction::Clone()
+
+View* CSBehaviorAction::GetView()
 {
-	CSBehaviorAction* pNewBehaviorAction = NULL;
-	CSimulationAnimationManager* pSAManager = GetSimulationAnimationManager();
-	if(!pSAManager)
-		return pNewBehaviorAction;
-	pNewBehaviorAction = pSAManager->AddSimAni(pSAManager->RegisterBehaviorActionID());
-	if(!pNewBehaviorAction)
-		return pNewBehaviorAction;
-	
-	pNewBehaviorAction->SetPlayBeginTick(m_fPlayBeginTick);
-	pNewBehaviorAction->SetPlayEndTick(m_fPlayEndTick);
-	pNewBehaviorAction->SetInfinitePlay(m_bInfinitePlay);
-	pNewBehaviorAction->SetContinuousPlay(m_bContinuousPlay);
-
-	START_LIST_ITERATION(STargetObject, m_TargetObjectList);
-	STargetObject* pTargetObject = pNewBehaviorAction->CreateTargetObjectByPath(temp->GetName(), temp->GetPath());
-	END_LIST_ITERATION(m_TargetObjectList);
-
-	START_LIST_ITERATION(CSAnimation, m_AnimationList)
-		if(!temp->GetParentAnimation())
-		{
-			CSAnimation* pNewAnimation = temp->Clone(pNewBehaviorAction);
-			if(pNewAnimation)
-			{
-				pNewAnimation->SetBehaviorAction(pNewBehaviorAction);
-				pNewAnimation->SetTargetByPath(temp->GetName(), temp->GetTarget()->GetPath());
-				if(pNewAnimation->GetTarget() && temp->GetTarget())
-					pNewAnimation->GetTarget()->SetPivot(temp->GetTarget()->GetPivot());
-				pNewBehaviorAction->AddAnimation(pNewAnimation);
-			}
-		}
-	END_LIST_ITERATION(m_AnimationList)
-	return pNewBehaviorAction;
+	if(GetSimulationAnimationManager())
+	{
+		return GetSimulationAnimationManager()->GetView();
+	}
+	else
+	{
+		return NULL;
+	}
 }
 
-/**
-动画反转
-**/
-int CSBehaviorAction::Reversion()
+/*void CSBehaviorAction::SetCBTran(PlayOccShapesFun CBFun, UpdateOccViewFun CBUpdateViewFun, PlayOccShapesOnOffFun CBOnOffFun)
 {
-	int firstTick;
-	int lastTick;
-
-	//停止录制功能
-	//m_pAnimationAPI->m_bRec = false;
-	ScheduleAllAnimations();
-	firstTick = GetAllAniFirstTick();
-	lastTick = GetAllAniLastTick();
-
-	vlist_s* pAnimationList = GetAnimationList();
-
-	//如果有锁定的动画，不允许整体反转
-	START_LIST_ITERATION(CSAnimation, pAnimationList)
-		if (temp && temp->IsLocked())
-		{
-			return -1;
-		}
-	END_LIST_ITERATION(pAnimationList)
-	START_LIST_ITERATION(CSAnimation, pAnimationList)
-		if (temp)
-		{
-			if (temp->IsLocked())//如果锁定则不执行该操作
-			{
-				VLIST_ADVANCE_CURSOR(pAnimationList);
-				continue;
-			}
-			//声音动画不能反转
-			if ((strcmp(temp->GetTarget()->GetType(), TARGETOBJECTTYPE_SOUND) == 0 ||
-				strcmp(temp->GetName(), TARGETOBJECTTYPE_NAME_SOUND) == 0))
-			{
-				VLIST_ADVANCE_CURSOR(pAnimationList);
-				continue;
-			}
-			//动画反转和其它动画对齐
-			temp->Reversion(false);
-
-			CSTimeline *t1 = temp->GetTimeline();
-			int *timelinearray = 0;
-			int tineLineArrayLen = t1->GetTimelineArrayLength();
-			if (tineLineArrayLen > 0)
-			{
-				timelinearray = t1->GetTimelineArray();
-
-				//动画反转后与其它动画对齐
-				temp->AdjustKeyframe(timelinearray[0], (lastTick - timelinearray[tineLineArrayLen - 1]) - timelinearray[0] + firstTick, true, false);
-				//AdjustKeyframe(timelinearray[0], i, (lastTick - timelinearray[tineLineArrayLen-1]) - timelinearray[0], true, false);
-			}
-			t1->AddTLRange();
-		}
-	END_LIST_ITERATION(pAnimationList)
-	return 0;
-}
+    m_cbOccPlayFun = CBFun;
+    m_cbOccUpdateView = CBUpdateViewFun;
+    m_cbOccPlayOnOffFun = CBOnOffFun;
+}*/
 SA_NAMESPACE_END
 
 

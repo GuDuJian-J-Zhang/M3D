@@ -6,12 +6,9 @@
  */
 
 #include "m3d/renderer/GL20/GLShapeDrawerHelper.h"
-#include "m3d/graphics/DirectionalLight.h"
+#include "m3d/graphics/Light.h"
 #include "m3d/graphics/Material.h"
 #include "m3d/graphics/GraphicsDefs.h"
-#include "m3d/renderer/gl20/ShaderProgram.h"
-#include "m3d/renderer/gl20/ShaderManager.h"
-#include "m3d/action/RenderAction.h"
 namespace M3D
 {
 GLShapeDrawerHelper::GLShapeDrawerHelper()
@@ -26,11 +23,11 @@ GLShapeDrawerHelper::~GLShapeDrawerHelper()
 }
 
 void GLShapeDrawerHelper::SetLightUniform(ShaderProgram* shaderEffect,
-		DirectionalLight* light,string index)
+		Light* light,string index)
 {
 	string front= "u_lights[";
 	string name = "";
-	if (light && light->IsVisible())
+	if (light && light->LightState())
 	{
 		name = front+index+string("].ambient");
 		shaderEffect->SetUniformValue(name, light->GetAmbient());
@@ -38,8 +35,8 @@ void GLShapeDrawerHelper::SetLightUniform(ShaderProgram* shaderEffect,
 		shaderEffect->SetUniformValue(name, light->GetDiffuse());
 		name = front+index+string("].specular");
 		shaderEffect->SetUniformValue(name, light->GetSpecular());
-		name = front + index + string("].position");
-		shaderEffect->SetUniformValue(name, light->GetPositionOld());
+		name = front+index+string("].position");
+		shaderEffect->SetUniformValue(name, light->GetPosition());
 		name = front+index+string("].spotDirection");
 		shaderEffect->SetUniformValue(name, light->GetSpotDirection());
 		name = front+index+string("].spotExponent");
@@ -101,13 +98,12 @@ ShaderProgram* GLShapeDrawerHelper::GetShaderProgram(RenderAction* action, int S
 	return shaderEffect;
 }
 
-void GLShapeDrawerHelper::SetMaterialUniform(ShaderProgram* shaderEffect, BaseMaterial* material)
+void GLShapeDrawerHelper::SetMaterialUniform(ShaderProgram* shaderEffect, Material* material)
 {
-	Material* tempMaterial = dynamic_cast<Material*>(material);
-	const Color &ambient = tempMaterial->GetAmbient();
-	const Color& diffuse = tempMaterial->GetDiffuse();
-	const Color &spec = tempMaterial->GetSpecular();
-	float shininess = tempMaterial->GetShininess();
+	const Color &ambient = material->GetAmbient();
+	const Color& diffuse = material->GetDiffuse();
+	const Color &spec = material->GetSpecular();
+	float shininess = material->GetShininess();
 	shininess = 20.0f;
 	Color emission(0.01, 0.01, 0.01, 1.0);
 	Color ambient1(0.1,0.1,0.1);

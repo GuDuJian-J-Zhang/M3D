@@ -372,8 +372,6 @@ public:
 		m_min = Vector3::ZERO;
 		m_max = Vector3::ZERO;
 		m_defined = false;
-		m_points.clear();
-		m_pointsArray.clear();
 	}
 
 	/**
@@ -545,13 +543,13 @@ public:
 	 *
 	 * @return
 	 */
-	bool GetTriangleArray(vector<float>& outPoints);
-		/**
-		 * @brief
-		 *
-		 * @return
-		 */
-	bool GetVertexs(vector<float>& outPoints);
+	float* GetTriangleArray();
+	/**
+	 * @brief
+	 *
+	 * @return
+	 */
+	float* GetVertexs();
 	/**
 	 * @brief
 	 *
@@ -575,27 +573,17 @@ public:
 	 */
 	void ScaleBox(float scale);
 
-	M3D_ADDRESSTYPE Address()
-	{
-		//获取地址的真实方式
-		return TAddress(*this);
-	}
-
-	void FillByAddress(M3D_ADDRESSTYPE memoryAddress)
-	{
-		*this = *TFromAddress<BoundingBox>(memoryAddress);
-	}
 public:
 	//static BoundingBox ZeroBox; //!<
 	//绘制索引
-	static M3D_INDEX_TYPE boxIndexs[24]; //!<
+	static short boxIndexs[24]; //!<
 	static int triIndex[12][3]; //!<
 
-	static const  BoundingBox MAX_BOX; //!<
+	const static BoundingBox MAX_BOX; //!<
 	static BoundingBox NO_BOX; //!<
 
-	static vector<float> m_points; //!<
-	static vector<float> m_pointsArray; //!<
+	vector<float> m_points; //!<
+	vector<float> m_pointsArray; //!<
 	Vector3 m_min; //!<
 	Vector3 m_max; //!<
 	bool m_defined; //!<

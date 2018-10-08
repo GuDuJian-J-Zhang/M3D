@@ -18,141 +18,93 @@ namespace M3D
 /**
  * 以下为着色器中的变量名字符串对应的字符串哈希值
  */
-extern M3D_API const string VSP_POSITION;
-extern M3D_API const string VSP_NORMAL;
-extern M3D_API const string VSP_COLOR;
-extern M3D_API const string VSP_UCOLOR;
-extern M3D_API const string VSP_TEXCOORDS;
+extern M3D_API const StringHash VSP_POSITION;
+extern M3D_API const StringHash VSP_NORMAL;
+extern M3D_API const StringHash VSP_COLOR;
+extern M3D_API const StringHash VSP_UCOLOR;
+extern M3D_API const StringHash VSP_TEXCOORDS;
 
-extern M3D_API const string VSP_MODELMAT;
-extern M3D_API const string VSP_VIEWMAT;
-extern M3D_API const string VSP_PROJECTIONMAT;
-extern M3D_API const string VSP_NORMALMAT;
-extern M3D_API const string VSP_LIGHTMAT;
-extern M3D_API const string VSP_LIGHTPROJECT;
-extern M3D_API const string VSP_BAIS;
-extern M3D_API const string VSP_MODELVIEWMAT;
-extern M3D_API const string VSP_MVPMAT;
-extern M3D_API const string VSP_TEXTUREMAT;
+extern M3D_API const StringHash VSP_MODELMAT;
+extern M3D_API const StringHash VSP_VIEWMAT;
+extern M3D_API const StringHash VSP_PROJECTIONMAT;
+extern M3D_API const StringHash VSP_NORMALMAT;
+extern M3D_API const StringHash VSP_LIGHTMAT;
+extern M3D_API const StringHash VSP_LIGHTPROJECT;
+extern M3D_API const StringHash VSP_BAIS;
+extern M3D_API const StringHash VSP_MODELVIEWMAT;
+extern M3D_API const StringHash VSP_MVPMAT;
+extern M3D_API const StringHash VSP_TEXTUREMAT;
 
-extern M3D_API const string VSP_LIGHTPOSITION;
-extern M3D_API const string VSP_EYEPOSITION;
+extern M3D_API const StringHash VSP_LIGHTPOSITION;
+extern M3D_API const StringHash VSP_EYEPOSITION;
 
-extern M3D_API const string FSP_AMBIENT;
-extern M3D_API const string FSP_DIFFUSE;
-extern M3D_API const string FSP_SPECULAR;
-extern M3D_API const string FSP_SHININESS;
-extern M3D_API const string FSP_SAMPLER0;
-extern M3D_API const string FSP_SAMPLER1;
-extern M3D_API const string FSP_SAMPLER2;
-extern M3D_API const string FSP_SAMPLERCUBE0;
+extern M3D_API const StringHash FSP_AMBIENT;
+extern M3D_API const StringHash FSP_DIFFUSE;
+extern M3D_API const StringHash FSP_SPECULAR;
+extern M3D_API const StringHash FSP_SHININESS;
+extern M3D_API const StringHash FSP_SAMPLER0;
+extern M3D_API const StringHash FSP_SAMPLER1;
+extern M3D_API const StringHash FSP_SAMPLER2;
+extern M3D_API const StringHash FSP_SAMPLERCUBE0;
 
-extern M3D_API const string FSP_USETEX;//TODO 以后优化
+extern M3D_API const StringHash FSP_USETEX;//TODO 以后优化
 
 //for test
-extern M3D_API const string FSP_FRESNEL0;
-extern M3D_API const string FSP_ROUGHNESS;
+extern M3D_API const StringHash FSP_FRESNEL0;
+extern M3D_API const StringHash FSP_ROUGHNESS;
 
-//for multi-clip
-extern M3D_API const string FSP_CLIPPLANES;
-extern M3D_API const string FSP_ENABLECLIPS;
-extern M3D_API const string FSP_REVERSECLIP;
+extern M3D_API const StringHash FSP_CLIPPLANE;
+extern M3D_API const StringHash FSP_ENABLECLIP;
 
 //for multilight
-extern M3D_API const string FSP_ENABLELIGHTS;
-extern M3D_API const string FSP_LIGHTMODEL_AMBIENT;
+extern M3D_API const StringHash FSP_ENABLELIGHTS;
+extern M3D_API const StringHash FSP_LIGHTMODEL_AMBIENT;
 // light
-extern M3D_API const string FSP_LIGHT_0_AMBIENT;
-extern M3D_API const string FSP_LIGHT_0_DIFFUSE;
-extern M3D_API const string FSP_LIGHT_0_SPECULAR;
-extern M3D_API const string FSP_LIGHT_0_POSITION;
-extern M3D_API const string FSP_LIGHT_0_SPOT_DIRECTION;
-extern M3D_API const string FSP_LIGHT_0_SPOT_EXPONENT;
-extern M3D_API const string FSP_LIGHT_0_SPOT_CUTOFF;
-extern M3D_API const string FSP_LIGHT_0_SPOT_COSCUTOFF;
-extern M3D_API const string FSP_LIGHT_0_CONST_ATTENUATION;
-extern M3D_API const string FSP_LIGHT_0_LINEAR_ATTENUATION;
-extern M3D_API const string FSP_LIGHT_0_QUAD_ATTENUATION;
-extern M3D_API const string FSP_LIGHT_0_INTENSITY;
+extern M3D_API const StringHash FSP_LIGHT_0_AMBIENT;
+extern M3D_API const StringHash FSP_LIGHT_0_DIFFUSE;
+extern M3D_API const StringHash FSP_LIGHT_0_SPECULAR;
+extern M3D_API const StringHash FSP_LIGHT_0_POSITION;
+extern M3D_API const StringHash FSP_LIGHT_0_SPOT_DIRECTION;
+extern M3D_API const StringHash FSP_LIGHT_0_SPOT_EXPONENT;
+extern M3D_API const StringHash FSP_LIGHT_0_SPOT_CUTOFF;
+extern M3D_API const StringHash FSP_LIGHT_0_SPOT_COSCUTOFF;
+extern M3D_API const StringHash FSP_LIGHT_0_CONST_ATTENUATION;
+extern M3D_API const StringHash FSP_LIGHT_0_LINEAR_ATTENUATION;
+extern M3D_API const StringHash FSP_LIGHT_0_QUAD_ATTENUATION;
+extern M3D_API const StringHash FSP_LIGHT_0_INTENSITY;
 
-extern M3D_API const string FSP_LIGHT_1_AMBIENT;
-extern M3D_API const string FSP_LIGHT_1_DIFFUSE;
-extern M3D_API const string FSP_LIGHT_1_SPECULAR;
-extern M3D_API const string FSP_LIGHT_1_POSITION;
-extern M3D_API const string FSP_LIGHT_1_SPOT_DIRECTION;
-extern M3D_API const string FSP_LIGHT_1_SPOT_EXPONENT;
-extern M3D_API const string FSP_LIGHT_1_SPOT_CUTOFF;
-extern M3D_API const string FSP_LIGHT_1_SPOT_COSCUTOFF;
-extern M3D_API const string FSP_LIGHT_1_CONST_ATTENUATION;
-extern M3D_API const string FSP_LIGHT_1_LINEAR_ATTENUATION;
-extern M3D_API const string FSP_LIGHT_1_QUAD_ATTENUATION;
-extern M3D_API const string FSP_LIGHT_1_INTENSITY;
+extern M3D_API const StringHash FSP_LIGHT_1_AMBIENT;
+extern M3D_API const StringHash FSP_LIGHT_1_DIFFUSE;
+extern M3D_API const StringHash FSP_LIGHT_1_SPECULAR;
+extern M3D_API const StringHash FSP_LIGHT_1_POSITION;
+extern M3D_API const StringHash FSP_LIGHT_1_SPOT_DIRECTION;
+extern M3D_API const StringHash FSP_LIGHT_1_SPOT_EXPONENT;
+extern M3D_API const StringHash FSP_LIGHT_1_SPOT_CUTOFF;
+extern M3D_API const StringHash FSP_LIGHT_1_SPOT_COSCUTOFF;
+extern M3D_API const StringHash FSP_LIGHT_1_CONST_ATTENUATION;
+extern M3D_API const StringHash FSP_LIGHT_1_LINEAR_ATTENUATION;
+extern M3D_API const StringHash FSP_LIGHT_1_QUAD_ATTENUATION;
+extern M3D_API const StringHash FSP_LIGHT_1_INTENSITY;
 //for material
-extern M3D_API const string FSP_MATERIAL_EMISSION;
-extern M3D_API const string FSP_MATERIAL_AMBIENT;
-extern M3D_API const string FSP_MATERIAL_DIFFUSE;
-extern M3D_API const string FSP_MATERIAL_SPECULAR;
-extern M3D_API const string FSP_MATERIAL_SHININESS;
+extern M3D_API const StringHash FSP_MATERIAL_EMISSION;
+extern M3D_API const StringHash FSP_MATERIAL_AMBIENT;
+extern M3D_API const StringHash FSP_MATERIAL_DIFFUSE;
+extern M3D_API const StringHash FSP_MATERIAL_SPECULAR;
+extern M3D_API const StringHash FSP_MATERIAL_SHININESS;
 
-extern M3D_API const string FSP_USEAMBIENTTEX;
-extern M3D_API const string FSP_USECUBEMAPTEX;
+extern M3D_API const StringHash FSP_USEAMBIENTTEX;
+extern M3D_API const StringHash FSP_USECUBEMAPTEX;
 
-extern M3D_API const string FSP_SELECTCOLOR;
+extern M3D_API const StringHash FSP_SELECTCOLOR;
 
 //for FBO
-extern M3D_API const string FSP_SHADOW_LIGHTPOS;
-extern M3D_API const string SHADOW_X_PIXEL_OFFSET;
-extern M3D_API const string SHADOW_Y_PIXEL_OFFSET;
-extern M3D_API const string VSP_LIGHT_NORMALMAT;
+extern M3D_API const StringHash FSP_SHADOW_LIGHTPOS;
+extern M3D_API const StringHash SHADOW_X_PIXEL_OFFSET;
+extern M3D_API const StringHash SHADOW_Y_PIXEL_OFFSET;
+extern M3D_API const StringHash VSP_LIGHT_NORMALMAT;
 
 //为了增强边缘检测而设置的颜色
-extern M3D_API const string FSP_EDGEDETEC;
-
-////ubershader---------------------------------
-extern M3D_API const string MODEL_MATRXI;
-extern M3D_API const string VIEW_MATRXI;
-extern M3D_API const string NORMAL_MATRXI;
-extern M3D_API const string PROJECTION_MATRXI;
-extern M3D_API const string UV_TRANSFORM_MATRIX;
-extern M3D_API const string DIFFUSE;
-extern M3D_API const string SPECULAR;
-extern M3D_API const string EMISSIVE;
-extern M3D_API const string SHININESS;
-extern M3D_API const string DIFFUSE_TEXTURE;
-extern M3D_API const string SPECULAR_MAP;
-extern M3D_API const string NORMAL_MAP;
-extern M3D_API const string MATCAP_MAP;
-extern M3D_API const string NORMAL_MAP_SCALE;
-extern M3D_API const string DISPLACEMENT_MAP;
-extern M3D_API const string DISPLACEMENT_SCALE;
-extern M3D_API const string DISPLACEMENT_BIAS;
-extern M3D_API const string EMISSIVE_MAP;
-extern M3D_API const string AO_MAP;
-extern M3D_API const string AO_MAP_INTENSITY;
-extern M3D_API const string ENV_TEXTURE;
-extern M3D_API const string ENV_DIFFUSE_TEXTURE;
-extern M3D_API const string ROUGHNESS;
-extern M3D_API const string METALNESS;
-extern M3D_API const string METALLIC_ROUGHNESS_TEXTURE;
-extern M3D_API const string GAMMA;
-extern M3D_API const string ENV_MAP_INTENSITY;
-extern M3D_API const string LUT;
-extern M3D_API const string CAMERA_POSITION;
-extern M3D_API const string AMBIENT_LIGHT_COLOR;
-extern M3D_API const string SPOT_LIGHT_0_COLOR;
-extern M3D_API const string SPOT_LIGHT_0_POSITION;
-extern M3D_API const string SPOT_LIGHT_0_DIRECTION;
-extern M3D_API const string SPOT_LIGHT_0_DISTANCE;
-extern M3D_API const string SPOT_LIGHT_0_DECAY;
-extern M3D_API const string SPOT_LIGHT_0_CONECOS;
-extern M3D_API const string SPOT_LIGHT_0_PENUMBRACOS;
-extern M3D_API const string SPOT_LIGHT_0_SHADOW;
-extern M3D_API const string TONE_MAPPING_EXPOSURE;
-extern M3D_API const string CLEARCOAT;
-extern M3D_API const string CLEARCOATROUGHNESS;
-extern M3D_API const string SPECULAR;
-extern M3D_API const string OPACITY;
-//extern M3D_API const StringHash SPOT_LIGHT_0_COLOR;
+extern M3D_API const StringHash FSP_EDGEDETEC;
 /// Primitive type.
 enum PrimitiveType
 {

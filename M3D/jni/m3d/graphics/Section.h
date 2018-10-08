@@ -16,6 +16,8 @@
 
 namespace M3D
 {
+
+
 class ImageBoard;
 /**
  * @class
@@ -39,8 +41,6 @@ public:
 	 */
 	list<SectionPlane*>* GetPlaneList();
 
-	void SetTransform(Matrix3x4& transform);
-
 	/**
 	 *
 	 * @param renderAction
@@ -55,7 +55,7 @@ public:
 	 * @return
 	 */
 	bool AddPlane(SectionPlane* plane);
-	bool AddNewPlane(SectionPlane* plane);
+
 	/**
 	 * 移除平面
 	 * @param plane
@@ -78,16 +78,6 @@ public:
 
 	bool IsShowCappingPlane();
 
-	void SetIsReverseClipping(bool state);
-
-	bool IsReverseClipping();
-
-	bool GetShowClipPlane() const;
-	void SetShowClipPlane(bool val);
-	bool GetShowPlaneRect() const;
-	void SetShowPlaneRect(bool val);
-	SectionPlane* GetPlaneById(int sectionPlaneId);
-	list<SectionPlane*> GetSectionPlaneList();
 private:
 //	Model* m_Model;
 
@@ -96,17 +86,13 @@ private:
 	BoundingBox m_drawBoxSize;//!<
 
 	bool m_isShowCappingPlane;//是否显示盖面
-	bool m_IsShowClipPlane;//是否显示盖面
- 
-	bool m_isReverseClipping;//是否反转剖面结果
-	bool m_ShowPlaneRect; //!<是否显示平面长方形
+
 //	SectionPlane* m_plane;
 
 //	bool m_Enable;
 //	ImageBoard* solidPlan;
 
 //	int m_index;
-	mutable Mutex m_mutex; //!<线程锁对象
 };
 }
 #endif // M3D_SECTION_NODE_H

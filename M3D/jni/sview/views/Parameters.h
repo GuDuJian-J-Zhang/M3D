@@ -40,9 +40,6 @@ public:
 	void SetParameter(string key, string value);
 
 
-	Color GetColor(string key);
-	void SetColor(string key, Color& value);
-
 	/**
 	 * @brief 设置所有参数为默认值
 	 */
@@ -61,26 +58,6 @@ public:
 	 * @return
 	 */
 	bool SaveToXML();
-
-	static void SetMachinName(string& machName);
-	static void SetUserName(string& userName);
-	static void SetUserDomainName(string& domainName);
-	static void SetProjectName(string& projectName);
-	static void SetRemoteIP(string& remoteIP);
-	static void SetRemotePort(int port);
-	static string& GetRemoteIP();
-	static int GetRemotePort();
-
-	static void SetFoucusModelScaleFactor(float defaultFactor);
-
-	static string& GetUserName0();
-	static string& GetMachinName();
-	static string& GetUserDomainName();
-	static string& GetProjectName();
-
-	bool GetShowVRInMainView() const { return m_showVRInMainView; }
-	void SetShowVRInMainView(bool val) { m_showVRInMainView = val; }
-
 
 private:
 	Parameters();
@@ -104,6 +81,7 @@ private:
 	 */
 	bool SetParamValueToXML(XMLDocument* doc, const char* paramName,
 			const char* value);
+
 public:
 	static const string TRUE_VALUE;//!<真
 	static const string FALSE_VALUE;//!<假
@@ -123,11 +101,9 @@ public:
     
     static const string ITEM_GLES_VERSION;//!<opengles版本
 
-    static const string ITEM_M3D_VERSION;//!<m3d版本
+    static const string ITEM_M3D_VERSION;//!<opengles版本
 
     static const string ITEM_APP_DEFAULT_WORK_PATH; //!<app的默认工作路径
-
-    static const string ITEM_SKYBOX_PATH; //!<天空盒工作路径
 
     static const string ITEM_BIG_MODEL_OPTIMIZE; //!<模型优化调整系数
 
@@ -158,7 +134,7 @@ public:
     static const string ITEM_CUBE_MAP;//!<是否开启立方体环境映射
 
     static const string ITEM_AXIS_POS;//!<坐标轴位置
-    static const string ITEM_AXIS_IMAGE;//!<坐标轴图标
+
     static const string ITEM_CLIPPLANE_MODE;//!<剖切面模式
 
 	static const string ITEM_PERSPECTIVE_STYLE;//!<视图模式
@@ -175,45 +151,10 @@ public:
     static const string ITEM_IS_SHOW_SPACEPOINT;
 
     static const string ITEM_IS_USER_DATA_BOM; //使用自定义属性BOM
-	
-	static const string ITEM_IS_RECALCULATE_NORMAL;
-	static const string ITEM_IS_CHECKERRORPOIN;
-	static const string ITEM_IS_SHOW_BINOCULAR_PICTURE;
-	static const string ITEAM_VR_VIEW_MODE;
-
-	static const string ITEM_SELECTED_STYLE;
-	static const string ITEM_GAMMA;
-	static const string ITEM_TONE_MAPPING_EXPOSURE;
-
-	static const string ITEM_USE_SSAO;
-	static const string ITEM_USE_GROUND_GRID;
-
-	static const string ITEM_SSAO_RADIUS;
-	static const string ITEM_SSAO_AOCLAMP;
-	static const string ITEM_SSAO_LUMINFLUENCE;
-	static const string ITEM_SSAO_CONTRAST;
-	static const string ITEM_SSAO_BIAS;
-	static const string ITEM_SSAO_DISPLACE;
-	static const string ITEM_SSAO_AEAR;
-
-	static const string ITEM_SHADOW_MAP_ENABLE;
-
-	//----设计器参数开始
-	static const string DESIGNER_ANNOTATION_USER;
-	static const string DESIGNER_ANNOTATION_DEPARTMENT;
-	static const string DESIGNER_ANNOTATION_CHARACTER;
-	static const string DESIGNER_ANNOTATION_DISPLAYCOLOR;
-
-	string m_annotationUser;
-	string m_annotationDepartment;
-	string m_annotationCharacter;
-	Color m_annotationDisplayColor;
-	//----设计器参数结束
 
     bool 	m_isOpenScale;		//!<是否开启缩放
 	bool 	m_IsConRotate;		//!<持续旋转
 	bool 	m_UseBackImage;		//!<是否使用背景图片
-    bool    m_BackTransparent;  //!<背景是否透明
 	bool 	m_IsShowTrilateralEdge;	//!<是否显示三角面片边线
 	bool 	m_IsOnlyShowTrilateralEdge;	//!<是否只显示三角形边框
 	bool 	m_IsShowEdgeLine;	//!<是否显示边界线
@@ -243,19 +184,9 @@ public:
 	bool 	m_IsUseLOD;			//!<是否使用LOD读取和显示
 	bool 	m_IsUseIndexMode;	//!<是否使用索引方式绘制
 	int 	m_OpenGLESVersion;	//!<OpenGLES使用的版本号
-	bool 	m_UseSpacePoint;	//!<读取空间点
-	int     m_MergeLevel;//!<面合并级别
- 
 	bool    m_IsHighPerformanceView; //!<是否使用高性能模式
     bool    m_IsUseAnimationCamera;//!<动画中使用摄像机漫游
     bool    m_IsUseCatiaMode; //!<使用catia方式进行节点内容解析
-
-	bool    m_IsCheckErrorPoint; //!<进行坐标特别大点检查
-
-	bool m_IsUseGeoData;//!<解析几何坐标数据
-
-	bool m_IsUsePmiData;//!<
-	bool m_IsUseModelViewData;//!<
 
     string m_appWorkPath; //!<app默认工作路径
     string m_measureImageTempPath;//用来临时存储测量图片的路径
@@ -300,14 +231,14 @@ public:
 
 	int m_msaaNum;//!<多重采样比率 0 1 2 4 8 当等于0的时候不使用多重采样
 
-	//bool m_simplityMode; //!<极简模式，使用LFace和LSceneNode构建，对测量等其他功能影响较大
+	bool m_simplityMode; //!<极简模式，使用LFace和LSceneNode构建，对测量等其他功能影响较大
 
 	int m_bufferType;//!<顶点缓存位置 1 = GPU 2 = DISK 0 = NO
 
 	bool m_retainName; //!<保留名称
 
     int m_axisPos; //!<坐标轴位置
-    bool m_axisImage;//!<坐标轴图标
+
 	int m_perspectiveStyle; //!<视图样式
 	
 	int m_clipPlaneMode;//!<0表示正常剖切 ,1为不剖切，2为只显示剖切线
@@ -325,74 +256,16 @@ public:
 
     bool m_isUseUserDataBom; //是否使用用户自定义BOM结构
 
-	bool m_useStereo;//是否使用立体眼镜模式
+    bool m_useStereo;//是否使用立体眼镜模式
 
 	float m_pupillaryDistanceFactor;
-
-	//bool m_isUseFullPath;
 
 	///获取最小移动的距离，内部根据像素密度判断
 	int GetLimitDistance();
 
-	//获取多语言
-	int GetLanguage();
-
-	bool isRecalculateNormal;
-
-	bool m_vrViewMode;//漫游时选择0；观察模型时选择1；
-
-	static string m_machinName;
-	static string m_userName;
-	static string m_userDomainName;
-	static string m_projectName;
-
-	static string m_remoteIP;
-	static int m_remotePort;
-
-	static float m_foucsScalFactor;
-	static bool m_useSimplePath;
-
-	static bool m_useBodyObject;
-	bool GetLoadExternInfo() const;
-	void SetLoadExternInfo(bool val);
-	int m_defaultViewType;
-	Vector3 m_upDirectionValue;
-
-	bool m_isShowBinocularPicture;//是否显示VR模式中的双眼画面
-
-	bool m_isShowCutLine;//是否显示剖切线
-
-	int m_selectedStyle;//选择样式 1轮廓 2颜色
-
-	Color m_outlineColor;
-
-	bool m_shadowMapEnabled;
-	int m_shadowMapType;//1 正常 2 PCF 3 soft
-	bool m_doubleSided;
-	float m_gammaFactor;
-	float m_toneMappingExposure;
-	bool m_gammaInput;
-	bool m_gammaOutput;
-
-	bool m_useSSAO;//使用环境光遮蔽
-	bool m_useGroundGrid;
-
-	//环境光遮蔽参数
-	float g_LumInfluence;
-	float g_SSAOContrast;
-	float g_SSAO_Bias;
-	float g_Displace;
-	float g_Aear;
-	float g_aoClamp;
-	float g_radius;
-
-	bool m_showVRInMainView;//在主窗口显示VR
-
 private:
 	static const string xmlPath;
 	static Parameters* instance;
-protected:
-	bool m_loadExternInfo;
 };
 
 }

@@ -38,7 +38,7 @@ void Action::Apply(SceneNode * node)
 	this->OnExecute(node);
 }
 
-void Action::Apply(Model * node)
+void Action::Apply(LSceneNode * node)
 {
 	this->OnExecute(node);
 }
@@ -53,7 +53,7 @@ void Action::OnExecute(SceneNode* node)
 
 }
 
-void Action::OnExecute(Model* node)
+void Action::OnExecute(LSceneNode* node)
 {
 
 }

@@ -47,12 +47,6 @@ public:
 	 */
 	virtual void ComputeBox();
 
-	/**
-	* 得到渲染颜色
-	* @return
-	*/
-	virtual const  Color& GetShapeColor();
-
 private:
 	void Init();
 	void MarkDirty();
@@ -67,7 +61,6 @@ private :
 	Mesh* m_Meshdata; //!< 存储分元后的Mesh数据
 
 	bool m_isDirty; //!< 脏标识
-	mutable Mutex m_mutex; //!<线程锁对象
 };
 
 }

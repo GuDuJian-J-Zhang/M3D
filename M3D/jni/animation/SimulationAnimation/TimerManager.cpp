@@ -13,15 +13,10 @@
 #include "TimerManager.h"
 #include "../SimulationCommon/vlist.h"
 #include "../SimulationCommon/vhash.h"
-#include "Mutex.h"
-
 
 //SA_NAMESPACE_BEGIN
-#ifdef WIN32
-NS_SimulationAnimation::Mutex* CTimerManager::m_Mutex = 0;
-#else 
+
 pthread_mutex_t* CTimerManager::m_Mutex = 0;
-#endif
 CTimerManager* CTimerManager::m_pCTimerManager = 0;
  
 CTimerManager::CTimerManager ( int output_hz )
@@ -35,13 +30,9 @@ CTimerManager::CTimerManager ( int output_hz )
     m_request_time = m_actual_time = 0;
     m_recently_deleted_clients = 0;
     m_recently_deleted_expirations = 0;
-#ifdef WIN32
-	m_Mutex = new NS_SimulationAnimation::Mutex();	
-#else
 	m_Mutex = new pthread_mutex_t();
 	pthread_mutexattr_t attr;
-	pthread_mutex_init(m_Mutex, &attr);
-#endif
+	pthread_mutex_init(m_Mutex,&attr);
 }
 
 
@@ -68,12 +59,8 @@ CTimerManager::~CTimerManager ()
     if( m_spillover != 0 )
         delete_vlist( m_spillover );
 	// Release resources used by the critical section object.
-#ifdef WIN32	
-	delete m_Mutex;
-#else
     pthread_mutex_destroy(m_Mutex);
 	delete m_Mutex;
-#endif
 	m_pCTimerManager = NULL;
 }
 
@@ -300,20 +287,12 @@ CTimerManager * CTimerManager::SetTimerManager(CTimerManager * manager)
 
 void CTimerManager::Lock()
 {
-#ifdef WIN32
-	m_Mutex->Acquire();
-#else
 	pthread_mutex_lock(m_Mutex);
-#endif // WIN32
-
 }
+
 void CTimerManager::UnLock()
-{	
-#ifdef WIN32
-	m_Mutex->Release();
-#else
+{
 	pthread_mutex_unlock(m_Mutex);
-#endif // WIN32
 }
 
 //SA_NAMESPACE_END

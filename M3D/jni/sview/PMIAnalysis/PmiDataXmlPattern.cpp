@@ -487,11 +487,11 @@ STK_STATUS CPmiDataXmlPattern::GetXmlLead(XMLElement *pDtk_LeaderPtrElem,vector<
 				//获取引线的类型
 				XMLElement *pLeaderTypeElem = pDtk_LeaderPtrElem->FirstChildElement();
 				const char *pLeaderType = pLeaderTypeElem->FirstChild()->Value();//对应于<LeaderType>
-				StkLeaderTypeEnum nLeaderType = LEADER_TYPE_UNKNOWN;
+				int nLeaderType = 0;
 				if(strcmp(pLeaderType,"TypeAngular")==0)
-					nLeaderType = LEADER_TYPE_ANGULAR;
+					nLeaderType = 2;
 				else if(strcmp(pLeaderType,"TypeLinear")==0)
-					nLeaderType = LEADER_TYPE_LENGTH;
+					nLeaderType = 1;
 				pSkt_L->SetLeaderType(nLeaderType);
 
 				//获取末端符号的信息

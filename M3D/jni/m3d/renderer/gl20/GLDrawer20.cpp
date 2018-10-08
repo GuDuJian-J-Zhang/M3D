@@ -27,8 +27,6 @@
 #include "m3d/model/ComText.h"
 #include "m3d/renderer/gl20/GLShapeDrawer20.h"
 #include "m3d/graphics/Texture.h"
-#include "m3d/renderer/gl20/ShaderProgram.h"
-#include "m3d/renderer/gl20/ShaderManager.h"
 
 using namespace SVIEW;
 
@@ -95,7 +93,7 @@ void GLDrawer20::DrawAxis(SceneNode* node, RenderAction* action)
 		Matrix4 projectionMatrix;
 		projectionMatrix.Ortho(axis->m_ProArray[0], axis->m_ProArray[1], axis->m_ProArray[2],
 				axis->m_ProArray[3], axis->m_ProArray[4], axis->m_ProArray[5]);
-		projectionMatrix = projectionMatrix.Transpose();
+
 		axisEffect->UseProgram();
 
 		ShaderParameter * position = axisEffect->GetShaderAttributeParameter(VSP_POSITION);
@@ -103,7 +101,7 @@ void GLDrawer20::DrawAxis(SceneNode* node, RenderAction* action)
 		axisEffect->SetVertexAttribPointer(position->m_location,3,GL_FLOAT,0,axis->axisPntX);
 		axisEffect->EnableAttributeArray(position->m_location);
 
-		Matrix4 mvp = modelViewMatrix*projectionMatrix;
+		Matrix4 mvp= modelViewMatrix*projectionMatrix.Transpose();
 		//Matrix4 mvp = Parameters::Instance()->m_testMVP;
 
 		axisEffect->SetUniformValue(VSP_MVPMAT,mvp);
@@ -128,15 +126,6 @@ void GLDrawer20::DrawAxis(SceneNode* node, RenderAction* action)
 
 		axisEffect->DisableAttributeArray(position->m_location);
 		axisEffect->ReleaseShaderProgram();
-
-		if (axis->m_xImage && axis->m_yImage && axis->m_zImage)
-		{
-			Matrix4 identity = Matrix4::IDENTITY;
-			GLShapeDrawer20::DrawImageBoard(action,axis->m_xImage, modelViewMatrix, projectionMatrix, identity);
-			GLShapeDrawer20::DrawImageBoard(action, axis->m_yImage, modelViewMatrix, projectionMatrix, identity);
-			GLShapeDrawer20::DrawImageBoard(action, axis->m_zImage, modelViewMatrix, projectionMatrix, identity);
-		}
-
 		glEnable(GL_DEPTH_TEST);
 	}
 }
@@ -156,25 +145,14 @@ void GLDrawer20::DrawText(SceneNode* node, RenderAction* action)
 void GLDrawer20::InitialGL()
 {
 	glEnable(GL_DEPTH_TEST);
-	//glEnable(GL_MULTISAMPLE);
-	glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
-	glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+	glEnable(GL_MULTISAMPLE);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glDisable(GL_BLEND);
 	glDepthMask(GL_TRUE);
-    if (Parameters::Instance()->m_BackTransparent == true) {
-        glClearColor(0.0, 0.0, 0.0, 0);
-    }else{
-        glClearColor(0.5, 0.5, 0.1, 1);
-    }
+	glClearColor(0.5, 0.5, 0.1, 1);
 	glFrontFace(GL_CCW);
 	glClearStencil(0);
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-#ifdef WIN32
-	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
-	glEnable(GL_MULTISAMPLE);
-#endif
-	glDisable(GL_CULL_FACE);
-	//glCullFace(GL_BACK);
 
 }
 

@@ -61,7 +61,7 @@ public:
 	}
 
 	/**
-	 * @brief Construct from an angle (in degrees, for M3D).
+	 * @brief Construct from an angle (in degrees, for Urho2D).
 	 */
 	Quaternion(float angle)
 	{
@@ -208,16 +208,7 @@ public:
 	}
 
 	bool IsZero() const;
-	M3D_ADDRESSTYPE Address()
-	{
-		//获取地址的真实方式
-		return TAddress(*this);
-	}
 
-	void FillByAddress(M3D_ADDRESSTYPE memoryAddress)
-	{
-		*this = *TFromAddress<Quaternion>(memoryAddress);
-	}
 	/**
 	 * @brief Define from an angle (in degrees) and axis.
 	 */
@@ -372,12 +363,6 @@ public:
 	 */
 	string Tostring() const;
 
-	/**
-	* @brief Return as axis and angle.
-	*/
-	void GetValue(Vector3& axis, float & fAngle) const;
-	Vector3 GetAixsValue() const;
-	float GetAngleValue() const;
 	/**
 	 * @brief W coordinate.
 	 */

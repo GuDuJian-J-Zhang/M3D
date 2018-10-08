@@ -1,8 +1,6 @@
 ﻿#include "m3d/extras/modelmanager/CopyModelOperation.h"
 #include "m3d/extras/modelmanager/ModelAssemblyHelper.h"
 #include "m3d/SceneManager.h"
-#include "m3d/model/ExtendInfoManager.h"
-
 namespace M3D
 {
 const int CopyModelOperation::TYPE = 10;
@@ -24,7 +22,7 @@ bool CopyModelOperation::OnExecute()
 {
 	LOGI(" CopyModelCommand::OnExecute() BEGIN");
 	bool msg = false;
-//#ifdef WIN32
+
 	if (m_view)
 	{
 		Model * sourceMdl = m_srcModel;
@@ -32,18 +30,23 @@ bool CopyModelOperation::OnExecute()
 		m_newModel = new Model();
 		if (sourceMdl && desMdl)
 		{
+			this->m_destPlcPath = PathHelper::GetM3DPath(desMdl);
+			this->m_srcPlcPath = PathHelper::GetM3DPath(sourceMdl);
+
 			LOGI(" CopyModelCommand::OnExecute() 1");
 			m_newModel->CopyData(sourceMdl);
 
-			//ModelNode * mdlNod = ModelAssemblyHelper::GetModelNode(sourceMdl);
-			//ModelNode * pareNod = ModelAssemblyHelper::GetModelNode(desMdl);
+			ModelNode * mdlNod = ModelAssemblyHelper::GetModelNode(sourceMdl);
+
+			ModelNode * pareNod = ModelAssemblyHelper::GetModelNode(desMdl);
 
 			SceneManager * scene = m_view->GetSceneManager();
 
-			//GroupNode * grpNod = scene->CreateModelNodes(m_newModel,
-			//		pareNod->GetName(), 0); //将newModel 加入scene
+			GroupNode * grpNod = scene->CreateModelNodes(m_newModel,
+					pareNod->GetName(), 0); //将newModel 加入scene
 
-			msg = ModelAssemblyHelper::InsertInLast(m_view, m_newModel, desMdl);
+			msg = ModelAssemblyHelper::InsertBefore(m_view, m_newModel, desMdl);
+
 			if (!msg)
 			{
 				delete m_newModel;
@@ -51,15 +54,17 @@ bool CopyModelOperation::OnExecute()
 				LOGI(" CopyModelCommand::OnExecute()  ASSAMBLY_INS_BEFO_ERR");
 				return msg;
 			}
-			//scene->ReIndexIDMapAfterAddModel(m_newModel);
+			scene->ReIndexIDMapAfterAddModel(m_newModel);
 
-			scene->GetExtendInfoManager()->CopyMeshAttr(sourceMdl->GetProtoTypeId(), m_newModel->GetProtoTypeId());
-			
 			Matrix3x4 sourcePlcMat = ModelAssemblyHelper::GetPlaceMatrix(
 					sourceMdl);
 
+			BoundingBox& mdlBox = mdlNod->GetWorldBoundingBox();
+			Vector3 mdlCenter = mdlBox.Center();
+
+			LOGI("mdlCenter == %s", mdlCenter.Tostring().c_str());
 			//----------------------------------------复制出的零件方向随机指定--------------
-			/*BoundingBox& sceneBox = scene->GetSceneBox();
+			BoundingBox& sceneBox = scene->GetSceneBox();
 			Vector3 sceneCenter = sceneBox.Center();
 			LOGI("sceneCenter == %s", sceneCenter.Tostring().c_str());
 			Vector3 trans = Vector3::LEFT * sceneBox.Length() * 0.8f;
@@ -67,11 +72,10 @@ bool CopyModelOperation::OnExecute()
 			float angle = Random(10.0f, 350.0);
 			Quaternion rot(angle, Vector3::UP);
 
-			trans = rot * trans;*/
+			trans = rot * trans;
 
 			Matrix3x4 tempMat;
-			//tempMat.MultiTranslate(trans);
-			tempMat = Matrix3x4::IDENTITY;
+			tempMat.MultiTranslate(trans);
 //----------------------------------------------------------------------------------------
 			Matrix3x4 pareWorldMat = ModelAssemblyHelper::GetWorldMatrix(
 					desMdl);
@@ -80,7 +84,11 @@ bool CopyModelOperation::OnExecute()
 
 			sourcePlcMat = pareWorldMat.Inverse() * (tempMat * sourceWorldMat);
 
-			m_newModel->SetOrigPlcMatrix(sourcePlcMat);
+			ModelNode * newModelNode = ModelAssemblyHelper::GetModelNode(
+					m_newModel);
+			newModelNode->SetOrigPlcMatrix(sourcePlcMat);
+			newModelNode->SetPlcMatrix(sourcePlcMat);
+
 			msg = true;
 		}
 		else
@@ -96,7 +104,6 @@ bool CopyModelOperation::OnExecute()
 		msg = false;
 	}
 	LOGI(" CopyModelCommand::OnExecute() END");
-//#endif
 	return msg;
 }
 

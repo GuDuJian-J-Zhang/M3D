@@ -25,8 +25,6 @@ CAnimationStepManager::CAnimationStepManager(const char *name)
 	m_pBehaviorActionChgCam = NULL;
 	m_nChgCamTickNum = 10;
 	m_bIsPause = false;
-	m_bPlayChildProcessManagerSteps = true;
-	m_pFocusProcessManager = NULL;
 }
 
 CAnimationStepManager::~CAnimationStepManager(void)
@@ -68,8 +66,7 @@ void CAnimationStepManager::Serialize(CUtilityXMLGenerator *xmlgen)
 		//xmlgenSA.Reset();
 		if (!(temp = (CProcessManager *)vlist_peek_cursor(m_ProcessManagerList)))
 			break;
-		if(!(temp->GetParentProcessManager()))
-			temp->Serialize(xmlgen);
+		temp->Serialize(xmlgen);
 		
 		vlist_advance_cursor(m_ProcessManagerList);	
 	}
@@ -109,7 +106,6 @@ void CAnimationStepManager::AddProcessManager( CProcessManager* pProcessManager 
 		vlist_add_last(m_ProcessManagerList, pProcessManager);
 		m_CurProcessManagerID = pProcessManager->GetID();
 		pProcessManager->SetAnimationStepManager(this);
-		pProcessManager->Reference();
 	}
 }
 
@@ -144,23 +140,14 @@ void CAnimationStepManager::DeleteProcessManager( CProcessManager* pProcessManag
 			}
 		}
 		vlist_remove(m_ProcessManagerList, pProcessManager);
-		pProcessManager->SetAnimationStepManager(NULL);
-		if (pProcessManager->GetParentProcessManager())
-		{
-			pProcessManager->GetParentProcessManager()->DeleteChildProcessManager(pProcessManager,false);
-		}
-		pProcessManager->Release();
+		delete pProcessManager;
 	}
 }
 
 void CAnimationStepManager::DeleteAllProcessManager()
 {
 	START_LIST_ITERATION(CProcessManager, m_ProcessManagerList)
-		if(temp)
-		{
-			temp->SetAnimationStepManager(NULL);
-			temp->Release();
-		}
+		delete temp;
 	END_LIST_ITERATION(m_ProcessManagerList)
 
 	vlist_flush(m_ProcessManagerList);
@@ -186,17 +173,6 @@ CProcessManager * CAnimationStepManager::FindProcessManagerByName(const char *na
 			return temp;							
 	END_LIST_ITERATION(m_ProcessManagerList)
 		return 0;
-}
-
-CProcess * CAnimationStepManager::FindProcessManagerByManagerIDAndProcessID(const int processManagerID, const int processID)
-{
-	CProcess *pProcess = NULL;
-	CProcessManager* pProcessManager = FindProcessManagerByID(processManagerID);
-	if(pProcessManager)
-	{
-		pProcess = pProcessManager->FindProcessByID(processID);
-	}
-	return pProcess;
 }
 
 void CAnimationStepManager::SetCurProcessManagerByID(int ID,bool bUpdateModel/* = true*/, bool bUpdateCam/* = false*/, bool bCamAni/* = false*/)
@@ -481,147 +457,38 @@ bool CAnimationStepManager::MoveProcessManager(const int oldIdx,const int newIdx
 
 bool CAnimationStepManager::MoveProcessManager(CProcessManager* pProcessManager,CProcessManager* pTargetProcessManager)
 {
-	if (!pProcessManager )
-		return false;
-	if (!pTargetProcessManager)
-	{
-		if (pProcessManager->GetParentProcessManager())
-		{
-			pProcessManager->GetParentProcessManager()->DeleteChildProcessManager(pProcessManager, false);
-		}
-		else
-		{
-			vlist_remove(m_ProcessManagerList, pProcessManager);
-		}
-		vlist_add_first(m_ProcessManagerList, pProcessManager);
-		return true;
-	}
-	if(pTargetProcessManager->GetParentProcessManager() == NULL)
-	{
-		//移至顶层过程管理器
-		if (pProcessManager->GetParentProcessManager())
-		{
-			pProcessManager->GetParentProcessManager()->DeleteChildProcessManager(pProcessManager, false);
-		}
-		pProcessManager->SetParentProcessManager(NULL);
-		int oldIdx = GetProcessManagerIdxByID(pProcessManager->GetID());
-		int newIdx = GetProcessManagerIdxByID(pTargetProcessManager->GetID());
-		
-		return vlist_move_item(m_ProcessManagerList, oldIdx, newIdx);
-	}
-	else if (pTargetProcessManager->GetParentProcessManager() == pProcessManager->GetParentProcessManager())
-	{
-		//同一过程管理器中的子过程管理器移动
-		pTargetProcessManager->GetParentProcessManager()->MoveChildProcessManager(pProcessManager, pTargetProcessManager);
-	}
-	else
-	{
-		if (pProcessManager->GetParentProcessManager())
-		{
-			pProcessManager->GetParentProcessManager()->DeleteChildProcessManager(pProcessManager, false);
-		}
-		pTargetProcessManager->GetParentProcessManager()->AddChildProcessManager(pProcessManager);
-		pTargetProcessManager->GetParentProcessManager()->MoveChildProcessManager(pProcessManager, pTargetProcessManager);
-	}
-    return true;
+	int oldIdx = GetProcessManagerIdxByID(pProcessManager->GetID());
+	int newIdx = GetProcessManagerIdxByID(pTargetProcessManager->GetID());
+	return vlist_move_item(m_ProcessManagerList,oldIdx,newIdx);
 }
 
-CProcessManager* CAnimationStepManager::GetPreProcessManager(CProcessManager* pProcessManager, bool bSteps, CProcessManager* pFocusProcessManager)
+CProcessManager* CAnimationStepManager::GetPreProcessManager(CProcessManager* pProcessManager)
 {
 	CProcessManager* pPreProcessManager = NULL;
-	if (!pProcessManager)
-		return pPreProcessManager;
-
-	if (pProcessManager == pFocusProcessManager ||
-		pProcessManager->IsChildProcessManager(pFocusProcessManager))
+	int curProcessManagerIdx = GetProcessManagerIdxByID(pProcessManager->GetID());
+	if(curProcessManagerIdx >0)
 	{
-		return pPreProcessManager;
-	}
-
-	CProcessManager* pParentProcessManager = pProcessManager->GetParentProcessManager();
-	if (!pParentProcessManager)
-	{
-		pPreProcessManager = GetPreTopProcessManager(pProcessManager);
-	}
-	else
-	{
-		pPreProcessManager = pParentProcessManager->GetPreChildProcessManager(pProcessManager);
-	}
-	if (pPreProcessManager)
-	{
-		if (bSteps && pPreProcessManager->GetChildProcessManagerCount() > 0)
-		{
-			pPreProcessManager = pPreProcessManager->GetLastChildProcessManager(bSteps);
-		}
-	}
-	else
-	{
-		pPreProcessManager = pParentProcessManager;
+		pPreProcessManager = GetProcessManagerByIdx(curProcessManagerIdx-1);
 	}
 	return pPreProcessManager;
 }
 
-CProcessManager* CAnimationStepManager::GetNextProcessManager(CProcessManager* pProcessManager, bool bSteps, CProcessManager* pFocusProcessManager)
+CProcessManager* CAnimationStepManager::GetNextProcessManager(CProcessManager* pProcessManager)
 {
 	CProcessManager* pNextProcessManager = NULL;
-	if (!pProcessManager)
-		return pNextProcessManager;
-	if (pProcessManager == pFocusProcessManager || 
-		pProcessManager->IsChildProcessManager(pFocusProcessManager))
+	int curProcessManagerIdx = GetProcessManagerIdxByID(pProcessManager->GetID());
+	if(curProcessManagerIdx < GetProcessManagerCount()-1)
 	{
-		return pNextProcessManager;
-	}
-	CProcessManager* pParentProcessManager = pProcessManager->GetParentProcessManager();
-
-	if (bSteps)
-	{
-		//如果级联获取，返回第一个子过程管理器
-		pNextProcessManager = pProcessManager->GetFirstChildProcessManager();
-	}
-	
-	while(!pNextProcessManager)
-	{
-		if (!pParentProcessManager)
-		{
-			//如果父过程管理器为空，直接返回下一顶级过程管理器
-			pNextProcessManager = GetNextTopProcessManager(pProcessManager);
-			break;
-		}
-		else
-		{
-			//返回当前管理管理器的兄弟节点
-			pNextProcessManager = pParentProcessManager->GetNextChildProcessManager(pProcessManager);
-			if (pNextProcessManager)
-			{
-				break;
-			}
-			else
-			{
-				if (pParentProcessManager == pFocusProcessManager ||
-					pParentProcessManager->IsChildProcessManager(pFocusProcessManager))
-				{
-					//如果当前过程管理器的父过程管理器与查找范围指定的过程管理器相同，遍历结束
-					break;
-				}
-				else
-				{
-					//如果没找到，继承找父过程管理器的兄弟节点
-					pProcessManager = pParentProcessManager;
-					pParentProcessManager = pParentProcessManager->GetParentProcessManager();
-				}
-			}
-		}
+		pNextProcessManager = GetProcessManagerByIdx(curProcessManagerIdx+1);
 	}
 	return pNextProcessManager;
 }
 
-CProcess* CAnimationStepManager::GetPreProcess(CProcess* pProcess, bool bSteps/* = false*/, CProcessManager* pFocusProcessManager/* = NULL*/)
+CProcess* CAnimationStepManager::GetPreProcess(CProcess* pProcess)
 {
 	CProcess* pPreProcess = NULL;
-	if (!pProcess)
-		return pPreProcess;
 	
-	CProcessManager* pProcessManager = pProcess->GetProcessManager();
+	CProcessManager* pProcessManager = GetCurrentProcessManager();
 	if(pProcessManager)
 	{
 		//从当前活动过程管理器中查找上一个
@@ -631,21 +498,23 @@ CProcess* CAnimationStepManager::GetPreProcess(CProcess* pProcess, bool bSteps/*
 		}
 
 		//如果当前过程管理器中找不到，查找前面过程管理器
-		while(!pPreProcess && (pProcessManager = GetPreProcessManager(pProcessManager, bSteps,pFocusProcessManager)))
+		while(!pPreProcess && (pProcessManager = GetPreProcessManager(pProcessManager)))
 		{
-			pPreProcess = pProcessManager->GetLastProcess(false);
+			if(pProcessManager->GetProcessCount()>0)
+			{
+				pPreProcess = pProcessManager->GetProcessByIdx(pProcessManager->GetProcessCount() - 1);
+			}
 		}
 	}
 	
 	return pPreProcess;
 }
 
-CProcess* CAnimationStepManager::GetNextProcess(CProcess* pProcess, bool bSteps/* = false*/, CProcessManager* pFocusProcessManager/* = NULL*/)
+CProcess* CAnimationStepManager::GetNextProcess(CProcess* pProcess)
 {
 	CProcess* pNextProcess = NULL;
-	if (!pProcess)
-		return pNextProcess;
-	CProcessManager* pProcessManager = pProcess->GetProcessManager();
+
+	CProcessManager* pProcessManager = GetCurrentProcessManager();
 	if(pProcessManager)
 	{
 		//从当前活动过程管理器中查找上一个
@@ -655,9 +524,12 @@ CProcess* CAnimationStepManager::GetNextProcess(CProcess* pProcess, bool bSteps/
 		}
 
 		//如果当前过程管理器中找不到，查找前面过程管理器
-		while(!pNextProcess && (pProcessManager = GetNextProcessManager(pProcessManager, bSteps, pFocusProcessManager)))
+		while(!pNextProcess && (pProcessManager = GetNextProcessManager(pProcessManager)))
 		{
-			pNextProcess = pProcessManager->GetFirstProcess(false);
+			if(pProcessManager->GetProcessCount()>0)
+			{
+				pNextProcess = pProcessManager->GetProcessByIdx(0);
+			}
 		}
 	}
 
@@ -670,22 +542,14 @@ bool CAnimationStepManager::IsAtPlayFirst()
 
 	CProcessManager* pCurProcessManager = GetCurrentProcessManager();
 	CProcess* pCurProcess = GetCurrentProcess();
-	//如果上面有没播放完的过程，返回False
-	if (GetPlayMode() != PLAY_MODE_PROCESS)
-	{
-		if (GetPreProcess(pCurProcess, m_bPlayChildProcessManagerSteps, m_pFocusProcessManager))
-		{
-			return bRet;
-		}
-	}
 	if(!pCurProcessManager || !pCurProcess)
 	{
-		return true;
+		return false;
 	}
 	CSBehaviorAction* pCurBehaviorAction = pCurProcess->GetBehaviorAction();
 	if(!pCurBehaviorAction)
 	{
-		return true;
+		return false;
 	}
 	pCurBehaviorAction->ScheduleAllAnimations(true);
 	if(pCurBehaviorAction->GetCurrentTick() <= pCurBehaviorAction->GetFirstTick())
@@ -697,6 +561,31 @@ bool CAnimationStepManager::IsAtPlayFirst()
 		bRet = false;
 	}
 
+	if(bRet && 
+		GetPlayMode() != PLAY_MODE_PROCESS )
+	{
+		if(!pCurProcessManager->GetPreProcess(pCurProcess))
+		{
+			bRet = true;
+		}
+		else
+		{
+			bRet = false;
+		}
+	}
+	
+	if(bRet && 
+		(GetPlayMode() == PLAY_MODE_FROM_CURPROCESSMANAGER || GetPlayMode() == PLAY_MODE_ALL))
+	{
+		if(!GetPreProcessManager(pCurProcessManager))
+		{
+			bRet = true;
+		}
+		else
+		{
+			bRet = false;
+		}
+	}
 	return bRet;
 }
 
@@ -706,22 +595,14 @@ bool CAnimationStepManager::IsAtPlayEnd()
 
 	CProcessManager* pCurProcessManager = GetCurrentProcessManager();
 	CProcess* pCurProcess = GetCurrentProcess();
-	//如果下面有没播放完的过程，返回False
-	if(GetPlayMode() != PLAY_MODE_PROCESS)
-	{
-		if (GetNextProcess(pCurProcess, m_bPlayChildProcessManagerSteps, m_pFocusProcessManager))
-		{
-			return bRet;
-		}
-	}
 	if(!pCurProcessManager || !pCurProcess)
 	{
-		return true;
+		return false;
 	}
 	CSBehaviorAction* pCurBehaviorAction = pCurProcess->GetBehaviorAction();
 	if(!pCurBehaviorAction)
 	{
-		return true;
+		return false;
 	}
 	pCurBehaviorAction->ScheduleAllAnimations(true);
 
@@ -733,7 +614,32 @@ bool CAnimationStepManager::IsAtPlayEnd()
 	{
 		bRet = false;
 	}
-	
+
+	if(bRet && 
+		GetPlayMode() != PLAY_MODE_PROCESS )
+	{
+		if(!pCurProcessManager->GetNextProcess(pCurProcess))
+		{
+			bRet = true;
+		}
+		else
+		{
+			bRet = false;
+		}
+	}
+
+	if(bRet && 
+		(GetPlayMode() == PLAY_MODE_FROM_CURPROCESSMANAGER || GetPlayMode() == PLAY_MODE_ALL))
+	{
+		if(!GetNextProcessManager(pCurProcessManager))
+		{
+			bRet = true;
+		}
+		else
+		{
+			bRet = false;
+		}
+	}
 	return bRet;
 }
 
@@ -749,87 +655,45 @@ void CAnimationStepManager::Rewind(AnimationPlayMode playMode,bool bReverse)
 		if(m_pSA->GetReversePlay())
 		{
 			//将第最后一个过程及过程管理器设置为当前状态，以便从头播放所有动画
-			START_LIST_ITERATION(CProcessManager, m_ProcessManagerList)
-				temp->SetCurProcessByIdx(temp->GetProcessCount() - 1);
-			END_LIST_ITERATION(m_ProcessManagerList)
-			CProcessManager* pLastProcessManager = GetLastTopProcessManager();
-			if(pLastProcessManager)
+			CProcessManager* pProcessManager = GetCurrentProcessManager();
+			while(pProcessManager)
 			{
-				if (GetLastTopProcessManager()->GetChildProcessManagerCount() >0)
-				{
-					pLastProcessManager = GetLastTopProcessManager()->GetLastChildProcessManager(m_bPlayChildProcessManagerSteps);
-				}
-				SetCurProcessManagerByID(pLastProcessManager->GetID());
+				pProcessManager->SetCurProcessByIdx(pProcessManager->GetProcessCount()-1);
+				pProcessManager = GetNextProcessManager(pProcessManager);
 			}
+			SetCurProcessManagerByIdx(GetProcessManagerCount()-1);
 		}
 		else
 		{
 			//将第一个过程及过程管理器设置为当前状态，以便从头播放所有动画
-			START_LIST_ITERATION(CProcessManager, m_ProcessManagerList)
-				temp->SetCurProcessByIdx(0);
-			END_LIST_ITERATION(m_ProcessManagerList)
-				CProcessManager* pFirstProcessManager = GetFirstTopProcessManager();
-			if (pFirstProcessManager)
+			CProcessManager* pProcessManager = GetCurrentProcessManager();
+			while(pProcessManager)
 			{
-				SetCurProcessManagerByID(pFirstProcessManager->GetID());
+				pProcessManager->SetCurProcessByIdx(0);
+				pProcessManager = GetPreProcessManager(pProcessManager);
 			}
+			SetCurProcessManagerByIdx(0);
 		}
 	}
 	else if(playMode == PLAY_MODE_PROCESSMANAGER || 
-		playMode == PLAY_MODE_FROM_CURPROCESSMANAGER)
+		playMode == PLAY_MODE_FROM_CURPROCESSMANAGER || 
+		playMode == PLAY_MODE_FROM_CURPROCESS)
 	{
 		//将第一个过程设置为当前状态，以便从头播放当前过程管理器中的动画
-		if (m_pFocusProcessManager)
-		{
-			SetCurProcessManagerByID(m_pFocusProcessManager->GetID());
-		}
 		CProcessManager* pCurrentProcessManager = GetCurrentProcessManager();
 		if(pCurrentProcessManager)
 		{
 			if(bReverse)
 			{
-				if(pCurrentProcessManager->GetProcessCount()>0)
-				{
-					pCurrentProcessManager->SetCurProcessByIdx(pCurrentProcessManager->GetProcessCount() - 1);
-				}
-				else
-				{
-					for (int i = pCurrentProcessManager->GetChildProcessManagerCount() - 1; i >= 0; i--)
-					{
-						CProcessManager* pChildProcessManager = pCurrentProcessManager->GetChildProcessManagerByIdx(i);
-						if (pChildProcessManager &&
-							pChildProcessManager->GetProcessCount()>0)
-						{
-							pChildProcessManager->SetCurProcessByIdx(pChildProcessManager->GetProcessCount()-1);
-							break;
-						}
-					}
-				}
+				pCurrentProcessManager->SetCurProcessByIdx(pCurrentProcessManager->GetProcessCount()-1);
 			}
 			else
 			{
-				if (pCurrentProcessManager->GetProcessCount() > 0)
-				{
-					pCurrentProcessManager->SetCurProcessByIdx(0);
-				}
-				else
-				{
-					for (int i = 0; i < pCurrentProcessManager->GetChildProcessManagerCount(); i++)					
-					{
-						CProcessManager* pChildProcessManager = pCurrentProcessManager->GetChildProcessManagerByIdx(i);
-						if (pChildProcessManager &&
-							pChildProcessManager->GetProcessCount() > 0)
-						{
-							pChildProcessManager->SetCurProcessByIdx(0);
-							break;
-						}
-					}
-				}
+				pCurrentProcessManager->SetCurProcessByIdx(0);
 			}
 		}
 	}
-	else if (playMode == PLAY_MODE_PROCESS ||
-		playMode == PLAY_MODE_FROM_CURPROCESS)
+	else if(playMode == PLAY_MODE_PROCESS)
 	{
 		CProcessManager* pCurrentProcessManager = GetCurrentProcessManager();
 		CProcess* pCurrentProcess = 0;
@@ -851,6 +715,9 @@ void CAnimationStepManager::Rewind(AnimationPlayMode playMode,bool bReverse)
 			}
 			else
 			{
+                if(pCurrentProcessManager){
+                    pCurrentProcessManager->SetCurProcessByID(0);
+                }
 				pCurrentBehaviorAction->Rewind();
 			}
 		}
@@ -865,7 +732,7 @@ void CAnimationStepManager::Rewind(AnimationPlayMode playMode,bool bReverse)
 
 void CAnimationStepManager::Play(AnimationPlayMode playMode,bool bReverse,bool bChangeProcess) 
 { 
-	if (!m_pSA || ! m_pSA->HasAnimations() || playMode == PLAY_MODE_NONE)
+	if (!m_pSA || ! m_pSA->HasAnimations())
 	{
 		return;
 	}
@@ -874,12 +741,6 @@ void CAnimationStepManager::Play(AnimationPlayMode playMode,bool bReverse,bool b
 		Stop();
 	}
 	m_pSA->SetReversePlay(bReverse);
-	if (playMode != PLAY_MODE_PROCESSMANAGER &&
-		playMode != PLAY_MODE_FROM_CURPROCESS)
-	{
-		m_pFocusProcessManager = NULL;
-	}
-
 	m_PlayMode = playMode;
 
 	if(m_bIsPause)
@@ -887,12 +748,6 @@ void CAnimationStepManager::Play(AnimationPlayMode playMode,bool bReverse,bool b
 		CSBehaviorAction* pBehaviorAction = m_pSA->GetCurrentSA();
 		if(pBehaviorAction)
 		{
-			CProcess* pCurProcess = FindProcessByAnimationID(pBehaviorAction->GetID());
-			if (pCurProcess && pCurProcess->GetProcessManager())
-			{
-				pCurProcess->GetProcessManager()->SetCurProcessByID(pCurProcess->GetID(), false);
-			}
-			m_bIsPause = false;
 			if(bReverse)
 			{
 				pBehaviorAction->ContinueReverse();
@@ -902,6 +757,7 @@ void CAnimationStepManager::Play(AnimationPlayMode playMode,bool bReverse,bool b
 				pBehaviorAction->Continue();
 			}
 		}
+		m_bIsPause = false;
 	}
 	else
 	{
@@ -930,8 +786,8 @@ void CAnimationStepManager::Play(AnimationPlayMode playMode,bool bReverse,bool b
 					CProcessManager* pProcessManager = GetCurrentProcessManager();
 					while(pProcessManager)
 					{
-						pProcessManager->SetCurProcessByIdx(pProcessManager->GetProcessCount()-1, false);
-						pProcessManager = GetNextProcessManager(pProcessManager,m_bPlayChildProcessManagerSteps,m_pFocusProcessManager);
+						pProcessManager->SetCurProcessByIdx(pProcessManager->GetProcessCount()-1);
+						pProcessManager = GetNextProcessManager(pProcessManager);
 					}
 					SetCurProcessManagerByIdx(GetProcessManagerCount()-1);
 				}
@@ -941,7 +797,7 @@ void CAnimationStepManager::Play(AnimationPlayMode playMode,bool bReverse,bool b
 					CProcessManager* pProcessManager = GetCurrentProcessManager();
 					while(pProcessManager)
 					{
-						pProcessManager->SetCurProcessByIdx(0, false);
+						pProcessManager->SetCurProcessByIdx(0);
 						pProcessManager = GetPreProcessManager(pProcessManager);
 					}
 					SetCurProcessManagerByIdx(0);
@@ -954,85 +810,51 @@ void CAnimationStepManager::Play(AnimationPlayMode playMode,bool bReverse,bool b
 				CProcessManager* pCurrentProcessManager = GetCurrentProcessManager();
 				if(pCurrentProcessManager)
 				{
-					if (m_pSA->GetReversePlay())
+					if(m_pSA->GetReversePlay())
 					{
-						if (pCurrentProcessManager->GetProcessCount() > 0)
-						{
-							pCurrentProcessManager->SetCurProcessByIdx(pCurrentProcessManager->GetProcessCount() - 1,false);
-						}
-						else
-						{
-							for (int i = pCurrentProcessManager->GetChildProcessManagerCount() - 1; i >= 0; i--)							
-							{
-								CProcessManager* pChildProcessManager = pCurrentProcessManager->GetChildProcessManagerByIdx(i);
-								if (pChildProcessManager &&
-									pChildProcessManager->GetProcessCount() > 0)
-								{
-									pChildProcessManager->SetCurProcessByIdx(pChildProcessManager->GetProcessCount() - 1,false);
-									break;
-								}
-							}
-						}
+						pCurrentProcessManager->SetCurProcessByIdx(pCurrentProcessManager->GetProcessCount()-1);
 					}
 					else
 					{
-						if (pCurrentProcessManager->GetProcessCount() > 0)
-						{
-							pCurrentProcessManager->SetCurProcessByIdx(0,false);
-						}
-						else
-						{
-							for (int i = 0; i < pCurrentProcessManager->GetChildProcessManagerCount(); i++)
-							{
-								CProcessManager* pChildProcessManager = pCurrentProcessManager->GetChildProcessManagerByIdx(i);
-								if (pChildProcessManager &&
-									pChildProcessManager->GetProcessCount() > 0)
-								{
-									pChildProcessManager->SetCurProcessByIdx(0,false);
-									break;
-								}
-							}
-						}
+						pCurrentProcessManager->SetCurProcessByIdx(0);
 					}
 				}
 			}
-
-			if (playMode == PLAY_MODE_PROCESSMANAGER ||
-				playMode == PLAY_MODE_FROM_CURPROCESS)
-			{
-				m_pFocusProcessManager = GetCurrentProcessManager();
-			}
 		}
 
+		CProcessManager* pCurrentProcessManager = GetCurrentProcessManager();
 		CProcess* pCurrentProcess = 0;
 		CSBehaviorAction* pCurrentBehaviorAction = 0;
-		pCurrentProcess = GetCurrentProcess();
-
-		if(!pCurrentProcess)
+		if(pCurrentProcessManager)
 		{
-			if(m_PlayMode == PLAY_MODE_PROCESSMANAGER || 
-				m_PlayMode == PLAY_MODE_FROM_CURPROCESSMANAGER ||
-				m_PlayMode == PLAY_MODE_ALL)
+			pCurrentProcess = pCurrentProcessManager->GetCurrentProcess();
+
+			//解决当前过程为空时无法播放的问题。目前具体问题是在播放全部和从当前过程管理器开始播放时，播放到无过程的过程管理器时，自动切换到下一过程管理器
+			if(!pCurrentProcess)
 			{
-				if(m_pSA->GetReversePlay())
+				if(m_PlayMode == PLAY_MODE_PROCESSMANAGER || 
+					m_PlayMode == PLAY_MODE_FROM_CURPROCESSMANAGER)
 				{
-					pCurrentProcess = GetPreProcess(pCurrentProcess,m_bPlayChildProcessManagerSteps,m_pFocusProcessManager);
+					if(m_pSA->GetReversePlay())
+					{
+						pCurrentProcess = GetPreProcess(pCurrentProcess);
+					}
+					else
+					{
+						pCurrentProcess = GetNextProcess(pCurrentProcess);
+					}
 				}
-				else
+				if(pCurrentProcess ) 
 				{
-					pCurrentProcess = GetNextProcess(pCurrentProcess, m_bPlayChildProcessManagerSteps, m_pFocusProcessManager);
+					pCurrentProcessManager = pCurrentProcess->GetProcessManager();
+					pCurrentProcessManager->SetCurProcessByID(pCurrentProcess->GetID(),false);
 				}
 			}
+
 			if(pCurrentProcess ) 
 			{
-				CProcessManager* pCurrentProcessManager = pCurrentProcess->GetProcessManager();
-				pCurrentProcessManager->SetCurProcessByID(pCurrentProcess->GetID(),false);
+				pCurrentBehaviorAction = pCurrentProcess->GetBehaviorAction();
 			}
-		}
-
-		if(pCurrentProcess ) 
-		{
-			pCurrentBehaviorAction = pCurrentProcess->GetBehaviorAction();
 		}
 
 		if(pCurrentBehaviorAction)
@@ -1073,9 +895,8 @@ void CAnimationStepManager::Stop()
 	if(m_pSA->IsPlaying())
 	{
 		m_pSA->StopAll();
-	}
-	//m_pSA->SetReversePlay(false);
-
+    }
+	m_pSA->SetReversePlay(false);
 	//清除场景切换动画
 	EndChangeCamera();
 }
@@ -1090,20 +911,13 @@ void CAnimationStepManager::Pause()
 		{
 			pBehaviorAction->Stop();
 		}
-		//清除场景切换动画
-		EndChangeCamera();
 	}
 }
 
 void CAnimationStepManager::PlayFinishCB(CSBehaviorAction* pBehaviorAction)
 {
-	if (m_PlayMode == PLAY_MODE_RANDOM ||
-		m_PlayMode == PLAY_MODE_NONE)
-	{
-		//清除场景切换动画
-		EndChangeCamera();
+	if (m_PlayMode == PLAY_MODE_RANDOM)
 		return;
-	}
 	CProcessManager* pCurProcessManager = GetCurrentProcessManager();
 	if(pCurProcessManager)
 	{
@@ -1141,7 +955,7 @@ void CAnimationStepManager::PlayFinishCB(CSBehaviorAction* pBehaviorAction)
 			{
 				//清除场景切换动画
 				EndChangeCamera();
-
+				
 				if(m_PlayMode == PLAY_MODE_FROM_CURPROCESS ||
 					m_PlayMode == PLAY_MODE_PROCESSMANAGER ||
 					m_PlayMode == PLAY_MODE_FROM_CURPROCESSMANAGER ||
@@ -1150,16 +964,67 @@ void CAnimationStepManager::PlayFinishCB(CSBehaviorAction* pBehaviorAction)
 					//获取要自动播放的下一个过程_START
 					if(m_pSA->GetReversePlay())
 					{
-						pCurProcess = GetPreProcess(pCurProcess,m_bPlayChildProcessManagerSteps,m_pFocusProcessManager);
+						pCurProcess = pCurProcessManager->GetPreProcess(pCurProcess);
 					}
 					else
 					{
-						pCurProcess = GetNextProcess(pCurProcess, m_bPlayChildProcessManagerSteps, m_pFocusProcessManager);
+						pCurProcess = pCurProcessManager->GetNextProcess(pCurProcess);
 					}
+
 					if(pCurProcess)
 					{
-						pCurProcessManager = pCurProcess->GetProcessManager();
 						pCurProcessManager->SetCurProcessByID(pCurProcess->GetID());
+					}
+					else
+					{
+						pCurProcess = NULL;
+						if(m_PlayMode == PLAY_MODE_FROM_CURPROCESSMANAGER ||
+							m_PlayMode == PLAY_MODE_ALL)
+						{
+							if(m_pSA->GetReversePlay())
+							{
+								pCurProcessManager = GetPreProcessManager(pCurProcessManager);
+							}
+							else
+							{
+								pCurProcessManager = GetNextProcessManager(pCurProcessManager);
+							}
+							if(pCurProcessManager)
+							{
+								if(m_pSA->GetReversePlay())
+								{
+									pCurProcessManager->SetCurProcessByIdx(pCurProcessManager->GetProcessCount()-1);
+								}
+								else
+								{
+									pCurProcessManager->SetCurProcessByIdx(0);
+								}
+								
+								pCurProcess = pCurProcessManager->GetCurrentProcess();
+							}
+							else
+							{
+								pCurProcessManager = NULL;
+							}
+
+							//解决当前过程为空时无法播放的问题。目前具体问题是在播放全部和从当前过程管理器开始播放时，播放到无过程的过程管理器时，自动切换到下一过程管理器
+							if(!pCurProcess)
+							{
+								if(m_pSA->GetReversePlay())
+								{
+									pCurProcess = GetPreProcess(pCurProcess);
+								}
+								else
+								{
+									pCurProcess = GetNextProcess(pCurProcess);
+								}
+								if(pCurProcess)
+								{
+									pCurProcessManager = pCurProcess->GetProcessManager();
+									pCurProcessManager->SetCurProcessByID(pCurProcess->GetID());
+								}
+							}
+						}
 					}
 					//获取要自动播放的下一个过程_END
 
@@ -1300,8 +1165,8 @@ bool CAnimationStepManager::StartChangeCamera(CProcess* pCurProcess,bool bAnimat
 			float fCurScale[3] = {1.0};
 			float fCurMtxAA[4][4];
 			float fCurTarget[3] = {0};
-			pAnimationPlayApi->getCamera(strPlcID,fCurScale, fCurMtxAA);
-			pAnimationPlayApi->getCameraTargetPnt(strPlcID,fCurTarget);
+			pAnimationPlayApi->getCamera(strPlcID,fCurScale, fCurMtxAA, m_pSA->GetView());
+			pAnimationPlayApi->getCameraTargetPnt(strPlcID,fCurTarget,m_pSA->GetView());
 
 			fCurMtxAA[3][0] = fCurTarget[0];
 			fCurMtxAA[3][1] = fCurTarget[1];
@@ -1393,134 +1258,10 @@ void CAnimationStepManager::EndChangeCamera()
 	}
 }
 
-NS_SimulationAnimation::CSBehaviorAction* NS_SimulationAnimation::CAnimationStepManager::GetBehaviorActionChgCam()
-{
-	if(!m_pBehaviorActionChgCam)
-	{
-		int nCurrentBehaviorActionId = m_pSA->GetCurSAID();
-		int nBehaviorActionId = m_pSA->RegisterBehaviorActionID();
-		m_pBehaviorActionChgCam = m_pSA->AddSimAni(nBehaviorActionId);
-		m_pSA->SetCurSAByID(nCurrentBehaviorActionId);
-	}
-	return m_pBehaviorActionChgCam;
-}
-
 void CAnimationStepManager::SetChgCamTime(float fSecond/* = 1.0f*/)
 {
 	m_nChgCamTickNum = fSecond * DEFAULT_TPS;
 }
-
-bool CAnimationStepManager::MoveProcess(CProcess* pSourceProcess, void* pTarget)
-{
-	//移动步骤
-	bool bRet = false;
-	if(!pSourceProcess || !pTarget) return bRet;
-	//从功能上的几种可能性
-	//1 同过程步骤的移动   2 步骤向父过程的移动 3 跨过程的移动
-	//在逻辑上划分
-	//1 目标为步骤 2 目标为过程
-	CProcessManager* pSourceProManager = pSourceProcess->GetProcessManager();
-	assert(pSourceProManager);
-	if(!pSourceProManager) return bRet;
-	if(typeid(*((CProcess*)pTarget)) == typeid(CProcess))
-	{
-		//目标为步骤
-		CProcess* pTargetProcess =(CProcess*)pTarget;
-		CProcessManager* pTargetProManager = pTargetProcess->GetProcessManager();
-		assert(pTargetProManager);
-		if(!pTargetProManager) return bRet;
-		if(pSourceProManager == pTargetProManager)
-		{
-			//同过程步骤的移动
-			bRet = pTargetProManager->MoveProcess(pSourceProcess, pTargetProcess);
-		}else
-		{
-			//跨过程步骤的移动
-			
-			//pSourceProManager->EraseProcess(pSourceProcess);
-			pSourceProcess->Reference();
-			pSourceProManager->DeleteProcess(pSourceProcess);
-			/*bRet = pTargetProManager->MoveProcessToFirst(pSourceProcess, false);
-			if(!bRet) return bRet;
-			bRet = pTargetProManager->MoveProcess(pSourceProcess, pTargetProcess);
-			if(!bRet) return bRet;*/
-			pSourceProcess->SetID(pTargetProManager->RegisterProcessID());
-			pTargetProManager->AddProcess(pSourceProcess, pTargetProcess);
-			bRet = true;
-		}
-	}else if(typeid(*((CProcessManager*)pTarget)) == typeid(CProcessManager))
-	{
-		//目标为过程
-		CProcessManager* pTargetProManager = (CProcessManager*)pTarget;
-		if(pSourceProManager == pTargetProManager)
-		{
-			//子步骤向父过程的移动
-			bRet = pTargetProManager->MoveProcessToFirst(pSourceProcess);
-		}else
-		{
-			//跨过程的步骤向过程的移动
-			pSourceProManager->EraseProcess(pSourceProcess);
-			bRet = pTargetProManager->MoveProcessToFirst(pSourceProcess, false);
-			if(!bRet) return bRet;
-		}
-	}
-	return bRet;
-}
-
-bool CAnimationStepManager::MoveProcess(CProcess* pSourceProcess, CProcess* pTargetProcess)
-{
-	bool bRet = false;
-	if (!pSourceProcess || !pTargetProcess)
-		return bRet;
-	CProcessManager* pSourceProManager = pSourceProcess->GetProcessManager();
-	assert(pSourceProManager);
-	if (!pSourceProManager) return bRet;
-	CProcessManager* pTargetProManager = pTargetProcess->GetProcessManager();
-	assert(pTargetProManager);
-	if (!pTargetProManager) return bRet;
-	if (pSourceProManager == pTargetProManager)
-	{
-		//同过程步骤的移动
-		bRet = pTargetProManager->MoveProcess(pSourceProcess, pTargetProcess);
-	}
-	else
-	{
-		//跨过程步骤的移动
-		pSourceProManager->EraseProcess(pSourceProcess);
-		/*bRet = pTargetProManager->MoveProcessToFirst(pSourceProcess, false);
-		if(!bRet) return bRet;
-		bRet = pTargetProManager->MoveProcess(pSourceProcess, pTargetProcess);
-		if(!bRet) return bRet;*/
-		pSourceProcess->SetID(pTargetProManager->RegisterProcessID());
-		pTargetProManager->AddProcess(pSourceProcess, pTargetProcess);
-		bRet = true;
-	}
-	return bRet;
-}
-
-bool CAnimationStepManager::MoveProcess(CProcess* pSourceProcess, CProcessManager* pTargetProcessManager)
-{
-	bool bRet = false;
-	if (!pSourceProcess || !pTargetProcessManager)
-		return bRet;
-	CProcessManager* pSourceProManager = pSourceProcess->GetProcessManager();
-	assert(pSourceProManager);
-	if (!pSourceProManager) return bRet;
-	if (pSourceProManager == pTargetProcessManager)
-	{
-		//子步骤向父过程的移动
-		bRet = pTargetProcessManager->MoveProcessToFirst(pSourceProcess);
-	}
-	else
-	{
-		//跨过程的步骤向过程的移动
-		pSourceProManager->EraseProcess(pSourceProcess);
-		bRet = pTargetProcessManager->MoveProcessToFirst(pSourceProcess, false);
-		if (!bRet) return bRet;
-	}
-	return bRet;
-}
-
 
 CProcess* CAnimationStepManager::FindProcessByAnimationID(int nAnimationID)
 {
@@ -1544,103 +1285,6 @@ bool CAnimationStepManager::IsPauseState()
 	return m_bIsPause;
 }
 
-CProcess* CAnimationStepManager::GetFirstProcess(bool bSteps)
-{
-	CProcess* pProcess = NULL;
-	CProcessManager* pProcessManager = GetFirstTopProcessManager();
-	if (!pProcessManager)
-		return pProcess;
-	pProcess = pProcessManager->GetFirstProcess(bSteps);
-	return pProcess;
-}
-
-CProcess* CAnimationStepManager::GetLastProcess(bool bSteps)
-{
-	CProcess* pProcess = NULL;
-	CProcessManager* pProcessManager = GetLastTopProcessManager();
-	if(!pProcessManager)
-		return pProcess;
-	pProcess = pProcessManager->GetLastProcess(bSteps);
-	return pProcess;
-}
-
-CProcessManager* CAnimationStepManager::GetFirstTopProcessManager()
-{
-	CProcessManager* pFirstProcessManager = NULL;
-	vlist_s* ProMangerList = GetProcessManagerList();
-	for (int iProManager = 0; iProManager < (int)vlist_count(ProMangerList); iProManager++)
-	{
-		CProcessManager* pProcessManager = (CProcessManager*)vlist_nth_item(ProMangerList, iProManager);
-		if (!pProcessManager)
-			continue;
-		if (pProcessManager->GetParentProcessManager() == NULL)
-		{
-			pFirstProcessManager = pProcessManager;
-			break;
-		}
-	}
-	return pFirstProcessManager;
-}
-
-CProcessManager* CAnimationStepManager::GetLastTopProcessManager()
-{
-	CProcessManager* pLastProcessManager = NULL;
-	vlist_s* ProMangerList = GetProcessManagerList();
-	for (int iProManager = (int)vlist_count(ProMangerList)-1; iProManager >= 0; iProManager--)
-	{
-		CProcessManager* pProcessManager = (CProcessManager*)vlist_nth_item(ProMangerList, iProManager);
-		if (!pProcessManager)
-			continue;
-		if (pProcessManager->GetParentProcessManager() == NULL)
-		{
-			pLastProcessManager = pProcessManager;
-			break;
-		}
-	}
-	return pLastProcessManager;
-}
-
-CProcessManager* CAnimationStepManager::GetPreTopProcessManager(CProcessManager* pProcessManager)
-{
-	CProcessManager* pPreProcessManager = NULL;
-	if (!pProcessManager)
-		return pPreProcessManager;
-	int iCurrentIdx = GetProcessManagerIdxByID(pProcessManager->GetID());
-	vlist_s* ProMangerList = GetProcessManagerList();
-	for (int iProManager = iCurrentIdx - 1; iProManager >= 0; iProManager--)
-	{
-		CProcessManager* pProcessManager = (CProcessManager*)vlist_nth_item(ProMangerList, iProManager);
-		if (!pProcessManager)
-			continue;
-		if (pProcessManager->GetParentProcessManager() == NULL)
-		{
-			pPreProcessManager = pProcessManager;
-			break;
-		}
-	}
-	return pPreProcessManager;
-}
-
-CProcessManager* CAnimationStepManager::GetNextTopProcessManager(CProcessManager* pProcessManager)
-{
-	CProcessManager* pNextProcessManager = NULL;
-	if (!pProcessManager)
-		return pNextProcessManager;
-	int iCurrentIdx = GetProcessManagerIdxByID(pProcessManager->GetID());
-	vlist_s* ProMangerList = GetProcessManagerList();
-	for (int iProManager = iCurrentIdx+1; iProManager < (int)vlist_count(ProMangerList); iProManager++)
-	{
-		CProcessManager* pProcessManager = (CProcessManager*)vlist_nth_item(ProMangerList, iProManager);
-		if (!pProcessManager)
-			continue;
-		if (pProcessManager->GetParentProcessManager() == NULL)
-		{
-			pNextProcessManager = pProcessManager;
-			break;
-		}
-	}
-	return pNextProcessManager;
-}
 SA_NAMESPACE_END
 
 

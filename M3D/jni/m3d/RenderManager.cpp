@@ -1,7 +1,4 @@
-#ifdef WIN32
-#include "m3d/UI/GUI.h"
-#endif //WIN32
-#include "m3d/RenderManager.h"
+﻿#include "m3d/RenderManager.h"
 
 #include "m3d/SceneManager.h"
 #include "m3d/ResourceManager.h"
@@ -14,9 +11,8 @@
 #include "m3d/scene/BackgroundNode.h"
 #include "m3d/scene/AxisNode.h"
 #include "m3d/scene/FPSNode.h"
-#include "m3d/scene/SectionNode.h"
 
-#include "m3d/model/ModelShape.h"
+#include "m3d/scene/LShapeNode.h"
 
 #include "m3d/graphics/CameraNode.h"
 
@@ -28,14 +24,10 @@
 #include "m3d/renderer/GLESHead.h"
 #include "m3d/renderer/gl10/GLShapeDrawer.h"
 #include "m3d/action/RenderAction.h"
-#include "m3d/action/CallBackAction.h"
+#include "m3d/action/CallbackAction.h"
 #include "m3d/graphics/Renderable.h"
 #include "sview/views/Parameters.h"
-#include "m3d/scene/Octree.h"
 #include "m3d/renderer/gl20/GLShapeDrawer20.h"
-#include "m3d/model/ExtendInfoManager.h"
-#include "m3d/renderer/effect/EffectManager.h"
-#include "m3d/utils/StringHelper.h"
 
 
 using SVIEW::Parameters;
@@ -45,25 +37,215 @@ namespace M3D
 long RenderManager::m_LastLogTime = 0;
 long RenderManager::m_FrameCount = 0;
 
+const int RenderActionManager::ITEMSCOUNT = 3;
+/// Construct. Does not start the thread yet.
+RenderActionManager::RenderActionManager(RenderManager* renderMgr)
+{
+	this->m_workIndex = 0;
+	this->m_renderMgr = renderMgr;
+	m_finish = true;
+
+	m_RenderActions[0] = new RenderAction(renderMgr);
+	m_RenderActions[1] = new RenderAction(renderMgr);
+	m_RenderActions[2] = new RenderAction(renderMgr);
+
+	m_pSceneManager = this->m_renderMgr->m_sceneMgr;
+}
+
+RenderActionManager::~RenderActionManager()
+{
+
+}
+
+void RenderActionManager::ThreadFunction()
+{
+	while (m_finish)
+	{
+		//为了保证安全，Queue中存储Item的个数为m_RenderActions的个数减1，因为有一个Action正在准备中.
+		//如果已有item个数超过了限制,则sleep一下，减少资源占用
+		if (m_renderActionQueue.size() < ITEMSCOUNT - 1)
+		{
+			//锁定场景
+			RenderAction* workAction = m_RenderActions[this->m_workIndex];
+
+			workAction->SetGLContext(m_renderMgr->m_GLContext);
+			workAction->SetCamera(m_pSceneManager->GetCamera());
+			workAction->SetLights(m_pSceneManager->GetLights());
+
+			workAction->SetFPS(m_renderMgr->GetFPS());
+
+			workAction->SetRenderEffect(m_renderMgr->m_renderEffect);
+
+			workAction->Begin();
+
+			m_pSceneManager->GetSceneRoot()->FindVisiableObject(workAction);
+
+			MutexLock lock(m_mutex);
+			m_renderActionQueue.push(workAction);
+
+			this->m_workIndex = ((this->m_workIndex++)) % ITEMSCOUNT;
+		}
+		else
+		{
+#ifdef __MOBILE__
+			usleep(10);
+#endif
+		}
+	}
+}
+void RenderActionManager::KeepFlag(bool finish)
+{
+	this->m_finish = finish;
+}
+RenderAction* RenderActionManager::GetAction()
+{
+	//如果没有使用独立线程去准备显示数据，则使用第一个Action数据。
+	if (!this->IsStarted())
+	{
+		while (!m_renderActionQueue.empty())
+		{
+			m_renderActionQueue.pop();
+		}
+
+		this->m_workIndex = 0;
+
+		this->KeepFlag(true);
+
+		this->Run();
+	}
+
+	//等待队列中有数据
+	while (m_renderActionQueue.empty())
+	{
+#ifdef __MOBILE__
+		usleep(10);
+#endif
+	}
+
+	RenderAction* workAction = NULL;
+
+	if (m_renderActionQueue.size() > 0)
+	{
+		MutexLock lock(m_mutex);
+		workAction = m_renderActionQueue.front();
+		m_renderActionQueue.pop();
+	}
+	return workAction;
+}
+
+SceneDivide::SceneDivide(SceneManager* sceneMgr)
+{
+	this->MarkDirty();
+	this->m_sceneMgr = sceneMgr;
+}
+
+void SceneDivide::AddNode(LShapeNode* node)
+{
+	this->m_shapeNodesCache.push_back(node);
+}
+
+void SceneDivide::Clear()
+{
+	this->m_shapeNodesCache.clear();
+}
+
+void SceneDivide::Optimize()
+{
+	if (this->Dirty())
+	{
+		this->m_dirty = false;
+		this->Clear();
+		CallBackAction* computeBoxAction = new CallBackAction();
+		computeBoxAction->SetActionData(this);
+		computeBoxAction->SetActionFun(NULL);
+		computeBoxAction->SetActionLFun(SceneDivide::CacheNode);
+		m_sceneMgr->ExecuteAction(computeBoxAction);
+		delete computeBoxAction;
+
+		//按照节点包围盒的大小，从大到小进行排序
+		sort(this->m_shapeNodesCache.begin(), this->m_shapeNodesCache.end(),
+			CompareByPlcWorldBoxLength);
+
+		this->m_shapeNodesCache.shrink_to_fit();
+	}
+}
+
+void SceneDivide::FindVisiableObject(RenderAction* renderAction)
+{
+	size_t sceneNodesLength = this->m_shapeNodesCache.size();
+
+	float dividePercent = 1.0f;
+
+	//立即显示的部分
+	for (int i = 0; i < sceneNodesLength*dividePercent; ++i)
+	{
+		LShapeNode* shapeNode = this->m_shapeNodesCache[i];
+		//微小模型剔除 
+		int littleModelState = renderAction->GetCullerHelper().IsLittleModel(shapeNode->GetWorldBoundingBox(), renderAction->GetCamera());
+
+		//非常小的模型
+		if (littleModelState == 2)
+		{
+			return;
+		} //小件剔除的模型
+		else //其他
+		{
+			shapeNode->FindVisiableObjectFast(renderAction, littleModelState);
+		}
+	}
+
+	//渐进显示的部分
+	for (int j = sceneNodesLength*dividePercent; j < sceneNodesLength; ++j)
+	{
+
+	}
+}
+
+void SceneDivide::Traverse(Action* action)
+{
+
+}
+
+void SceneDivide::RayPick(RayPickAction * action)
+{
+
+}
+
+bool SceneDivide::Dirty()
+{
+	return this->m_dirty;
+}
+
+void SceneDivide::MarkDirty()
+{
+	this->m_dirty = true;
+}
+
+void SceneDivide::CacheNode(void* data, LSceneNode* node)
+{
+	SceneDivide* sceneDivide = (SceneDivide*)data;
+
+	if (sceneDivide && node->GetType() == LSHAPE_NODE)
+	{
+		sceneDivide->AddNode((LShapeNode*)node);
+	}
+}
+
+bool SceneDivide::CompareByPlcWorldBoxLength(LShapeNode* node1,
+	LShapeNode* node2)
+{
+	return node1->GetWorldBoundingBox().Length() > node2->GetWorldBoundingBox().Length();
+}
+
+
 bool RenderManager::isShowTriLine = false;
-
-M3D::RenderAction* RenderManager::GetRenderAction() const
-{
-	return m_renderAction;
-}
-
-void RenderManager::SetRenderAction(M3D::RenderAction* val)
-{
-	m_renderAction = val;
-}
-
 RenderManager::RenderManager(SceneManager* scene) :
-		FRAME_BUFFER_COUNT(20)
+		FRAME_BUFFER_COUNT(400)
 {
 	m_avergFPS = 20;
 	this->m_sceneMgr = scene;
-	this->SetRenderAction(new RenderAction(this));
-	this->GetRenderAction()->SetScene(this->m_sceneMgr);
+	this->m_renderAction = new RenderAction(this);
+	this->m_renderAction->SetScene(this->m_sceneMgr);
 	m_allowDraw = false;
 	RenderManager::isShowTriLine = false;
 	this->m_renderEffect = NULL;
@@ -72,26 +254,24 @@ RenderManager::RenderManager(SceneManager* scene) :
 	this->SetMaxLimitFPS(Parameters::Instance()->m_maxFPS);
 	m_allRedrawStart = true;
 //	m_startTime = 0;
+    m_useDelayDraw = false;
+	m_sceneDivide = new SceneDivide(scene);
 
-	m_useDelayDraw = false;
-	m_effectManager = new EffectManager(this->m_renderAction);
-	m_globalEffect = "";
-	m_isForceNormalEffect = false;
 	Reset();
 }
 
 RenderManager::~RenderManager(void)
 {
-	//LOGI(
-	//		"---------------------------------Clear RenderManager--------------------------------------  ");
-	if (GetRenderAction())
+	LOGI(
+			"---------------------------------Clear RenderManager--------------------------------------  ");
+	if (m_renderAction)
 	{
-		///LOGI(
-		//		"---------------------------------Clear shader program--------------------------------------  ");
-		delete GetRenderAction();
-		SetRenderAction(NULL);
-		//LOGI(
-		//		"--------------------------------Clear shader program end----------------------------------------- ");
+		LOGI(
+				"---------------------------------Clear shader program--------------------------------------  ");
+		delete m_renderAction;
+		m_renderAction = NULL;
+		LOGI(
+				"--------------------------------Clear shader program end----------------------------------------- ");
 	}
 
 	RenderEffectsMap::iterator it = this->m_renderEffectsMap.begin();
@@ -100,23 +280,11 @@ RenderManager::~RenderManager(void)
 		delete it->second;
 		it++;
 	}
-
-	//删除rendercontext
-	delete m_GLContext;
-	m_GLContext = NULL;
-
-	if (m_effectManager)
+	//场景划分管理释放
+	if (m_sceneDivide)
 	{
-		delete m_effectManager;
-		m_effectManager = NULL;
-	}
-}
-
-void RenderManager::ClearDelayDrawList()
-{
-	if (this->m_renderAction)
-	{
-		this->m_renderAction->ClearDelayDraw();
+		delete m_sceneDivide;
+		m_sceneDivide = NULL;
 	}
 }
 
@@ -138,19 +306,17 @@ void RenderManager::SetRenderEffect(RenderEffect* type)
 
 void RenderManager::CalculateFPS()
 {
-	long currentTime = CTimer::Tick();
+	long currentTime = GetTimeLong();
 	m_evenFPS = 60;
-	CTimer::GetTimeofDay(&m_endTime, NULL);
+#ifdef __MOBILE__
+	gettimeofday(&m_endTime, NULL);
 
 	if (this->m_allRedrawStart)
 	{
-		CTimer::GetTimeofDay(&m_endTime, NULL);
+		gettimeofday(&m_endTime, NULL);
 		m_fpsstartTime = m_endTime;
-		m_evenFPS = 20;
-		//默认指定帧率，这样就不会对剔除比例做更新了
-		m_avergFPS = 20;
+		m_evenFPS = 60;
 		this->m_allRedrawStart = false;
-		currentTime = m_LastLogTime;
 	}
 
 	dt = (m_endTime.tv_sec - m_fpsstartTime.tv_sec) * 1000000
@@ -161,7 +327,7 @@ void RenderManager::CalculateFPS()
 		m_evenFPS = 1000000.0f / dt;
 	}
 
-	CTimer::GetTimeofDay(&m_fpsstartTime, NULL);
+	gettimeofday(&m_fpsstartTime, NULL);
 
 	m_FrameCount++;
 	if (m_LastLogTime == 0 || (currentTime - m_LastLogTime) > 1000)
@@ -171,9 +337,10 @@ void RenderManager::CalculateFPS()
 		GLShapeDrawer::drawBoxTime = 0;
 		GLShapeDrawer::drawMeshTime = 0;
 		GLShapeDrawer::drawPMITime = 0;
-		m_LastLogTime = CTimer::Tick();
+		m_LastLogTime = GetTimeLong();
 		m_FrameCount = 0;
 	}
+#endif
 }
 
 int RenderManager::GetFPS()
@@ -225,6 +392,7 @@ bool RenderManager::LimitDrawFPS()
 	gettimeofday(&m_endTime, NULL);
 	dt = (m_endTime.tv_sec - m_startTime.tv_sec) * 1000000
 			+ (m_endTime.tv_usec - m_startTime.tv_usec);
+//	LOGI("dt is ===============%d",dt);
 	if (dt < 1000000 / m_maxFPS && dt > 0)
 	{
 
@@ -236,69 +404,22 @@ bool RenderManager::LimitDrawFPS()
 	return ret;
 }
 
-void RenderManager::ResizeHubViewport()
-{
-	CameraNode* camera = this->m_sceneMgr->GetHudCamera();
-
-	if (!camera)
-	{
-		camera = new CameraNode();
-		this->m_sceneMgr->SetHudCamera(camera);
-		camera->SetOrthographic(true);
-
-		BoundingBox uiLayoutBox = this->m_sceneMgr->GetOcTreeWorldBoundingBox();
-		float length = this->m_sceneMgr->GetOcTreeWorldBoundingBox().Length();
-
-		Vector3 center = uiLayoutBox.Center();
-
-		center.m_z += uiLayoutBox.Length() * CAMERA_POSFACTOR;
-
-		camera->SetWorldPosition(center);
-		length = this->m_sceneMgr->GetDefaultFocusLength();
-
-		camera->SetNearClip(0.1);
-		camera->SetFarClip(100);
-
-		camera->SetFov(90);
-		camera->LookAt(uiLayoutBox.Center(), Vector3(0, 1, 0), TS_WORLD);
-	}
-
-	int screenHeight = this->GetWindowHeight();
-	int screenWidth = this->GetWindowWidth();
-
-	Vector3 minPnt(0,0,-10);
-	Vector3 maxPnt(screenWidth,screenHeight,10);
-
-	BoundingBox box(minPnt,maxPnt);
-	this->m_sceneMgr->SetHudLayerBox(box);
-
-	camera->SetViewPort(0, 0, screenWidth, screenHeight);
-	camera->SetOrthoSize(Vector2(screenWidth, screenHeight));
-}
-
 float RenderManager::GetEventFPS()
 {
 	return this->m_evenFPS;
 }
-
-void RenderManager::RebindUIRenderFBO()
-{
-	RenderAction* workRenderAction = this->m_renderAction;
-	if (workRenderAction != NULL)
-	{
-		workRenderAction->m_delayDrawFBO.KeepOriginalFBO();
-	}
-}
-
-
 void RenderManager::Render()
 {
 	GroupNode * groupNode = (GroupNode *) m_sceneMgr->GetSceneRoot();
+//	MutexLock lock(m_mutex);
+//	RenderAction* workRenderAction = this->m_renderActionMgr->GetAction();
 	RenderAction* workRenderAction = this->m_renderAction;
 	if (workRenderAction != NULL)
 	{
 		workRenderAction->SetGLContext(m_GLContext);
 		workRenderAction->SetCamera(m_sceneMgr->GetCamera());
+
+		workRenderAction->SetLights(m_sceneMgr->GetLights());
 
 		if (m_useDelayDraw)
 		{
@@ -311,8 +432,8 @@ void RenderManager::Render()
 			}
 		}
 
-
 //只有手机才走手动刷新逻辑
+ 
 		if (!IsNeedRedraw())
 		{
 			this->m_allRedrawStart = true;
@@ -325,32 +446,42 @@ void RenderManager::Render()
  
 		CalculateFPS();
 
-		//if (m_useDelayDraw)
+		if (m_useDelayDraw)
 		{
-			//workRenderAction->Optimize();
+			workRenderAction->Optimize();
 			workRenderAction->BeginDelayDraw();
 		}
-
 		workRenderAction->SetFPS(this->GetFPS());
 
 		workRenderAction->SetRenderEffect(this->m_renderEffect);
 
 		workRenderAction->Begin();
- 
-		for (int i = 0; i < groupNode->Size(); i++)
-		{
-			SceneNode* node = groupNode->GetChild(i);
-			if (node->GetName() != MAINGROUP)//不处理挂载模型的节点
-			{
-				node->FindVisiableObject(workRenderAction);
-			}
-		}
 
-		this->FindVisiableObject(workRenderAction);
+		workRenderAction->SetSection(m_sceneMgr->GetSection());
+
+		if (false&& Parameters::Instance()->m_simplityMode)
+		{
+			m_sceneDivide->Optimize();
+
+			for (int i = 0; i < groupNode->Size(); i++)
+			{
+				SceneNode* node = groupNode->GetChild(i);
+				if (node->GetName() != MAINGROUP)//不处理挂载模型的节点
+				{
+					node->FindVisiableObject(workRenderAction);
+				}
+			}
+
+			m_sceneDivide->FindVisiableObject(workRenderAction);
+		}
+		else
+		{
+			groupNode->FindVisiableObject(workRenderAction);
+		}
 
 		workRenderAction->Execute();
 
-		//if (m_useDelayDraw)
+		if (m_useDelayDraw)
 		{
 			workRenderAction->EndDelayDraw();
 		}
@@ -358,65 +489,6 @@ void RenderManager::Render()
 		workRenderAction->End();
 	}
 }
-
-void RenderManager::FindVisiableObject(RenderAction* renderAction)
-{
-	if (this->m_sceneMgr->m_ocTree)
-	{
-		CameraNode* camera = renderAction->GetCamera();
-		const Frustum& cameraFrustum = camera->GetFrustum();
-		FrustumOctreeQuery query(this->m_sceneMgr->m_frustumQueryResulets, cameraFrustum, 0, 0);
-		query.SetRenderAction(renderAction);
-		query.SetCamera(camera);
-
-		this->m_sceneMgr->m_ocTree->GetDrawables(query);
-
-		bool showboxFlag = Parameters::Instance()->m_IsShowBox;
-		RenderEffect* renderType = renderAction->GetRenderEffect();
-		RenderableTypeGroup& dataType = renderType->GetRenderableTypeFilter();
-
-		//将面显示数据，加入显示队列中
-		if (dataType.Contain(RenderableType::RGT_BOX))
-		{
-			showboxFlag = true;
-		}
-
-		//立即显示的部分
-		for (int i = 0; i < this->m_sceneMgr->m_frustumQueryResulets.size(); ++i)
-		{
-			ModelShape* modelShape = this->m_sceneMgr->m_frustumQueryResulets[i];
-			if (modelShape->AllowCuller())
-			{
-				//微小模型剔除
-				int littleModelState = renderAction->GetCullerHelper().IsLittleModel(modelShape->GetWorldBoundingBox(), camera);
-				////非常小的模型
-				if (littleModelState == 2)
-				{
-
-				} //小件剔除的模型
-				else //其他
-				{
-					modelShape->FindVisiableObjectFast(renderAction, littleModelState);
-				}
-
-				if (showboxFlag && modelShape->GetModel()->IsSelected() && modelShape->GetModel()->IsVisible())
-				{
-					renderAction->PrepareRenderBox(modelShape);
-				}
-			}
-			else {
-				modelShape->FindVisiableObject(renderAction);
-			}
-			
-		}
-		//显示PMI
-		this->m_sceneMgr->GetExtendInfoManager()->FindVisiableObject(renderAction);
-#ifdef WIN32
-		this->m_sceneMgr->GetGUI()->Render(renderAction);
-#endif //WIN32
-	}
-}
-
 
 bool RenderManager::IsExcludeSmallModel()
 {
@@ -493,13 +565,11 @@ void RenderManager::InitialRender()
 	if (GLVersion == 1)
 	{
 		m_GLContext = RenderContext::GetContext(1);
-		LOGI("GLVersion == 1");
 
 	}
 	else if (GLVersion == 2)
 	{
 		m_GLContext = RenderContext::GetContext(2);
-		LOGI("GLVersion == 2");
 	}
 
 	InitRenderEffect();
@@ -507,13 +577,6 @@ void RenderManager::InitialRender()
 
 void RenderManager::OnDraw()
 {
-	//如果宽度或者高度为0，则不进行渲染
-	if (m_iScreenWidth == 0 || m_iScreenHeigh == 0)
-	{
-		return ;
-	}
-
-
 	//TODO　帧率限制暂时屏蔽掉
 	if (true || !Parameters::Instance()->m_IsHighPerformanceView)
 	{
@@ -525,17 +588,15 @@ void RenderManager::OnDraw()
 
 	Trackball::KEEPINGSTATETIMES--;
 
-	this->m_sceneMgr->UpdateScene();
+	//在每一帧中释放需要释放的GL资源
+	this->m_sceneMgr->GetResourceManager()->ReleaseGLObjects();
+
+	this->m_sceneMgr->UpdateHardwareBuffer();
 
 	CameraNode* camera = this->m_sceneMgr->GetCamera();
 	if (camera != NULL)
 	{
 		this->m_cullerHelper.AllowCuller(camera, m_useLowQuality);
-	}
-
-	if (this->m_GLContext)
-	{
-		this->m_GLContext->OptimizeContext();
 	}
 
 	this->Render();
@@ -557,62 +618,13 @@ bool RenderManager::IsNeedRedraw()
 void RenderManager::WindowSizeChanged(int width, int height)
 {
 	this->m_sceneMgr->Lock();
-#ifdef WIN32
- 
-#else
- 	Parameters::Instance()->m_screenWidth = width;
-	Parameters::Instance()->m_screenHeight = height;
-#endif
 
-	bool sizeChanged = false;
-	if (this->m_iScreenWidth != width || this->m_iScreenHeigh != height)
-	{
-		sizeChanged = true;
-	}
- 
+	Parameters::Instance()->m_screenWidth = width;
+	Parameters::Instance()->m_screenHeight = height;
+
 	this->m_iScreenWidth = width;
 	this->m_iScreenHeigh = height;
- 
-	if (sizeChanged)
-	{
-		this->RequestUpdateWhenSceneBoxChanged();
-		SceneNode* rootNode = m_sceneMgr->GetSceneRoot();
-		BackgroundNode* backgroundNode = (BackgroundNode *)rootNode->Search(
-			BACKGROUNDCOLOR);
-		if (backgroundNode != NULL)
-		{
-			backgroundNode->SetBackgroundSize(this->m_iScreenWidth,
-				this->m_iScreenHeigh);
-		}
 
-		AxisNode* axisNode = (AxisNode *)rootNode->Search(AXIS);
-		if (axisNode != NULL)
-		{
-			axisNode->SetViewSize(this->m_iScreenWidth, this->m_iScreenHeigh, 0.25);
-		}	FPSNode* fpsNode = (FPSNode *)rootNode->Search(FPS_FLAG);
-		if (fpsNode != NULL)
-		{
-			fpsNode->SetSceneHeight(this->m_iScreenHeigh);
-		}
-
-		if (m_renderAction)
-		{
-			m_renderAction->ResizeFBOs(width, height); //设置FBO大小
-		}
-
-
-		//更改Hud的适口
-		this->ResizeHubViewport();
-	}
-
-	this->m_sceneMgr->UnLock();
-
-	RequestRedraw();
-}
-
-void RenderManager::RequestUpdateWhenSceneBoxChanged()
-{
-	this->m_sceneMgr->Lock();
 	CameraNode* camera = this->m_sceneMgr->GetCamera();
 	int screenHeight = this->GetWindowHeight();
 	int screenWidth = this->GetWindowWidth();
@@ -622,63 +634,126 @@ void RenderManager::RequestUpdateWhenSceneBoxChanged()
 	{
 		BoundingBox& pBoundingBox = this->m_sceneMgr->GetSceneBox();
 
-		bool boxHasValue = (pBoundingBox.Length() > 0);
-
-		float width = m_iScreenWidth;
-		float height = m_iScreenHeigh;
-		float boxLength = width;
-		if (boxHasValue && screenHeight <= screenWidth)
+		float width = 100;
+		float height = 100;
+		if (screenHeight <= screenWidth)
 		{
 			width = pBoundingBox.Length();
 			height = width * screenHeight / screenWidth;
-			boxLength = pBoundingBox.Length();
 		}
-		else if (boxHasValue)
+		else
 		{
 			height = pBoundingBox.Length();
 			width = height * screenWidth / screenHeight;
-			boxLength = pBoundingBox.Length();
 		}
 
-		this->GetCullerHelper().SetModelLength(boxLength);
+		this->GetCullerHelper().SetModelLength(pBoundingBox.Length());
 
 		camera->SetOrthoSize(Vector2(width * 2, height * 2));
 	}
+
+	SceneNode* rootNode = m_sceneMgr->GetSceneRoot();
+	BackgroundNode* backgroundNode = (BackgroundNode *) rootNode->Search(
+			BACKGROUNDCOLOR);
+	if (backgroundNode != NULL)
+	{
+		backgroundNode->SetBackgroundSize(this->m_iScreenWidth,
+				this->m_iScreenHeigh);
+	}
+
+	AxisNode* axisNode = (AxisNode *) rootNode->Search(AXIS);
+	if (axisNode != NULL)
+	{
+		axisNode->SetViewSize(this->m_iScreenWidth, this->m_iScreenHeigh, 0.25);
+	}
+
+	FPSNode* fpsNode = (FPSNode *) rootNode->Search(FPS_FLAG);
+	if (fpsNode != NULL)
+	{
+		fpsNode->SetSceneHeight(this->m_iScreenHeigh);
+	}
+
+	if (m_renderAction)
+	{
+		m_renderAction->ResizeFBOs(width, height); //设置FBO大小
+	}
+
 	this->m_sceneMgr->UnLock();
+
+	RequestRedraw();
 }
 
 void RenderManager::SceneChanged()
 {
-
+	if (this->m_sceneDivide)
+	{
+		this->m_sceneDivide->MarkDirty();
+	}
 }
 
 void RenderManager::VRPrepareDrawList()
 {
+	//TODO　帧率限制暂时屏蔽掉
+
+		///线程资源锁定
+		//this->m_sceneMgr->Lock();
+
+		//Trackball::KEEPINGSTATETIMES--;
+
+		//在每一帧中释放需要释放的GL资源
+		this->m_sceneMgr->GetResourceManager()->ReleaseGLObjects();
+		this->m_sceneMgr->UpdateHardwareBuffer();
+
+		CameraNode* camera = this->m_sceneMgr->GetCamera();
+		if (camera != NULL)
+		{
+			this->m_cullerHelper.AllowCuller(camera, m_useLowQuality);
+		}
+
+
+		GroupNode * groupNode = (GroupNode *) m_sceneMgr->GetSceneRoot();
+
 		RenderAction* workRenderAction = this->m_renderAction;
 		if (workRenderAction != NULL)
 		{
 			workRenderAction->SetGLContext(m_GLContext);
 			workRenderAction->SetCamera(m_sceneMgr->GetCamera());
+			workRenderAction->SetLights(m_sceneMgr->GetLights());
+
+	//只有手机才走手动刷新逻辑
+
+			workRenderAction->SetFPS(this->GetFPS());
+
 			workRenderAction->SetRenderEffect(this->m_renderEffect);
+
 			workRenderAction->Begin();
 
-			GroupNode * groupNode = (GroupNode *)m_sceneMgr->GetSceneRoot();
-			for (int i = 0; i < groupNode->Size(); i++)
+			if (false&& Parameters::Instance()->m_simplityMode)
 			{
-				SceneNode* node = groupNode->GetChild(i);
-				if (node->GetName() != MAINGROUP)//不处理挂载模型的节点
+				m_sceneDivide->Optimize();
+
+				for (int i = 0; i < groupNode->Size(); i++)
 				{
-					node->FindVisiableObject(workRenderAction);
+					SceneNode* node = groupNode->GetChild(i);
+					if (node->GetName() != MAINGROUP)//不处理挂载模型的节点
+					{
+						node->FindVisiableObject(workRenderAction);
+					}
 				}
+
+				m_sceneDivide->FindVisiableObject(workRenderAction);
+			}
+			else
+			{
+				groupNode->FindVisiableObject(workRenderAction);
 			}
 
-#ifdef WIN32
-			this->m_sceneMgr->GetGUI()->Render(workRenderAction);
-#endif //WIN32
+			//workRenderAction->Execute();
 
-			this->FindVisiableObject(workRenderAction);
 			workRenderAction->End();
 		}
+		//	LOGE("RenderManager::OnDraw() end");
+		//this->m_sceneMgr->UnLock();
 }
 
 void RenderManager::VRDraw()
@@ -686,12 +761,7 @@ void RenderManager::VRDraw()
 	RenderAction* workRenderAction = this->m_renderAction;
 	if (workRenderAction != NULL)
 	{
-	//GLShapeDrawer::InitialGL();
-
-	glClearColor(0.53, 0.807, .98, 1);
-
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	//GLShapeDrawer20::DrawVRBackGround(workRenderAction);
+	GLShapeDrawer::InitialGL();
 	//GLShapeDrawer20::DrawBackGround(workRenderAction->GetBackGroundNode(),workRenderAction);
 	GLShapeDrawer20::DrawRenderPassGroup(workRenderAction);
 	//GLShapeDrawer20::DrawAxis(workRenderAction->GetAxisNode(), workRenderAction);
@@ -703,80 +773,6 @@ void RenderManager::VRDraw()
 SceneManager* RenderManager::GetSceneManager()
 {
 	return this->m_sceneMgr;
-}
-
-EffectManager * RenderManager::GetEffectManager()
-{
-	return m_effectManager;
-}
-
-string RenderManager::GetGlobalEffect()
-{
-	if(m_isForceNormalEffect){
-		return "";
-	}
-	return this->m_globalEffect;
-}
-
-void RenderManager::SetGlobalEffect(string effectName)
-{
-	this->m_globalEffect = effectName;
-}
-
-void RenderManager::BeginCatchOpenGLError()
-{
-	glGetError();
-}
-
-string RenderManager::EndCatchOpenGLError()
-{
-	string ret = "";
-	for (GLenum err; (err = glGetError()) != GL_NO_ERROR;)
-	{
-		switch (err)
-		{
-		case GL_INVALID_ENUM:
-			ret += "Error code: "+StringHelper::IntToString(GL_INVALID_ENUM)+" GL_INVALID_ENUM  ";
-			break;
-		case GL_INVALID_VALUE:
-			ret += "Error code: " + StringHelper::IntToString(GL_INVALID_VALUE) + " GL_INVALID_VALUE  ";
-			break;
-		case GL_INVALID_OPERATION:
-			ret += "Error code: " + StringHelper::IntToString(GL_INVALID_OPERATION) + " GL_INVALID_OPERATION  ";
-			break;
-		case GL_STACK_OVERFLOW:
-			ret += "Error code: " + StringHelper::IntToString(GL_STACK_OVERFLOW) + " GL_STACK_OVERFLOW  ";
-			break;
-		case GL_STACK_UNDERFLOW:
-			ret += "Error code: " + StringHelper::IntToString(GL_STACK_UNDERFLOW) + " GL_STACK_UNDERFLOW  ";
-			break;
-		case GL_OUT_OF_MEMORY:
-			ret += "Error code: " + StringHelper::IntToString(GL_OUT_OF_MEMORY) + " GL_OUT_OF_MEMORY  ";
-			break;
-		case GL_INVALID_FRAMEBUFFER_OPERATION:
-			ret += "Error code: " + StringHelper::IntToString(GL_INVALID_FRAMEBUFFER_OPERATION) + " GL_INVALID_FRAMEBUFFER_OPERATION  ";
-			break;
-	 #ifdef _WIN32
-		case GL_CONTEXT_LOST:
-			ret += "Error code: " + StringHelper::IntToString(GL_CONTEXT_LOST) + " GL_CONTEXT_LOST  ";
-			break;
-			#else
-			
-	 #endif
-		default:
-			ret += "  Undefined Error ";
-			break;
-		}
-	}
-
-	return ret;
-}
-
-bool RenderManager::IsForceNormalEffect(){
-	return this->m_isForceNormalEffect;
-}
-void RenderManager::SetISForceNormalEffect(bool isForce){
-	this->m_isForceNormalEffect = isForce;
 }
 
 int RenderManager::GetWindowWidth()
@@ -797,30 +793,31 @@ void RenderManager::AllowRedraw(bool allow)
 void RenderManager::RequestRedraw()
 {
 	this->m_BufferCounter = FRAME_BUFFER_COUNT;
-} 
+}
 
 void RenderManager::ClearGLResource()
 {
+	if (this->m_sceneDivide)
+	{
+		this->m_sceneDivide->MarkDirty();
+	}
+
 	if (m_renderAction)
 	{
 		m_renderAction->ClearGLResource();
 	}
 
+
 	//高性能模式浏览时，使用渐进显示方式进行绘制
-#ifdef _WIN32
-	m_useDelayDraw = true;// SVIEW::Parameters::Instance()->m_simplityMode;
-#else
-	m_useDelayDraw = false;// SVIEW::Parameters::Instance()->m_simplityMode;
-#endif
-	m_renderAction->SetAllowDelayDraw(true);
+	m_useDelayDraw = false;
+	m_renderAction->SetAllowDelayDraw(m_useDelayDraw);
 	if(m_useDelayDraw)
 	{
 		FRAME_BUFFER_COUNT = 1;
 	}else
 	{
-		FRAME_BUFFER_COUNT = 20;
+		FRAME_BUFFER_COUNT = 400;
 	}
-    this->SetGlobalEffect("");
 }
 
 bool RenderManager::UseLowQuality()

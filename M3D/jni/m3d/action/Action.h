@@ -17,16 +17,25 @@
 namespace M3D
 {
 class SceneNode;
-class Model;
+class LSceneNode;
 class Path;
 class State;
 class RenderContext;
+
+
+/**
+ * @brief  动作执行回掉函数
+ * @param data 执行数据
+ * @param node 当前结点
+ */
+typedef void (*ActionFun)(void* data , SceneNode* node);
+
 /**
  * @brief  简化模式下，动作执行回掉函数
  * @param data 执行数据
  * @param node 当前结点
  */
-typedef void (*ActionFun)(void* data, Model* node);
+typedef void (*LActionFun)(void* data, LSceneNode* node);
 
 /**
  * @brief 动作基类，在执行回执的过程中能够实现一些额外的操作
@@ -66,7 +75,7 @@ public:
 	 * @brief 将动作作用到当前结点上
 	 * @param node 当前需要应用动作的节点
 	 */
-	virtual void Apply(Model * node);
+	virtual void Apply(LSceneNode * node);
 
 	/**
 	 * @brief 仅执行一次动作
@@ -121,7 +130,7 @@ protected:
 	 * @brief 简化浏览模式，执行响应函数
 	 * @param node 作用节点
 	 */
-	virtual void OnExecute(Model* node);
+	virtual void OnExecute(LSceneNode* node);
 
 protected:
 	RenderContext* m_GLContext; //!< 渲染上下文

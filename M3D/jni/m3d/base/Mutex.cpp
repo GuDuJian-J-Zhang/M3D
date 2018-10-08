@@ -51,17 +51,6 @@ Mutex::~Mutex()
 	m_handle = 0;
 }
 
-void Mutex::Acquire()
-{
-	pthread_mutex_lock((pthread_mutex_t*)m_handle);
-}
-
-void Mutex::Release()
-{
-	pthread_mutex_unlock((pthread_mutex_t*)m_handle);
-}
-#endif
-
 Mutex::Mutex(const Mutex& orig)
 {
 	//锁对象不支持拷贝
@@ -77,6 +66,16 @@ Mutex& Mutex::operator =(const Mutex& orig)
 }
 
 
+void Mutex::Acquire()
+{
+	pthread_mutex_lock((pthread_mutex_t*) m_handle);
+}
+
+void Mutex::Release()
+{
+	pthread_mutex_unlock((pthread_mutex_t*) m_handle);
+}
+#endif
 
 MutexLock::MutexLock(Mutex& mutex) :
 		m_mutex(mutex)

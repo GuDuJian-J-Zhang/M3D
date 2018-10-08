@@ -9,7 +9,7 @@
 /*
  *  当前输出的文件版本
  */
-#define SVL_DATAMANAGER_VERSION		L"2.356"		/*beta11(2016.08.15)*/
+#define SVL_DATAMANAGER_VERSION		L"2.356"		/*beta12(2016.08.16)*/
 // 关于版本号的一般原则：
 // 架构的改动升级小数点后1位
 // 新功能的开发小数点后2位
@@ -316,6 +316,11 @@
 
 // DataManager_V2.356 beta11(2016.08.15)
 // ① 增加加载进度监听。
+
+// DataManager_V2.356 beta12(2016.08.16)
+// ① 增加面向对象行使的加载进度监听。
+// ② 增加获取当前ProtoType的总实例数量和Node数量的接口。
+// ③ 解决释放挂机的问题。
 
 #define SVL_FILE_TITLE				L"SVLFILE"
 

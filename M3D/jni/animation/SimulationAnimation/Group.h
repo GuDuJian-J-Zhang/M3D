@@ -1,4 +1,4 @@
-// All Rights Reserved. Copyright (C) 2014 HOTEAMSOFT, Ltd
+﻿// All Rights Reserved. Copyright (C) 2014 HOTEAMSOFT, Ltd
 /****************************************************************************
  *	@file		Group.h 
  *
@@ -17,10 +17,7 @@
 #define GROUP_DESC_LEN 6128
 class CGroupManager;
 class CGroupItem;
-namespace tinyxml2
-{
-    class XMLElement;
-}
+
 
 class SA_API CGroup
 {
@@ -60,10 +57,7 @@ public:
 	//是否在分组中
 	********************************************************************/
 	bool IsInGroup(std::string strPath);
-	/*****************************************************************
-	//写入文件
-	********************************************************************/
-    void WriteToFile(tinyxml2::XMLElement *pGroupEle);
+
 	/*****************************************************************
 	//得到位置
 	********************************************************************/

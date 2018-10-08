@@ -37,7 +37,7 @@
 #include "m3d/Handler/HandlerRotateCenter.h"
 #include "m3d/Handler/HandlerNode.h"
 #include "m3d/Handler/HandlerGroup.h"
-
+#include "m3d/Handler/HandlerNodeRotateCenter.h"
 #include "m3d/Handler/HandlerPoint.h"
 
 #include "m3d/extras/note/NoteGroup.h"
@@ -45,9 +45,6 @@
 #include "m3d/graphics/MeshBoard.h"
 #include "m3d/graphics/SectionPlane.h"
 #include "m3d/utils/FileHelper.h"
-#include "m3d/graphics/HardWareVertexBuffer.h"
-#include "m3d/graphics/HardWareIndexBuffer.h"
-#include "m3d/model/Point.h"
 
 #define TEXT_USE_RENDER
 //#define GL_GLEXT_PROTOTYPES
@@ -76,10 +73,9 @@ void GLShapeDrawer::DrawShapeBox(BoundingBox& box, bool isSelected)
 	if (box.Defined())
 	{
 		glColor4f(color.m_r, color.m_g, color.m_b, color.m_a);
-		vector<float> boxVertex; box.GetVertexs(boxVertex);
-		float* points = boxVertex.data();
-		glVertexPointer(3, GL_FLOAT, 0, points);
-		glDrawElements(GL_LINES, 24, M3D_GL_INDEX_TYPE,
+
+		glVertexPointer(3, GL_FLOAT, 0, box.GetVertexs());
+		glDrawElements(GL_LINES, 24, GL_UNSIGNED_SHORT,
 				BoundingBox::boxIndexs);
 
 		//绘制max 和min 点
@@ -222,81 +218,67 @@ void GLShapeDrawer::DrawRenderPassGroup(RenderAction* action)
 
 bool GLShapeDrawer::DoSection(RenderAction* action,bool state)
 {
-	//if (SVIEW::Parameters::Instance()->m_OpenGLESVersion > 1)
+	Section* section = (Section*) action->GetSection();
+	//若果section没有数据则表示不需要进行剖切操作，可以返回
+	if (!section)
 	{
-		Section* section = (Section*)action->GetSection();
-		//若果section没有数据则表示不需要进行剖切操作，可以返回
-		if (!section)
+		return false;
+	}
+
+	list<SectionPlane*>* planeList = section->GetPlaneList();
+
+	if (state)
+	{
+		list<SectionPlane*>::iterator iter;
+
+		int i =0;
+		for(iter = planeList->begin();iter != planeList->end(); ++iter,++i)
 		{
-			return false;
+			glClipPlanef(GL_CLIP_PLANE0 + i, (*iter)->GetEquation());
+			glEnable(GL_CLIP_PLANE0 + i);
 		}
+	}
+	else
+	{
+		list<SectionPlane*>::iterator iter;
 
-		list<SectionPlane*>* planeList = section->GetPlaneList();
+		int i =0;
 
-		if (state)
+		for(iter = planeList->begin();iter != planeList->end(); ++iter,++i)
 		{
-			list<SectionPlane*>::iterator iter;
+			glDisable(GL_CLIP_PLANE0 + i);
 
-			int i = 0;
-			for (iter = planeList->begin(); iter != planeList->end(); ++iter, ++i)
-			{
-				if ((*iter)->IsPlaneAvaliable())
-				{
-#if _WIN32
-					float* clipPlaneData = (*iter)->GetTransformPlaneParam();
-					double tempClipPlane[4];
-					tempClipPlane[0] = clipPlaneData[0];
-					tempClipPlane[1] = clipPlaneData[1];
-					tempClipPlane[2] = clipPlaneData[2];
-					tempClipPlane[3] = clipPlaneData[3];
-					glClipPlane(GL_CLIP_PLANE0 + i, tempClipPlane);
-					glEnable(GL_CLIP_PLANE0 + i);
-#else
-					glClipPlanef(GL_CLIP_PLANE0 + i, (*iter)->GetEquation());
-					glEnable(GL_CLIP_PLANE0 + i);
-#endif
-				}
-			}
+
 		}
-		else
+		if(Parameters::Instance()->m_showSection)
 		{
-			list<SectionPlane*>::iterator iter;
-
-			int i = 0;
-
-			for (iter = planeList->begin(); iter != planeList->end(); ++iter, ++i)
-			{
-				glDisable(GL_CLIP_PLANE0 + i);
-
-
-			}
-			if (Parameters::Instance()->m_showSection)
-			{
-				for (iter = planeList->begin(); iter != planeList->end(); ++iter)
-				{
-					//LOGI("BEGIN section");
-					DrawSectionPlane(action, *iter);
-				}
-			}
-
 			for (iter = planeList->begin(); iter != planeList->end(); ++iter)
 			{
 				//LOGI("BEGIN section");
-				DrawSectionLines(action, (*iter)->m_figureSectonLine.linesData); //TODO 剖切线，盖面
-
+				DrawSectionPlane(action, *iter);
 			}
+		}
+
+		for (iter = planeList->begin(); iter != planeList->end(); ++iter)
+		{
+			//LOGI("BEGIN section");
+			DrawSectionLines(action,(*iter)->m_figureSectonLine.linesData); //TODO 剖切线，盖面
 
 		}
 
-		if (section->IsShowCappingPlane())
-		{
-			return true;
-		}
-		else
-		{
-			return false;
-		}
 	}
+
+	if(section->IsShowCappingPlane())
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+
+
+
 }
 
 void GLShapeDrawer::DrawSectionPlane(RenderAction* action,
@@ -354,23 +336,15 @@ void GLShapeDrawer::DrawBoxRenderPassGroup(RenderAction* action,
 	glDisableClientState(GL_NORMAL_ARRAY);
 
 	glLineWidth(3);
-
-	if (action->GetRenderBox().Defined())
+	RenderabelArray::iterator it = RenderStateArray->GetRenderableArray().begin();
+	for (; it != RenderStateArray->GetRenderableArray().end(); it++)
 	{
+		Model* shape = (Model*) (*it);
 		glPushMatrix();
-		DrawShapeBox(action->GetRenderBox(), false);
+		glMultMatrixf((*it)->GetRenderWorldMatrix()->Data());
+		DrawShapeBox(shape->GetBoundingBox(), shape->IsSelected());
 		glPopMatrix();
 	}
-
-	//RenderabelArray::iterator it = RenderStateArray->GetRenderableArray().begin();
-	//for (; it != RenderStateArray->GetRenderableArray().end(); it++)
-	//{
-	//	Model* shape = (Model*) (*it);
-	//	glPushMatrix();
-	//	glMultMatrixf((*it)->GetRenderWorldMatrix()->Data());
-	//	DrawShapeBox(shape->GetBoundingBox(), shape->IsSelected());
-	//	glPopMatrix();
-	//}
 }
 
 void GLShapeDrawer::DrawPMISRenderPassGroup(RenderAction* action,
@@ -472,23 +446,20 @@ void GLShapeDrawer::DrawEdgesRenderPassGroup(RenderAction* action,
 	for (; it != RenderStateArray->GetRenderableArray().end(); it++)
 	{
 		Renderable* edgeRenderData = *it;
-		if (edgeRenderData->GetDataLength())
-		{
-			glPushMatrix();
-			glMultMatrixf(edgeRenderData->GetRenderWorldMatrix()->Data());
+		glPushMatrix();
+		glMultMatrixf(edgeRenderData->GetRenderWorldMatrix()->Data());
 
-			const Color& edgeColor = edgeRenderData->GetRenderColor();
-			glColor4f(edgeColor.m_r, edgeColor.m_g, edgeColor.m_b, edgeColor.m_a);
+		const Color& edgeColor = edgeRenderData->GetRenderColor();
+		glColor4f(edgeColor.m_r, edgeColor.m_g, edgeColor.m_b, edgeColor.m_a);
 
-			//根据材质属性，设置显示状态
-			//		glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE,
-			//				(*it)->GetRenderColor().Data());
+		//根据材质属性，设置显示状态
+//		glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE,
+//				(*it)->GetRenderColor().Data());
 
-			glVertexPointer(3, GL_FLOAT, 0, edgeRenderData->GetVertexPos());
-			glDrawArrays(GL_LINES, 0, edgeRenderData->GetDataLength());
+		glVertexPointer(3, GL_FLOAT, 0, edgeRenderData->GetVertexPos());
+		glDrawArrays(GL_LINES, 0, edgeRenderData->GetDataLength());
 
-			glPopMatrix();
-		}
+		glPopMatrix();
 	}
 	glEnable(GL_LIGHTING);
 	glDisable(GL_LINE_SMOOTH);
@@ -516,18 +487,17 @@ void GLShapeDrawer::DrawTriLineRenderPassGroup(RenderAction* action,
 	for (; it != RenderStateArray->GetRenderableArray().end(); it++)
 	{
 		Face* faceRenderData = (Face*)(*it);
-	
+		Vector3* positionArray = faceRenderData->GetLinesModeVertexPos();
+		Vector3* normalArray = faceRenderData->GetVertexNormal();
 
 		int dataLength = faceRenderData->GetDataLength()*2;
 		bool isUseIndex = faceRenderData->IsUseIndex();
 
 		glPushMatrix();
 		glMultMatrixf((*it)->GetRenderWorldMatrix()->Data());
-		Vector3* positionArray = faceRenderData->GetLinesModeVertexPos();
-		if (dataLength > 0 && positionArray)
+
+		if (dataLength > 0)
 		{
-			Vector3* positionArray = faceRenderData->GetLinesModeVertexPos();
-			Vector3* normalArray = faceRenderData->GetVertexNormal();
 			if(!faceRenderData->IsSelected())
 			{
 				const Color& triColor	= Color::YELLOW;
@@ -699,25 +669,15 @@ void GLShapeDrawer::DrawTranRenderPassGroup(RenderAction* action,
 		Matrix3 rot_= action->GetCamera()->GetView().ToMatrix3();//TODO
 		int dataLength = faceRenderData->GetDataLength();
 		bool isUseIndex = faceRenderData->IsUseIndex();
-
-		
-
 		glPushMatrix();
 		glMultMatrixf((*it)->GetRenderWorldMatrix()->Data());
-		HardWareVertexBuffer* vertexBuffer = faceRenderData->GetHardWareVertexBuffer();
-		if (dataLength > 0 && vertexBuffer)
+
+		if (dataLength > 0)
 		{
-			HardWareIndexBuffer* indexBuffer = faceRenderData->GetHardWareIndexBuffer();
-			char* vertexAddress = (char*)vertexBuffer->Bind();
- 
-			M3D_OFFSET_TYPE veroffset = faceRenderData->GetVertexOffset();
-			M3D_OFFSET_TYPE normaloffset = faceRenderData->GetNormalOffset();
-			M3D_OFFSET_TYPE texoffset = faceRenderData->GetTextureCoordsOffset();
+			Vector3* positionArray = (Vector3*)faceRenderData->GetVertexOffset();
+			Vector3* normalArray = (Vector3*)faceRenderData->GetNormalOffset();
 
-			glVertexPointer(3, GL_FLOAT, 0, (GLvoid *)(vertexAddress + veroffset));
-			glNormalPointer(GL_FLOAT, 0, (GLvoid *)(vertexAddress + normaloffset));
-
-			Material* material = dynamic_cast<Material*>(faceRenderData->GetRenderMaterial());//获取材质
+			Material* material = faceRenderData->GetRenderMaterial();//获取材质
 
 			//如果材质存在，则使用材质绘制
 			if (material)
@@ -728,107 +688,76 @@ void GLShapeDrawer::DrawTranRenderPassGroup(RenderAction* action,
 
 				Vector3* textureCoordsArray = faceRenderData->GetTextureCoords();
 
-				if(material->GetDiffuseMap())
+				if(material->GetTexture())
 				{
-					unsigned int OGLObj = material->GetDiffuseMap()->GetOGLObj();
+					unsigned int OGLObj = material->GetTexture()->GetOGLObj();
 
 					if (OGLObj) //纹理存在
 					{
-						glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-						glTexCoordPointer(3, GL_FLOAT, 0, (GLvoid *)texoffset);
 						if (!textureCoordsArray)
 						{
-							//textureCoordsArray =
-							//		faceRenderData->GetNewTextureCooords(
-							//				vertexNum);
-							//M3D_INDEX_TYPE* indexArray =
-							//		faceRenderData->GetIndex();
-							//bool isContinue = ComputerSphereTexCoords(OGLObj,
-							//		material, faceRenderData,
-							//		textureCoordsArray, indexArray, normalArray,
-							//		positionArray, rot_, vertexNum);
-							//if (isContinue)
-							//{
-							//	glPopMatrix();
-							//	continue;
-							//}
+							textureCoordsArray =
+									faceRenderData->GetNewTextureCooords(
+											vertexNum);
+							M3D_INDEX_TYPE* indexArray =
+									faceRenderData->GetIndex();
+							bool isContinue = ComputerSphereTexCoords(OGLObj,
+									material, faceRenderData,
+									textureCoordsArray, indexArray, normalArray,
+									positionArray, rot_, vertexNum);
+							if (isContinue)
+							{
+								glPopMatrix();
+								continue;
+							}
 
 						}
 						Matrix4* texture2DTransform = material->GetTexture2DTransform();
 						if (isUseIndex)
 						{
-							//M3D_INDEX_TYPE* indexArray =
-							//		(M3D_INDEX_TYPE*)faceRenderData->GetIndexOffset();
-							//DrawTexture2DWithIndex(OGLObj, positionArray,
-							//		normalArray,textureCoordsArray,
-							//		indexArray, dataLength,texture2DTransform);
-
-							M3D_OFFSET_TYPE indexArray = faceRenderData->GetIndexOffset();
-							DrawTexture2DWithIndex(OGLObj, vertexBuffer, indexBuffer, texture2DTransform, dataLength,
-								indexArray);
-
+							M3D_INDEX_TYPE* indexArray =
+									(M3D_INDEX_TYPE*)faceRenderData->GetIndexOffset();
+							DrawTexture2DWithIndex(OGLObj, positionArray,
+									normalArray,textureCoordsArray,
+									indexArray, dataLength,texture2DTransform);
 						}
 						else
 						{
-							//DrawTexture2DNoIndex(OGLObj, positionArray,
-							//		normalArray,textureCoordsArray,
-							//		dataLength,texture2DTransform);
-
-							DrawTexture2DNoIndex(OGLObj, vertexBuffer, texture2DTransform, dataLength);
+							DrawTexture2DNoIndex(OGLObj, positionArray,
+									normalArray,textureCoordsArray,
+									dataLength,texture2DTransform);
 						}
 
 					}
 					else
 					{
-						//if (isUseIndex)
-						//{
-      //                      M3D_INDEX_TYPE* indexArray =
-      //                      (M3D_INDEX_TYPE*)faceRenderData->GetIndexOffset();
-						//	GLShapeDrawer::DrawTriWithIndex(positionArray,
-						//			normalArray, indexArray, dataLength);
-						//}
-						//else
-						//{
-						//	GLShapeDrawer::DrawTriNoIndex(positionArray,
-						//			normalArray, dataLength);
-						//}
-
-						glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 						if (isUseIndex)
 						{
-							M3D_OFFSET_TYPE indexArray = faceRenderData->GetIndexOffset();
-							GLShapeDrawer::DrawTriWithIndex(vertexBuffer, indexBuffer, dataLength, indexArray);
+                            M3D_INDEX_TYPE* indexArray =
+                            (M3D_INDEX_TYPE*)faceRenderData->GetIndexOffset();
+							GLShapeDrawer::DrawTriWithIndex(positionArray,
+									normalArray, indexArray, dataLength);
 						}
 						else
 						{
-							GLShapeDrawer::DrawTriNoIndex(vertexBuffer, dataLength);
+							GLShapeDrawer::DrawTriNoIndex(positionArray,
+									normalArray, dataLength);
 						}
 					}
 				}
 				else
 				{
-					//if (isUseIndex)
-					//{
-     //                   M3D_INDEX_TYPE* indexArray =
-     //                   (M3D_INDEX_TYPE*)faceRenderData->GetIndexOffset();
-					//	GLShapeDrawer::DrawTriWithIndex(positionArray,
-					//			normalArray, indexArray, dataLength);
-					//}
-					//else
-					//{
-					//	GLShapeDrawer::DrawTriNoIndex(positionArray,
-					//			normalArray, dataLength);
-					//}
-
-					glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 					if (isUseIndex)
 					{
-						M3D_OFFSET_TYPE indexArray = faceRenderData->GetIndexOffset();
-						GLShapeDrawer::DrawTriWithIndex(vertexBuffer, indexBuffer, dataLength, indexArray);
+                        M3D_INDEX_TYPE* indexArray =
+                        (M3D_INDEX_TYPE*)faceRenderData->GetIndexOffset();
+						GLShapeDrawer::DrawTriWithIndex(positionArray,
+								normalArray, indexArray, dataLength);
 					}
 					else
 					{
-						GLShapeDrawer::DrawTriNoIndex(vertexBuffer, dataLength);
+						GLShapeDrawer::DrawTriNoIndex(positionArray,
+								normalArray, dataLength);
 					}
 				}
 			}
@@ -838,33 +767,21 @@ void GLShapeDrawer::DrawTranRenderPassGroup(RenderAction* action,
 						(*it)->GetRenderColor().Data());
 				{
 					//根据颜色绘制
-					//if (isUseIndex)
-					//{
-     //                   M3D_INDEX_TYPE* indexArray =
-     //                   (M3D_INDEX_TYPE*)faceRenderData->GetIndexOffset();
-					//	GLShapeDrawer::DrawTriWithIndex(positionArray,
-					//			normalArray, indexArray, dataLength);
-					//}
-					//else
-					//{
-					//	GLShapeDrawer::DrawTriNoIndex(positionArray,
-					//			normalArray, dataLength);
-					//}
-
-					glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 					if (isUseIndex)
 					{
-						M3D_OFFSET_TYPE indexArray = faceRenderData->GetIndexOffset();
-						GLShapeDrawer::DrawTriWithIndex(vertexBuffer, indexBuffer, dataLength, indexArray);
+                        M3D_INDEX_TYPE* indexArray =
+                        (M3D_INDEX_TYPE*)faceRenderData->GetIndexOffset();
+						GLShapeDrawer::DrawTriWithIndex(positionArray,
+								normalArray, indexArray, dataLength);
 					}
 					else
 					{
-						GLShapeDrawer::DrawTriNoIndex(vertexBuffer, dataLength);
+						GLShapeDrawer::DrawTriNoIndex(positionArray,
+								normalArray, dataLength);
 					}
 				}
 
-			}	
-			vertexBuffer->UnBind();
+			}
 		}
 		glPopMatrix();
 	}
@@ -918,20 +835,13 @@ void GLShapeDrawer::DrawSolidRenderPassGroup(RenderAction* action,
 
 		glPushMatrix();
 		glMultMatrixf((*it)->GetRenderWorldMatrix()->Data());
-		HardWareVertexBuffer* vertexBuffer = faceRenderData->GetHardWareVertexBuffer();
 
-		if (dataLength > 0 && vertexBuffer)
+		if (dataLength > 0)
 		{
-			HardWareIndexBuffer* indexBuffer = faceRenderData->GetHardWareIndexBuffer();
-			char* vertexAddress = (char*)vertexBuffer->Bind();
-			M3D_OFFSET_TYPE veroffset = faceRenderData->GetVertexOffset();
-			M3D_OFFSET_TYPE normaloffset = faceRenderData->GetNormalOffset();
-			M3D_OFFSET_TYPE texoffset = faceRenderData->GetTextureCoordsOffset();
+			Vector3* positionArray = (Vector3*)faceRenderData->GetVertexOffset();
+			Vector3* normalArray = (Vector3*)faceRenderData->GetNormalOffset();
 
-			glVertexPointer(3, GL_FLOAT, 0, (GLvoid *)(vertexAddress + veroffset));
-			glNormalPointer( GL_FLOAT, 0, (GLvoid *)(vertexAddress + normaloffset));
-
-			Material* material = dynamic_cast<Material*>(faceRenderData->GetRenderMaterial());//获取材质
+			Material* material = faceRenderData->GetRenderMaterial();//获取材质
 
 			//如果材质存在，则使用材质绘制
 			if (material)
@@ -942,106 +852,76 @@ void GLShapeDrawer::DrawSolidRenderPassGroup(RenderAction* action,
 
 				Vector3* textureCoordsArray = faceRenderData->GetTextureCoords();
 
-				if(material->GetDiffuseMap() )
+				if(material->GetTexture() )
 				{
-					unsigned int OGLObj = material->GetDiffuseMap()->GetOGLObj();
+					unsigned int OGLObj = material->GetTexture()->GetOGLObj();
 
 					if (OGLObj) //纹理存在
 					{
-
-						glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-						glTexCoordPointer(3, GL_FLOAT, 0, (GLvoid *)texoffset);
 						if (!textureCoordsArray)
 						{
-							//textureCoordsArray =
-							//		faceRenderData->GetNewTextureCooords(
-							//				vertexNum);
-							//M3D_INDEX_TYPE* indexArray =
-							//		faceRenderData->GetIndex();
-							// bool isContinue=ComputerSphereTexCoords( OGLObj,material, faceRenderData,textureCoordsArray,indexArray,
-							//		normalArray,positionArray, rot_, vertexNum);
-							// if(isContinue)
-							// {
-							//	 glPopMatrix();
-							//	 continue;
-							// }
+							textureCoordsArray =
+									faceRenderData->GetNewTextureCooords(
+											vertexNum);
+                            M3D_INDEX_TYPE* indexArray =
+                            (M3D_INDEX_TYPE*)faceRenderData->GetIndexOffset();
+
+							 bool isContinue=ComputerSphereTexCoords( OGLObj,material, faceRenderData,textureCoordsArray,indexArray,
+									normalArray,positionArray, rot_, vertexNum);
+							 if(isContinue)
+							 {
+								 glPopMatrix();
+								 continue;
+							 }
 						}
 						Matrix4* texture2DTransform = material->GetTexture2DTransform();
 
 						if (isUseIndex)
 						{
-							//M3D_INDEX_TYPE* indexArray =
-							//		(M3D_INDEX_TYPE*)faceRenderData->GetIndexOffset();
-							//DrawTexture2DWithIndex(OGLObj, positionArray,
-							//		normalArray,textureCoordsArray,
-							//		indexArray, dataLength,texture2DTransform);
-
-							M3D_OFFSET_TYPE indexArray = faceRenderData->GetIndexOffset();
-							DrawTexture2DWithIndex(OGLObj, vertexBuffer, indexBuffer, texture2DTransform, dataLength,
-								indexArray);
-
+							M3D_INDEX_TYPE* indexArray =
+									(M3D_INDEX_TYPE*)faceRenderData->GetIndexOffset();
+							DrawTexture2DWithIndex(OGLObj, positionArray,
+									normalArray,textureCoordsArray,
+									indexArray, dataLength,texture2DTransform);
 						}
 						else
 						{
-							//DrawTexture2DNoIndex(OGLObj, positionArray,
-							//		normalArray,textureCoordsArray,
-							//		dataLength,texture2DTransform);
-
-							DrawTexture2DNoIndex(OGLObj, vertexBuffer, texture2DTransform, dataLength);
+							DrawTexture2DNoIndex(OGLObj, positionArray,
+									normalArray,textureCoordsArray,
+									dataLength,texture2DTransform);
 						}
 
 					}
 					else
 					{
-						//if (isUseIndex)
-						//{
-      //                      M3D_INDEX_TYPE* indexArray =
-      //                      (M3D_INDEX_TYPE*)faceRenderData->GetIndexOffset();
-						//	GLShapeDrawer::DrawTriWithIndex(positionArray,
-						//			normalArray, indexArray, dataLength);
-						//}
-						//else
-						//{
-						//	GLShapeDrawer::DrawTriNoIndex(positionArray,
-						//			normalArray, dataLength);
-						//}
-
-						glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 						if (isUseIndex)
 						{
-							M3D_OFFSET_TYPE indexArray = faceRenderData->GetIndexOffset();
-							GLShapeDrawer::DrawTriWithIndex(vertexBuffer, indexBuffer, dataLength, indexArray);
+                            M3D_INDEX_TYPE* indexArray =
+                            (M3D_INDEX_TYPE*)faceRenderData->GetIndexOffset();
+							GLShapeDrawer::DrawTriWithIndex(positionArray,
+									normalArray, indexArray, dataLength);
 						}
 						else
 						{
-							GLShapeDrawer::DrawTriNoIndex(vertexBuffer, dataLength);
+							GLShapeDrawer::DrawTriNoIndex(positionArray,
+									normalArray, dataLength);
 						}
 					}
 
 				}
 				else
 				{
-					//if (isUseIndex)
-					//{
-     //                   M3D_INDEX_TYPE* indexArray =
-     //                   (M3D_INDEX_TYPE*)faceRenderData->GetIndexOffset();
-					//	GLShapeDrawer::DrawTriWithIndex(positionArray,
-					//			normalArray, indexArray, dataLength);
-					//}
-					//else
-					//{
-					//	GLShapeDrawer::DrawTriNoIndex(positionArray,
-					//			normalArray, dataLength);
-					//}
-					glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 					if (isUseIndex)
 					{
-						M3D_OFFSET_TYPE indexArray = faceRenderData->GetIndexOffset();
-						GLShapeDrawer::DrawTriWithIndex(vertexBuffer, indexBuffer, dataLength, indexArray);
+                        M3D_INDEX_TYPE* indexArray =
+                        (M3D_INDEX_TYPE*)faceRenderData->GetIndexOffset();
+						GLShapeDrawer::DrawTriWithIndex(positionArray,
+								normalArray, indexArray, dataLength);
 					}
 					else
 					{
-						GLShapeDrawer::DrawTriNoIndex(vertexBuffer, dataLength);
+						GLShapeDrawer::DrawTriNoIndex(positionArray,
+								normalArray, dataLength);
 					}
 				}
 			}
@@ -1070,34 +950,23 @@ void GLShapeDrawer::DrawSolidRenderPassGroup(RenderAction* action,
 				//			else
 				{
 					//根据颜色绘制
-					//if (isUseIndex)
-					//{
-					//	M3D_INDEX_TYPE* indexArray =
-					//		(M3D_INDEX_TYPE*)faceRenderData->GetIndexOffset();
-					//	GLShapeDrawer::DrawTriWithIndex(positionArray,
-					//		normalArray, indexArray, dataLength);
-					//}
-					//else
-					//{
-					//	GLShapeDrawer::DrawTriNoIndex(positionArray,
-					//			normalArray, dataLength);
-					//}
-					glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 					if (isUseIndex)
 					{
-						M3D_OFFSET_TYPE indexArray = faceRenderData->GetIndexOffset();
-						GLShapeDrawer::DrawTriWithIndex(vertexBuffer, indexBuffer, dataLength, indexArray);
+                        M3D_INDEX_TYPE* indexArray =
+                        (M3D_INDEX_TYPE*)faceRenderData->GetIndexOffset();
+						GLShapeDrawer::DrawTriWithIndex(positionArray,
+								normalArray, indexArray, dataLength);
 					}
 					else
 					{
-						GLShapeDrawer::DrawTriNoIndex(vertexBuffer, dataLength);
+						GLShapeDrawer::DrawTriNoIndex(positionArray,
+								normalArray, dataLength);
 					}
 				}
 
 			}
 		}
 		glPopMatrix();
-		vertexBuffer->UnBind();
 	}
 	//CloseCubeMapping(action);
 
@@ -1409,14 +1278,7 @@ void GLShapeDrawer::DrawTriWithIndex(Vector3* pointsBuffer, Vector3* normalBuffe
 {
 	glVertexPointer(3, GL_FLOAT, 0, pointsBuffer);
 	glNormalPointer(GL_FLOAT, 0, normalBuffer);
-	glDrawElements(GL_TRIANGLES, num, M3D_GL_INDEX_TYPE, indexBuffer);
-}
-
-void GLShapeDrawer::DrawTriWithIndex(HardWareVertexBuffer * vertexBuffer, HardWareIndexBuffer * indexBuffer, int dataLength, M3D_OFFSET_TYPE indexOffset)
-{
-	char* indexAddress = (char*)indexBuffer->Bind();
-	glDrawElements(GL_TRIANGLES, dataLength, M3D_GL_INDEX_TYPE, (GLvoid *)(indexAddress + indexOffset));
-	indexBuffer->UnBind();
+	glDrawElements(GL_TRIANGLES, num, GL_UNSIGNED_SHORT, indexBuffer);
 }
 
 void GLShapeDrawer::DrawTriNoIndex(Vector3* pointsBuffer, Vector3* normalBuffer,
@@ -1427,17 +1289,12 @@ void GLShapeDrawer::DrawTriNoIndex(Vector3* pointsBuffer, Vector3* normalBuffer,
 	glDrawArrays(GL_TRIANGLES, 0, num);
 }
 
-void GLShapeDrawer::DrawTriNoIndex(HardWareVertexBuffer * vertexBuffer, int dataLength)
-{
-	glDrawArrays(GL_TRIANGLES, 0, dataLength);
-}
-
 void GLShapeDrawer::DrawPntWithIndex(Vector3* pointsBuffer, Vector3* normalBuffer,
 		M3D_INDEX_TYPE* indexBuffer, int num,int stride)
 {
 	glVertexPointer(3, GL_FLOAT, stride, pointsBuffer);
 	glNormalPointer(GL_FLOAT, stride, normalBuffer);
-	glDrawElements(GL_POINTS, num, M3D_GL_INDEX_TYPE, indexBuffer);
+	glDrawElements(GL_POINTS, num, GL_UNSIGNED_SHORT, indexBuffer);
 }
 
 void GLShapeDrawer::DrawPntNoIndex(Vector3* pointsBuffer, Vector3* normalBuffer,
@@ -1452,7 +1309,7 @@ void GLShapeDrawer::DrawTriLinesWithIndex(Vector3* pointsBuffer, Vector3* normal
 		M3D_INDEX_TYPE* indexBuffer, int num)
 {
 	glVertexPointer(3, GL_FLOAT, 0, pointsBuffer);
-	glDrawElements(GL_LINES, num, M3D_GL_INDEX_TYPE, indexBuffer);
+	glDrawElements(GL_LINES, num, GL_UNSIGNED_SHORT, indexBuffer);
 }
 
 void GLShapeDrawer::DrawTexture2DWithIndex(GLuint OGLObj,
@@ -1489,7 +1346,7 @@ void GLShapeDrawer::DrawTexture2DWithIndex(GLuint OGLObj,
 
 		//LOGI("textureCoordsBuffer not emperty");
 		glTexCoordPointer(2, GL_FLOAT, 12, textureCoordsBuffer);
-		glDrawElements(GL_TRIANGLES, num, M3D_GL_INDEX_TYPE, indexBuffer);
+		glDrawElements(GL_TRIANGLES, num, GL_UNSIGNED_SHORT, indexBuffer);
 
 		//		glDisableClientState(GL_VERTEX_ARRAY);
 		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
@@ -1503,32 +1360,6 @@ void GLShapeDrawer::DrawTexture2DWithIndex(GLuint OGLObj,
 		glBindTexture(GL_TEXTURE_2D, 0);
 
 		glDisable(GL_TEXTURE_2D);
-	}
-}
-
-void GLShapeDrawer::DrawTexture2DWithIndex(GLuint OGLObj, HardWareVertexBuffer * vertexBuffer, HardWareIndexBuffer * indexBuffer, Matrix4 * texture2DTransform, int dataLength, M3D_OFFSET_TYPE indexOffset)
-{
-	if (OGLObj)
-	{
-		glEnable(GL_TEXTURE_2D);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, OGLObj);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-		indexBuffer->Bind();
-		vertexBuffer->Bind();
-		//LOGI("sphereMapObj end DrawTexture2DWithIndex");
-		glDrawElements(GL_TRIANGLES, dataLength, M3D_GL_INDEX_TYPE, (GLvoid *)(indexOffset));
-		indexBuffer->UnBind();
-		vertexBuffer->UnBind();
-
-		glBindTexture(GL_TEXTURE_2D, 0);
-
-		glDisable(GL_TEXTURE_2D);
-
-		//		glDisable(GL_BLEND);
-
 	}
 }
 
@@ -1576,25 +1407,6 @@ void GLShapeDrawer::DrawTexture2DNoIndex(GLuint OGLObj,
 	}
 }
 
-void GLShapeDrawer::DrawTexture2DNoIndex(GLuint OGLObj, HardWareVertexBuffer * vertexBuffer, Matrix4 * texture2DTransform, int dataLength)
-{
-	if (OGLObj)
-	{
-		// 启用纹理
-		glEnable(GL_TEXTURE_2D);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, OGLObj);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-		vertexBuffer->Bind();
-		glDrawArrays(GL_TRIANGLES, 0, dataLength);
-		vertexBuffer->UnBind();
-		glBindTexture(GL_TEXTURE_2D, 0);
-		glDisable(GL_TEXTURE_2D);
-	}
-}
-
 void GLShapeDrawer::DrawTriLinesNoIndex(Vector3* pointsBuffer, Vector3* normalBuffer,
 		int num)
 {
@@ -1612,28 +1424,27 @@ void GLShapeDrawer::DrawPMINew(PMIData* pmiData, RenderAction* action)
 	RenderContext* gl = action->GetGLContext();
 	glPushMatrix();
 
-	Color* tmpColor = pmiData->GetDrawColor();
-	glColor4f(tmpColor->m_r, tmpColor->m_g, tmpColor->m_b, tmpColor->m_a);
+	Color tmpColor = pmiData->GetDrawColor();
+	glColor4f(tmpColor.m_r, tmpColor.m_g, tmpColor.m_b, tmpColor.m_a);
 
 	glEnableClientState(GL_VERTEX_ARRAY);
 	//绘制线
 	for (int i = 0; i < pmiData->m_Lines.size(); i++)
 	{
 		PolyLine* line = pmiData->m_Lines[i];
-		int vertexNum = line->GetPointList().size();
-		int indexNum = 0;
-		float* vertexBuf = (float*)line->GetPointList().data();
+		int vertexNum, indexNum;
+		float* vertexBuf;
 		M3D_INDEX_TYPE* indexBuf;
+		line->GetBuffer(&vertexNum, &vertexBuf, &indexNum, &indexBuf);
 		if (indexNum > 0) //索引数为零则使用顶点绘制
 		{
 			glVertexPointer(3, GL_FLOAT, 0, vertexBuf);
-			glDrawElements(GL_LINE_STRIP, indexNum, M3D_GL_INDEX_TYPE,
+			glDrawElements(GL_LINE_STRIP, indexNum, GL_UNSIGNED_SHORT,
 					indexBuf);
 		}
 		else
 		{
-			glVertexPointer(3, GL_FLOAT, 0, vertexBuf);
-			glDrawArrays(GL_LINE_STRIP, 0, vertexNum);
+
 		}
 	}
 	//绘制外框和文字
@@ -1706,8 +1517,8 @@ void GLShapeDrawer::DrawNote(Note* pNote, RenderAction* action)
 	glDisableClientState(GL_NORMAL_ARRAY);
 
 //	//根据材质属性，设置显示状态
-	Color* tmpColor = pNote->GetDrawColor();
-	glColor4f(tmpColor->m_r, tmpColor->m_g, tmpColor->m_b, tmpColor->m_a);
+	Color tmpColor = pNote->GetDrawColor();
+	glColor4f(tmpColor.m_r, tmpColor.m_g, tmpColor.m_b, tmpColor.m_a);
 
 	//lines
 //	LOGI("GLShapeDrawer::DrawNote lines:%d",pNote->m_LineList.size());
@@ -1716,12 +1527,12 @@ void GLShapeDrawer::DrawNote(Note* pNote, RenderAction* action)
 	for (int i = 0; i < pNote->m_LineList.size(); i++)
 	{
 		Line3D* line = pNote->m_LineList[i];
-		Color* tempColor = line->GetDrawColor();
+		Color tempColor = line->GetDrawColor();
 		if(line->GetName() == "exLine")
 		{
 			glLineWidth(2);
 		}
-		glColor4f(tempColor->m_r, tempColor->m_g, tempColor->m_b, tempColor->m_a);
+		glColor4f(tempColor.m_r, tempColor.m_g, tempColor.m_b, tempColor.m_a);
 		int vertexNum = 2;
 		int indexNum = 2;
 		float vertexBuf[6] =
@@ -1731,7 +1542,7 @@ void GLShapeDrawer::DrawNote(Note* pNote, RenderAction* action)
 		{ 0, 1 };
 		//line->getBuffer(&vertexNum, &vertexBuf, &indexNum, &indexBuf);
 		glVertexPointer(3, GL_FLOAT, 0, vertexBuf);
-		glDrawElements(GL_LINE_STRIP, indexNum, M3D_GL_INDEX_TYPE, indexBuf);
+		glDrawElements(GL_LINE_STRIP, indexNum, GL_UNSIGNED_SHORT, indexBuf);
 
 		//draw Arrows
 		vector<vector<float> > startArrowBufList = line->GetStartArrowBuffer();
@@ -1761,14 +1572,14 @@ void GLShapeDrawer::DrawNote(Note* pNote, RenderAction* action)
 	for (int i = 0; i < pNote->m_PolyLineList.size(); i++)
 	{
 		PolyLine* line = pNote->m_PolyLineList[i];
-		int vertexNum = line->GetPointList().size();
-		int indexNum = 0;
-		float* vertexBuf = (float*)line->GetPointList().data();
+		int vertexNum, indexNum;
+		float* vertexBuf;
 		M3D_INDEX_TYPE* indexBuf;
+		line->GetBuffer(&vertexNum, &vertexBuf, &indexNum, &indexBuf);
 		if (indexNum > 0) //索引数为零则使用顶点绘制
 		{
 			glVertexPointer(3, GL_FLOAT, 0, vertexBuf);
-			glDrawElements(GL_LINE_STRIP, indexNum, M3D_GL_INDEX_TYPE,
+			glDrawElements(GL_LINE_STRIP, indexNum, GL_UNSIGNED_SHORT,
 					indexBuf);
 		}
 		else
@@ -1824,24 +1635,21 @@ void GLShapeDrawer::DrawNote(Note* pNote, RenderAction* action)
 				if (textMesh)
 				{
 					int dataLength = textMesh->GetDataLength();
-					if (dataLength)
-					{
-						bool isUseIndex = textMesh->GetRefMesh()->IsUseIndex();
-						Vector3* positionArray =
+					bool isUseIndex = textMesh->GetRefMesh()->IsUseIndex();
+					Vector3* positionArray =
 							textMesh->GetRefMesh()->GetPositionArray()->data()
-							+ textMesh->GetDataOffset();
+									+ textMesh->GetDataOffset();
 
-						if (isUseIndex)
-						{
-							M3D_INDEX_TYPE* indexArray =
+					if (isUseIndex)
+					{
+						M3D_INDEX_TYPE* indexArray =
 								textMesh->GetRefMesh()->GetIndexArray()->data();
-							GLShapeDrawer::DrawTriWithIndex(positionArray, NULL, indexArray,
+						GLShapeDrawer::DrawTriWithIndex(positionArray, NULL, indexArray,
 								dataLength);
-						}
-						else
-						{
-							GLShapeDrawer::DrawTriNoIndex(positionArray, NULL, dataLength);
-						}
+					}
+					else
+					{
+						GLShapeDrawer::DrawTriNoIndex(positionArray, NULL, dataLength);
 					}
 				}
 			}
@@ -2007,13 +1815,12 @@ void  GLShapeDrawer::DrawPoint(Point* point )
 	}
 }
 
-bool  GLShapeDrawer::ComputerSphereTexCoords(unsigned int OGLObj,BaseMaterial* material,Renderable* faceRenderData,Vector3 * texArray,const M3D_INDEX_TYPE*indexArray,
+bool  GLShapeDrawer::ComputerSphereTexCoords(unsigned int OGLObj,Material* material,Renderable* faceRenderData,Vector3 * texArray,const M3D_INDEX_TYPE*indexArray,
 		const Vector3 * normalArray,const Vector3 * positionArray,
 		Matrix3 & rotateMatrix,int dataLength)
 {
 	string name = "";
-	Material* tempMaterial = dynamic_cast<Material*>(material);
-	name = tempMaterial->GetDiffuseMap()->GetName();
+	name = material->GetTexture()->GetName();
 
 	int pos = name.find_last_of("\\/");
 	if(pos != string::npos)
@@ -2152,54 +1959,34 @@ void GLShapeDrawer::DrawSampleModelPassGroug(RenderAction* action)
 		RenderabelArray::iterator it = tempRenderQueues[i]->GetRenderableArray().begin();
 		for (; it != tempRenderQueues[i]->GetRenderableArray().end(); it++)
 		{
-            Renderable* faceRenderData = *it;
-            
-            int dataLength = faceRenderData->GetDataLength();
-            bool isUseIndex = faceRenderData->IsUseIndex();
-            int vertexNum = faceRenderData->GetUseIndexVertexNumber();
-            
-            HardWareVertexBuffer* vertexBuffer = faceRenderData->GetHardWareVertexBuffer();
-            HardWareIndexBuffer* indexBuffer = faceRenderData->GetHardWareIndexBuffer();
-            char* vertexAddress = (char*)vertexBuffer->Bind();
-            
-            glPushMatrix();
-            glMultMatrixf((*it)->GetRenderWorldMatrix()->Data());
-            
-            if (dataLength > 0)
-            {
-                
-                M3D_OFFSET_TYPE veroffset = faceRenderData->GetVertexOffset();
-                M3D_OFFSET_TYPE normaloffset = faceRenderData->GetNormalOffset();
-                M3D_OFFSET_TYPE texoffset = faceRenderData->GetTextureCoordsOffset();
-                
-                glVertexPointer(3, GL_FLOAT, 0, (GLvoid *)(vertexAddress + veroffset));
-                glNormalPointer( GL_FLOAT, 0, (GLvoid *)(vertexAddress + normaloffset));
-                
-                BaseMaterial* material = faceRenderData->GetRenderMaterial();//获取材质
-                
-                //如果材质存在，则使用材质绘制
-                
-                glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE,
-                             (*it)->GetRenderColor().Data());
-                
-                glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-                if (isUseIndex)
-                {
-                    M3D_OFFSET_TYPE indexArray = faceRenderData->GetIndexOffset();
-                    GLShapeDrawer::DrawTriWithIndex(vertexBuffer, indexBuffer, dataLength, indexArray);
-                }
-                else
-                {
-                    GLShapeDrawer::DrawTriNoIndex(vertexBuffer, dataLength);
-                }
-                
-            }
-            glPopMatrix();
-            vertexBuffer->UnBind();
+			Renderable* faceRenderData = *it;
+
+			int dataLength = faceRenderData->GetDataLength();
+			bool isUseIndex = faceRenderData->IsUseIndex();
+			int vertexNum = faceRenderData->GetUseIndexVertexNumber();
+
+			glPushMatrix();
+			glMultMatrixf((*it)->GetRenderWorldMatrix()->Data());
+			if (dataLength > 0)
+			{
+                Vector3* positionArray = (Vector3*)faceRenderData->GetVertexOffset();
+				if (isUseIndex)
+				{
+                    M3D_INDEX_TYPE* indexArray =
+                    (M3D_INDEX_TYPE*)faceRenderData->GetIndexOffset();
+
+					GLShapeDrawer::DrawTriWithIndex(positionArray,
+							NULL, indexArray, dataLength);
+				}
+				else
+				{
+					GLShapeDrawer::DrawTriNoIndex(positionArray,
+							NULL, dataLength);
+				}
+			}
+			glPopMatrix();
 		}
-        glDisableClientState(GL_VERTEX_ARRAY);
-        glDepthMask(GL_TRUE);
-        glEnable(GL_DEPTH_TEST);
+		glDisableClientState(GL_VERTEX_ARRAY);
 	}
 
 }

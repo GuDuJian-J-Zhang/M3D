@@ -1,4 +1,4 @@
-﻿/**@file
+/**@file
  *@brief
  *@author	XL
  *@date		2014-1-7
@@ -9,7 +9,11 @@
 
 #ifndef M3D_STRING_HELPER_H_
 #define  M3D_STRING_HELPER_H_
-#include "m3d/M3DExport.h"
+#include <string>
+#include <iostream>
+#include "m3d/M3D.h"
+using std::string;
+using std::iostream;
 namespace M3D
 {
 /**
@@ -34,11 +38,6 @@ public:
 	static void Replace_all(string& src, const string& oldvalue,
 			const string& newvalue);
 
-	static bool HasSuffix(const std::string &str, const std::string &suffix)
-	{
-		return str.size() >= suffix.size() &&
-			str.compare(str.size() - suffix.size(), suffix.size(), suffix) == 0;
-	}
 	/**
 	 * 是否是空格子字符
 	 * @param c
@@ -123,9 +122,6 @@ public:
 	static vector<string> Split(const string &strTarget,
 			const string &strDelimiter);
 
-	static vector<string> SplitIngnoreEmpty(const string &strTarget,
-		const string &strDelimiter);
-
 	/**
 	 * if split "a,b,,d" by ",", result is "a"
 	 * @param strTarget
@@ -198,12 +194,6 @@ public:
 	 * @return
 	 */
 	static string subString(const string& src, int begin, int end);
-
-	static bool Startswith(const std::string& str, const std::string& start);
-
-	static bool Endswith(const std::string& str, const std::string& end);
-
-	static string Trim(const std::string& str);
 };
 }
 #endif /*M3D_STRING_HELPER_H_*/

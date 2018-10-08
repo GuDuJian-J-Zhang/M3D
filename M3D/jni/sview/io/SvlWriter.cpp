@@ -77,7 +77,7 @@ int SvlWriter::SaveTo(View* view,const string &targetPath)
 		{
 			return SaveByModifyOldSVL();
 		} else {
-			Model* topModel = (Model*)view->GetModel();
+			Model* topModel = view->GetModel();
 			if(topModel)
 			{
 				return SaveToNewSVL(topModel,targetPath);
@@ -129,14 +129,14 @@ int SvlWriter::SaveToNewSVL(Model* model,const string &targetPath) {
 		m_pTopSVLProto->SetProtoName(wstrName);
 		m_pTopSVLProto->SetLODCount(1);
         m_pTopSVLProto->SetCADFileTop(true);
-		wstring wstrTargetPath =  GetSVLUTF8String(targetPath);
-//        wstring wstrCadPath =  GetSVLUTF8String("");
+		wstring wstrTargetPath =  Platform::StringToWString(targetPath);
+//        wstring wstrCadPath =  Platform::StringToWString("");
         m_pTopSVLProto->SetCADFilePath(wstrTargetPath); //以STL路径作为CADFilePath
 		m_pTopSVLProto->RegCADFile(wstrTargetPath, stkFileP); //发行Stk_File
 
-		stkFileP->SetDataSource( GetSVLUTF8String("STL File"));
-		stkFileP->SetConvTookit( GetSVLUTF8String("SViewMobile"));
-		stkFileP->SetSVLConversion( GetSVLUTF8String("SViewMobile"));
+		stkFileP->SetDataSource( Platform::StringToWString("STL File"));
+		stkFileP->SetConvTookit( Platform::StringToWString("SViewMobile"));
+		stkFileP->SetSVLConversion( Platform::StringToWString("SViewMobile"));
 		stkFileP->SetPolygonNum(szTri);
 		stkFileP->SetProtoTypeNum(1);
         m_pDocumentManager->AddTopProtoType(m_pTopSVLProto);
@@ -168,26 +168,24 @@ int SvlWriter::SetProtoTypeDataRecursion(Model* curModel,
 	Stk_Body *pBody = new Stk_Body(curProto);
 	pBody->RegisterID(1);
 
-	LOGI("SvlWriter::SetProtoTypeDataRecursion bodyCnt:%d",curModel->GetBodys()->size());
+	LOGI("SvlWriter::SetProtoTypeDataRecursion bodyCnt:%d",curModel->GetBodys().size());
 	//fill geometry info of curProto
-	for (int ibody = 0; ibody < curModel->GetBodys()->size(); ibody++) {
+	for (int ibody = 0; ibody < curModel->GetBodys().size(); ibody++) {
 		//填充body中的顶点数据到Stk_Mesh_Com
-		Body* curBody = (Body*)curModel->GetBodys()->at(ibody);
-		//TODO
-		//VertexSet* bodymeshData = (VertexSet*) curBody->GetData(level);
-		VertexSet* bodymeshData = NULL;
+		Body* curBody = curModel->GetBodys().at(ibody);
+		VertexSet* bodymeshData = (VertexSet*) curBody->GetData(level);
 		vector<Vector3>* positionArray = bodymeshData->GetPositionArray();
 		vector<Vector3>* normalArray = bodymeshData->GetNormalArray();
 
 		Stk_Mesh_Com *pMesh = new Stk_Mesh_Com(curProto);
 		pMesh->SetClosed(false);
 
-		Color* bodyColor = curBody->GetColor();
+		Color bodyColor = curBody->GetColor();
 		STK_RGBA32 stkMeshColor;
-		stkMeshColor.Red = bodyColor->m_r;
-		stkMeshColor.Green = bodyColor->m_g;
-		stkMeshColor.Blue = bodyColor->m_b;
-		stkMeshColor.Alpha = 1-bodyColor->m_a;
+		stkMeshColor.Red = bodyColor.m_r;
+		stkMeshColor.Green = bodyColor.m_g;
+		stkMeshColor.Blue = bodyColor.m_b;
+		stkMeshColor.Alpha = 1-bodyColor.m_a;
 		pMesh->SetColor(stkMeshColor);
 
 		MeshLODInfo* MeshLODP = new MeshLODInfo();
@@ -221,10 +219,8 @@ int SvlWriter::SetProtoTypeDataRecursion(Model* curModel,
 		vector<M3D_INDEX_TYPE>* bodyIndexArray = bodymeshData->GetIndexArray();
 		//faces
 		for (int iFace = 0; iFace < curBody->GetFaces().size(); iFace++) {
-			Face* curFace = (Face*)curBody->GetFaces().at(iFace);
-			//TODO
-			Mesh* faceMeshData = NULL;
-			//Mesh* faceMeshData = (Mesh*) curFace->GetData(level);
+			Face* curFace = curBody->GetFaces().at(iFace);
+			Mesh* faceMeshData = (Mesh*) curFace->GetData(level);
 			Stk_Mesh_Face *pFace = new Stk_Mesh_Face(curProto);
 			FaceLODInfo* FaceLODP = new FaceLODInfo();
 			int curIndex = 0;
@@ -246,12 +242,12 @@ int SvlWriter::SetProtoTypeDataRecursion(Model* curModel,
 			//}
 			pFace->RegisterID(STK_NEW_ID);
 			pFace->SetFaceLODInfo(level, FaceLODP);
-			Color* faceColor =  curFace->GetColor();
+			Color faceColor =  curFace->GetColor();
 			STK_RGBA32 stkColor;
-			stkColor.Red = faceColor->m_r;
-			stkColor.Green = faceColor->m_g;
-			stkColor.Blue = faceColor->m_b;
-			stkColor.Alpha = 1-faceColor->m_a;
+			stkColor.Red = faceColor.m_r;
+			stkColor.Green = faceColor.m_g;
+			stkColor.Blue = faceColor.m_b;
+			stkColor.Alpha = 1-faceColor.m_a;
 			pFace->SetColor(stkColor);
 			pMesh->AddMeshFace(pFace);
 
@@ -275,7 +271,7 @@ int SvlWriter::SetProtoTypeDataRecursion(Model* curModel,
 
 int SvlWriter::SaveByModifyOldSVL()
 {
-    LOGI("SaveByModifyOldSVL start");
+    LOGE("SaveByModifyOldSVL start");
 
 	this->init();
 	//根据操作历史纪录 对SVL文件进行相同的操作
@@ -288,11 +284,11 @@ int SvlWriter::SaveByModifyOldSVL()
 		list<Operation*>::const_iterator it = OpList.begin();
 		while(it != OpList.end())
 		{
-			//LOGI("Operation start");
+			LOGE("Operation start");
 			Operation* operation = *it;
 			this->ApplyOperationToSVLFile(operation,m_stkDocMgr);
 			it++;
-			//LOGI("Operation end");
+			LOGE("Operation end");
 		}
 	}
 
@@ -300,22 +296,22 @@ int SvlWriter::SaveByModifyOldSVL()
 	SaveAnthorInfoToSVLFile();
 
 	//save
-	wstring tarFile = GetSVLUTF8String(m_targetPath);
+	wstring tarFile = Platform::StringToWString(m_targetPath);
 	m_stkDocMgr->SaveDocumentAs(tarFile, FILESAVE_TYPE_UNIQUE);
 
-    LOGI("SaveByModifyOldSVL end");
+    LOGE("SaveByModifyOldSVL end");
 	return 0;
 }
 
 bool SvlWriter::SaveAnthorInfoToSVLFile()
 {
-    ModifyProto(m_topProtoType, (Model*)m_view->GetModel());
+    ModifyProto(m_topProtoType,m_view->GetModel());
     
     for(int i=0;i<m_allModels.size();i++){
-		Model* model = (Model*)m_allModels.at(i);
+		Model* model = m_allModels.at(i);
 		string strPlcPath = PathHelper::M3DHexPathToSVLDec(
 				PathHelper::GetM3DPath(model));
-		wstring wstrPlcPath = GetSVLUTF8String(strPlcPath);
+		wstring wstrPlcPath = Platform::StringToWString(strPlcPath);
 		Stk_Instance* insance = m_stkDocMgr->GetInstanceByPath(wstrPlcPath);
 		if (insance)
 		{
@@ -331,45 +327,35 @@ bool SvlWriter::SaveAnthorInfoToSVLFile()
     
 void SvlWriter::ModifyProto(Stk_ProtoType* proto, M3D::Model* model)
 {
-	const M3D::Color* color = model->GetColor();
-	LOGE("ModifyProto %p",color);
-	if(color == NULL){
-		return;
-	}
-	if (*color != *M3D::Color::Default) {
-
-		STK_RGBA32 protoColor = { color->m_r, color->m_g, color->m_b, 1
-				- color->m_a };
-		proto->SetColor(protoColor);
-	}
-	//修改名称
-	wstring wstrName = GetSVLUTF8String(model->GetName());
-
-	proto->SetProtoName(wstrName);
+    const M3D::Color& color = model->GetColor();
+    if (color != *M3D::Color::Default) {
+        STK_RGBA32 protoColor={color.m_r, color.m_g, color.m_b, 1 - color.m_a};
+        proto->SetColor(protoColor);
+    }
+    //修改名称
+    wstring wstrName = Platform::StringToWString(model->GetName());
+    proto->SetProtoName(wstrName);
 
 }
     
 void SvlWriter::ModifyInstance(Stk_Instance* ins, Model* model) {
-	//修改颜色
-	const M3D::Color* color = model->GetColor();
-	if(color == NULL){
-			return;
-		}
-	if (*color != *M3D::Color::Default) {
-		ins->SetColor(color->m_r, color->m_g, color->m_b, 1 - color->m_a);
-	}
-	Matrix3x4* plcMatrix = model->GetPlaceMatrix();
-	STK_MTX32 insPlcMatrix;
-	memcpy(insPlcMatrix.PlcMatrix, plcMatrix->ToMatrix4().Data(),
-			16 * sizeof(float));
-
-	PathHelper::GetSVLPath(model);
-
-	//修改装配矩阵
-	ins->SetPlacement(model->GetPlcId(), insPlcMatrix);
-	//修改名称
-	wstring wstrName = GetSVLUTF8String(model->GetName());
-	ins->SetInsName(wstrName);
+            //修改颜色
+    const M3D::Color& color = model->GetInitColor();
+    if (color != *M3D::Color::Default) {
+            ins->SetColor(color.m_r, color.m_g, color.m_b, 1 - color.m_a);
+    }
+    ModelNode* modelNode = ModelAssemblyHelper::GetModelNode(model);
+    Matrix3x4&   plcMatrix= modelNode->GetOrigPlcMartirx();
+    STK_MTX32 insPlcMatrix;
+    memcpy(insPlcMatrix.PlcMatrix, plcMatrix.ToMatrix4().Data(), 16*sizeof(float));
+    
+    PathHelper::GetSVLPath(model);
+ 
+    //修改装配矩阵
+    ins->SetPlacement(model->GetPlcId(), insPlcMatrix);
+    //修改名称
+    wstring wstrName = Platform::StringToWString(model->GetName());
+    ins->SetInsName(wstrName);
 }
 
 Stk_ProtoType* SvlWriter::GetDefaultProto(Stk_DocumentManager * stkDocMgr)
@@ -391,11 +377,6 @@ Stk_ProtoType* SvlWriter::GetDefaultProto(Stk_DocumentManager * stkDocMgr)
 	return topProtoType;
 }
 
-wstring SvlWriter::GetSVLUTF8String(const string& m3dString)
-{
-	return Platform::StringToWString(m3dString, "utf-8");
-}
-
 bool SvlWriter::ApplyOperationToSVLFile(Operation* operation,Stk_DocumentManager * stkDocMgr)
 {
 	bool applyState = false;
@@ -408,7 +389,7 @@ bool SvlWriter::ApplyOperationToSVLFile(Operation* operation,Stk_DocumentManager
 		{
 			AddFileOperation* addFileOp = (AddFileOperation*)operation;
             std::vector<Stk_ProtoType*> stkProtoTypeList;
-            wstring wFilePath = this->GetSVLUTF8String(addFileOp->GetFilePath());
+            wstring wFilePath = Platform::StringToWString(addFileOp->GetFilePath());
             
             STK_STATUS stkStatus = stkDocMgr->LoadCADSubFile(wFilePath, stkProtoTypeList);
             if(stkStatus != STK_SUCCESS){
@@ -416,7 +397,7 @@ bool SvlWriter::ApplyOperationToSVLFile(Operation* operation,Stk_DocumentManager
             }
  
 			string destPath = PathHelper::M3DHexPathToSVLDec(addFileOp->GetUpperPlcPath());
-            wstring wdestPath = this->GetSVLUTF8String(destPath);
+            wstring wdestPath = Platform::StringToWString(destPath);
 //			LOGE("stkDocMgr->AddAssemble filePath %s",destPath.c_str());
 //			LOGE("stkDocMgr->AddAssemble wFilePath %s",wFilePath.c_str());
 
@@ -436,8 +417,8 @@ bool SvlWriter::ApplyOperationToSVLFile(Operation* operation,Stk_DocumentManager
             string srcPlcPath = PathHelper::M3DHexPathToSVLDec(copyModelOp->GetSrcPlcPath());
             string destPlcPath = PathHelper::M3DHexPathToSVLDec(copyModelOp->GetDestPlcPath());
             
-            wstring wsrcPath = this->GetSVLUTF8String(srcPlcPath);
-            wstring wdestPlcPath = this->GetSVLUTF8String(destPlcPath);
+            wstring wsrcPath = Platform::StringToWString(srcPlcPath);
+            wstring wdestPlcPath = Platform::StringToWString(destPlcPath);
             wstring wgenPlcPath;
 
             stkDocMgr->CopyAssemble(wsrcPath,wdestPlcPath,wgenPlcPath);
@@ -448,8 +429,8 @@ bool SvlWriter::ApplyOperationToSVLFile(Operation* operation,Stk_DocumentManager
 			string srcPath =  PathHelper::M3DHexPathToSVLDec(moveModelOp->GetForwPlcPath());
 			string afterPlcPath =  PathHelper::M3DHexPathToSVLDec(moveModelOp->GetAfterPlcPath());
 
-			wstring wsrcPath = this->GetSVLUTF8String(srcPath);
-			wstring wafterPlcPath = this->GetSVLUTF8String(afterPlcPath);
+			wstring wsrcPath = Platform::StringToWString(srcPath);
+			wstring wafterPlcPath = Platform::StringToWString(afterPlcPath);
 
 			wstring newWPlcPath = stkDocMgr->DragAssemble(wsrcPath,wafterPlcPath);
 
@@ -465,7 +446,7 @@ bool SvlWriter::ApplyOperationToSVLFile(Operation* operation,Stk_DocumentManager
 
 //			LOGE("stkDocMgr->AddAssemble removeInstancePath %s",removeInstancePath.c_str());
  
-			wstring removeInstanceWPath = this->GetSVLUTF8String(removeInstancePath);
+			wstring removeInstanceWPath = Platform::StringToWString(removeInstancePath);
 
 			STK_STATUS ret = stkDocMgr->DelInstanceByPlcPath(removeInstanceWPath);
 
@@ -489,8 +470,8 @@ void SvlWriter::init()
 	//Writer::SaveTo(targetPath);
 	m_stkDocMgr = new Stk_DocumentManager();
 
-	wstring wsFile = GetSVLUTF8String(m_SourcePath);
- 
+	wstring wsFile = Platform::StringToWString(m_SourcePath);
+
 	STK_STATUS status = m_stkDocMgr->LoadDocument(wsFile);
 	if (status != STK_SUCCESS)
 	{
@@ -512,7 +493,7 @@ void SvlWriter::init()
 		return;
 	}
 
-	Model* topModel = (Model*)m_view->GetModel();
+	Model* topModel = m_view->GetModel();
 	if(!topModel)
 	{
 		return;

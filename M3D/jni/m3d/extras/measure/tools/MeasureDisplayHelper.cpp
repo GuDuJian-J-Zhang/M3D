@@ -392,13 +392,8 @@ void MeasureDisplayHelper::createRectImage(Shape2DSet* shape2DSet,
 
 	Texts2D* text1 = new Texts2D;
 	text1->SetColor(text1Color);
-#ifdef WIN32
 	Vector2 text1Start(rect1StartX + 10,
-		(rect1StartY + rect1EndY) / 2.0 - fontSize / 2);
-#else
-	Vector2 text1Start(rect1StartX + 10,
-		(rect1StartY + rect1EndY) / 2.0 + fontSize / 3);
-#endif // WIN32
+			(rect1StartY + rect1EndY) / 2.0 + fontSize / 3);
 	text1->m_start = text1Start;
 	LOGI("text1 start %s", text1->m_start.Tostring().c_str());
 	text1->m_size = fontSize;
@@ -453,13 +448,9 @@ void MeasureDisplayHelper::createRectImage(Shape2DSet* shape2DSet,
 
 	Texts2D* text2 = new Texts2D;
 	text2->SetColor(text2Color);
-#ifdef WIN32
 	Vector2 text2Start(rect2StartX + 10,
-			(rect2StartY + rect2EndY) / 2.0 - fontSize / 2);
-#else
-	Vector2 text2Start(rect2StartX + 10,
-		(rect2StartY + rect2EndY) / 2.0 + fontSize / 3);
-#endif
+			(rect2StartY + rect2EndY) / 2.0 + fontSize / 3);
+
 	text2->m_start = text2Start;
 	LOGI("text2 start %s", text2->m_start.Tostring().c_str());
 	text2->m_size = fontSize;
@@ -502,11 +493,6 @@ void MeasureDisplayHelper::createRectImage(Shape2DSet* shape2DSet,
 
 }
 
-void MeasureDisplayHelper::MeasureText(const string& measureText, float fontSize, const string& fontName, Vector2 & o_rect1Start, Vector2 & o_rect1End)
-{
-
-}
-
 void MeasureDisplayHelper::addImageToMemory(SceneManager* scene,
 		ImageBoard* &imageboard, Shape2DSet * shape2DSet, Vector3 pntInPlane,
 		float wideFactor, float heightFactor)
@@ -522,7 +508,7 @@ void MeasureDisplayHelper::addImageToMemory(SceneManager* scene,
 		LOGI("gluObj if %p", gluObj);
 		LOGI("shape2DSet if %p", shape2DSet);
 		createImagePath = gluObj->createImage(shape2DSet, scene);
-		LOGI("createImagePath %s", createImagePath.c_str());
+		LOGE("createImagePath %s", createImagePath.c_str());
 	}
 
 	delete shape2DSet;
@@ -530,7 +516,8 @@ void MeasureDisplayHelper::addImageToMemory(SceneManager* scene,
 	if (createImagePath.length() > 0)
 	{
 		Vector2 imageBoardSize(wideFactor, heightFactor);
-		
+		imageBoardSize = ShapeHelper::GetCommonSize(scene, imageBoardSize);
+
 		imageboard = new ImageBoard(pntInPlane, imageBoardSize);
 
 		imageboard->SetTexture(
@@ -601,7 +588,7 @@ ImageBoard* MeasureDisplayHelper::createNoteTextsImage(SceneManager* scene,
 		fontSizeList.push_back((*(it + 1))->m_size);
 		notZh = 0;
 		charNumber = countChar((*(it + 1))->m_texts, notZh);
-		LOGI("charNumber = %d not chiniese = %d",charNumber,notZh);
+		LOGE("charNumber = %d not chiniese = %d",charNumber,notZh);
 		tempStrLenghtRight = notZh * 0.50f + (charNumber - notZh);
 		if (tempStrLenghtRight > maxStrLengthRight)
 		{
@@ -672,11 +659,8 @@ ImageBoard* MeasureDisplayHelper::createNoteTextsImage(SceneManager* scene,
 int MeasureDisplayHelper::countChar(string &str, int &notZH)
 {
 	size_t length = 0;
-	for (size_t i = 0, len = 0; i < str.length(); i += len)
+	for (size_t i = 0, len = 0; i != str.length(); i += len)
 	{
-#ifdef _WIN32
-		len = 2;
-#else
 		unsigned char byte = str[i];
 		if (byte >= 0xFC) // lenght 6
 			len = 6;
@@ -693,7 +677,6 @@ int MeasureDisplayHelper::countChar(string &str, int &notZH)
 			len = 1;
 			notZH++;
 		}
-#endif
 		length++;
 	}
 	return length;
@@ -731,33 +714,14 @@ ImageBoard* MeasureDisplayHelper:: createNoteTextsImageN(SceneManager* scene,
 	if (fontSize < 1.0)
 		fontSize = 15.0f;
 	fontSize = fontSize * 40 / 15.0f;
-	GlueObj* gluObj = scene->GetGlueObj();
 
 	int notZh = 0;
 	int charNumber = MeasureDisplayHelper::countChar(noteStr, notZh);
-#ifdef WIN32
-	float strLength = notZh * 0.6f + (charNumber - notZh)*2;
-#else
 	float strLength = notZh * 0.6f + (charNumber - notZh);
-#endif
 	float RectWight = (strLength + 1) * fontSize;
-#ifdef WIN32
-	float ScaleFactor = 1.0f;
-	Vector2 tempStart(0.5, 0.5); //2.5 为调节因子
-	Vector2 tempEnd(RectWight, fontSize * 3.5 + 1);
-	Vector2 tempStartNoUse(RectWight, fontSize * 3.5 + 1);
-	gluObj->GetMeasureTextFun()(noteStr.c_str(), fontSize, "楷体",(float*)tempStartNoUse.Data(), (float*)tempEnd.Data());
-	tempEnd.m_y = tempEnd.m_y + 1.0f;//留出结束空白字符
-	tempEnd.m_x = tempEnd.m_x*0.7;
-	tempEnd.m_x = tempEnd.m_x + 10.0f;//留出结束空白字符
-	tempStart = tempStart*ScaleFactor;
-	tempEnd = tempEnd*ScaleFactor;
-	RectWight = tempEnd.m_x;
-	fontSize = fontSize* ScaleFactor;
-#else	
+
 	Vector2 tempStart(1, 1); //2.5 为调节因子
 	Vector2 tempEnd(RectWight, fontSize * 2.5 + 1);
-#endif // WIN32	
 	Color blk = Color::BLACK;
 	Color gr = Color::GRAY;
 	Color wt = Color::WHITE;
@@ -767,28 +731,32 @@ ImageBoard* MeasureDisplayHelper:: createNoteTextsImageN(SceneManager* scene,
 	CreateNoteRectangleImage(shape2DSet, tempStart, tempEnd, lineColor,
 			lineWidth, wt, textColor, fontSize, noteStr);
 LOGI("end CreateNoteRectangleImage");
-
-#ifdef WIN32
-	float wideFactor = RectWight / 90.0f;
-	float heightFactor = (fontSize * 1.7) / 90.0f;
-#else
 	float wideFactor = RectWight / 100.0f;
 	float heightFactor = (fontSize * 2.5) / 100.0f;
-#endif
+
+	LOGI(" createNoteTextsImageN::scene %p",scene);
+	GlueObj* gluObj = scene->GetGlueObj();
+
+	//LOGI("gluObj value %p", gluObj);
+
 	string createImagePath = "";
+
 	if (gluObj)
 	{
+		LOGI("gluObj if %p", gluObj);
+		//LOGI("shape2DSet if %p", shape2DSet);
 		createImagePath = gluObj->createImage(shape2DSet, scene);
-		LOGI("createImagePath %s", createImagePath.c_str());
+		//LOGE("createImagePath %s", createImagePath.c_str());
 	}
 
 	delete shape2DSet;
 	shape2DSet = NULL;
+	LOGI("createImagePath.length() %d",createImagePath.length());
 	if (createImagePath.length() > 0)
 	{
 
 		Vector2 imageBoardSize(wideFactor, heightFactor);
-		//imageBoardSize = ShapeHelper::GetCommonSize(scene, imageBoardSize);
+		imageBoardSize = ShapeHelper::GetCommonSize(scene, imageBoardSize);
 
 		ret = new ImageBoard(position, imageBoardSize);
 
@@ -828,13 +796,8 @@ void MeasureDisplayHelper::CreateNoteRectangleImage(Shape2DSet*shape2DSet,
 
 	Texts2D* text1 = new Texts2D;
 	text1->SetColor(fontColor);
-#ifdef WIN32
-	Vector2 text1Start(rect1StartX,
-		(rect1StartY + rect1EndY) / 2.0 - fontSize / 2.0f);
-#else
-	Vector2 text1Start(rect1StartX + fontSize / 2.0f,
-		(rect1StartY + rect1EndY) / 2.0 + fontSize / 3.0f);
-#endif // WIN32
+	Vector2 text1Start(rect1StartX + fontSize/2.0f,
+			(rect1StartY + rect1EndY) / 2.0 + fontSize / 3.0f);
 	text1->m_start = text1Start;
 	LOGI("text1 start %s", text1->m_start.Tostring().c_str());
 	text1->m_size = fontSize;
@@ -933,34 +896,12 @@ MeasureDisplayHelper::CreateSequenceNumberImage(SceneManager* scene,
 	//创建矩形文本
 	Texts2D* text1 = new Texts2D;
 	text1->SetColor(textColor);
-#ifdef WIN32
-	float start = (rect1EndX - rect1StartX) / 2 - fontSize / 2.0f;
-	//矫正一下，
-	if (start>20)
-	{
-		start = 20;
-	}
-
-	//只有一个字母
-	if (noteStr.length() == 1)
-	{
-		start = 30;
-	}else if (noteStr.length() ==3)
-	{
-		start = 5;
-	}
-
-	Vector2 text1Start(start,
-		(rect1StartY + rect1EndY) / 2.0 - fontSize / 2.0f);
-#else
-	Vector2 text1Start((rect1StartX + rect1EndX) / 2,
-		(rect1StartY + rect1EndY) / 2.0 + fontSize / 3.0f);
-#endif // WIN32
+	Vector2 text1Start((rect1StartX+rect1EndX)/2,
+			(rect1StartY + rect1EndY) / 2.0 + fontSize / 3.0f);
 	text1->m_start = text1Start;
 	text1->m_size = fontSize;
 	text1->m_texts = noteStr;
 	text1->m_alignCenter = true;
-	text1->m_fontName = "Consolas";
 	shape2DSet->AddShape2D(text1);
 
 	GlueObj* gluObj = scene->GetGlueObj();
@@ -972,7 +913,7 @@ MeasureDisplayHelper::CreateSequenceNumberImage(SceneManager* scene,
 		LOGI("gluObj if %p", gluObj);
 		//LOGI("shape2DSet if %p", shape2DSet);
 		createImagePath = gluObj->createImage(shape2DSet, scene);
-		//LOGI("createImagePath %s", createImagePath.c_str());
+		//LOGE("createImagePath %s", createImagePath.c_str());
 	}
 	delete shape2DSet;
 	shape2DSet = NULL;
@@ -981,7 +922,7 @@ MeasureDisplayHelper::CreateSequenceNumberImage(SceneManager* scene,
 	{
 
 		Vector2 imageBoardSize(wideFactor, heightFactor);
-		//imageBoardSize = ShapeHelper::GetCommonSize(scene, imageBoardSize);
+		imageBoardSize = ShapeHelper::GetCommonSize(scene, imageBoardSize);
 
 		ret = new ImageBoard(position, imageBoardSize);
 
@@ -1150,47 +1091,6 @@ void MeasureDisplayHelper::CreateAngleMark(const Vector3 & line1Start,const Vect
 	LOGI("MeasureDisplayHelper::CreateAngleMark END");
 }
 
-void MeasureDisplayHelper::CreateDesignerAngleMark(const Vector3 & line1Start, const Vector3 & line1End,
-	const Vector3& line2Start, const Vector3 & line2End,
-	const Vector3& center, float radius, float theta, vector<Vector3>& lines)
-{
-	if (theta < 0.000001 && theta > -0.000001)
-	{
-		return;
-	}
-	float line1Length = (line1End - line1Start).Length();
-	float line2Length = (line2End - line2Start).Length();
-	int num = (int)abs(theta / 10);
-	float perTheta = theta / num;
-	Vector3 line1Direction = (line1End - line1Start).Normalized();
-	Vector3 line2Direction = (line2End - line2Start).Normalized();
-	Vector3 axis = line1Direction.CrossProduct(line2Direction);
-	axis = axis.Normalized();
-	float cosTheta = line1Direction.DotProduct(line2Direction);
-
-	Vector3 startPoint = center + radius * line1Direction; //端点起始点
-	lines.push_back(startPoint);
-	for (int i = 0; i < num - 1; i++)
-	{
-		Quaternion q(perTheta * (i + 1), axis);
-		q.Normalize();
-		Quaternion line1DirectionQua(0, line1Direction.m_x,
-			line1Direction.m_y, line1Direction.m_z);
-		Quaternion tempVectorQuaternion = q * line1DirectionQua
-			* q.Conjugate();
-		Vector3 newVector(tempVectorQuaternion.m_x,
-			tempVectorQuaternion.m_y, tempVectorQuaternion.m_z);
-
-		newVector.Normalize();
-		Vector3 newPoint = center + newVector * radius;
-
-		lines.push_back(newPoint);
-	}
-
-	Vector3 endPoint = center + radius * line2Direction; //端点结束点
-	lines.push_back(endPoint);
-}
-
 bool MeasureDisplayHelper::GetPropertyFromString(string & propertiesStr,string & property)
 {
 	bool ret = false;
@@ -1200,32 +1100,31 @@ bool MeasureDisplayHelper::GetPropertyFromString(string & propertiesStr,string &
 
 	return ret;
 }
-
-float MeasureDisplayHelper::GetInnerUnitValue(float srcValue, string& unit)
-{
-	float ret = srcValue;
-	if (unit == "mm")
-	{
-		ret = srcValue;
-	}
-	else if (unit == "cm")
-	{
-		ret = srcValue *10.0f;
-	}
-	else if (unit == "m")
-	{
-		ret = srcValue *1000.0f;
-	}
-	else if (unit == "in")
-	{
-		ret = srcValue / 0.0393701f;
-	}
-	else if (unit == "ft")
-	{
-		ret = srcValue / 0.0032808f;
-	}
-
-	return ret;
+    float MeasureDisplayHelper::GetInnerUnitValue(float srcValue, string& unit)
+    {
+        float ret = srcValue;
+        if (unit == "mm")
+        {
+            ret = srcValue;
+        }
+        else if (unit == "cm")
+        {
+            ret = srcValue *10.0f;
+        }
+        else if (unit == "m")
+        {
+            ret = srcValue *1000.0f;
+        }
+        else if (unit == "in")
+        {
+            ret = srcValue / 0.0393701f;
+        }
+        else if (unit == "ft")
+        {
+            ret = srcValue / 0.0032808f;
+        }
+        
+        return ret;
+    }
 }
 
-}

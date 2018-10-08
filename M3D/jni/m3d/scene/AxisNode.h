@@ -14,7 +14,6 @@
 
 namespace M3D
 {
-	class ImageBoard;
 /**
  * 坐标轴绘制节点 在代码内部存储了坐标轴绘制所需要的三角网格数据，包括 X Y Z 和远点o
  */
@@ -49,9 +48,6 @@ public:
 	 */
 	void SetAxisPosition(int position);
 
-private:
-	void UpdataAxisImages(RenderAction* renderAction);
-
 public:
 	int m_iPntXNum; //!<纪录各个坐标轴绘制点的个数
 	int m_iPntYNum;
@@ -74,14 +70,8 @@ public:
 	Color m_zColor;
 	Color m_oColor;
 
-	ImageBoard* m_xImage;
-	ImageBoard* m_yImage;
-	ImageBoard* m_zImage;
-
 private:
 	int m_position;  //!<坐标轴显示位置 0=不显示  1=左上 2左下 3右上 4右下 5居中
-
-
 };
 }
 #endif // AXISNODE_H

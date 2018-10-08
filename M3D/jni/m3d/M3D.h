@@ -26,8 +26,8 @@
 #include <stack>
 #include <list>
 #include <queue>
-
-//#include <memory>
+#include <algorithm>
+#include <memory>
 using std::ifstream;
 using std::ostream;
 using std::ios;
@@ -40,15 +40,14 @@ using std::stack;
 using std::list;
 using std::queue;
 
-//#include <math.h>
+#include <math.h>
 #include <assert.h>
 
+
+
+
 #include "Utility.h"
-#ifdef WIN32
- #define IDTYPE unsigned long long int
-#else
- #define IDTYPE int
-#endif
+#define IDTYPE int
 
 #define M3D_API
 #ifdef _WIN32
@@ -61,11 +60,11 @@ using std::queue;
 
 //#define HUAWEI
 #include "m3d/base/Object.h"
+#include "m3d/M3DMacros.h"
 /**
  *试衣软件中绘制剖切线用的宏，这个宏主要是用到了原始的剖切线数据
  */
 #define CLOTH
-#undef CLOTH
 
 #endif /*M3D_H_*/
 

@@ -11,14 +11,15 @@
 #include "m3d/utils/ShapeHelper.h"
 #include "m3d/ResourceManager.h"
 #include "m3d/SceneManager.h"
-#include "m3d/SceneManager.h"
-#include "sview/io/Reader.h"
-#include "sview/io/Writer.h"
+#include "m3d/scenemanager.h"
 #include "sview/utils/ViewHelper.h"
 #include "m3d/extras/modelmanager/ModelManager.h"
 #include "m3d/scene/ShapeNode.h"
 #include "m3d/scene/GroupNode.h"
-#include "m3d/utils/FileHelper.h"
+#include "m3d/scene/ModelNode.h"
+#include "m3d/Utils/FileHelper.h"
+#include "sview/io/Reader.h"
+#include "sview/io/Writer.h"
 #include "m3d/model/Body.h"
 #include "m3d/model/ShapeSet.h"
 #include "m3d/extras/OperationHistoryManager.h"
@@ -27,12 +28,6 @@
 #include "m3d/extras/modelmanager/CopyModelOperation.h"
 #include "m3d/extras/modelmanager/AddFileOperation.h"
 #include "m3d/extras/modelmanager/RenameOperation.h"
-#include "m3d/extras/modelmanager/ReplaceModelOperation.h"
-#include "m3d/Handler/TranslateAxisDragger.h"
-#include "m3d/Handler/RotateCylinderAxisDragger.h"
-#include "m3d/Handler/ScaleAxisDragger.h"
-#include "m3d/extras/modelmanager/DraggerCallbacks.h"
-#include "m3d/utils/IDCreator.h"
 
 using namespace M3D;
 using namespace SVIEW;
@@ -47,6 +42,7 @@ ModelManager::ModelManager(View * view):Object()
 
 ModelManager::~ModelManager()
 {
+	// TODO Auto-generated destructor stub
 }
 
 
@@ -117,24 +113,11 @@ bool ModelManager::AddTo( string& fileName,
 
 }
 
-Model* ModelManager::ReplaceWith(Model* model, Model* parentModel, string& fileName)
-{
-	LOGI(" ModelManager::ReplaceWith BEGIN");
-	Model* newModel = NULL;
-
-	ReplaceModelOperation* replaceModelCmd = new ReplaceModelOperation(m_view, model, parentModel, fileName);
-	replaceModelCmd->execute();
-	newModel = replaceModelCmd->GetNewModel();
-	m_commandHistoryManager->Push(replaceModelCmd);
-
-	LOGI(" ModelManager::ReplaceWith END");
-	return newModel;
-}
-
 OperationHistoryManager* ModelManager::GetCommandHistoryManager()
 {
 	return m_commandHistoryManager;
 }
+
 
 bool ModelManager::ReName(Model * model,string& name)
 {
@@ -153,45 +136,37 @@ bool ModelManager::ReName(Model * model,string& name)
 
 }
 
-bool ModelManager::SetTransform(Model* model, const Matrix3x4&  plcMatrix, int transformSpace)
-{
-	switch (transformSpace)
-	{
-	case TS_LOCAL:
-		//m_rotation += (m_rotation * delta).Normalized();
-		break;
-
-	case TS_PARENT:
-		model->SetOrigPlcMatrix(plcMatrix);
-		break;
-
-	case TS_WORLD:
-		model->SetOrigPlcMatrix((model->GetParent() == NULL) ? plcMatrix : model->GetParent()->GetWorldTransform().Inverse() * plcMatrix);
-		break;
-	default:
-		model->SetOrigPlcMatrix(plcMatrix);
-		break;
-	}	 
-
-	if (m_view)
-	{
-		m_view->GetSceneManager()->RequestUpdateWhenSceneBoxChanged();
-	}
-	return true;
-}
- 
-void ModelManager::InitNewModel(Model* model)
-{
-	if (model == NULL)
-		return;
-	int iID = IDCreator::Instance()->GetSVLIDOffset().Code();
-	model->SetInstanceID(iID + 1);
-	model->SetSVLId(iID + 1);
-	model->SetProtoTypeId(iID + 1);
-    SVLGlobalID temp(iID + 1);
-	IDCreator::Instance()->UpdateSVLID(temp);
 }
 
-}
- 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
  /* namespace M3D */

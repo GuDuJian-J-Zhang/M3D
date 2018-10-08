@@ -16,11 +16,7 @@
 #include "m3d/model/Line3D.h"
 
 #include "m3d/base/Matrix4.h"
-#ifdef _DEBUG
-#define M3D_GL_ERROR_CHECK RenderContext::OgldevError();
-#else
-#define M3D_GL_ERROR_CHECK
-#endif
+
 
 namespace M3D
 {
@@ -42,11 +38,6 @@ public:
 	virtual int GetContextType()=0;
 
 	/**
-	* 根据当前硬件水平优化上下文
-	*/
-	virtual void OptimizeContext() = 0;
-
-	/**
 	 * 设置视图矩阵
 	 * @param viewMatrix
 	 */
@@ -56,19 +47,6 @@ public:
 	 * @param projectMatrix
 	 */
 	void SetProjectMatrix(const Matrix4& projectMatrix);
-
-	/************************************************************************/
-	/* 检测opengl扩展函数                                                                     */
-	/************************************************************************/
-	static GLboolean CheckExtension(char *extName, const GLubyte *extString);
-	//************************************
-	// Method:    OgldevError
-	// FullName:  M3D::RenderContext::OgldevError
-	// Access:    public static 
-	// Returns:   void
-	// Qualifier: 检测opengl错误
-	//************************************
-	static void OgldevError();
 
 	Matrix4& GetViewMatrix();
 	Matrix4& GetProjectMatrix();
@@ -80,8 +58,6 @@ public:
 
 	const static int MODELVIEWMATRIX = 0;
 	const static int PROJECTMATRIX = 1;
-
-	static bool IsFramebufferSupported;
 
 private:
 	Matrix4 m_viewMatrix; //!<视图矩阵

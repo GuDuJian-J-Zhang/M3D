@@ -9,7 +9,7 @@
 #ifndef M3D_STRINGHASH_H_
 #define M3D_STRINGHASH_H_
 
-#include "m3d/M3DExport.h"
+#include "m3d/M3D.h"
 
 namespace M3D
 {

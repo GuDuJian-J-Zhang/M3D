@@ -155,8 +155,8 @@ float Ray::HitDistance(const Frustum& frustum, bool solidInside) const
 
 float Ray::HitDistance(const Sphere& sphere) const
 {
-    Vector3 centeredOrigin = m_origin - sphere.GetCenter();
-    float squaredRadius = sphere.GetRadius() * sphere.GetRadius();
+    Vector3 centeredOrigin = m_origin - sphere.m_center;
+    float squaredRadius = sphere.m_radius * sphere.m_radius;
     
     // Check if ray originates inside the sphere
     if (centeredOrigin.LengthSquared() <= squaredRadius)

@@ -1,11 +1,11 @@
-// All Rights Reserved. Copyright (C) 2016 HOTEAMSOFT, Ltd
+ï»¿// All Rights Reserved. Copyright (C) 2016 HOTEAMSOFT, Ltd
 /****************************************************************************
  *	@file	Stk_Listenter.h
  *
- *	@brief	ÊÂ¼ş¼àÌı
+ *	@brief	äº‹ä»¶ç›‘å¬
  *
- *	@par	ÀúÊ·:
- *		2016/08/16	´´½¨¡£WangY@HOTEAMSOFT
+ *	@par	å†å²:
+ *		2016/08/16	åˆ›å»ºã€‚WangY@HOTEAMSOFT
 ****************************************************************************/
 
 #ifndef _STK_LISTENER_H_
@@ -19,9 +19,9 @@ class Stk_DocumentManager;
 
 /**************************************************************************************
  *	@class	Stk_Listenter
- *	@brief	ÊÂ¼ş¼àÌıÆ÷Àà
+ *	@brief	äº‹ä»¶ç›‘å¬å™¨ç±»
  *
- *	¼àÌıÍâ²¿»Øµ÷ÇëÇó¡£<br>
+ *	ç›‘å¬å¤–éƒ¨å›è°ƒè¯·æ±‚ã€‚<br>
  ***************************************************************************************/
 class DATAMANAGER_API Stk_Listener
 {
@@ -29,118 +29,118 @@ private:
 
 public:
 	/****************************************************************************
-	 *	@brief		Stk_Listener¹¹Ôìº¯Êı
-	 *	@param[in]	ÎŞ
-	 *	@param[out]	ÎŞ
-	 *	@retval		ÎŞ
-	 *	@note		ÎŞ
-	 *	@attention	ÎŞ
+	 *	@brief		Stk_Listeneræ„é€ å‡½æ•°
+	 *	@param[in]	æ— 
+	 *	@param[out]	æ— 
+	 *	@retval		æ— 
+	 *	@note		æ— 
+	 *	@attention	æ— 
 	 ****************************************************************************/
 	Stk_Listener();
 
 	/****************************************************************************
-	 *	@brief		Stk_ListenerÎö¹¹º¯Êı
-	 *	@param[in]	ÎŞ
-	 *	@param[out]	ÎŞ
-	 *	@retval		ÎŞ
-	 *	@note		ÎŞ
-	 *	@attention	ÎŞ
+	 *	@brief		Stk_Listenerææ„å‡½æ•°
+	 *	@param[in]	æ— 
+	 *	@param[out]	æ— 
+	 *	@retval		æ— 
+	 *	@note		æ— 
+	 *	@attention	æ— 
 	 ****************************************************************************/
 	~Stk_Listener();
 public:
 	/****************************************************************************
-	 *	@brief		¼ÓÔØ½ø¶È
-	 *	@param[in]	i_fLoadingPercent	¼ÓÔØ°Ù·Ö±È
-	 *	@param[out]	ÎŞ
-	 *	@retval		ÎŞ
-	 *	@note		ÎŞ
-	 *	@attention	ÎŞ
+	 *	@brief		åŠ è½½è¿›åº¦
+	 *	@param[in]	i_fLoadingPercent	åŠ è½½ç™¾åˆ†æ¯”
+	 *	@param[out]	æ— 
+	 *	@retval		æ— 
+	 *	@note		æ— 
+	 *	@attention	æ— 
 	 ****************************************************************************/
 	virtual void LoadingProcess(STK_FLOAT32 i_fLoadingPercent);
 };
 
 /**************************************************************************************
  *	@class	Stk_ReaderListener
- *	@brief	¶ÁÈ¡¼àÌıÆ÷Àà
+ *	@brief	è¯»å–ç›‘å¬å™¨ç±»
  *
- *	¼àÌıÍâ²¿»Øµ÷ÇëÇó¡£<br>
+ *	ç›‘å¬å¤–éƒ¨å›è°ƒè¯·æ±‚ã€‚<br>
  ***************************************************************************************/
 class DATAMANAGER_API Stk_ReaderListener
 {
 private:
 	Stk_DocumentManager*	m_stkDocP;
 private:
-	STK_FLOAT32				m_LoadPercent;			//!< ProtoType¼ÓÔØ°Ù·Ö±È
-	STK_UINT32				m_TotalProtoTypeNum;	//!< SVLÎÄ¼şÖĞProtoType×ÜÊıÁ¿
-	STK_UINT32				m_ProtoTypeCount;		//!< ProtoType¼ÆÊıÆ÷
+	STK_FLOAT32				m_LoadPercent;			//!< ProtoTypeåŠ è½½ç™¾åˆ†æ¯”
+	STK_UINT32				m_TotalProtoTypeNum;	//!< SVLæ–‡ä»¶ä¸­ProtoTypeæ€»æ•°é‡
+	STK_UINT32				m_ProtoTypeCount;		//!< ProtoTypeè®¡æ•°å™¨
 public:
 	/****************************************************************************
-	 *	@brief		Stk_ReaderListener¹¹Ôìº¯Êı
-	 *	@param[in]	i_stkDocP		DocP¹ÜÀí¶ÔÏóÖ¸Õë
-	 *	@param[out]	ÎŞ
-	 *	@retval		ÎŞ
-	 *	@note		ÎŞ
-	 *	@attention	ÎŞ
+	 *	@brief		Stk_ReaderListeneræ„é€ å‡½æ•°
+	 *	@param[in]	i_stkDocP		DocPç®¡ç†å¯¹è±¡æŒ‡é’ˆ
+	 *	@param[out]	æ— 
+	 *	@retval		æ— 
+	 *	@note		æ— 
+	 *	@attention	æ— 
 	 ****************************************************************************/
 	Stk_ReaderListener(Stk_DocumentManager*	i_stkDocP);
 
 	/****************************************************************************
-	 *	@brief		Stk_ReaderListenerÎö¹¹º¯Êı
-	 *	@param[in]	ÎŞ
-	 *	@param[out]	ÎŞ
-	 *	@retval		ÎŞ
-	 *	@note		ÎŞ
-	 *	@attention	ÎŞ
+	 *	@brief		Stk_ReaderListenerææ„å‡½æ•°
+	 *	@param[in]	æ— 
+	 *	@param[out]	æ— 
+	 *	@retval		æ— 
+	 *	@note		æ— 
+	 *	@attention	æ— 
 	 ****************************************************************************/
 	~Stk_ReaderListener();
 public:
 	/************************************************************************//**
-	 *	@brief		ÊµÊ±¸üĞÂSVL¼ÓÔØ°Ù·Ö±È
-	 *	@param[in]	ÎŞ
-	 *	@param[out]	ÎŞ
-	 *	@retval		ÎŞ
-	 *	@note		ÎŞ
-	 *	@attention	ÎŞ
+	 *	@brief		å®æ—¶æ›´æ–°SVLåŠ è½½ç™¾åˆ†æ¯”
+	 *	@param[in]	æ— 
+	 *	@param[out]	æ— 
+	 *	@retval		æ— 
+	 *	@note		æ— 
+	 *	@attention	æ— 
 	 ****************************************************************************/
 	STK_STATUS		UpdataSVLLoadingPercent();
 
 	/************************************************************************//**
-	 *	@brief		SVL¼ÓÔØ°Ù·Ö±ÈÊı¾İ
-	 *	@param[in]	ÎŞ
-	 *	@param[out]	°Ù·Ö±È
-	 *	@retval		ÎŞ
-	 *	@note		ÎŞ
-	 *	@attention	ÎŞ
+	 *	@brief		SVLåŠ è½½ç™¾åˆ†æ¯”æ•°æ®
+	 *	@param[in]	æ— 
+	 *	@param[out]	ç™¾åˆ†æ¯”
+	 *	@retval		æ— 
+	 *	@note		æ— 
+	 *	@attention	æ— 
 	 ****************************************************************************/
 	STK_FLOAT32		GetSVLLoadingPercent();
 
 	/************************************************************************//**
-	 *	@brief		»ñÈ¡ProtoType×ÜÊıÁ¿
-	 *	@param[in]	ÎŞ
-	 *	@param[out]	ProtoType×ÜÊıÁ¿
-	 *	@retval		ÎŞ
-	 *	@note		ÎŞ
+	 *	@brief		è·å–ProtoTypeæ€»æ•°é‡
+	 *	@param[in]	æ— 
+	 *	@param[out]	ProtoTypeæ€»æ•°é‡
+	 *	@retval		æ— 
+	 *	@note		æ— 
 	 *	@attention	
 	 ****************************************************************************/
 	STK_UINT32		GetTotalProtoTypeNum();
 
 	/************************************************************************//**
-	 *	@brief		ÉèÖÃProtoType×ÜÊı
-	 *	@param[in]	ProtoType×ÜÊı
-	 *	@param[out]	ÎŞ
-	 *	@retval		ÎŞ
-	 *	@note		ÎŞ
-	 *	@attention	ÎŞ
+	 *	@brief		è®¾ç½®ProtoTypeæ€»æ•°
+	 *	@param[in]	ProtoTypeæ€»æ•°
+	 *	@param[out]	æ— 
+	 *	@retval		æ— 
+	 *	@note		æ— 
+	 *	@attention	æ— 
 	 ****************************************************************************/
 	STK_STATUS		SetTotalProtoTypeNum(STK_UINT32 i_nuPrototypeNum);
 
 	/************************************************************************//**
-	 *	@brief		¼ÓÔØ½ø¶È
-	 *	@param[in]	ÎŞ
-	 *	@param[out]	ÎŞ
-	 *	@retval		STK_SUCCESS				Çå¿Õ³É¹¦
-	 *	@note		ÎŞ
-	 *	@attention	ÄÚ²¿½Ó¿Ú
+	 *	@brief		åŠ è½½è¿›åº¦
+	 *	@param[in]	æ— 
+	 *	@param[out]	æ— 
+	 *	@retval		STK_SUCCESS				æ¸…ç©ºæˆåŠŸ
+	 *	@note		æ— 
+	 *	@attention	å†…éƒ¨æ¥å£
 	 ****************************************************************************/
 	STK_STATUS		ReaderProcess();
 };

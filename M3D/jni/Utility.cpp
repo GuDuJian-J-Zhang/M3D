@@ -5,123 +5,41 @@
 #include "dlfcn.h"
 #endif
 
-
 #ifdef __IOS__
 #include <iconv.h>
 #endif
 
-#ifdef _WIN32
-#include "Log4Native.h"
-#define SPRINTF_TRACE_BUFSIZE 409600
-#endif
 
 #include "Utility.h"
 #include <stdarg.h>
 
 #include "m3d/utils/Platform.h"
 //#include "m3d.h"
+
 #include <sys/stat.h>
 #include <sstream>
-#ifdef _WIN32
-void printInfo(const char* format, ...)
+
+ 
+void printLog(const char* tag,const char* format,...)
 {
-	/* 初始时假设我们只需要不超过100字节大小的空间 */
-	int n, size = 100;
-	char *p = NULL;
 	va_list ap;
-	if ((p = (char *)malloc(size * sizeof(char))) == NULL)
-		return;
-	int i = 0;
-	while (i++<20)
-	{
-		/* 尝试在申请的空间中进行打印操作 */
-		va_start(ap, format);
-		n = vsnprintf(p, size, format, ap);
-		va_end(ap);
-		/* 如果vsnprintf调用成功，返回该字符串 */
-		if (n > -1 && n < size)
-			break;
-		/* vsnprintf调用失败(n<0)，或者p的空间不足够容纳size大小的字符串(n>=size)，尝试申请更大的空间*/
-		size *= 2; /* 两倍原来大小的空间 */
-		if ((p = (char *)realloc(p, size * sizeof(char))) == NULL)
-			break;
-	}
-	if (p != NULL)
-	{
-		Log4Native::Logger::ReportMessageInfo(p);
-		free(p);
-	}
+	va_start(ap, format);
+	char tmpFmt[200];
+	sprintf(tmpFmt,"%s:%s\n",tag,format);
+	vprintf(tmpFmt, ap);
+	va_end(ap);
 }
-
-void printError(const char* format, ...)
-{	
-	/* 初始时假设我们只需要不超过100字节大小的空间 */
-	int n, size = 100;
-	char *p = NULL;
-	va_list ap;
-	if ((p = (char *)malloc(size * sizeof(char))) == NULL)
-		return;
-	int i = 0;
-	while (i++ < 20)
-	{
-		/* 尝试在申请的空间中进行打印操作 */
-		va_start(ap, format);
-		n = vsnprintf(p, size, format, ap);
-		va_end(ap);
-		/* 如果vsnprintf调用成功，返回该字符串 */
-		if (n > -1 && n < size)
-			break;
-		/* vsnprintf调用失败(n<0)，或者p的空间不足够容纳size大小的字符串(n>=size)，尝试申请更大的空间*/
-		size *= 2; /* 两倍原来大小的空间 */
-		if ((p = (char *)realloc(p, size * sizeof(char))) == NULL)
-			break;
-	}
-	if (p != NULL)
-	{
-		Log4Native::Logger::ReportMessageError(p);
-		free(p);
-	}
-}
-
-void printDebug(const char* format, ...)
-{	
-	/* 初始时假设我们只需要不超过100字节大小的空间 */
-	int n, size = 100;
-	char *p = NULL;
-	va_list ap;
-	if ((p = (char *)malloc(size * sizeof(char))) == NULL)
-		return;
-	int i = 0;
-	while (i++ < 20)
-	{
-		/* 尝试在申请的空间中进行打印操作 */
-		va_start(ap, format);
-		n = vsnprintf(p, size, format, ap);
-		va_end(ap);
-		/* 如果vsnprintf调用成功，返回该字符串 */
-		if (n > -1 && n < size)
-			break;
-		/* vsnprintf调用失败(n<0)，或者p的空间不足够容纳size大小的字符串(n>=size)，尝试申请更大的空间*/
-		size *= 2; /* 两倍原来大小的空间 */
-		if ((p = (char *)realloc(p, size * sizeof(char))) == NULL)
-			break;
-	}
-	if (p != NULL)
-	{
-		Log4Native::Logger::ReportMessageDebug(p);
-		free(p);
-	}
-}
-#endif
-
+ 
+ 
 std::vector<std::string> &split(const std::string &s, char delim, std::vector<std::string> &elems) {
-	std::stringstream ss(s);
-	std::string item;
-	while (std::getline(ss, item, delim)) {
-		elems.push_back(item);
-	}
-	return elems;
+    std::stringstream ss(s);
+    std::string item;
+    while (std::getline(ss, item, delim)) {
+        elems.push_back(item);
+    }
+    return elems;
 }
+
 
 std::vector<std::string> split(const std::string &s, char delim) {
     std::vector<std::string> elems;
@@ -273,12 +191,14 @@ UCNVConvert(const char* tarEncode, //目标编码
 	int ret = -1;
 
 #ifdef WIN32
-
+ 
 #endif
+
 
 #ifdef __IOS__
 	ret = code_convert(srcEncode,tarEncode,srcBuf,srcBufLen,tarBuf,tarBufLen);
 #endif
+
 
 #ifdef __ANDROID__
 	//声明函数指针
@@ -294,37 +214,41 @@ UCNVConvert(const char* tarEncode, //目标编码
 	//4.0=46
 	//
 	char ver[50];
-	__system_property_get("ro.build.version.sdk", ver);
+	__system_property_get("ro.build.version.sdk",ver);
 	int verNo = atoi(ver);
-	//LOGE("sys ver:%s",ver);
-	char* convertFunName;
-	if (verNo >= 26) //android 8.0 N =26;
-			{
-		convertFunName = "ucnv_convert_58";
-	} else if (verNo >= 24) //android 7.0 M =23;
-			{
-		convertFunName = "ucnv_convert_56";
-	} else if (verNo >= 23) //android 6.0 M =23;
-			{
+    //LOGE("sys ver:%s",ver);
+	char* convertFunName ;
+	if(verNo>=24) //android 6.0 M =23;
+		{
+			convertFunName = "ucnv_convert_56";
+		}else if(verNo>=23) //android 6.0 M =23;
+	{
 		convertFunName = "ucnv_convert_55";
-	} else if (verNo >= 21) //android 5.0 lollipop =21;android5.1 lollipop mr1 = 22
-			{
+	}else if(verNo>=21) //android 5.0 lollipop =21;android5.1 lollipop mr1 = 22
+	{
 		convertFunName = "ucnv_convert_53";
-	} else if (verNo >= 19) //android 4.4 kitkat and 4.4w kitkat watch
-			{
+	}else if(verNo>=19)//android 4.4 kitkat and 4.4w kitkat watch
+	{
 		convertFunName = "ucnv_convert_51";
-	} else if (verNo >= 18) //jelly bean mr2 android 4.3
-			{
+	}
+	else if(verNo>=18)//jelly bean mr2 android 4.3
+	{
 		convertFunName = "ucnv_convert_50";
-	} else if (verNo >= 16) //jelly bean android4.2
-			{
+	}
+	else if(verNo>=16)//jelly bean android4.2
+	{
 		convertFunName = "ucnv_convert_48";
-	} else if (verNo >= 14) //ice cream sandwich 4.0
-			{
+	}
+	else if(verNo>=14)//ice cream sandwich 4.0
+	{
 		convertFunName = "ucnv_convert_46";
-	} else if (verNo >= 9) {
+	}
+	else if(verNo >=9)
+	{
 		convertFunName = "ucnv_convert_44";
-	} else if (verNo >= 8) {
+	}
+	else if(verNo>=8)
+	{
 		convertFunName = "ucnv_convert_4_2";
 	}
 
@@ -332,29 +256,31 @@ UCNVConvert(const char* tarEncode, //目标编码
 			const char*, int32_t, int32_t*))dlsym(pDL,convertFunName);
 
 	//使用ucnv_convert函数进行转换字符串
-if(	ucnv_convert) {
+	if(	ucnv_convert) {
 		ret = ucnv_convert(tarEncode,srcEncode,tarBuf,tarBufLen,srcBuf,srcBufLen,pErrorCode);
 	}
 	else
 	{
 		LOGE("Utility : ucnvConvert err: fun %s not found! verNo:%d",convertFunName,verNo);
 	}
-#endif
+    #endif
 	return ret;
 }
 
 #ifdef __ANDROID__
 
-string JStrToStr(JNIEnv* env, jstring jstr, const char* encoding) {
+string JStrToStr(JNIEnv* env, jstring jstr, const char* encoding)
+{
 	char* rtn = NULL;
 	jclass clsstring = env->FindClass("java/lang/String");
 	jstring strencode = env->NewStringUTF(encoding);
 	jmethodID mid = env->GetMethodID(clsstring, "getBytes",
-			"(Ljava/lang/String;)[B");
+		"(Ljava/lang/String;)[B");
 	jbyteArray barr = (jbyteArray) env->CallObjectMethod(jstr, mid, strencode);
 	jsize alen = env->GetArrayLength(barr);
 	jbyte* ba = env->GetByteArrayElements(barr, JNI_FALSE);
-	if (alen > 0) {
+	if (alen > 0)
+	{
 		rtn = (char*) malloc(alen + 1);
 		memcpy(rtn, ba, alen);
 		rtn[alen] = 0;
@@ -371,16 +297,17 @@ string JStrToStr(JNIEnv* env, jstring jstr, const char* encoding) {
 //	return strToJstr(env, pat, "utf-8");
 //}
 
-jstring StrToJStr(JNIEnv* env, const char* pat, const char* encoding) {
+jstring StrToJStr(JNIEnv* env, const char* pat, const char* encoding)
+{
 	jclass strClass = env->FindClass("java/lang/String");
 	jmethodID ctorID = env->GetMethodID(strClass, "<init>",
-			"([BLjava/lang/String;)V");
+		"([BLjava/lang/String;)V");
 	jbyteArray bytes = env->NewByteArray((jsize) strlen(pat));
 	env->SetByteArrayRegion(bytes, 0, (jsize) strlen(pat), (jbyte*) pat);
 	jstring encodingStr = env->NewStringUTF(encoding);
 
 	jstring ret = (jstring) env->NewObject(strClass, ctorID, bytes,
-			encodingStr);
+		encodingStr);
 
 	env->DeleteLocalRef(strClass);
 	env->DeleteLocalRef(bytes);
@@ -388,16 +315,19 @@ jstring StrToJStr(JNIEnv* env, const char* pat, const char* encoding) {
 	return ret;
 }
 
-jobject* GetJObject(JNIEnv *env, const char *path) {
+jobject* GetJObject(JNIEnv *env, const char *path)
+{
 	LOGI("Get JAVA Object :%s", path);
 	jobject obj;
 	jclass cls = env->FindClass(path);
-	if (!cls) {
+	if (!cls)
+	{
 		LOGE("Can't find class");
 		return &obj;
 	}
 	jmethodID constr = env->GetMethodID(cls, "<init>", "()V");
-	if (!constr) {
+	if (!constr)
+	{
 		LOGE("init error");
 		return &obj;
 	}
@@ -414,12 +344,13 @@ long GetTimeLong() {
 	long curTime = tv.tv_sec * 1000 + tv.tv_usec / 1000;
 	return curTime;
 #else
-	return 0;
+return 0;
 #endif
 }
 
 //创建多级目录
-bool CreateMulityPath(const char* muldir) {
+bool CreateMulityPath(const char* muldir)
+{
 #ifdef MOBILE
 	int i,len;
 	char str[512];
@@ -451,22 +382,26 @@ bool CreateMulityPath(const char* muldir) {
 #endif
 }
 
+
 //将顶点索引转换为顶点集合
-void GetVertexBufByVertexAndIndex(vector<float>* outVertexBuf,
-		vector<float>* outNormalBuf, vector<float> vertexArray,
-		vector<unsigned short> indexArray) {
-	for (int i = 0; i < indexArray.size(); i++) {
-		outVertexBuf->push_back(vertexArray[indexArray[i] * 6]);
-		outVertexBuf->push_back(vertexArray[indexArray[i] * 6 + 1]);
-		outVertexBuf->push_back(vertexArray[indexArray[i] * 6 + 2]);
-		outNormalBuf->push_back(vertexArray[indexArray[i] * 6 + 3]);
-		outNormalBuf->push_back(vertexArray[indexArray[i] * 6 + 4]);
-		outNormalBuf->push_back(vertexArray[indexArray[i] * 6 + 5]);
+void GetVertexBufByVertexAndIndex(vector<float>* outVertexBuf,vector<float>* outNormalBuf,
+		vector<float> vertexArray,vector<unsigned short> indexArray)
+{
+	for(int i=0;i<indexArray.size();i++)
+	{
+		outVertexBuf->push_back(vertexArray[indexArray[i]*6]);
+		outVertexBuf->push_back(vertexArray[indexArray[i]*6+1]);
+		outVertexBuf->push_back(vertexArray[indexArray[i]*6+2]);
+		outNormalBuf->push_back(vertexArray[indexArray[i]*6+3]);
+		outNormalBuf->push_back(vertexArray[indexArray[i]*6+4]);
+		outNormalBuf->push_back(vertexArray[indexArray[i]*6+5]);
 	}
 }
 
+
 //输出数组日志
-void LogArray(void* pArray, int len, int typeSize, char* flag) {
+void LogArray(void* pArray,int len,int typeSize,char* flag)
+{
 //	void *p = pArray;
 //	int tmpStrLen = len + 10;
 //	string flagStr = "%s ";
@@ -484,26 +419,26 @@ void LogArray(void* pArray, int len, int typeSize, char* flag) {
 }
 
 void LogFloatArray(float* pArray, int len) {
-	int strLen = 20 * len;
+	int strLen = 20*len;
 	char* tmpStr = new char[strLen];
 	memset(tmpStr, 0x0, strLen);
 	for (int i = 0; i < len; i++) {
 		sprintf(tmpStr, "%s %f", tmpStr, pArray[i]);
 	}
-	LOGI("%s", tmpStr);
+	LOGI("%s",tmpStr);
 
 	delete tmpStr;
 }
 
 void LogUShortArray(unsigned short* pArray, int len) {
-	int strLen = 20 * len;
+	int strLen = 20*len;
 	char* tmpStr = new char[strLen];
 	memset(tmpStr, 0x0, strLen);
 	for (int i = 0; i < len; i++) {
 		sprintf(tmpStr, "%s %d", tmpStr, pArray[i]);
 	}
 
-	LOGI("%s", tmpStr);
+	LOGI("%s",tmpStr);
 	delete tmpStr;
 }
 
@@ -513,6 +448,6 @@ void LogIntArray(unsigned int* pArray, int len) {
 	for (int i = 0; i < len; i++) {
 		sprintf(tmpStr, "%s %d", tmpStr, pArray[i]);
 	}
-	LOGI("%s", tmpStr);
+	LOGI("%s",tmpStr);
 }
 

@@ -7,7 +7,7 @@
 #include "m3d/model/Image.h"
 #include "m3d/graphics/Texture.h"
 #include "m3d/graphics/Texture2D.h"
-#include "m3d/action/RenderAction.h"
+
 namespace M3D
 {
 
@@ -18,7 +18,7 @@ BackgroundNode::BackgroundNode():SceneNode()
 
 BackgroundNode::~BackgroundNode(void)
 {
-    this->m_skyBoxTexture.clear();
+
 }
 
 void BackgroundNode::Initial()
@@ -66,12 +66,7 @@ void BackgroundNode::Initial()
 	m_BackPnt[17] = 1;
 
 	m_isUseImage = false;
-	m_isUseSkyBox = false;
-	m_isUseColor = true;
-	m_needRestoreState = false;
-	m_originTexture = nullptr;
 	m_imagePath = "";
-	m_origimagePath = "";
 	m_texture = NULL;
 
 	points.clear();
@@ -95,7 +90,6 @@ void BackgroundNode::SetBackgroundSize(int width, int height)
 
 void BackgroundNode::SetTopColor(const Color& topColor)
 {
-	MutexLock lock(m_mutex);
 	if (this->m_topColor != topColor)
 	{
 		this->m_topColor = topColor;
@@ -105,7 +99,6 @@ void BackgroundNode::SetTopColor(const Color& topColor)
 
 void BackgroundNode::SetBottomColor(const Color& bottomColor)
 {
-	MutexLock lock(m_mutex);
 	if (this->m_bottomColor != bottomColor)
 	{
 		this->m_bottomColor = bottomColor;
@@ -249,7 +242,7 @@ int BackgroundNode::GetType(void)
 
 void BackgroundNode::FindVisiableObject(RenderAction* renderAction)
 {
-	if (!this->IsVisible())
+	if (this->IsHide())
 	{
 		renderAction->SetBackGroundNode(NULL);
 	}
@@ -266,8 +259,8 @@ void BackgroundNode::SetImage(const string& filePath,int mappingStyle)
 	if(filePath.length() > 0)
 	{
 		m_imagePath = filePath;
-//		LOGI("backgroundImage %s", m_imagePath.c_str());
-		
+		LOGI("backgroundImage %s", m_imagePath.c_str());
+
 		this->m_isImageDirty = true;
 	}
 }
@@ -277,33 +270,12 @@ void BackgroundNode::SetUseImage(bool useImage)
 	MutexLock lock(m_mutex);
 
 	this->m_isUseImage = useImage;
-	if (useImage)
-	{
-		m_isUseColor = false;
-		m_isUseSkyBox = false;
-	}
 //	LOGI("BackgroundNode::SetUseImage %d", this->m_isUseImage);
 }
 
 bool BackgroundNode::IsUseImage()
 {
 	return m_isUseImage;
-}
-
-void BackgroundNode::SetUseSkyBox(bool useSkyBox)
-{
-	MutexLock lock(m_mutex);
-	m_isUseSkyBox = useSkyBox;
-	if (useSkyBox)
-	{
-		m_isUseImage = false;
-		m_isUseColor = false;
-	}
-}
-
-bool BackgroundNode::IsUseSkyBox()
-{
-	return m_isUseSkyBox;
 }
 
 Texture* BackgroundNode::GetTexture()
@@ -321,9 +293,6 @@ Texture* BackgroundNode::GetTexture()
 		Rect m_uv  = Rect(Vector2(0,0),Vector2(1,1)) ;
 
 		this->m_texture = new Texture2D(m_imagePath,TEXTURE_LOAD_RGBA,TEXTURE_FLAG_MIPMAPS|TEXTURE_FLAG_INVERT_Y);
-         m_texture->SetResourceManager(this->m_resMgr);
-		m_originTexture = m_texture;
-		m_originTexture->AddRef();
 		LOGI("BackgroundNode create Texture3D");
 		this->m_isImageDirty = false;
 	 }
@@ -331,102 +300,4 @@ Texture* BackgroundNode::GetTexture()
 	 return this->m_texture;
 }
 
-void BackgroundNode::SetTexture(Texture * texture)
-{
-	if (texture && this->m_texture != texture)
-	{
-		MutexLock lock(m_mutex);
-
-		if (this->m_texture)
-		{
-//			this->m_texture->Release();
-		//	this->m_texture = NULL;
-		}
-
-		this->m_texture = texture;
-		this->m_texture->AddRef();
-		this->m_isImageDirty = false;
-	}
-}
-
-Texture * BackgroundNode::GetSkyBoxTexture(string name)
-{
-	Texture * ret = nullptr;
-	map<string,Texture*>::iterator it =  m_skyBoxTexture.find(name);
-	if (it != m_skyBoxTexture.end())
-	{
-		ret = it->second;
-	}
-	return nullptr;
-}
-
-Texture * BackgroundNode::GetSkyBoxTexture()
-{
-	Texture * ret = nullptr;
-	if (this->m_skyBoxTexture.size()>0)
-	{
-		map<string, Texture*>::iterator it = this->m_skyBoxTexture.begin();
-		ret = it->second;
-	}
-	
-	return ret;
-}
-
-void BackgroundNode::AddSkyBoxTexture(string name,Texture* skyBox)
-{
-	this->m_skyBoxTexture[name]= skyBox;
-}
-void BackgroundNode::ClearSkyBoxTexture()
-{
-    if (this->m_skyBoxTexture.size()>0)
-    {
-       this->m_skyBoxTexture.clear();
-    }
-}
-bool BackgroundNode::IsUseColor()
-{
-	return m_isUseColor;
-}
-
-void BackgroundNode::SetUseColor(bool useColor)
-{
-	MutexLock lock(m_mutex);
-	m_isUseColor = useColor;
-	if (useColor)
-	{
-		m_isUseImage = false;
-		m_isUseSkyBox = false;
-	}
-}
-
-void BackgroundNode::KeepBackgroundState()
-{
-	MutexLock lock(m_mutex);
-	m_originTopColor = this->m_topColor;
-	m_originBottomColor = this->m_bottomColor;
-	m_originUseColor = m_isUseColor;
-	m_originUseImage = m_isUseImage;
-	m_originUseSkyBox = m_isUseSkyBox;
-	m_origimagePath = m_imagePath;
-	m_needRestoreState = true;
-}
-
-void BackgroundNode::RestoreBackgroundState()
-{
-	MutexLock lock(m_mutex);
-	if (!m_needRestoreState)
-	{
-		return;
-	}
-	SetTopColor(m_originTopColor);
-	SetBottomColor(m_originBottomColor);
-	m_texture = m_originTexture;
-	m_isUseColor = m_originUseColor;
-	m_isUseImage = m_originUseImage;
-	m_isUseSkyBox = m_originUseSkyBox;
-	m_imagePath = m_origimagePath;
-	m_needRestoreState = false;
-}
-void BackgroundNode::SetResourceManager(ResourceManager * resMgr)
-{this->m_resMgr = resMgr;}
 }

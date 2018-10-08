@@ -24,7 +24,7 @@
 #include "m3d/M3DMacros.h"
 
 #include "m3d/action/Action.h"
-
+#include "m3d/action/RenderAction.h"
 #include "m3d/graphics/Renderable.h"
 
 #include "m3d/renderer/RenderContext.h"
@@ -160,11 +160,11 @@ public:
 	/** 
 	 * @brief 是否隐藏
 	 */
-	virtual bool IsVisible();
+	virtual bool IsHide();
 	/** 
 	 * @brief 设置隐藏状态
 	 */
-	virtual void SetVisible(bool isVisible);
+	void SetHide(bool isHide);
 	/** 
 	 * @brief 计算包围盒
 	 */
@@ -213,14 +213,14 @@ public:
 	 */
 	void SetPosition(const Vector3& position);
 	/** 
-	 * @brief Set position in parent space (for M3D).
+	 * @brief Set position in parent space (for Urho2D).
 	 */
 	void SetPosition2D(const Vector2& position)
 	{
 		SetPosition(Vector3(position));
 	}
 	/** 
-	 * @brief Set position in parent space (for M3D).
+	 * @brief Set position in parent space (for Urho2D).
 	 */
 	void SetPosition2D(float x, float y)
 	{
@@ -231,7 +231,7 @@ public:
 	 */
 	void SetRotation(const Quaternion& rotation);
 	/** 
-	 * @brief Set rotation in parent space (for M3D).
+	 * @brief Set rotation in parent space (for Urho2D).
 	 */
 	void SetRotation2D(float rotation)
 	{
@@ -244,20 +244,20 @@ public:
 	/** 
 	 * @brief Set uniform scale in parent space.
 	 */
-	//void SetScale(float scale);
+	void SetScale(float scale);
 	/** 
 	 * @brief Set scale in parent space.
 	 */
 	void SetScale(const Vector3& scale);
 	/** 
-	 * @brief Set scale in parent space (for M3D).
+	 * @brief Set scale in parent space (for Urho2D).
 	 */
 	void SetScale2D(const Vector2& scale)
 	{
 		SetScale(Vector3(scale, 1.0f));
 	}
 	/** 
-	 * @brief Set scale in parent space (for M3D).
+	 * @brief Set scale in parent space (for Urho2D).
 	 */
 	void SetScale2D(float x, float y)
 	{
@@ -278,21 +278,21 @@ public:
 	void SetTransform(const Vector3& position, const Quaternion& rotation,
 			const Vector3& scale);
 	/** 
-	 * @brief Set both position and rotation in parent space as an atomic operation (for M3D).
+	 * @brief Set both position and rotation in parent space as an atomic operation (for Urho2D).
 	 */
 	void SetTransform2D(const Vector2& position, float rotation)
 	{
 		SetTransform(Vector3(position), Quaternion(rotation));
 	}
 	/** 
-	 * @brief Set both position, rotation and uniform scale in parent space as an atomic operation (for M3D).
+	 * @brief Set both position, rotation and uniform scale in parent space as an atomic operation (for Urho2D).
 	 */
 	void SetTransform2D(const Vector2& position, float rotation, float scale)
 	{
 		SetTransform(Vector3(position), Quaternion(rotation), scale);
 	}
 	/** 
-	 * @brief Set both position, rotation and scale in parent space as an atomic operation (for M3D).
+	 * @brief Set both position, rotation and scale in parent space as an atomic operation (for Urho2D).
 	 */
 	void SetTransform2D(const Vector2& position, float rotation,
 			const Vector2& scale)
@@ -305,14 +305,14 @@ public:
 	 */
 	void SetWorldPosition(const Vector3& position);
 	/** 
-	 * @brief Set position in world space (for M3D).
+	 * @brief Set position in world space (for Urho2D).
 	 */
 	void SetWorldPosition2D(const Vector2& position)
 	{
 		SetWorldPosition(Vector3(position));
 	}
 	/** 
-	 * @brief Set position in world space (for M3D).
+	 * @brief Set position in world space (for Urho2D).
 	 */
 	void SetWorldPosition2D(float x, float y)
 	{
@@ -323,7 +323,7 @@ public:
 	 */
 	void SetWorldRotation(const Quaternion& rotation);
 	/** 
-	 * @brief Set rotation in world space (for M3D).
+	 * @brief Set rotation in world space (for Urho2D).
 	 */
 	void SetWorldRotation2D(float rotation)
 	{
@@ -342,14 +342,14 @@ public:
 	 */
 	void SetWorldScale(const Vector3& scale);
 	/** 
-	 * @brief Set scale in world space (for M3D).
+	 * @brief Set scale in world space (for Urho2D).
 	 */
 	void SetWorldScale2D(const Vector2& scale)
 	{
 		SetWorldScale(Vector3(scale, 1.0f));
 	}
 	/** 
-	 * @brief Set scale in world space (for M3D).
+	 * @brief Set scale in world space (for Urho2D).
 	 */
 	void SetWorldScale2D(float x, float y)
 	{
@@ -370,14 +370,14 @@ public:
 	void SetWorldTransform(const Vector3& position, const Quaternion& rotation,
 			const Vector3& scale);
 	/** 
-	 * @brief Set both position and rotation in world space as an atomic operation (for M3D).
+	 * @brief Set both position and rotation in world space as an atomic operation (for Urho2D).
 	 */
 	void SetWorldTransform2D(const Vector2& position, float rotation)
 	{
 		SetWorldTransform(Vector3(position), Quaternion(rotation));
 	}
 	/** 
-	 * @brief Set both position, rotation and uniform scale in world space as an atomic operation (for M3D).
+	 * @brief Set both position, rotation and uniform scale in world space as an atomic operation (for Urho2D).
 	 */
 	void SetWorldTransform2D(const Vector2& position, float rotation,
 			float scale)
@@ -385,7 +385,7 @@ public:
 		SetWorldTransform(Vector3(position), Quaternion(rotation), scale);
 	}
 	/** 
-	 * @brief Set both position, rotation and scale in world space as an atomic opration (for M3D).
+	 * @brief Set both position, rotation and scale in world space as an atomic opration (for Urho2D).
 	 */
 	void SetWorldTransform2D(const Vector2& position, float rotation,
 			const Vector2& scale)
@@ -398,7 +398,7 @@ public:
 	 */
 	void Translate(const Vector3& delta, TransformSpace space = TS_LOCAL);
 	/** 
-	 * @brief Move the scene node in the chosen transform space (for M3D).
+	 * @brief Move the scene node in the chosen transform space (for Urho2D).
 	 */
 	void Translate2D(const Vector2& delta, TransformSpace space = TS_LOCAL)
 	{
@@ -409,7 +409,7 @@ public:
 	 */
 	void Rotate(const Quaternion& delta, TransformSpace space = TS_LOCAL);
 	/** 
-	 * @brief Rotate the scene node in the chosen transform space (for M3D).
+	 * @brief Rotate the scene node in the chosen transform space (for Urho2D).
 	 */
 	void Rotate2D(float delta, TransformSpace space = TS_LOCAL)
 	{
@@ -421,7 +421,7 @@ public:
 	void RotateAround(const Vector3& point, const Quaternion& delta,
 			TransformSpace space = TS_LOCAL);
 	/** 
-	 * @brief Rotate around a point in the chosen transform space (for M3D).
+	 * @brief Rotate around a point in the chosen transform space (for Urho2D).
 	 */
 	void RotateAround2D(const Vector2& point, float delta,
 			TransformSpace space = TS_LOCAL)
@@ -449,9 +449,12 @@ public:
 	 * @brief Modify scale in parent space uniformly.
 	 */
 	void Scale(float scale);
-	void Scale(const Vector3 & delta);
 	/** 
-	 * @brief Modify scale in parent space
+	 * @brief Modify scale in parent space.
+	 */
+	void Scale(const Vector3& scale);
+	/** 
+	 * @brief Modify scale in parent space (for Urho2D).
 	 */
 	void Scale2D(const Vector2& scale)
 	{
@@ -478,7 +481,7 @@ public:
 	}
 
 	/** 
-	 * @brief Return position in parent space (for M3D).
+	 * @brief Return position in parent space (for Urho2D).
 	 */
 	Vector2 GetPosition2D() const
 	{
@@ -492,7 +495,7 @@ public:
 		return m_rotation;
 	}
 	/** 
-	 * @brief Return rotation in parent space (for M3D).
+	 * @brief Return rotation in parent space (for Urho2D).
 	 */
 	float GetRotation2D() const
 	{
@@ -532,7 +535,7 @@ public:
 		return m_scale;
 	}
 	/** 
-	 * @brief Return scale in parent space (for M3D).
+	 * @brief Return scale in parent space (for Urho2D).
 	 */
 	Vector2 GetScale2D() const
 	{
@@ -559,7 +562,7 @@ public:
 	}
 
 	/** 
-	 * @brief Return position in world space (for M3D).
+	 * @brief Return position in world space (for Urho2D).
 	 */
 	Vector2 GetWorldPosition2D() const
 	{
@@ -579,7 +582,7 @@ public:
 	}
 
 	/** 
-	 * @brief Return rotation in world space (for M3D).
+	 * @brief Return rotation in world space (for Urho2D).
 	 */
 	float GetWorldRotation2D() const
 	{
@@ -630,7 +633,7 @@ public:
 	}
 
 	/** 
-	 * @brief Return scale in world space (for M3D).
+	 * @brief Return scale in world space (for Urho2D).
 	 */
 	Vector2 GetWorldScale2D() const
 	{
@@ -644,7 +647,7 @@ public:
 	Vector3 LocalToWorld(const Vector3& position) const;
 
 	/** 
-	 * @brief Convert a local space position or rotation to world space (for M3D).
+	 * @brief Convert a local space position or rotation to world space (for Urho2D).
 	 */
 	Vector2 LocalToWorld2D(const Vector2& vector) const;
 	/** 
@@ -653,7 +656,7 @@ public:
 	Vector3 WorldToLocal(const Vector3& position) const;
 
 	/** 
-	 * @brief Convert a world space position or rotation to local space (for M3D).
+	 * @brief Convert a world space position or rotation to local space (for Urho2D).
 	 */
 	Vector2 WorldToLocal2D(const Vector2& vector) const;
 	/** 
@@ -695,7 +698,7 @@ protected:
 	SceneNode *m_pParent;
 	mutable BoundingBox m_bdBox;//!<自身的包围盒
 	mutable BoundingBox m_worldBox;//!<相对于世界坐标的包围盒
-	bool m_bVisible;//!<隐藏状态
+	bool m_bHideState;//!<隐藏状态
 
 	//0 = 相交
 	//1 = 全在外部

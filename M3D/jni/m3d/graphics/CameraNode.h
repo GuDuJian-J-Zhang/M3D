@@ -18,7 +18,6 @@
 #include "m3d/base/Ray.h"
 #include "m3d/base/Viewport.h"
 #include "m3d/base/Frustum.h"
-#include "../model/Model.h"
 namespace M3D
 {
 static const float DEFAULT_NEARCLIP = 0.1f;
@@ -30,9 +29,6 @@ static const unsigned VO_NONE = 0x0;
 static const unsigned VO_LOW_MATERIAL_QUALITY = 0x1;
 static const unsigned VO_DISABLE_SHADOWS = 0x2;
 static const unsigned VO_DISABLE_OCCLUSION = 0x4;
-
-class SignModel;
-
 
 /**@class Camera
  * @brief Camera类
@@ -62,13 +58,14 @@ public:
 	int viewPort[4];//!<视图矩阵
 };
 
-class M3D_API CameraNode: public SignModel
+class M3D_API CameraNode: public SceneNode
 {
 public:
 	const static int FRUSTUM_INTER;//!<平截头体相交
 	const static int FRUSTUM_OUT;//!<平截头体外部
 	const static int FRUSTUM_INER;//!<平截头体内部
 	const static Matrix4 flipMatrix;//!<裁剪面矩阵
+
 public:
 	CameraNode(void);
 	virtual ~CameraNode(void);
@@ -79,11 +76,17 @@ public:
 	 * @brief 设置缩放
 	 * @param scale 缩放变量
 	 */
-	//virtual void SetScale(float scale);
+	virtual void SetScale(float scale);
 	/**
 	 * @brief 复位
 	 */
 	virtual void ReSet();
+
+	/**
+	 * @brief 遍历
+	 * @param action
+	 */
+	virtual void Traverse(Action* action);
 
 	/**
 	 * @brief 当前相机状态转化为Json串
@@ -103,25 +106,6 @@ public:
     	 * @return
     	 */
     virtual bool setPosition(const string& position);
-
-	void SetDirection(const Vector3 & direction);
-
-	/**
-	* @brief Return position in parent space.
-	*/
-	const Vector3& GetPosition() const
-	{
-		return m_position;
-	}
-
-	/**
-	* @brief Return rotation in parent space.
-	*/
-	const Quaternion& GetRotation() const
-	{
-		return m_rotation;
-	}
-
     /**
     	 * @brief 设置相机方向
     	 * @param states
@@ -129,39 +113,22 @@ public:
     	 */
     virtual bool setDirection(const string& direction);
 
-	virtual void SetPosition(const Vector3& position);
-
-	virtual void SetRotation(const Quaternion& rotation);
-
-	virtual void SetScale(const Vector3& scale);
-
-	Vector3& GetOldPosition();
-
-	Quaternion& GetOldRotation();
-
+    /**
+     * @brief 更新相机位置
+     */
+	void UpDataCameraPos();
 
 	/**
-	* @brief Return up direction in parent space. Positive Y axis equals identity rotation.
-	*/
-	Vector3 GetUp() const;
+	 * @brief 获取节点类型
+	 * @return
+	 */
+	virtual int GetType(void);
 
 	/**
-	* @brief Return right direction in parent space. Positive X axis equals identity rotation.
-	*/
-
-	Vector3 GetRight() const;
-
-	virtual void SetTransform(const Vector3& position, const Quaternion& rotation);
-
-	virtual void SetTransform(const Vector3& position, const Quaternion& rotation, float scale);
-
-	virtual void SetTransform(const Vector3& position, const Quaternion& rotation, const Vector3& scale);
-
-	void Translate(const Vector3& delta, TransformSpace space = TS_LOCAL);
-
-	void Rotate(const Quaternion& delta, TransformSpace space = TS_LOCAL);
-
-	virtual Matrix3x4 GetTransform() const;
+	 * @brief 选择动作
+	 * @param action
+	 */
+	virtual void RayPick(RayPickAction * action);
 
 	/**
 	 * @brief 缩放视图
@@ -183,8 +150,6 @@ public:
 	 */
 	void RotateAroundCenter(const Quaternion& delta,
 				TransformSpace space = TS_LOCAL);
-
-	void RotateAround(const Vector3 & point, const Quaternion & delta, TransformSpace space = TS_LOCAL);
 
 	/**
 	 * @brief 获取视口
@@ -339,7 +304,7 @@ public:
 	 */
 	Vector3& GetOrigRotateCenter();
 
-	void GetLookAt(Vector3& eye, Vector3& center, Vector3& up, float lookDistance = 1.0f) const;
+
 	/**
 	 * @brief Return near clip distance.
 	 * @return
@@ -455,7 +420,7 @@ public:
 	void SetVR(bool isVR);
 
 	/**
-	 * @brief Return API-specific projection matrix. For OGL only
+	 * @brief Return API-specific projection matrix.
 	 * @return
 	 */
 	const Matrix4& GetProjection() const;
@@ -601,11 +566,6 @@ public:
 	float GetDistance(const Vector3& worldPos) const;
 
 	/**
-	* @brief Return forward direction in parent space. Positive Z axis equals identity rotation.
-	*/
-	Vector3 GetDirection() const;
-
-	/**
 	 * @brief Return squared distance to position. In orthographic mode uses only Z coordinate.
 	 * @param worldPos
 	 * @return
@@ -656,8 +616,6 @@ public:
 	 */
 	void SetOrthoSizeAttr(float orthoSize);
 
-	virtual void SetWorldPosition(const Vector3& position);
-
 	/**
 	 * @brief Set reflection plane attribute.
 	 * @param value
@@ -687,21 +645,17 @@ public:
 	 */
 	virtual void OnMarkedDirty();
 
-	void RayPick(RayPickAction* action);
 	void SetCameraMode(int mode);
 
 	void SetPupilDistance(int distance);
 
 	void UpdatePupilCamera(float focalLength);
 
-	void SetSceneManager(SceneManager* sceneMgr);
-	SceneManager* GetSceneManager();
-
-	virtual void FindVisiableObject(RenderAction* renderAction);
 private:
 	mutable Viewport m_viewPort;
 	Vector3 m_origRotateCenter;
 	Vector3 m_rotateCenter;
+ 
 
 	mutable Matrix3x4 m_view;//!< Cached view matrix.
 
@@ -758,18 +712,6 @@ private:
 	Matrix4 m_leftEyeProjMat;
 	Matrix4 m_rightEyeProjMat;
 	mutable Matrix3x4 m_tempMatrix;
-
-	SceneManager* m_scene;
-
-	Vector3 m_position;//!<位置
-	Vector3 m_oldPosition;
-
-	Quaternion m_rotation;//!<选择
-	Quaternion m_oldRotation;
-
-	Vector3 m_scale;//!<缩放
-	Vector3 m_oldScale;
-	mutable Mutex m_mutex;
 
 	public:
 		int m_cameraMode;//!<相机模式：0表示正常；1表示左眼；2表示右眼。

@@ -13,6 +13,7 @@
 #define M3D_POINT_H_
 
 #include "m3d/model/Shape.h"
+#include "m3d/action/RenderAction.h"
 #include "m3d/graphics/Renderable.h"
 namespace M3D
 {
@@ -23,7 +24,7 @@ class CameraNode;
 class Texture;
 class ImageBoard;
 class MeshBoard;
-class RenderAction;
+
 /**@class Point
  * @brief Point类
  *
@@ -86,12 +87,6 @@ public:
 	virtual const  Color& GetRenderColor();
 
 	/**
-	* 得到渲染颜色
-	* @return
-	*/
-	virtual const  Color& GetShapeColor();
-
-	/**
 	 * 获取显示图片,使用图片方式绘制时使用
 	 * @return
 	 */
@@ -151,7 +146,7 @@ private:
 /**
  * TODO 使用引用的方式来绘制点，从而加快显示效率
  */
-class M3D_API RefPoint: public Shape
+class RefPoint: public Shape
 {
 
 };
@@ -159,7 +154,7 @@ class M3D_API RefPoint: public Shape
 /**
  * 存储一系列点数据，可以加快显示效率
  */
-class M3D_API PointSet: public Shape
+class PointSet: public Shape
 {
 
 };

@@ -32,8 +32,6 @@ namespace M3D
 		*/
 		void SetSize(unsigned bufferSize, bool dynamic = false);
 
-		long GetBufferSize();
-
 		/**
 		* 一次性将数据从内存拷贝到GPU
 		* @param data
@@ -125,9 +123,7 @@ namespace M3D
 
 		//	//其他数据 offset TODO
 		M3D_OFFSET_TYPE m_bufferOffset; //!< 数据起始
-		M3D_OFFSET_TYPE m_cacheBufferSize;	//!< disk申请空间大小
-
-		M3D_OFFSET_TYPE m_BufferSize;	//!< GPU申请空间大小
+		M3D_OFFSET_TYPE m_bufferSize;	//!< GPU申请空间大小
 
 		int m_bufferType;//!<使用内存类型
 		unsigned char* pBaseAddress;//!<

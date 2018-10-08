@@ -69,8 +69,6 @@ public:
 	CProcessManager * FindProcessManagerByID(const int ID);
 	/*! This method find CProcessManager by name */
 	CProcessManager * FindProcessManagerByName(const char *name);
-	/*! This method find CProcess by ProcessManagerID and ProcessID */
-	CProcess * FindProcessManagerByManagerIDAndProcessID(const int processManagerID, const int processID);
 	/*! This method update view state by processManager */
 	void UpdateViewWithProcessManager(int nProcessManagerIdx);
 	/*! This method set Current ProcessManager by ID
@@ -130,28 +128,20 @@ public:
 	bool MoveProcessManager(CProcessManager* pProcessManager,CProcessManager* pTargetProcessManager);
 	/*! This method return the previous processManager of a processManager.
 	\param pProcessManager: The current processManager
-	\param bSteps: Is return child processmanager
-	\param pFocusProcessManager: find in this processmanager.if NULL,find in all processmanager
 	\return A point to previous processManager. */
-	CProcessManager * GetPreProcessManager(CProcessManager *pProcessManager, bool bSteps = false, CProcessManager* pFocusProcessManager = NULL);
+	CProcessManager * GetPreProcessManager(CProcessManager *pProcessManager);
 	/*! This method return the next processManager of a processManager.
 	\param pProcessManager: The current processManager
-	\param bSteps: Is return child processmanager
-	\param pFocusProcessManager: find in this processmanager.if NULL,find in all processmanager
 	\return A point to next processManager. */
-	CProcessManager * GetNextProcessManager(CProcessManager *pProcessManager, bool bSteps = false, CProcessManager* pFocusProcessManager = NULL);
+	CProcessManager * GetNextProcessManager(CProcessManager *pProcessManager);
 	/*! This method return the previous process of a Process.
 	\param pProcess: The current process
-	\param bSteps: Is return child process
-	\param pFocusProcessManager: find in this processmanager.if NULL,find in all processmanager
 	\return A point to previous process. */
-	CProcess * GetPreProcess(CProcess *pProcess, bool bSteps = false, CProcessManager* pFocusProcessManager = NULL);
+	CProcess * GetPreProcess(CProcess *pProcess);
 	/*! This method return the next process of a Process.
 	\param pProcess: The current process
-	\param bSteps: Is return child process
-	\param pFocusProcessManager: find in this processmanager.if NULL,find in all processmanager
 	\return A point to next process. */
-	CProcess * GetNextProcess(CProcess *pProcess, bool bSteps = false, CProcessManager* pFocusProcessManager = NULL);
+	CProcess * GetNextProcess(CProcess *pProcess);
 
 
 	/*! This method get PlayMode.*/
@@ -183,45 +173,16 @@ public:
 	/*! End play camera change animation between current view camera state and target process camera state. */
 	void EndChangeCamera();
 	/*! Get camera change CSBehaviorAction. */
-	CSBehaviorAction* GetBehaviorActionChgCam();
+	CSBehaviorAction* GetBehaviorActionChgCam(){ return m_pBehaviorActionChgCam;};
 	/*! Set camera change animation time. 
 	\param fSecond: The camera change animation play time(fSecond> 0) */
 	void SetChgCamTime(float fSecond = 1.0f);
-	/*! This method move pSourceProcess to the below of the target process pTargetProcess.
-	\param pSourceProcess: the process to move
-	\param pTarget: the target object process or processmanager*/
-	bool MoveProcess(CProcess* pSourceProcess, void* pTarget);
 	/*! This method find process by the param nAnimationID.
 	\param nAnimationID: the id of process finding out in the animationstepmanager*/
-	/*! This method move pSourceProcess to the below of the target process pTargetProcess.
-	\param pSourceProcess: the process to move
-	\param pTargetProcess: the target object process*/
-	bool MoveProcess(CProcess* pSourceProcess, CProcess* pTargetProcess);
-	/*! This method move pSourceProcess to the below of the target processmanager pTargetProcessManager.
-	\param pSourceProcess: the process to move
-	\param pTargetProcessManager: the target object processmanager*/
-	bool MoveProcess(CProcess* pSourceProcess, CProcessManager* pTargetProcessManager);
 	CProcess* FindProcessByAnimationID(int nAnimationID);
 	/*! This method return the pause state.*/
 	bool IsPauseState();
-	/*! This method return the first process of the current AnimationStepManager.*/
-	CProcess* GetFirstProcess(bool bSteps = false);
-	/*! This method return the last process of the current AnimationStepManager.*/
-	CProcess* GetLastProcess(bool bSteps = false);
-	/*! This method return the first top processmanager of the current AnimationStepManager.*/
-	CProcessManager* GetFirstTopProcessManager();
-	/*! This method return the last top processmanager of the current AnimationStepManager.*/
-	CProcessManager* GetLastTopProcessManager();
-	/*! This method return the previous top processmanager of the current AnimationStepManager.*/
-	CProcessManager* GetPreTopProcessManager(CProcessManager* pProcessManager);
-	/*! This method return the next top processmanager of the current AnimationStepManager.*/
-	CProcessManager* GetNextTopProcessManager(CProcessManager* pProcessManager);
-	/*! This method return the play child processManager state.*/
-	bool IsPlayChildProcessManagerSteps() { return m_bPlayChildProcessManagerSteps; }
-	void SetPlayChildProcessManagerSteps(bool bPlayChildProcessManagerSteps) { m_bPlayChildProcessManagerSteps = bPlayChildProcessManagerSteps; }
-	/*! This method return the play child processManager state.*/
-	CProcessManager* GetFocusProcessManager() { return m_pFocusProcessManager; }
-	void SetFocusProcessManager(CProcessManager* pFocusProcessManager) { m_pFocusProcessManager = pFocusProcessManager; }
+
 protected:
 	struct vlist_s *	m_ProcessManagerList;			/*!< A pointer to the list of processManager. */
 	int					m_CurProcessManagerID;			/*!< Current ProcessManager ID. */
@@ -231,8 +192,7 @@ protected:
 	CSBehaviorAction* m_pBehaviorActionChgCam;		/*!< Camera change CSBehaviorAction. */
 	int					m_nChgCamTickNum;				/*!< Camera change CSBehaviorAction tick number. */
 	bool                m_bIsPause;						/*!< Is pause flag. */
-	bool				m_bPlayChildProcessManagerSteps;		/*!< Is play child ProcessManager. */
-	CProcessManager*	m_pFocusProcessManager;
+
 
 };
 SA_NAMESPACE_END

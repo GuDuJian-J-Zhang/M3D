@@ -1,4 +1,4 @@
-/**@file
+﻿/**@file
  *@brief
  *@author	XL
  *@date		2015-7-7
@@ -108,20 +108,6 @@ public:
 	 * @return 返回批注 失败 为NULL
 	 */
 	static Note* CreateTextNoteFromJSON(SceneManager* scene, const string& JSONValue);
-    /**
-     * @brief 从Json串中创建
-     * @param scene 场景
-     * @param JSONValue Json字符串
-     * @return 返回批注 失败 为NULL
-     */
-    static Note* CreateSequenceNoteFromJSON(SceneManager* scene, const string& JSONValue);
-    /**
-     * @brief 从Json串中创建
-     * @param scene 场景
-     * @param JSONValue Json字符串
-     * @return 返回批注 失败 为NULL
-     */
-    static Note* CreateThreeDGestureNoteFromJson(SceneManager* scene,const string& JSONValue);
 	/**
 	 * @brief 将文本批注转化为XML字符串
 	 * @param scene 场景
@@ -235,7 +221,7 @@ private:
 private:
 	//一些工具函数
 	static	void GetMeshSet(BoundingBox& box, vector<Vector3>&triangleSet, SceneManager* scene);
-	static void GetInsectShape(void* data, Model* node);
+	static void GetInsectShape(void* data, SceneNode* node);
 	static void GetInsectModel(void * data, Model * model);
 	static void GetInsectBody(vector<Vector3>& lineDatas,  Body * body, BoundingBox& lineBox);
 	static void GetInsectFace(vector<Vector3>& lineDatas,  Face * face, BoundingBox& lineBox);

@@ -11,8 +11,6 @@
 #include <wchar.h>
 #include "AnimationStepManager.h"
 #include "sview/views/View.h"
-#include "m3d/utils/Platform.h"
-
 
 SA_NAMESPACE_BEGIN
 
@@ -28,17 +26,9 @@ CSimulationAnimationManager::CSimulationAnimationManager(const char* CurSVLVersi
 	{
 		strcpy(m_CurSVLVersion, CurSVLVersion);
 	}
-	else
-	{
-		strcpy(m_CurSVLVersion, "2.356");
-	}
 	if(CurViewerVersion)
 	{
 		strcpy(m_CurViewerVersion, CurViewerVersion);
-	}
-	else
-	{
-		strcpy(m_CurViewerVersion, "5.0");
 	}
 	strcpy(m_SVLVersion, "");
 	strcpy(m_ViewerVersion, "");
@@ -209,6 +199,7 @@ void CSimulationAnimationManager::DeleteSimAni( CSBehaviorAction *pbehaviorManag
 				m_CurSAID = -1;
 			}
 		}
+
 		vlist_remove(m_BehaviorActionList, pbehaviorManager);
 		pbehaviorManager->Release();
 	}
@@ -243,44 +234,24 @@ CSBehaviorAction * CSimulationAnimationManager::FindSimAniByID( const int ID )
 void CSimulationAnimationManager::ProcessXMLData( const char *buffer )
 {
 	//如果是UTF-8编码，转换成ANSI编码
-	bool isCreateSABuffer = false;
-	char	*pSABuffer = NULL;
-#ifdef _WIN32
-	if (buffer[0] == '\xEF' && buffer[1] == '\xBB' && buffer[2] == '\xBF')
-	{
-		wstring wsrSA = Platform::StringToWString(buffer+3);
-		string srSA = Platform::WStringToString(wsrSA,"auto");
-
-		int size = srSA.size()+1;
-		pSABuffer = new char[size];
-
-		memset(pSABuffer, 0, size);
-		strcpy(pSABuffer, srSA.c_str());
-		isCreateSABuffer = true;
-	}
-	else
-	{
-		pSABuffer = (char*)buffer;
-	}
-#else
 	SA_UTF8 utf8Obj;
+	char	*pUTFText = NULL;
 	if(buffer[0] == '\xEF' && buffer[1] == '\xBB' && buffer[2] == '\xBF')
 	{
-		pSABuffer = (char*)buffer;
+		pUTFText = (char*)buffer;
 	}
 	else
 	{
 		utf8Obj.append(buffer);
-		pSABuffer = (char*)utf8Obj.encodedText();
-		isCreateSABuffer = true;
+		pUTFText = (char*)utf8Obj.encodedText();
 	}
-#endif
-	ClearData();
+	
+
 	CUtilityXMLParser xp;
 
 	char doctype[SA_BUFFER_SIZE_SMALL] = {0};
-	xp.FindDocType(doctype, pSABuffer/*buffer*/);
-	xp.SetupParseBuffer(pSABuffer/*buffer*/);
+	xp.FindDocType(doctype, pUTFText/*buffer*/);
+	xp.SetupParseBuffer(pUTFText/*buffer*/);
 
 	xp.SetTagCallback("SimulationAnimation", CSimulationAnimationManager::XMLCallback, this);
 	xp.SetTagCallback("Animdef", CSBehaviorAction::XMLCallback, this);
@@ -350,10 +321,7 @@ void CSimulationAnimationManager::ProcessXMLData( const char *buffer )
 			pProcessManager->SetCurProcessByID(pProcess->GetID(),false);
 		}
 	}
-//    if (isCreateSABuffer)
-//    {
-//        delete[] pSABuffer;
-//    }
+
 }
 
 
@@ -381,11 +349,8 @@ void * CSimulationAnimationManager::XMLCallback( CUtilityXMLTag *xt, bool open, 
 		if(strlen(Version) > 0 )
 		{
 			strcpy(pSA->m_Version, Version);
-		}
-		if (SATools::VersionCompare(pSA->m_Version, ANIMATION_VERSION) > 0)
-		{
 			//AfxMessageBox(_T("动画打开失败（版本不兼容）"));
-			return NULL;//版本不兼容
+			//return NULL;//版本不兼容
 		}
 
 		if(SATools::VersionCompare("2.0",Version) > 0 )
@@ -397,6 +362,8 @@ void * CSimulationAnimationManager::XMLCallback( CUtilityXMLTag *xt, bool open, 
 			pUtilityXMLParser->SetTagCallback("AttSwitchInterpolator", CSInterpolatorVisible::XMLCallback, pSA);
 		}
 
+		
+		
 		/*xt->StartListItemsQuery();
 		while(1 && xt->HasListItems())
 		{
@@ -610,7 +577,6 @@ void CSimulationAnimationManager::VersionConvert_1_To_2_1()
 									}
 								}
 							}
-							pTimeLinePosRot->AddTLRange();
 							//合并完成后，清除原来的平移及旋转动画
 							pBehaviorAction->DeleteAnimation(pAnimationPos);
 							pBehaviorAction->DeleteAnimation(pAnimationRot);
@@ -876,45 +842,12 @@ int CSimulationAnimationManager::WriteToFile(const wchar_t *filename)
 		//AfxMessageBox(strErrMsg);
 		return -3;
 	}
-	//int nSize = fwrite(xmlgen.GetBuffer(), 1, xmlgen.GetBufferSize()-1, fp);
-	//保存为UTF-8编码
-	SA_UTF8 utf8Obj(xmlgen.GetBuffer());
-	const utf8_char *cUTFBuffer =  utf8Obj.encodedText();
-
-	char UTF8BOM[3]={'\xEF','\xBB','\xBF'};
-	size_t nSize = fwrite(UTF8BOM, 1, 3, fp);
-	nSize += fwrite((const char*)cUTFBuffer, 1, strlen((const char*)cUTFBuffer), fp);
-	
-
-	
+	int nSize = fwrite(xmlgen.GetBuffer(), 1, xmlgen.GetBufferSize()-1, fp);
 	fclose(fp);
-	if((int)nSize > 0)
+	if(nSize >0)
 	{
 		bRet = 0;
 	}
-	return bRet;
-}
-
-bool CSimulationAnimationManager::GetDataBuffer(char** pBuffer,int& nBufferSize)
-{
-	bool bRet= true;
-	CUtilityXMLGenerator xmlgen;
-	xmlgen.Reset();
-	Serialize(&xmlgen);
-	xmlgen.Finalize();
-	
-	//int nSize = fwrite(xmlgen.GetBuffer(), 1, xmlgen.GetBufferSize()-1, fp);
-	//保存为UTF-8编码
-	SA_UTF8 utf8Obj(xmlgen.GetBuffer());
-	const utf8_char *cUTFBuffer =  utf8Obj.encodedText();
-
-	char UTF8BOM[4]={'\xEF','\xBB','\xBF','\0'};
-	nBufferSize = 3 + (int)utf8Obj.length() +1;
-	*pBuffer = new char[nBufferSize];
-	strcpy(*pBuffer,UTF8BOM);
-	strcat(*pBuffer,(const char*)cUTFBuffer);
-	(*pBuffer)[nBufferSize-1] = 0;
-
 	return bRet;
 }
 
@@ -1012,30 +945,27 @@ void CSimulationAnimationManager::ClearData()
 {
 	if(m_pAnimationStepManager)
 	{
-		if (m_pAnimationStepManager->IsPlaying())
-		{
-			//解决多线程正在播放动画时，清除动画崩溃问题。没有想到更好的办法，暂时这么解决
-			m_pAnimationStepManager->Stop();
-			Thread::Sleep(500);
-		}
-
 		delete m_pAnimationStepManager;
 		m_pAnimationStepManager = NULL;
 	}
-	
+
 	DeleteAllSimAni();
 	DeleteAllInitTargetObject();
 
 	if(m_pAnimationPlayApi)
 	{
 		//清除上次干涉的临时数据
-		m_pAnimationPlayApi->ClearColisionData();
+		m_pAnimationPlayApi->ClearColisionData(view);
 	}
 }
 
-CAnimationCallBack* CSimulationAnimationManager::GetAnimationCallBack()
+View* CSimulationAnimationManager::GetView()
 {
-	return m_pAnimationPlayApi->m_pAnimationCB;
+	return this->view;
+}
+void CSimulationAnimationManager::SetView(View* view)
+{
+	this->view = view;
 }
 
 void CSimulationAnimationManager::SetCameraPlay(bool bCameraPlay)
@@ -1295,16 +1225,8 @@ CProcessTargetObject* CSimulationAnimationManager::AddInitTargetObject(TARGETOBJ
 	AniPoint pntScale(target.m_Scale[0],target.m_Scale[1],target.m_Scale[2]);
 	AniQuat quat(target.m_Quat[0],target.m_Quat[1],target.m_Quat[2],target.m_Quat[3]);
 
-	CProcessTargetObject *pTargetObject = NULL;
-	if ((pTargetObject = FindInitTargetObjectByPath(target.m_Path)))
-	{
-		pTargetObject->SetValue(target.m_Name, &pntPos, &quat, &pntScale, target.m_bVisible, target.m_Trans);
-	}
-	else
-	{
-		pTargetObject = new CProcessTargetObject(this, target.m_Name, target.m_Path, &pntPos, &quat, &pntScale, target.m_bVisible, target.m_Trans);
-		AddInitTargetObject(pTargetObject);
-	}
+	CProcessTargetObject *pTargetObject = new CProcessTargetObject(this,target.m_Name,target.m_Path,&pntPos,&quat,&pntScale,target.m_bVisible, target.m_Trans);
+	AddInitTargetObject(pTargetObject);
 	return pTargetObject;
 }
 
@@ -1325,17 +1247,16 @@ CProcessTargetObject * CSimulationAnimationManager::CreateInitTargetObjectByPath
 	return tobject;
 }
 
-void CSimulationAnimationManager::UpdateInitTargetObjectList(std::vector<TARGETOBJECTINFO*>& vecTarget)
+void CSimulationAnimationManager::UpdateInitTargetObjectList(std::vector<TARGETOBJECTINFO>& vecTarget)
 {
 	DeleteAllInitTargetObject();
 	for(int i = 0; i < (int)vecTarget.size(); i++)
 	{
-		TARGETOBJECTINFO* target = vecTarget[i];
-		AniPoint pntPos(vecTarget[i]->m_Pos[0],vecTarget[i]->m_Pos[1],vecTarget[i]->m_Pos[2]);
-		AniPoint pntScale(vecTarget[i]->m_Scale[0],vecTarget[i]->m_Scale[1],vecTarget[i]->m_Scale[2]);
-		AniQuat quat(vecTarget[i]->m_Quat[0],vecTarget[i]->m_Quat[1],vecTarget[i]->m_Quat[2],vecTarget[i]->m_Quat[3]);
-		if (strlen(target->m_Path) == 0 || strcmp(target->m_Path, "PLCID:") == 0)
-			continue;
+		TARGETOBJECTINFO* target = &vecTarget[i];
+		AniPoint pntPos(vecTarget[i].m_Pos[0],vecTarget[i].m_Pos[1],vecTarget[i].m_Pos[2]);
+		AniPoint pntScale(vecTarget[i].m_Scale[0],vecTarget[i].m_Scale[1],vecTarget[i].m_Scale[2]);
+		AniQuat quat(vecTarget[i].m_Quat[0],vecTarget[i].m_Quat[1],vecTarget[i].m_Quat[2],vecTarget[i].m_Quat[3]);
+
 		CProcessTargetObject *ani = new CProcessTargetObject(this,target->m_Name,target->m_Path,&pntPos,&quat,&pntScale,target->m_bVisible);
 		vlist_add_last(m_InitTargetObjectList, (void *)ani);
 	}

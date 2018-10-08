@@ -13,15 +13,14 @@
 
 #include "m3d/M3D.h"
 #include "m3d/utils/Trackball.h"
+#include "sview/extern/WorkNodes.h"
 #include "m3d/base/CTimer.h"
-#include "m3d/base/Matrix3x4.h"
-
 #define EBUILDING
 namespace M3D
 {
+class WorkNodes;
 class SceneManager;
 class Quaternion;
-class Model;
 }
 
 using namespace M3D;
@@ -80,8 +79,6 @@ public:
 	 */
 	void HandleTouchEvent(float* p, int n, int TouchType, int moveType);
 
-	bool HandleDragger(float* p, int n, int TouchType, int moveType);
-
 	/**
 	 *结束当前持续旋转状态
 	 */
@@ -89,7 +86,7 @@ public:
 
 	//void RefreshModelViewCamera();
 
-	void Open(bool useAni= true);
+	void Open();
 
 	void Close();
 
@@ -107,8 +104,6 @@ public:
 
 	virtual void FreeViewMode(bool value); //自由观察模式;
 
-	Vector3 GetCurrentUpDirection();
-	void GetCurrentObservingPattern(bool & oribit, bool & freeView, bool & controlXY) { oribit = this->m_oribitMode; freeView = this->m_freeViewMode; controlXY = this->m_controlLockXY; }
 	virtual void OnUpDataTouchIntent();
 
 	void StartRotateOnFixedPoint();
@@ -151,27 +146,6 @@ public:
 	float m_showModeRotAngle;
 	void SetShowModeSpeed(float speed);
 	//--------------------------------------------
-
-	/**
-	* 上下移动
-	* @param speed
-	*/
-	virtual void MoveUpAndDown(float speed);
-
-	/**
-	* 虚拟键移动 合并了前后左右移动动作
-	* @param strSpeed
-	* @param sidSpeed
-	*/
-	virtual void VirtualKeyMove(float strSpeed, float sidSpeed);
-
-	virtual void WalkAroundTarget(float speed);
-
-	void SetRestoreCamera(bool restoreCamera);
-	bool GetRestoreCamera();
-	virtual void ResetViewCamera();
-
-	virtual bool GetConstraintMode();
 private:
 	/**
 	 * 定时器回调函数
@@ -185,10 +159,8 @@ private:
 
 	M3D::Vector3 GetPickPointCoord(SceneManager * scene, M3D::Vector2 & screenPos);
 
-	float GetBoxLength(float mark);
- 
 protected:
-	virtual void InitCamera(bool useAni);
+	virtual void InitCamera();
 
 	//virtual void InitModelViewCamera();
 	/**
@@ -210,14 +182,11 @@ protected:
 	void KeepState();
 	bool StateChanged();
 
-	bool IsModelInScene(Model* model);
-
 	/**
 	 * 更新场景的运动状态
 	 */
 	void UpdateRenderQuality(bool isMoving);
 	static void* TimerTask(void* data);
-
 
 public:
 	static const int TOUCHUP = 0;
@@ -227,6 +196,7 @@ public:
 protected:
 	IntVector2 m_PriPointTwo1;
 	IntVector2 m_PriPointTwo2;
+	WorkNodes* m_SelectedNodes;
 	SceneManager* m_SceneManager;
 	Trackball m_TrackBall;
 	View* m_pView;
@@ -236,9 +206,9 @@ protected:
 	float m_screenDepth;
 	TouchHandlerType m_touchHandlerType;
 
-	//M3D::Vector3 m_upDirection;
+	M3D::Vector3 m_upDirection;
 
-	//int m_defaultView;//默认试图朝向
+	int m_defaultView;//默认试图朝向
 
 #ifdef EBUILDING
 	static bool m_freeViewMode;//自由观察模式
@@ -273,8 +243,6 @@ protected:
 	Quaternion m_modelRotation;
 	M3D::Vector3 m_oldCameraPos;
 	float m_rotateRadius;
-
-	bool m_restoreCamera;
 };
 
 }

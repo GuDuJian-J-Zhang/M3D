@@ -34,16 +34,9 @@
 	 * @return
 	 */
 #ifdef _WIN32
-	typedef bool(__stdcall*MeasureTextCB)(const char * measureText, float fontSize, const char * fontName, float* o_rect1Start, float* o_rect1End);
 	typedef bool(__stdcall*CREATEIMAGE)(void*, const char*);
-	typedef bool(__stdcall*DRAGMODELCB)(int iType,float fValue,int iUnit);
-	typedef bool(__stdcall*RefreshCB)(int refreshTime);
 #else
     typedef bool (*CREATEIMAGE)(void*,const char*);
-	typedef bool( *MeasureTextCB)(const char * measureText, float fontSize, const char * fontName, float* o_rect1Start, float* o_rect1End);
-	typedef bool( *CREATEIMAGE)(void*, const char*);
-	typedef bool( *DRAGMODELCB)(int iType,float fValue,int iUnit);
-	typedef bool(*RefreshCB)(int refreshTime);
 #endif
 namespace M3D
 {
@@ -94,23 +87,6 @@ public:
      */
     CREATEIMAGE GetCreateImageFun();
 
-	/**
-	* 模型拖拽时回调回调函数
-	* @param fun
-	*/
-	void SetDragModelCBFun(DRAGMODELCB fun);
-	/**
-	* 获取模型拖拽时回调回掉函数
-	* @return 创建二维图片的回掉函数 有JNI层 或者iOS OC端等上层实现
-	*/
-	DRAGMODELCB GetDragModelCBeFun();
-
-	void RequestUILayerDrawCB(int refreshTime = 0);
-
-	RefreshCB GetRefreshCB() const;
-	void SetRefreshCB(RefreshCB val);
-	MeasureTextCB GetMeasureTextFun() const;
-	void SetMeasureTextFun(MeasureTextCB val);
 private:
     /**
      * 初始化
@@ -119,11 +95,9 @@ private:
 
 private:
     CREATEIMAGE createImageFun; //!<粘合层回调函数
-	DRAGMODELCB DragModelCBFun; //模型拖拽时回调!<粘合层回调函数
-	MeasureTextCB measureTextFun; //!<粘合层回调函数
 	GlueEnv * m_env;//!< 粘合层环境上下文
 	Glueobject m_obj;//!<粘合层对象
-	RefreshCB refreshCB;
+
 };
 
 }

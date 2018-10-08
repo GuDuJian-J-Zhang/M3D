@@ -13,79 +13,94 @@ namespace M3D
 
 PolyLine::PolyLine():Shape()
 {
-
+	m_VertexBuf = NULL;
+	m_IndexBuf = NULL;
+	m_VertexNum = 0;
+	m_IndexNum = 0;
 }
 
 PolyLine::~PolyLine()
 {
+	if (m_VertexBuf != NULL)
+	{
+		delete[] m_VertexBuf;
+		m_VertexBuf = NULL;
+	}
 
+	if (m_IndexBuf != NULL)
+	{
+		delete[] m_IndexBuf;
+		m_IndexBuf = NULL;
+	}
 }
 //设置buffer，copy数据
 void PolyLine::SetBuffer(int vertexNum, float* vertexBuf, int indexNum,
 		M3D_INDEX_TYPE* indexBuf)
 {
+	this->m_VertexNum = vertexNum;
+	if (this->m_VertexBuf != NULL)
+		delete[] this->m_VertexBuf;
+	this->m_VertexBuf = new float[vertexNum * 3];
+	memcpy(this->m_VertexBuf, vertexBuf, sizeof(float) * vertexNum * 3);
+
+	this->m_IndexNum = indexNum;
 	if(indexNum>0)
 	{
-		for (int i = 0;i<indexNum;i++)
-		{
-			Vector3 point(vertexBuf[indexBuf[i] *3], vertexBuf[indexBuf[i] * 3+1],vertexBuf[indexBuf[i] * 3+2]);
-			this->AddPoint(point);
-		}
+		if (this->m_IndexBuf != NULL)
+			delete[] this->m_IndexBuf;
+		this->m_IndexBuf = new M3D_INDEX_TYPE[indexNum];
+		memcpy(this->m_IndexBuf, indexBuf, sizeof(M3D_INDEX_TYPE) * indexNum);
 	}
-	else
-	{
-		indexNum = vertexNum;
-		for (int i = 0; i < indexNum; i++)
-		{
-			Vector3 point(vertexBuf[indexBuf[i] * 3], vertexBuf[indexBuf[i] * 3 + 1], vertexBuf[indexBuf[i] * 3 + 2]);
-			this->AddPoint(point);
-		}
-	}
+}
+
+void PolyLine::GetBuffer(int* outVertexNum, float** outVertexBuf,
+		int* outIndexNum, M3D_INDEX_TYPE** outIndexBuf)
+{
+	*outVertexNum = this->m_VertexNum;
+	*outVertexBuf = this->m_VertexBuf;
+	*outIndexNum = this->m_IndexNum;
+	*outIndexBuf = this->m_IndexBuf;
 }
 
 void PolyLine::ComputeBox()
 {
-	//float min[3] =
-	//{ 0 };
-	//float max[3] =
-	//{ 0 };
+	float min[3] =
+	{ 0 };
+	float max[3] =
+	{ 0 };
 
-	////point
-	//for (int i = 0; i < m_VertexNum; i++)
-	//{
-	//	if (i == 0)
-	//	{
-	//		min[0] = m_VertexBuf[i * 3];
-	//		min[1] = m_VertexBuf[i * 3 + 1];
-	//		min[2] = m_VertexBuf[i * 3 + 2];
-
-	//		max[0] = m_VertexBuf[i * 3];
-	//		max[1] = m_VertexBuf[i * 3 + 1];
-	//		max[2] = m_VertexBuf[i * 3 + 2];
-
-	//		continue;
-	//	}
-
-	//	if (m_VertexBuf[i * 3] > max[0])
-	//		max[0] = m_VertexBuf[i * 3];
-	//	if (m_VertexBuf[i * 3 + 1] > max[1])
-	//		max[1] = m_VertexBuf[i * 3 + 1];
-	//	if (m_VertexBuf[i * 3 + 2] > max[2])
-	//		max[2] = m_VertexBuf[i * 3 + 2];
-
-	//	if (m_VertexBuf[i * 3] < min[0])
-	//		min[0] = m_VertexBuf[i * 3];
-	//	if (m_VertexBuf[i * 3 + 1] < min[1])
-	//		min[1] = m_VertexBuf[i * 3 + 1];
-	//	if (m_VertexBuf[i * 3 + 2] < min[2])
-	//		min[2] = m_VertexBuf[i * 3 + 2];
-	//}
-	this->m_BoundingBox.Clear();
-	for (int i=0;i<this->m_PointList.size();i++)
+	//point
+	for (int i = 0; i < m_VertexNum; i++)
 	{
-		this->m_BoundingBox.Merge(this->m_PointList.at(i));
+		if (i == 0)
+		{
+			min[0] = m_VertexBuf[i * 3];
+			min[1] = m_VertexBuf[i * 3 + 1];
+			min[2] = m_VertexBuf[i * 3 + 2];
+
+			max[0] = m_VertexBuf[i * 3];
+			max[1] = m_VertexBuf[i * 3 + 1];
+			max[2] = m_VertexBuf[i * 3 + 2];
+
+			continue;
+		}
+
+		if (m_VertexBuf[i * 3] > max[0])
+			max[0] = m_VertexBuf[i * 3];
+		if (m_VertexBuf[i * 3 + 1] > max[1])
+			max[1] = m_VertexBuf[i * 3 + 1];
+		if (m_VertexBuf[i * 3 + 2] > max[2])
+			max[2] = m_VertexBuf[i * 3 + 2];
+
+		if (m_VertexBuf[i * 3] < min[0])
+			min[0] = m_VertexBuf[i * 3];
+		if (m_VertexBuf[i * 3 + 1] < min[1])
+			min[1] = m_VertexBuf[i * 3 + 1];
+		if (m_VertexBuf[i * 3 + 2] < min[2])
+			min[2] = m_VertexBuf[i * 3 + 2];
 	}
-	//m_BoundingBox.Define(Vector3(min[0], min[1], min[2]),Vector3(max[0], max[1], max[2]));
+
+	m_BoundingBox.Define(Vector3(min[0], min[1], min[2]),Vector3(max[0], max[1], max[2]));
 }
 
 } /* namespace M3D */

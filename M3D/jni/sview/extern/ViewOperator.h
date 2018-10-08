@@ -58,7 +58,7 @@ public:
 	 * @param data
 	 * @param node
 	 */
-	static void ComputeFitViewBox(void* data, Model* node);
+	static void ComputeFitViewBox(void* data, SceneNode* node);
 
 private:
 

@@ -9,10 +9,9 @@
 
 #ifndef M3D_PATH_HELPER_H_
 #define  M3D_PATH_HELPER_H_
-
 #include <string>
 #include <iostream>
-#include "m3d/M3D.h"
+#include "m3d/m3d.h"
 using std::string;
 using std::iostream;
 namespace M3D{
@@ -104,13 +103,6 @@ public:
 	 * @return 装配级别
 	 */
 	static int GetPathLevel(const string& m3dPath);
-
-	/**
-	* 将热点关联路径转换成M3D路径
-	* @param animationPath
-	* @param m3dPath
-	*/
-	static string HotSpotPathToM3D(const string& HotspotPath);
 
 public:
 	const static  string M3D_PATH_PRE;

@@ -53,28 +53,6 @@ int CullerHelper::IsLittleModel(const BoundingBox& box,
 	return littleModelState;
 }
 
-int CullerHelper::IsLittleBody(const BoundingBox& box,
-	CameraNode* camera)
-{
-	int littleModelState = 0;
-
-	float length = box.Length();
- 
-	if (box.Defined())///包围盒定义了，才需要进行判断，如果包围盒没有定义，则认为该模型时需要显示的
-	{
-		if (length < m_drawLLLimit)
-		{
-			littleModelState = 2;
-		}
-		else if (length < m_drawLimit)
-		{
-			littleModelState = 1;
-		}
-	}
-	return littleModelState;
-}
-
-
 Intersection CullerHelper::InViewPort(BoundingBox& box,
 		CameraNode* camera)
 {
@@ -113,7 +91,6 @@ float CullerHelper::GetCullerPercent()
 
 void CullerHelper::AddCullerRatio(float fps)
 {
-	return;
 	if (fps < 2)
 	{
 		this->m_cullerPercent += 0.1;
@@ -133,9 +110,9 @@ void CullerHelper::AddCullerRatio(float fps)
 	if (this->m_cullerPercent >0.99) {
 		this->m_cullerPercent = 0.99;
 	}
-	if (this->m_cullerbase >20)
+	if (this->m_cullerbase >40)
 	{
-		this->m_cullerbase = 20;
+		this->m_cullerbase = 40;
 	}
 	this->m_cullerPercent = .0f;
 	//this->m_cullerbase=0;
@@ -143,7 +120,6 @@ void CullerHelper::AddCullerRatio(float fps)
 
 void CullerHelper::ReduceCullerRatio(float fps)
 {
-	return;
 	if (fps >20)
 	{
 		this->m_cullerPercent  -= 0.02;
@@ -159,9 +135,9 @@ void CullerHelper::ReduceCullerRatio(float fps)
 		this->m_cullerPercent = 0;
 	}
 
-	if (this->m_cullerbase < 20)
+	if (this->m_cullerbase < 10)
 	{
-		this->m_cullerbase = 20;
+		this->m_cullerbase = 10;
 	}
 }
 void CullerHelper::UpDate(CameraNode* camera)
@@ -173,14 +149,14 @@ void CullerHelper::UpDate(CameraNode* camera)
 //		m_drawLimit = 0;
 //		return;
 //	}
+
 	const Viewport& viewport = camera->GetViewPort();
-	this->m_cullerbase = Parameters::Instance()->m_RemoveSize;
-	float removeSize = this->m_cullerbase;// Parameters::Instance()->m_RemoveSize;
+
+	float removeSize = this->m_cullerbase + Parameters::Instance()->m_RemoveSize ;
 	float removeNeverSeeSize  = this->m_cullerbase/4 ;
 	if (Parameters::Instance()->m_RemoveMode == 0)
 	{
 		m_drawLimit = m_modelLength * removeSize/ 100;
-		m_drawLLLimit = 0;
 	}
 	else if (Parameters::Instance()->m_RemoveMode == 1)
 	{

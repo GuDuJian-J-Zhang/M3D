@@ -1,16 +1,15 @@
 ﻿#include "m3d/utils/IDCreator.h"
-
-#ifdef WIN32
+#ifdef __IOS__
+#include <uuid/uuid.h>
+#elif WIN32
 #include <objbase.h>
 #include <stdio.h>
 #define GUID_LEN 64
-#else
-#include <uuid/uuid.h>
 #endif
 namespace M3D
 {
 
-IDCreator* IDCreator::g_pcreator = NULL;
+IDCreator* IDCreator::m_pcreator = NULL;
 const int IDCreator::DEFAULT = -1;
 const int IDCreator::MODEL = 0;
 const int IDCreator::NODE = 1;
@@ -28,23 +27,15 @@ IDCreator::~IDCreator()
 
 }
 
-IDCreator * IDCreator::Instance()
-{
-	if (g_pcreator == NULL)
-	{
-		g_pcreator = new IDCreator;
-	}
-
-	return g_pcreator;
-}
-
 int IDCreator::GetID(int type)
 {
+	//	LOGE("IDCreator::GetID 1");
 	if (m_currentType != m_IDMap.end())
 	{
 		if (type == m_currentType->first)
 		{
 			m_currentType->second = m_currentType->second++;
+			//					LOGE("IDCreator::GetID 3");
 			return m_currentType->second;
 		}
 		else
@@ -56,6 +47,7 @@ int IDCreator::GetID(int type)
 				m_currentType = m_IDMap.find(type);
 			}
 			m_currentType->second = m_currentType->second++;
+			//				LOGE("IDCreator::GetID 4");
 			return m_currentType->second;
 		}
 	}
@@ -68,34 +60,22 @@ int IDCreator::GetID(int type)
 			m_currentType = m_IDMap.find(type);
 		}
 		m_currentType->second = m_currentType->second++;
+		//		LOGE("IDCreator::GetID 5");
 		return m_currentType->second;
 	}
-}
-
-void IDCreator::ResetSVLIDOffset()
-{
-	this->m_svlIDOffset = 0;
-}
-
-SVLGlobalID& IDCreator::GetSVLIDOffset()
-{
-	return this->m_svlIDOffset;
-}
-
-void IDCreator::UpdateSVLID(SVLGlobalID& maxSVLID)
-{
-	if (this->m_svlIDOffset.Code() < maxSVLID.Code())
-	{
-		this->m_svlIDOffset = maxSVLID;
-	}
+	//	LOGE("IDCreator::GetID 2");
 }
 
 string IDCreator::GetUUID()
 {
-
     string uuid;
-
-#ifdef WIN32
+#ifdef __IOS__
+    uuid_t uu;
+    uuid_generate( uu );
+    char str[37] ={0};
+    uuid_unparse(uu,str);
+    uuid = str;
+#elif WIN32
 	char buffer[GUID_LEN] = { 0 };
 	GUID guid;
 	if (CoCreateGuid(&guid))
@@ -110,12 +90,6 @@ string IDCreator::GetUUID()
 		guid.Data4[6], guid.Data4[7]);
 	string tempID(buffer);
 	uuid = tempID;
-#else
-    uuid_t uu;
-    uuid_generate( uu );
-    char str[37] ={0};
-    uuid_unparse(uu,str);
-    uuid = str;
 #endif
     return uuid;
 }
@@ -158,11 +132,11 @@ void IDCreator::Initialize(int type, int id)
 
 int IDCreator::GetDefaultID()
 {
-	if (g_pcreator == NULL)
+	if (m_pcreator == NULL)
 	{
-		g_pcreator = new IDCreator;
+		m_pcreator = new IDCreator;
 	}
-	return g_pcreator->GetID(IDCreator::DEFAULT);
+	return m_pcreator->GetID(IDCreator::DEFAULT);
 }
 
 }

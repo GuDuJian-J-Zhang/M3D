@@ -26,22 +26,6 @@ Matrix3x4::Matrix3x4(const Vector3& translation, const Quaternion& rotation, con
     SetTranslation(translation);
 }
 
-void Matrix3x4::GetLookAt(Vector3& eye, Vector3& center, Vector3& up, float lookDistance/*=1.0f*/) const
-{
-	Matrix3x4 inv;
-	inv = this->Inverse();
-	// note: e and c variables must be used inside this method instead of eye and center
-	// because eye and center are references and they may point to the same variable.
-	Vector3 e = inv*Vector3(0.0, 0.0, 0.0);
-	up = *this*Vector4(0.0, 1.0, 0.0, 0.0);
-	Vector3 c = *this*Vector4(0.0, 0.0, -1, 0.0);
-	c.Normalize();
-	c = e + c*lookDistance;
-	// assign the results
-	eye = e;
-	center = c;
-}
-
 void Matrix3x4::Decompose(Vector3& translation, Quaternion& rotation, Vector3& scale) const
 {
     translation.m_x = m_m03;
@@ -110,33 +94,6 @@ void Matrix3x4::MultiScale(const Vector3& scale)
 	Matrix3x4 temp;
 	temp.SetScale(scale);
 	*this = (*this)*temp ;
-}
-void Matrix3x4::LeftMultiTranslate(const Vector3& mov)
-{
-	Matrix3x4 temp;
-	temp.SetTranslation(mov);
-	*this = temp*(*this);
-}
-
-void Matrix3x4::LeftMultiRotatiton(const Quaternion& rotation)
-{
-	Matrix3x4 temp;
-	temp.SetRotation(rotation.RotationMatrix());
-	*this = temp*(*this);
-}
-
-void Matrix3x4::LeftMultiScale(float scale)
-{
-	Matrix3x4 temp;
-	temp.SetScale(scale);
-	*this = temp*(*this);
-}
-
-void Matrix3x4::LeftMultiScale(const Vector3& scale)
-{
-	Matrix3x4 temp;
-	temp.SetScale(scale);
-	*this = temp*(*this);
 }
 
 string Matrix3x4::ToString() const

@@ -12,13 +12,11 @@
 #define M3D_PMIDATA_H_
 #include "m3d/model/Shape.h"
 #include "ComText.h"
-
+#include "m3d/action/RenderAction.h"
 #include "m3d/graphics/Renderable.h"
 namespace M3D
 {
 class PolyLine;
-class Model;
-class RenderAction;
 
 //TODO:改为继承自Note bing
 
@@ -71,11 +69,6 @@ public:
 	 */
 	BoundingBox GetComTextsBox();
 
-	void MarkDefinePlaneDirty();
-
-	void SetParentModel(Model* parentModel);
-	Model* GetParentModel();
-
 private:
 	void Init();
 
@@ -107,9 +100,6 @@ private:
 	Matrix4 m_GLDefPlaneMatrix; //!<定义平面GL显示矩阵
 
 	Matrix4 m_outFrameMatrix; //!<外框显示时的方向和位置矫正矩阵，为了实现朝向屏幕和固定屏幕效果
-
-	Model* m_parentModel;
-	mutable Mutex m_mutex; //!<线程锁对象
 };
 
 }

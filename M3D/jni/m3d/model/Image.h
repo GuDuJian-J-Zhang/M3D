@@ -16,27 +16,23 @@ namespace M3D
  * @class
  * @brief 从APK压缩包中，提取PNG格式文件，解码成GL使用格式
  */
-class M3D_API Image:public Object
+class M3D_API Image
 {
 public:
 	Image();
 	virtual ~Image();
 
-	IDTYPE GetID()
-	{
-		return this->m_Id;
-	}
-
-	void SetID(IDTYPE  value)
-	{
-		this->m_Id = value;
-	}
 	/**
 	 * 读取指定路径的图片
 	 * @param fileName
 	 */
-	void SetPath(const string& fileName);
-	string& GetPath();
+	void Read(const string& fileName);
+
+	/**
+	 * 通过数据流初始化图片
+	 * @param data
+	 */
+	void SetData(const void* data);
 	/**
 	 * 纪录下数据的开始位置和对应长度
 	 * @param data
@@ -44,19 +40,12 @@ public:
 	 */
 	void SetData(unsigned char* data, int dataLength);
 
-	string GetHashCode();
-
-	void ReadFile();
-
 public:
 	bool m_bAlpha;//!< 图片是否有透明度
 	int m_iWidth;//!< 宽度
 	int m_iHeight;//!<高度
 	int m_dataLength;//!<数据长度
-	int m_channels;
 	unsigned char* m_pPixelData;//!< 数据地址
-	IDTYPE  m_Id; //!<编号
-	string m_imagePath;
 };
 }
 

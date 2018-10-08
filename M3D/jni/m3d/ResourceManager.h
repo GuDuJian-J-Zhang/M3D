@@ -10,7 +10,6 @@
 #define M3D_RESOURCEMANAGER_H_
 
 #include "m3d/model/Image.h"
-#include "m3d/graphics/BaseMaterial.h"
 #include "m3d/renderer/RenderContext.h"
 #include <map>
 
@@ -20,7 +19,7 @@ namespace M3D
 {
 const static  int OGLOBJ_MAX_NUM = 1000; //OGL GPU 对象最大个数
 
-class BaseMaterial;
+class Material;
 class Texture;
 class Image;
 
@@ -39,7 +38,6 @@ class SPolyLine;
 class RefPolyLine;
 class GeometryAttribute;
 class CFileCacheManager;
-class MaterialTemplateManager;
 
 /**
  * @class
@@ -156,7 +154,7 @@ public:
 class M3D_API ResourceManager
 {
 public:
-	//static ResourceManager* Instance;
+	static ResourceManager* Instance;
 
 	const static int TOPLODLEVEL = 0;
 
@@ -166,24 +164,15 @@ public:
 	const static int RBO = 3;
 	const static int SHADER_PROGRAM =4;
 
-	static  const string AxisXImagePath;
-	static  const string AxisYImagePath;
-	static  const string AxisZImagePath;
-
-	Texture* DefaultPBRSpecularTexture() { return defaultPBRSpecularTexture; }
-	void DefaultPBRSpecularTexture(Texture* val) { defaultPBRSpecularTexture = val; }
-	Texture* DefaultPBRDiffuseTexture() { return defaultPBRDiffuseTexture; }
-	void DefaultPBRDiffuseTexture(Texture* val) { defaultPBRDiffuseTexture = val; }
-	Texture* DefaultPBRLUTTexture() { return defaultPBRLUTTexture; }
-	void DefaultPBRLUTTexture(Texture* val) { defaultPBRLUTTexture = val; }
 private:
 	static  const string VoiceImagePath;
 	static Texture* defaultVoiceImage;
 
+
 	static  const string PntImagePath;
 	static  const string PointOImagePath;
 	static  const string PntR2ImagePath;
- 
+
 	static Texture* defaultPntTexture;
 	static Texture* defaultPntTextureO;
 	static Texture* defaultPntTexturer2;
@@ -193,11 +182,6 @@ private:
 
 	static Texture* defaultCubeMapTexture;
 	static  const string defaultCubeMapTexPath;
-
-	void GeneratePbrTextures();
-	Texture* defaultPBRSpecularTexture;
-	Texture* defaultPBRDiffuseTexture;
-	Texture* defaultPBRLUTTexture;
 public:
 	/**
 	 * 默认的语音批注对应的图片
@@ -266,14 +250,14 @@ public:
 	 * @param key
 	 * @return
 	 */
-	BaseMaterial* GetMaterial(string key);
+	Material* GetMaterial(string key);
 
 	/**
 	 * 得到或者创建Material，首先去查找存在的Material，如果没有找到，则创建名称为Key的Material
 	 * @param key
 	 * @return
 	 */
-	BaseMaterial* GetOrCreateMaterial(string key, int type = MaterialType::MaterialType_Phong);
+	Material* GetOrCreateMaterial(string key);
 
 	/**
 	 * 添加材质
@@ -281,7 +265,7 @@ public:
 	 * @param material
 	 * @return
 	 */
-	bool AddMaterial(string key, BaseMaterial* material);
+	bool AddMaterial(string key, Material* material);
 
 	/**
 	 * 移除材质
@@ -289,8 +273,6 @@ public:
 	 * @return
 	 */
 	bool RemoveMaterial(string key);
-
-	bool AddImage(const string& path, Image* image);
 
 	/**
 	 * 获取贴图
@@ -371,20 +353,14 @@ public:
 	 * 创建立方体纹理
 	 * @param filePath
 	 */
-	//void CreateCubeMappingTexture(const string& filePath);
+	void CreateCubeMappingTexture(const string& filePath);
 
-		/**
-		 * 创建立方体纹理
-		 * @param name
-		 * @param filePathes
-		 */
-		Texture* GetOrCreateCubeMappingTexture(string name, vector<string> & filePathes);//TODO
-		/**
-		* 创建立方体纹理，使用buffer
-		* @param name
-		* @param filePathes
-		*/
-		Texture* GetOrCreateCubeMappingTexture(string name, vector<Image*> & cubeImages);//TODO
+	/**
+	 * 创建立方体纹理
+	 * @param name
+	 * @param filePathes
+	 */
+	void CreateCubeMappingTexture(string name ,vector<string> & filePathes);//TODO
 
 	/**
 	 * 获取立方体纹理
@@ -409,9 +385,8 @@ public:
 	void AddGLObject(unsigned objectId,int type);
 
 	CFileCacheManager*  GetFileCacheMgr();
-	map<string, BaseMaterial*>& GetAllMaterials();
 
-	MaterialTemplateManager*GetMaterialTemplateManager();
+private:
 
 private:
 	map<string, Texture*> m_allTextures; 	//!<存储所有的纹理资源  TODO 暂时存储两份
@@ -420,7 +395,7 @@ private:
 
 	map<string, Image*> m_allImages; 	//!<存储所有的图片资源
 
-	map<string, BaseMaterial*> m_allMaterials;	//!<存储所有的材质资源
+	map<string, Material*> m_allMaterials;	//!<存储所有的材质资源
 
 	bool m_OGLObjIDS[OGLOBJ_MAX_NUM];//!<GPU对象数组
 
@@ -438,13 +413,7 @@ private:
 
 	vector<unsigned> m_GLRenderBufferObjCache;//!<RBO对应的GPU对象
 
-	vector<unsigned> m_GLShaderProgramObjCache;//!<RBO对应的GPU对象
-
 	CFileCacheManager*  m_fileCacheMgr;//!<
-
-	map<string, Texture*> m_allGlobalTextures; 	//!<存储所有的纹理资源 在结束整个SView时才进行释放的资源
-
-	MaterialTemplateManager* m_materialTemplateManager;//模板材质管理器
 };
 }
 

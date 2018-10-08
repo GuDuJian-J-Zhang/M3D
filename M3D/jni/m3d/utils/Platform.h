@@ -10,8 +10,16 @@
 #ifndef M3D_PLATFORM_H_
 #define M3D_PLATFORM_H_
 
-#include "M3D/M3DExport.h"
+#include <stdlib.h>
+#include <stdio.h>
+#include <string>
+#include <vector>
+#include "m3d/M3D.h"
+using std::string;
 using std::wstring;
+using std::vector;
+using namespace std;
+
 namespace M3D
 {
 #ifdef __ANDROID__
@@ -123,7 +131,7 @@ namespace M3D
 		 *	@attention	无
 		 ****************************************************************************/
 		static std::wstring StringToWString(const std::string& srcStr, const char* srcEncode = "utf8");
- 
+
 		/****************************************************************************
 		 *	@brief		将Andriod/IOS的wstring转换为string
 		 *	@param[in]	srcStr					wstring类型字符串
@@ -137,18 +145,15 @@ namespace M3D
 
 	public:
 		/****************************************************************************
-		*	@brief		将Windows的utf-8 string转换为wstring
-		****************************************************************************/
+		 *	@brief		将Windows的utf-8 string转换为wstring
+		 ****************************************************************************/
 		static std::wstring	StringToWString(const std::string& i_Str, const char* srcEncode = "utf8");
- 
-		static string ANSItoUTF8(const std::string & strAnsi);
 
 		/****************************************************************************
 		 *	@brief		将Windows的wstring转换为utf-8 string
 		 ****************************************************************************/
 		static std::string	WStringToString(const std::wstring& i_wstr, const char* srcEncode = "utf8");
 #endif
-		static std::wstring UTF_8ToUnicode(const char* strUTFText);
 	};
 }
 #endif

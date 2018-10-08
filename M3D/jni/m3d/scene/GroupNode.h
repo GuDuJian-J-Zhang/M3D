@@ -13,13 +13,13 @@
 namespace M3D
 {
 class Action;
-class Model;
+class LSceneNode;
 
 
 /**
  * 数组的封装，提供节点的添加删除，解除引用操作
  */
-class M3D_API SArrayList
+class SArrayList
 {
 public:
 	SArrayList(void);
@@ -43,7 +43,36 @@ private:
 	vector<SceneNode *> m_DataArray;
 };
 
-class M3D_API GroupNode: public SceneNode
+/**
+ * 轻量化的GroupNode节点，在简化浏览模式下使用此节点从而，减少内存占用
+ */
+class LGroupNode : public SceneNode
+{
+public:
+	LGroupNode(void);
+	virtual ~LGroupNode(void);
+
+	virtual int GetType(void);
+
+	virtual void RayPick(RayPickAction * action);
+
+	virtual void Traverse(Action* action);
+
+	virtual void FindVisiableObject(RenderAction* renderAction);
+
+	virtual void AddChild(LSceneNode *child);
+
+	vector<LSceneNode*>& GetChildren();
+
+	int Size();
+
+	virtual void ComputeBox();
+
+private:
+	vector<LSceneNode*> m_children; //!< 存储下级对象
+};
+
+class GroupNode: public SceneNode
 {
 public:
 	GroupNode(void);

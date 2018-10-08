@@ -1,9 +1,5 @@
 ﻿#include "m3d/graphics/ImageBoard.h"
 #include "m3d/action/RayPickAction.h"
-#include "m3d/graphics/Texture.h"
-#include "m3d/action/RenderAction.h"
-#include "m3d/utils/ShapeHelper.h"
-#include "m3d/graphics/CameraNode.h"
 
 namespace M3D
 {
@@ -19,11 +15,6 @@ ImageBoard::ImageBoard():Shape()
 	m_bindBillboard.AllowRotate(false);
 	m_bindBillboard.AllowTran(true);
 	m_bindBillboard.AllowScale(false);
-	this->SetFlipV(false);
-
-	this->SetInTop(true);
-
-	this->SetFixShowInScreen(false);
 }
 
 ImageBoard::ImageBoard(const Vector3& pos, const Vector2& size):Shape()
@@ -32,16 +23,13 @@ ImageBoard::ImageBoard(const Vector3& pos, const Vector2& size):Shape()
 
 	points.clear();
 	textCoords.clear();
-	origSize = size;
+
     this->m_texture = NULL;
-	this->SetFixShowInScreen(false);
+
 
 	m_bindBillboard.AllowRotate(false);
 	m_bindBillboard.AllowTran(true);
 	m_bindBillboard.AllowScale(false);
-
-	this->SetFlipV(false);
-	m_fixShowInScreen = false;
 
 	Set(pos,size);
 }
@@ -62,69 +50,23 @@ Vector2* ImageBoard::GetTextureCoords()
 		MutexLock lock(m_mutex);
 		Vector2 min = uv_.m_min;
 		Vector2 max = uv_.m_max;
-		if (!this->m_flipV)
-		{													//左上角
-			textCoords.push_back(Vector2(min.m_x, max.m_y)); //2
-															 //右上角
-			textCoords.push_back(Vector2(max.m_x, max.m_y)); //3
-															 //左下角
-			textCoords.push_back(Vector2(min.m_x, min.m_y)); //0
 
-															 //左下角
-			textCoords.push_back(Vector2(min.m_x, min.m_y)); //0
-															 //右上角
-			textCoords.push_back(Vector2(max.m_x, max.m_y)); //3
-															 //右下角
-			textCoords.push_back(Vector2(max.m_x, min.m_y)); //1
-		}
-		else
-		{														
-			textCoords.push_back(Vector2(min.m_x, 1 - max.m_y)); //2
-																 //右上角
-			textCoords.push_back(Vector2(max.m_x, 1 - max.m_y)); //3
-																 //左下角
-			textCoords.push_back(Vector2(min.m_x, 1 - min.m_y)); //0
+		//左上角
+		textCoords.push_back(Vector2(min.m_x, max.m_y)); //2
+		//右上角
+		textCoords.push_back(Vector2(max.m_x, max.m_y)); //3
+		//左下角
+		textCoords.push_back(Vector2(min.m_x, min.m_y)); //0
 
-																 //左下角
-			textCoords.push_back(Vector2(min.m_x, 1 - min.m_y)); //0
-																 //右上角
-			textCoords.push_back(Vector2(max.m_x, 1 - max.m_y)); //3
-																 //右下角
-			textCoords.push_back(Vector2(max.m_x, 1 - min.m_y)); //1
-		}
+		//左下角
+		textCoords.push_back(Vector2(min.m_x, min.m_y)); //0
+		//右上角
+		textCoords.push_back(Vector2(max.m_x, max.m_y)); //3
+		//右下角
+		textCoords.push_back(Vector2(max.m_x, min.m_y)); //1
+
 	}
 	return textCoords.data();
-}
-
-//vector<Vector3> ImageBoard::GetLocalTransformedVertexs()
-//{
-//	vector<Vector3> localTranaformVertexs;
-//	Matrix3x4 localMatrixMatrix = m_bindBillboard.GetWorldMatrix();
-//	for (int i =0;i<points.size();i++)
-//	{
-//		Vector3 pnt = points.at(i);
-//
-//		pnt = localMatrixMatrix*pnt;
-//		localTranaformVertexs.push_back(pnt);
-//	}
-//
-//	return localTranaformVertexs;
-//}
-
-vector<Vector3> ImageBoard::GetWorldTransformedVertexs()
-{
-	vector<Vector3> localTranaformVertexs;
-	Matrix3x4 localMatrixMatrix = m_bindBillboard.GetWorldMatrix();
-
-	for (int i = 0; i < points.size(); i++)
-	{
-		Vector3 pnt = points.at(i);
-
-
-		localTranaformVertexs.push_back(localMatrixMatrix*pnt);
-	}
-
-	return localTranaformVertexs;
 }
 
 Vector3* ImageBoard::GetVertexs()
@@ -191,7 +133,8 @@ vector<Vector3> ImageBoard::GetIntersects(RayPickAction* action)
 {
 	vector<Vector3> intersects;
 	MutexLock lock(m_mutex);
-	Ray billboardRay = action->GetData()->GetCameraRay();;
+
+	Ray billboardRay = action->GetData()->GetModelRay();
 	Matrix3x4 modelMatrixInverse = m_bindBillboard.GetWorldMatrix().Inverse();
 	billboardRay = billboardRay.Transformed(modelMatrixInverse);
 //	LOGE(" SolidPlane::RayPick");
@@ -213,40 +156,7 @@ void ImageBoard::UpdateRenderData(RenderAction* renderAction)
 {
 	//如果使用billboard效果，则进行矩阵校正
 	MutexLock lock(m_mutex);
-	if (renderAction->GetSceneBoxChanged() || points.empty())
-	{
-		Vector2 size;
-
-		if (this->m_fixShowInScreen)
-		{
-			size = origSize;
-		}
-		else
-		{
-			size = ShapeHelper::GetCommonSize(renderAction->GetScene(), origSize);
-		}
-
-		Set(this->m_position, size);
-		this->GetVertexs();
-	}
-
 	Matrix4& glworldMatrix = m_bindBillboard.GetGLWorldMatrix(renderAction);
-
-	this->SetRenderWorldMatrix(&glworldMatrix);
-}
-
-void ImageBoard::UpdateRenderDataByModelViewMatrix(const Matrix3x4& modelViewMatrix)
-{
-	//如果使用billboard效果，则进行矩阵校正
-	MutexLock lock(m_mutex);
-	if (points.empty())
-	{
-		Vector2 size = origSize;
-		Set(this->m_position, size);
-		this->GetVertexs();
-	}
-
-	Matrix4& glworldMatrix = m_bindBillboard.GetGLWorldMatrix(modelViewMatrix);
 
 	this->SetRenderWorldMatrix(&glworldMatrix);
 }
@@ -295,18 +205,6 @@ void ImageBoard::Set(const Vector3& pos, const Vector2& size)
 	textCoords.clear();
 }
 
-void ImageBoard::SetOrigSize(const Vector3& pos, const Vector2& size)
-{
-	uv_ = Rect(Vector2(0, 0), Vector2(1, 1));
-
-	points.clear();
-	textCoords.clear();
-	origSize = size;
-	//this->m_texture = NULL;
-
-	Set(pos, size);
-}
-
 bool ImageBoard::SetPosition(const Vector3& pos)
 {
 	MutexLock lock(m_mutex);
@@ -351,31 +249,6 @@ bool ImageBoard::IsAllowRotate()
 bool ImageBoard::IsAllowScale()
 {
 	return this->m_bindBillboard.GetScale();
-}
-
-bool ImageBoard::GetInTop()
-{
-	return this->IsFrontShow();
-}
-
-void ImageBoard::SetInTop(bool val)
-{
-	this->SetFrontShow(val);
-}
-
-bool ImageBoard::GetFixShowInScreen() const
-{
-	return m_fixShowInScreen;
-}
-
-void ImageBoard::SetFixShowInScreen(bool val)
-{
-	m_fixShowInScreen = val;
-}
-
-M3D::Vector2 ImageBoard::GetSize()
-{
-	return size_;
 }
 
 }

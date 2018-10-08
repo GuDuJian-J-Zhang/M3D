@@ -6,7 +6,7 @@
 namespace M3D
 {
 
-Material::Material():InnerMaterial()
+Material::Material():Resource()
 {
 	this->Init();
 }
@@ -30,47 +30,6 @@ Material::~Material()
 			this->m_bumpmap = NULL;
 		}
 
-		if (this->m_ambientTexture)
-		{
-			this->m_ambientTexture->Release();
-			this->m_ambientTexture = NULL;
-		}
-
-
-
-		if (this->m_displacementMap)
-		{
-			this->m_displacementMap->Release();
-			this->m_displacementMap = NULL;
-		}
-		if (this->m_emissiveMap)
-		{
-			this->m_emissiveMap->Release();
-			this->m_emissiveMap = NULL;
-		}
-		if (this->m_matcapMap)
-		{
-			this->m_matcapMap->Release();
-			this->m_matcapMap = NULL;
-		}
-		if (this->m_reflectiveTexture)
-		{
-			this->m_reflectiveTexture->Release();
-			this->m_reflectiveTexture = NULL;
-		}
-
-		if (this->m_specularMap)
-		{
-			this->m_specularMap->Release();
-			this->m_specularMap = NULL;
-		}
-
-		if (this->m_normalMap)
-		{
-			this->m_normalMap->Release();
-			this->m_normalMap = NULL;
-		}
-
 		this->m_resourceMgr = NULL;
 	}
 
@@ -78,7 +37,7 @@ Material::~Material()
 	{
 		delete m_textureTransform;
 		m_textureTransform = NULL;
-	}	
+	}
 }
 
 void Material::Init()
@@ -86,70 +45,45 @@ void Material::Init()
 	Color color(0.8f,0.8f,0.8f,1.0f);
 	this->SetAmbient(color);
 	this->SetDiffuse(color);
-    Color temp = Color(0.067,0.067,0.067);
-	this->setSpecular(temp);
-    temp =Color(0, 0, 0);
-	SetEmissive(temp);
+	this->setSpecular(color);
 	this->m_texture = NULL;
-	m_normalMap = NULL;
-	m_specularMap = NULL;
-	m_displacementMap = NULL;
-	m_matcapMap = NULL;
-	m_displacementScale = 5.0;
-	m_displacementBias = 0.0;
-	m_normalMapScale = Vector2(2.0,2.0);
-	this->SetDiffuseMap(NULL);
+	this->SetTexture(NULL);
 	this->SetBumpMap(NULL);
 	this->m_textureTransform = NULL;
 	this->m_ambientTexture = NULL;
-	this->m_shininess = 30.0f;
-	m_reflectiveTexture = NULL;
-	needsUpdateUniformParameters = true;
-	m_materialType = MaterialType_Phong;
-	Opacity(1.0);
-	m_isGammaOutpute = false;
-	m_emissiveMap = NULL;
+	this->m_shininess = 1.0f;
+
 }
 
 
-void Material::SetAmbient( Color& ambient)
+void Material::SetAmbient(const Color& ambient)
 {
 	this->m_ambient = ambient;
 }
-void Material::SetDiffuse( Color& diffuse)
+void Material::SetDiffuse(const Color& diffuse)
 {
 	this->m_Diffuse = diffuse;
 }
 
-void Material::setSpecular( Color& specular)
+void Material::setSpecular(const Color& specular)
 {
 	this->m_Specular = specular;
 }
 
-void Material::SetEmissive(Color& emissive)
-{
-	m_emissive = emissive;
-}
-
-Color& Material::GetAmbient()
+const Color& Material::GetAmbient() const
 {
 	return this->m_ambient;
 }
 
- Color& Material::GetDiffuse() 
+const Color& Material::GetDiffuse() const
 {
 	return this->m_Diffuse;
 }
 
- Color& Material::GetSpecular() 
+const Color& Material::GetSpecular() const
 {
 	return this->m_Specular;
 }
-
- Color& Material::GetEmissive()
- {
-	 return m_emissive;
- }
 
 void Material::SetShadingMode(ShadingMode mode)
 {
@@ -191,7 +125,7 @@ TextureMapping Material::GetTextureMapping() const
 	return this->m_textureMapping;
 }
 
-void Material::SetDiffuseMap(Texture* texture)
+void Material::SetTexture(Texture* texture)
 {
 	if(this->m_texture)
 	{
@@ -201,87 +135,13 @@ void Material::SetDiffuseMap(Texture* texture)
 	this->m_texture = texture;
 	if(this->m_texture)
 	{
-	
 		this->m_texture->AddRef();
 	}
-	NeedUpdate(true);
 }
 
-Texture* Material::GetDiffuseMap()
+Texture* Material::GetTexture()
 {
 	return this->m_texture;
-}
-
-void Material::SetSpecularMap(Texture * texture)
-{
-	if (this->m_specularMap)
-	{
-		this->m_specularMap->Release();
-		this->m_specularMap = NULL;
-	}
-	this->m_specularMap = texture;
-	if (this->m_specularMap)
-	{
-		
-		this->m_specularMap->AddRef();
-	}
-	NeedUpdate(true);
-}
-
-Texture * Material::GetSpecularMap()
-{
-	return m_specularMap;
-}
-
-void Material::SetEmissiveMap(Texture * texture)
-{
-	if (this->m_emissiveMap)
-	{
-		this->m_emissiveMap->Release();
-		this->m_emissiveMap = NULL;
-	}
-	this->m_emissiveMap = texture;
-	if (this->m_emissiveMap)
-	{
-		
-		this->m_emissiveMap->AddRef();
-	}
-	NeedUpdate(true);
-}
-
-Texture * Material::GetEmissiveMap()
-{
-	return m_emissiveMap;
-}
-
-void Material::SetNormalMap(Texture * texture)
-{
-	if (this->m_normalMap)
-	{
-		this->m_normalMap->Release();
-		this->m_normalMap = NULL;
-	}
-	this->m_normalMap = texture;
-	if (this->m_normalMap) 
-	{
-		
-		this->m_normalMap->AddRef();
-	}
-	NeedUpdate(true);
-}
-
-Texture * Material::GetNormalMap()
-{
-	return m_normalMap;
-}
-
-void Material::SetEvnMap(Texture * texture)
-{
-}
-
-Texture * Material::GetEvnMap()
-{
-	return nullptr;
 }
 
 void Material::SetBumpMap(Texture* bumpmap)
@@ -292,6 +152,16 @@ void Material::SetBumpMap(Texture* bumpmap)
 Texture* Material::GetBumpMap()
 {
 	return this->m_bumpmap;
+}
+
+void  Material::SetName(const string& name)
+{
+	this->m_name = name;
+}
+
+const string&  Material::GetName()const
+{
+	return this->m_name;
 }
 
 Matrix4* Material::GetTexture2DTransform()
@@ -312,12 +182,12 @@ void Material::SetTexture2DTransform(Matrix4* texture2DTransform)
 	this->m_textureTransform = texture2DTransform;
 }
 
-void Material::SetAmbientMap(Texture* texture)
+void Material::SetAmbientTexture(Texture* texture)
 {
 	this->m_ambientTexture = texture;
 }
 
-Texture * Material::GetAmbientMap()
+Texture * Material::GetAmbientTexture()
 {
 	return this->m_ambientTexture;
 }
@@ -330,55 +200,6 @@ void Material::SetShininess(float shininess)
 float Material::GetShininess()
 {
 	return this->m_shininess;
-}
-
-Texture* Material::GetReflectiveTextureTexture()
-{
-	return this->m_reflectiveTexture;
-}
-
-void Material::SetReflectiveTexture(Texture* texture)
-{
-	this->m_reflectiveTexture = texture;
-}
-
-
-
-void Material::DisplacementMap(Texture* val)
-{
-	if (this->m_displacementMap)
-	{
-		this->m_displacementMap->Release();
-		this->m_displacementMap = NULL;
-	}
-	this->m_displacementMap = val;
-	if (this->m_displacementMap)
-	{
-		
-		this->m_displacementMap->AddRef();
-	}
-	NeedUpdate(true);
-}
-
-Texture * Material::MatcapMap()
-{
-	return m_matcapMap;
-}
-
-void Material::MatcapMap(Texture * val)
-{
-	if (this->m_matcapMap)
-	{
-		this->m_matcapMap->Release();
-		this->m_matcapMap = NULL;
-	}
-	this->m_matcapMap = val;
-	if (this->m_matcapMap)
-	{
-		
-		this->m_matcapMap->AddRef();
-	}
-	NeedUpdate(true);
 }
 
 }

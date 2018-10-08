@@ -1,8 +1,6 @@
 #ifndef M3D_Uitility_H_
 #define M3D_Uitility_H_
 
-#include "m3d/M3DExport.h"
-
 #ifdef __ANDROID__
 #include <jni.h>
 #include <android/log.h>
@@ -27,7 +25,6 @@ using std::vector;
 #ifdef __ANDROID__
 #define  LOGI(...)  if(SHOW_LOG) __android_log_print(ANDROID_LOG_INFO,LOG_TAG,__VA_ARGS__)
 #define  LOGE(...)  if(SHOW_LOG) __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
-#define  LOGD(...)  if(SHOW_LOG) __android_log_print(ANDROID_LOG_DEBUG,LOG_TAG,__VA_ARGS__)
 
 #define UTF_8  "utf8"
 #define UTF_16 "utf16"
@@ -63,31 +60,15 @@ using std::vector;
 #define _UNISTD_H
 #include <io.h>
 #include <process.h>
-
 #endif /* _UNISTD_H */
-
-#ifdef __cplusplus  
-extern "C" {  // only need to export C interface if  
-			  // used by C++ source code  
-#endif  
-	M3D_API void printInfo(const char* format, ...);
-	M3D_API void printError(const char* format, ...);
-	M3D_API void printDebug(const char* format, ...);
-
-#define  LOGI(...)  if(true) printInfo (__VA_ARGS__);
-#define  LOGE(...)  if(true) printError (__VA_ARGS__);
-#define  LOGD(...)  if(true) printDebug (__VA_ARGS__);
-
-#ifdef __cplusplus  
-}
-#endif 
-
+ void printLog(const char* tag,const char* format,...);
+	#define  LOGI(...)  if(SHOW_LOG) printLog ("Info",__VA_ARGS__);
+	#define  LOGE(...)  if(SHOW_LOG) printLog ("Error",__VA_ARGS__);
 #endif
 
 #ifdef __IOS__
 #define  LOGI(...) printLog("Info",__VA_ARGS__);
 #define  LOGE(...) printLog("Error",__VA_ARGS__);
-#define  LOGD(...) printLog("Error",__VA_ARGS__);
 
 #define UTF_8  "UTF-8"
 #define UTF_16 "UTF-16"

@@ -7,12 +7,10 @@
 #include "m3d/model/Model.h"
 #include "m3d/model/Body.h"
 #include "m3d/model/Face.h"
-#include "m3d/model/Face.h"
 #include "m3d/model/Edge.h"
 #include "m3d/model/Curve.h"
 #include "m3d/scene/SceneNode.h"
-#include "m3d/scene/SectionNode.h"
-#include "m3d/model/Model.h"
+#include "m3d/scene/LSceneNode.h"
 #include "m3d/graphics/CameraNode.h"
 #include "m3d/base/Vector3.h"
 #include "m3d/model/GeoAttribute.h"
@@ -21,7 +19,6 @@
 #include <float.h>
 #include "m3d/model/Curve.h"
 #include "sview/views/Parameters.h"
-#include "../model/ModelShape.h"
 
 using SVIEW::Parameters;
 
@@ -64,8 +61,8 @@ bool RayPickAction::PickFeaturePnt(Vector2& screenPnt,SceneManager* scene,Vector
 				Vector3 startPnt = worldMatrix*polyLine->GetStartPnt();
 				Vector3 endPnt = worldMatrix*polyLine->GetEndPnt();
 
-				float stratPntDis = RayPickAction::GetScreenDis(featureCoordinate,startPnt,scene->GetCamera());
-				float endPntDis = RayPickAction::GetScreenDis(featureCoordinate,endPnt, scene->GetCamera()) ;
+				float stratPntDis = RayPickAction::GetScreenDis(featureCoordinate,startPnt,scene);
+				float endPntDis = RayPickAction::GetScreenDis(featureCoordinate,endPnt,scene) ;
 
 				if(stratPntDis>0 && stratPntDis < featureRadius)
 				{
@@ -90,14 +87,9 @@ const Ray&  RayPickActionData::GetCameraRay()const
 	return this->m_cameraRay;
 }
 
-const Ray&  RayPickActionData::GetOrigCameraRay()const
-{
-	return this->m_origCameraRay;
-}
-
 const Frustum&  RayPickActionData::GetFramePickFrustum()const
 {
-	return this->m_framePickCameraFrustum;
+	return this->m_framePickFrustum;
 }
 
 const Ray&  RayPickActionData::GetModelRay()const
@@ -140,19 +132,7 @@ void PickTypeFilter::SetPickShapeType(int shapeType)
 		pickShapeTyeArray[SHAPE_BODY] = true;
 		pickShapeTyeArray[SHAPE_FACE] = true;
 		pickShapeTyeArray[SHAPE_TRIMESH] = true;
-		pickShapeTyeArray[SHAPE_EDGE] = true;
-		pickShapeTyeArray[SHAPE_POINT] = true;
-		pickShapeTyeArray[SHAPE_IMAGE_MODEL] = true;
 //		pickShapeTyeArray[SHAPE_POINT] = true;
-	}
-	else if (shapeType == SHAPE_NOTCONTAIN_IMAGEMODEL)
-	{
-		pickShapeTyeArray[SHAPE_MODEL] = true;
-		pickShapeTyeArray[SHAPE_BODY] = true;
-		pickShapeTyeArray[SHAPE_FACE] = true;
-		pickShapeTyeArray[SHAPE_TRIMESH] = true;
-		pickShapeTyeArray[SHAPE_EDGE] = true;
-		pickShapeTyeArray[SHAPE_POINT] = true;
 	}
 	else if (shapeType == SHAPE_BODY)
 	{
@@ -216,7 +196,6 @@ void PickTypeFilter::SetPickGeoType(int geoType)
 	{
 		return;
 	}
-	this->currentGeoType = geoType;
 	memset(pickGeoTyeArray, false, PICKTYPENUM * sizeof(bool));
 	if (geoType == M3D_GEOATTR_TYPE_LINE)
 	{
@@ -235,19 +214,6 @@ void PickTypeFilter::SetPickGeoType(int geoType)
 		pickShapeTyeArray[SHAPE_EDGE] = true;
 
 		pickGeoTyeArray[M3D_GEOATTR_TYPE_ELLIPSE] = true;
-	}
-	else if (geoType == M3D_GEOATTR_TYPE_PLANEFACE)
-	{
-		pickShapeTyeArray[SHAPE_FACE] = true;
-		pickGeoTyeArray[M3D_GEOATTR_TYPE_PLANEFACE] = true;
-	}
-	else if (geoType == M3D_GEOATTR_TYPE_REVOLUTIONFACE_CYLINDERFACE_CONICALFACE)
-	{
-		pickShapeTyeArray[SHAPE_FACE] = true;
-
-		pickGeoTyeArray[M3D_GEOATTR_TYPE_REVOLUTIONFACE] = true;
-		pickGeoTyeArray[M3D_GEOATTR_TYPE_CYLINDERFACE] = true;
-		pickGeoTyeArray[M3D_GEOATTR_TYPE_CONICALFACE] = true;
 	}
 	else
 	{
@@ -313,28 +279,6 @@ float RayPickAction::GetScreenDis(const Vector3& pnt1,const Vector3& pnt2)
 	return (projectPnt1 - closestPnt2).Length();
 }
 
-void RayPickAction::BeginPickAsGroup(IShape* shape)
-{
-	this->state->m_Intersect.m_IntersectPnts.clear();
-	this->state->m_Intersect.m_IntersectTriglePnts.clear();
-	m_pickAsGroupIntersectPnts.clear();
-	this->m_pickAsGrroup = true;
-}
-
-void RayPickAction::EndPickAsGroup(IShape* shape, int zIndex)
-{
-	this->m_pickAsGrroup = false;
-	if (this->m_pickAsGroupIntersectPnts.size())
-	{
-		RayPickIntersect tempIntesect;
-		tempIntesect.m_IntersectPnts = m_pickAsGroupIntersectPnts;
-		tempIntesect.m_zindex = zIndex;
-		m_PickShapesMap.insert(
-			map<IShape*, RayPickIntersect >::value_type(shape,
-				tempIntesect));
-	}
-}
-
 void RayPickAction::OnExecute(SceneNode* node)
 {
 	node->RayPick(this);
@@ -342,7 +286,7 @@ void RayPickAction::OnExecute(SceneNode* node)
 
 bool RayPickAction::GetNearPickPoint(Vector3& vec)
 {
-	map<IShape*, RayPickIntersect >::iterator it, pos;
+	map<IShape*, vector<Vector3> >::iterator it, pos;
 	it = m_PickShapesMap.begin();
 	pos = m_PickShapesMap.end();
 	//Vector3 nearPoint;
@@ -352,8 +296,7 @@ bool RayPickAction::GetNearPickPoint(Vector3& vec)
 
 	for (; it != m_PickShapesMap.end(); it++)
 	{
-		RayPickIntersect& intersects = it->second;
-		vector<Vector3>& vecArray = intersects.m_IntersectPnts;
+		vector<Vector3>& vecArray = it->second;
 		int intersectPntSize = vecArray.size();
 		for (int i = 0; i < intersectPntSize; i++)
 		{
@@ -370,21 +313,10 @@ bool RayPickAction::GetNearPickPoint(Vector3& vec)
 		}
 	}
 	Vector3 t;
-	Vector3 vect;
 	if (pos != m_PickShapesMap.end())
 	{
-		t = pos->second.m_IntersectPnts[pointPos];
+		t = pos->second[pointPos];
 		vec = t;
-		Vector3 tempVector;
-		if ((pointPos * 3 + 1)< pos->second.m_IntersectTriglePnts.size())
-		{
-			Vector3 v0 = pos->second.m_IntersectTriglePnts[pointPos * 3];
-			Vector3 v1 = pos->second.m_IntersectTriglePnts[pointPos * 3+1];
-			Vector3 v2 = pos->second.m_IntersectTriglePnts[pointPos * 3+2];
-			//tvect = Vector3(pos->second.m_IntersectTriglePnts[pointPos * 3 + 1] - pos->second.m_IntersectTriglePnts[pointPos * 3]).Multiply(pos->second.m_IntersectTriglePnts[pointPos * 3 + 2] - pos->second.m_IntersectTriglePnts[pointPos * 3 + 1]);
-			tempVector = (v1 -v0).CrossProduct(v2 - v1);
-			this->normal = tempVector / tempVector.Length();
-		}
 		return true;
 	}
 	return false;
@@ -395,55 +327,15 @@ vector<IShape*>& RayPickAction::GetFramePickShapes()
 	return this->m_framePickShapesArrary;
 }
 
-IShape* RayPickAction::GetFarPickShape()
-{
-	float length = 0.0f;
-	IShape* retShape = NULL;
-	map<IShape*, RayPickIntersect >::iterator it;
-	for (it = m_PickShapesMap.begin(); it != m_PickShapesMap.end(); it++)
-	{
-		IShape* shape = it->first;
-		RayPickIntersect& intersects = it->second;
-		vector<Vector3>& vecArray = intersects.m_IntersectPnts;
-		if (!shape)
-		{
-			continue;
-		}
-
-		int pickShapeType = pickTypeFilter.GetPickShapeType();
-		if (pickShapeType == SHAPE_MODEL)
-		{
-			if (shape->GetType() == SHAPE_FACE)
-			{
-				for (size_t i = 0; i < vecArray.size(); i++)
-				{
-					float tmp = (state->m_cameraRay.m_origin - vecArray[i]).Length();
-					if (tmp > length)
-					{
-						length = tmp;
-						retShape = shape;
-					}
-				}
-			}
-		}
-	}
-
-	if (retShape)
-	{
-		Face* face = dynamic_cast<Face*>(retShape);
-		retShape = face->GetBody()->GetModel();
-	}
-	return retShape;
-}
-
 IShape* RayPickAction::GetNearPickShape()
 {
-	map<IShape*, RayPickIntersect >::iterator it, pos;
+	map<IShape*, vector<Vector3> >::iterator it, pos;
 	it = m_PickShapesMap.begin();
 	pos = m_PickShapesMap.end();
 
 	float z = MAXVALUE;
 	float tempZ = 0;
+	LOGE("shape Type GetNearPickShape 11");
 	for (; it != m_PickShapesMap.end(); it++)
 	{
 //		IShape* shape = this->sceneManager->GetShape(
@@ -452,23 +344,20 @@ IShape* RayPickAction::GetNearPickShape()
 
 		if(shape)
 		{
-			//LOGI("shape Type %d",shape->GetType());
+			//LOGE("shape Type %d",shape->GetType());
 		}
-		RayPickIntersect& intersects = it->second;
-		vector<Vector3>& vecArray = intersects.m_IntersectPnts;
+
+		vector<Vector3>& vecArray = it->second;
 		int pntsize = vecArray.size();
-		int zindex = intersects.m_zindex;
 		for (int i = 0; i < pntsize; i++)
 		{
 			if(PointVisiable(vecArray[i]))
 			{
-				//根据选择模型的zindex，进行一个偏移分段
-				tempZ = (state->m_cameraRay.m_origin - vecArray[i]).Length() - zindex*1000000;
+				tempZ = (state->m_cameraRay.m_origin - vecArray[i]).Length();
 				if (tempZ < z)
 				{
 					z = tempZ;
 					pos = it;
-					this->SetNearestPickPoint(vecArray[i]);
 				}
 			}
 		}
@@ -483,30 +372,30 @@ IShape* RayPickAction::GetNearPickShape()
 
 		if (shape == NULL)
 		{
-			//LOGI("pick shape is NULL");
+			//LOGE("pick shape is NULL");
 			return retShape;
 		}
 
 		int pickShapeType = pickTypeFilter.GetPickShapeType();
 		if (shape->GetType() == SHAPE_FACE)
 		{
-//			LOGI("PICK SHAPE_FACE");
+//			LOGE("PICK SHAPE_FACE");
 			if (pickShapeType == SHAPE_FACE)
 			{
 				retShape = shape;
 			}
 			else if (pickShapeType == SHAPE_BODY)
 			{
-				Face* face = dynamic_cast<Face*>(shape);
+				Face* face = (Face*) shape;
 				retShape = face->GetBody();
 			}
-			else if (pickShapeType == SHAPE_MODEL || pickShapeType == SHAPE_NOTCONTAIN_IMAGEMODEL)
+			else if (pickShapeType == SHAPE_MODEL)
 			{
-				Face* face = dynamic_cast<Face*>(shape);
+				Face* face = (Face*) shape;
 
 				retShape = face->GetBody()->GetModel();
 
-				//LOGI("picked node path %s",face->GetBody()->GetModel()->GetName().c_str());
+				//LOGE("picked node path %s",face->GetBody()->GetModel()->GetSceneNode()->GetName().c_str());
 			}
 			else
 			{
@@ -515,62 +404,42 @@ IShape* RayPickAction::GetNearPickShape()
 		}
 		else if (shape->GetType() == SHAPE_EDGE)
 		{
-//			LOGI("PICK SHAPE_EDGE");
+//			LOGE("PICK SHAPE_EDGE");
 			if (pickShapeType == SHAPE_EDGE)
 			{
 				retShape = shape;
 			}
-			/*else if (pickShapeType == SHAPE_FACE)
+			else if (pickShapeType == SHAPE_FACE)
 			{
 				Edge* edge = (Edge*) shape;
 				retShape = edge->GetFace()->GetBody();
-			}*/
-			/*else if (pickShapeType == SHAPE_BODY)
+			}
+			else if (pickShapeType == SHAPE_BODY)
 			{
 				Edge* edge = (Edge*) shape;
-				retShape = edge->GetBody();
-			}*/
-			else if (pickShapeType == SHAPE_MODEL || pickShapeType == SHAPE_NOTCONTAIN_IMAGEMODEL)
+				retShape = edge->GetFace()->GetBody();
+			}
+			else if (pickShapeType == SHAPE_MODEL)
 			{
 				Edge* edge = (Edge*) shape;
-				retShape = edge->GetBody()->GetModel();
+				retShape = edge->GetFace()->GetBody()->GetModel();
 			}
 			else
 			{
 				retShape = NULL;
 			}
+		}
+		else if (shape->GetType() == SHAPE_LITTLE_FACE)
+		{
+			LFace* lFace = (LFace*)shape;
+			LSceneNode* lsceneNode = (LSceneNode*)lFace->GetParent();
+			if (lsceneNode)
+			{
+				retShape = lsceneNode->GetParent();
+			}
 		}else
 		{
 			retShape = shape;
-		}
-
-		if (retShape)
-		{
-			//如果需要判断几何类型，进行几何类型属性的过滤
-			if (this->GetPickGeoType()>0)
-			{
-				IShape* geoShape = retShape;
-				retShape = NULL;
-				//int geoType = this->GetPickGeoType();
-
-				if (geoShape->GetType() == SHAPETYPE::SHAPE_FACE)
-				{
-					Face* face = static_cast<Face*>(geoShape);
-					if (face->GetGeoAttribute() && this->pickTypeFilter.CanPickGeo(face->GetGeoAttribute()->GetGeoAttrType()))
-					{
-						retShape = geoShape;
-					}
-				}
-				else if (geoShape->GetType() == SHAPETYPE::SHAPE_EDGE)
-				{
-					Edge* edge = static_cast<Edge*>(geoShape);
-					int geoType = this->GetPickGeoType();
-					if (edge->GetGeoAttribute() && edge->GetGeoAttribute()->GetGeoAttrType() == geoType)
-					{
-						retShape = geoShape;
-					}
-				}
-			}
 		}
 
 		return retShape;
@@ -581,20 +450,17 @@ IShape* RayPickAction::GetNearPickShape()
 bool RayPickAction::PointVisiable(const Vector3& point)
 {
 	bool ret = true;
-	if (this->GetUseclipPlane())
-	{
-		Section * tempSection = GetScene()->GetSectionNode()->GetSection();
-		list<SectionPlane*>* planeList = tempSection->GetPlaneList();
-		for (list<SectionPlane*>::iterator it = planeList->begin(); it != planeList->end(); it++)
-		{
-			float * equation = (*it)->GetTransformPlaneParam();
-			if ((equation[0] * point.m_x + equation[1] * point.m_y + equation[2] * point.m_z + equation[3]) < 0)
-			{
-				ret = true;
-				return ret;
-			}
-		}
-	}
+ 	Section * tempSection = sceneManager->GetSection();
+ 	list<SectionPlane*>* planeList = tempSection->GetPlaneList();
+ 	for(list<SectionPlane*>::iterator it = planeList->begin();it != planeList->end();it++)
+ 	{
+ 		float * equation = (*it)->GetEquation();
+ 		if((equation[0]*point.m_x+equation[1]*point.m_y+equation[2]*point.m_z+equation[3])<0)
+ 		{
+ 			ret = false;
+ 			return ret;
+ 		}
+ 	}
 	return ret;
 }
 
@@ -627,49 +493,7 @@ int RayPickAction::GetFarPickNode()
 bool RayPickAction::IsintersectRayAndTriangle(const Vector3& v0,const Vector3& v1,
 		const Vector3& v2, Vector3& I)
 {
-	if (this->GetInterctType() == 0)
-	{
-		return ISintersectRayAndTriangle(v0, v1, v2, state->m_modelRay, I);
-	}else if (this->GetInterctType() == 1)
-	{
-		if (Intersect(v0,v1,I)|| Intersect(v1, v2, I)|| Intersect(v2, v1, I))
-		{
-			return true;
-		}
-	}
-	return false;
-}
-
-bool RayPickAction::IsintersecFrustumTriangle(const Vector3& v0, const Vector3& v1, const Vector3& v2)
-{
-	Vector3 I;
-	//判断Frustum的四条射线是否和三角形相交，首先判断右下角的那条，提高匹配几率
-	if (ISintersectRayAndTriangle(v0, v1, v2, state->m_frustumRightBottomModelRay, I))
-	{
-		return true;
-	}
-
-	if (ISintersectRayAndTriangle(v0, v1, v2, state->m_frustumRightTopModelRay, I))
-	{
-		return true;
-	}
-
-	if (ISintersectRayAndTriangle(v0, v1, v2, state->m_frustumLeftBottomModelRay, I))
-	{
-		return true;
-	}
-
-	if (ISintersectRayAndTriangle(v0, v1, v2, state->m_frustumLeftTopModelRay, I))
-	{
-		return true;
-	}
-
-	return false;
-}
-
-bool RayPickAction::IsPointInFrustum(const Vector3& v0)
-{
-	return (state->m_modelframePickFrustum.IsInside(v0) == INSIDE);
+	return ISintersectRayAndTriangle(v0,v1,v2, state->m_modelRay,I);
 }
 
 bool RayPickAction::ISintersectRayAndTriangle(float* tri, const Ray&ray, Vector3& I)
@@ -735,13 +559,6 @@ bool RayPickAction::ISintersectRayAndTriangle(float* tri, const Ray&ray, Vector3
 
 	I = v0 * (1 - u - v) + v1 * u + v2 * v;
 
-	Vector3 newDir = I - ray.m_origin;
-
-	if (t < 0)
-	{
-		return false;
-	}
-
 	return true;
 }
 
@@ -806,12 +623,6 @@ bool RayPickAction::ISintersectRayAndTriangle(const Vector3& v0,const Vector3& v
 
 	I = v0 * (1 - u - v) + v1 * u + v2 * v;
 
-	Vector3 newDir = I - ray.m_origin;
-
-	if (t < 0)
-	{
-		return false;
-	}
 	return true;
 }
 
@@ -823,9 +634,7 @@ bool RayPickAction::Intersect(const Vector3 & v0_in, const Vector3 & v1_in,
 	if (v0_in == v1_in)
 	{
 		closestPnt_out = v0_in;
-		bool intersect = Intersect(closestPnt_out);
-		closestPnt_out = closestPnt_out + this->state->m_modelRay.m_direction.Multiply(-0.01);
-		return intersect;
+		return  Intersect(closestPnt_out);
 	}
 
 	//构造一条射线
@@ -867,13 +676,13 @@ bool RayPickAction::Intersect(const Vector3 & v0_in, const Vector3 & v1_in,
 	//判断投影到屏幕后的两个点之间的距离
 	float distance  = (projectPntSrc - closestPntSrc).LengthSquared();
 
-//	LOGI("projectPntSrc %s- closestPntSrc %s" , projectPntSrc.Tostring().c_str(), closestPntSrc.Tostring().c_str());
+//	LOGE("projectPntSrc %s- closestPntSrc %s" , projectPntSrc.Tostring().c_str(), closestPntSrc.Tostring().c_str());
 
 	//如果距离小于给定的阈值，则认为相交
 	if (m_fRadius >= distance)
 	{
-//		LOGI("RayPickAction::Intersect %f",distance);
-		closestPnt_out = closestPnt+ this->state->m_modelRay.m_direction.Multiply(-0.01);
+//		LOGE("RayPickAction::Intersect %f",distance);
+		closestPnt_out = closestPnt;
 		return true;
 	}
 	return false;
@@ -896,61 +705,41 @@ bool RayPickAction::Intersect(const Vector3& point_in)
 
 	//判断投影到屏幕后的两个点之间的距离
 	float distance  = (projectPntSrc - closestPntSrc).LengthSquared();
-	//LOGI("pnt to pnt dis %f",distance);
+//	LOGE("pnt to pnt dis %f",distance);
 	//如果距离小于给定的阈值，则认为相交
 	return (m_fRadius >= distance);
 }
 
 void RayPickAction::RayPick(IShape* shape)
 {
-	this->state->m_Intersect.m_IntersectPnts.resize(0);
+	this->state->m_IntersectPnts.resize(0);
 	shape->RayPick(this);
 }
 
 void RayPickAction::FramePick(IShape* shape)
 {
-	shape->FramePick(this);
+	//shape->FramePick(this);
 }
 
 
-void RayPickAction::AddShape(IShape* shape, int zIndex)
+void RayPickAction::AddShape(IShape* shape)
 {
-	if (this->state->m_Intersect.m_IntersectPnts.size() > 0) //is picked
+	if (this->state->m_IntersectPnts.size() > 0) //is picked
 	{
-		this->state->m_Intersect.m_zindex = zIndex;
-		int k = this->state->m_Intersect.m_IntersectPnts.size();
-		int j = this->state->m_Intersect.m_IntersectTriglePnts.size();
+		int k = this->state->m_IntersectPnts.size();
 		//将所有的点，通过modelMatrix变换到显示时对应的位置
-		if (!this->m_pickAsGrroup)
+		for (int i = 0; i < k; i++)
 		{
-			for (int i = 0; i < k; i++)
-			{
-				Vector3 tempVec = this->state->m_modelMatrix
-					* this->state->m_Intersect.m_IntersectPnts[i];
-				this->state->m_Intersect.m_IntersectPnts[i] = tempVec;
-			}
-			for (int i = 0; i < j; i++)
-			{
-				Vector3 tempVec = this->state->m_modelMatrix
-					* this->state->m_Intersect.m_IntersectTriglePnts[i];
-				this->state->m_Intersect.m_IntersectTriglePnts[i] = tempVec;
-			}
-			//将shape所有的交点，和shape对象的id放入表中，供最后查找离摄像机最近的shape
-			m_PickShapesMap.insert(
-				map<IShape*, RayPickIntersect >::value_type(shape,
-					this->state->m_Intersect));
+			Vector3 tempVec = this->state->m_modelMatrix
+					* this->state->m_IntersectPnts[i];
+			this->state->m_IntersectPnts[i] = tempVec;
 		}
-		else
-		{
-			for (int i = 0; i < k; i++)
-			{
-				Vector3 tempVec = this->state->m_modelMatrix
-					* this->state->m_Intersect.m_IntersectPnts[i];
-				this->m_pickAsGroupIntersectPnts.push_back(tempVec);
-			}
-		}
-		this->state->m_Intersect.m_IntersectPnts.resize(0);
-		this->state->m_Intersect.m_IntersectTriglePnts.resize(0);
+		//将shape所有的交点，和shape对象的id放入表中，供最后查找离摄像机最近的shape
+		m_PickShapesMap.insert(
+				map<IShape*, vector<Vector3> >::value_type(shape,
+						this->state->m_IntersectPnts));
+
+		this->state->m_IntersectPnts.resize(0);
 	}
 }
 
@@ -966,18 +755,6 @@ void RayPickAction::SetPickAll(const bool flag)
 bool RayPickAction::IsPickAll(void) const
 {
 	return this->m_isPickAll;
-}
-
-void RayPickAction::SetRay(Ray & ray)
-{
-	this->SetPickAll(false);
-	this->state->m_cameraRay = ray;
-	this->state->m_origCameraRay = ray;
-	if (this->GetCamera())
-	{
-		Matrix3x4 viewMatrix = this->GetCamera()->GetView();
-		this->state->m_origCameraRay = ray.Transformed(viewMatrix);
-	}
 }
 
 void RayPickAction::SetRay(int winX, int winY)
@@ -1014,15 +791,8 @@ void RayPickAction::SetFramePickSection(const Vector2& leftTop, const Vector2& r
 	Vector3 farLeftBottom = viewport.ScreenToWorldPoint(leftBottom, length);
 	Vector3 farLeftTop = viewport.ScreenToWorldPoint(leftTop, length);
 
-	this->GetData()->m_framePickCameraFrustum.Define(nearRightTop, nearRightBottom, nearLeftBottom,
+	this->GetData()->m_framePickFrustum.Define(nearRightTop, nearRightBottom, nearLeftBottom,
 		nearLeftTop, farRightTop, farRightBottom, farLeftBottom, farLeftTop);
-
-
-	//定义视锥的四条射线
-	this->GetData()->m_frustumRightTopCameraRay = Ray(nearRightTop,farRightTop - nearRightTop) ;
-	this->GetData()->m_frustumRightBottomCameraRay = Ray(nearRightBottom, farRightBottom - nearRightBottom);
-	this->GetData()->m_frustumLeftBottomCameraRay = Ray(nearLeftBottom, farLeftBottom - nearLeftBottom);
-	this->GetData()->m_frustumLeftTopcameraRay = Ray(nearLeftTop, farLeftTop - nearLeftTop);
 }
 
 void RayPickAction::SetFramePickType(int framePickType)
@@ -1030,18 +800,13 @@ void RayPickAction::SetFramePickType(int framePickType)
 	this->m_framePickType = framePickType;
 }
 
-int RayPickAction::GetFramePickType()
-{
-	return this->m_framePickType;
-}
-
 void RayPickAction::SetPoint(const Vector2 & screentPoint)
 {
 	this->SetPickAll(false);
-	this->SetScreentPoint(screentPoint);
+
 	CameraNode* camera = GetCamera();
-     Ray  temp =camera->GetViewPort().GetScreenRay(screentPoint.m_x,screentPoint.m_y);
-	this->SetRay(temp);
+	this->state->m_cameraRay = camera->GetViewPort()
+			.GetScreenRay(screentPoint.m_x,screentPoint.m_y);
 }
 
 bool  RayPickAction::Intersect(const BoundingBox& box)
@@ -1054,33 +819,21 @@ bool RayPickAction::FrustumIntersetWithWorldBox(const BoundingBox& box)
 	bool ret = false;
 	if (box.Defined())
 	{
-		if (this->GetData()->m_framePickCameraFrustum.IsInside(box) != OUTSIDE)
-		{
-			ret = true;
-		}
-	}
-	return ret;
-}
-
-bool RayPickAction::FrustumIntersetWithModel(ModelShape* modelShape)
-{
-	bool ret = false;
-	const BoundingBox& box = modelShape->GetWorldBoundingBox();
-	if (this->FrustumIntersetWithWorldBox(box))
-	{
 		if (this->m_framePickType == 1)
 		{
-			if (this->GetData()->m_framePickCameraFrustum.IsInside(box) != OUTSIDE)
+			if (this->GetData()->m_framePickFrustum.IsInside(box.Center()) == INSIDE)
 			{
 				ret = true;
-			}else if (this->m_framePickType == 2)
-			if (this->GetData()->m_framePickCameraFrustum.IsInside(box) == INSIDE)
+			}
+		}
+		else if (this->m_framePickType == 2)
+		{
+			if (this->GetData()->m_framePickFrustum.IsInsideFast(box) == INSIDE)
 			{
 				ret = true;
 			}
 		}
 	}
-
 	return ret;
 }
 
@@ -1097,7 +850,7 @@ void RayPickAction::Init()
 	this->state = new RayPickActionData;
 	this->m_fRadius = 900;
 
-	if(this->GetScene())
+	if(this->sceneManager)
 	{
 		int width = this->GetCamera()->GetViewPort().GetRect().Width();
 
@@ -1107,9 +860,9 @@ void RayPickAction::Init()
 
 //		int r = width>heigh?heigh:width;
 
-//		LOGI("width %d heigh %d",width,heigh);
+//		LOGE("width %d heigh %d",width,heigh);
 
-//		LOGI("PPI %d",screenPPI);
+//		LOGE("PPI %d",screenPPI);
 
 		//0.2英寸，一英寸等于2.5厘米
 		this->m_fRadius = screenPPI * 0.1*screenPPI* 0.1;
@@ -1119,11 +872,7 @@ void RayPickAction::Init()
 			this->m_fRadius = 600;
 		}
 	}
-	this->m_onceFramePickMatchCount = 0;
 
-	m_pickAsGrroup = false;
-	SetUseclipPlane(true);
-	SetInterctType(0);
 	this->SetPickAll(false);
 }
 
@@ -1131,8 +880,8 @@ void RayPickAction::SetScene(SceneManager* pSceneManager)
 {
 	if(pSceneManager!=NULL)
 	{
-		sceneManager = pSceneManager;
-		this->SetCamera(this->GetScene()->GetCamera());
+		this->sceneManager = pSceneManager;
+		this->SetCamera(this->sceneManager->GetCamera());
 	}
 }
 
@@ -1243,12 +992,12 @@ bool  RayPickAction::RayIntersectBoxPnt(const Ray& ray,const BoundingBox& box,ve
 	return false;
 }
 
-float RayPickAction::GetScreenDis(const Vector3& pnt1,const Vector3& pnt2,CameraNode* camera)
+float RayPickAction::GetScreenDis(const Vector3& pnt1,const Vector3& pnt2,SceneManager* scene)
 {
 	float dis = -1;
-	if(camera)
+	if(scene)
 	{
-		const Viewport& viewport = camera->GetViewPort();
+		const Viewport& viewport = scene->GetCamera()->GetViewPort();
 		//获取点在屏幕上的投影
 		IntVector2 projectPnt1 = viewport.WorldToScreenPoint(pnt1);
 		IntVector2 closestPnt2 = viewport.WorldToScreenPoint(pnt2);
@@ -1267,44 +1016,9 @@ void RayPickAction::UpdataModelRay(const Matrix3x4& modelMatrix)
 	state->m_modelRay = state->m_cameraRay.Transformed(modelMatrixInverse);
 }
 
-void  RayPickAction::UpdataFramePickFrustum(const Matrix3x4& modelMatrix)
-{
-	//this->state->SetModelMatrix(modelMatrix);
-	//求得模型显示时对应的变换矩阵的逆矩阵，通过对射线做逆矩阵变换，能够避免对模型上所有点乘以正矩阵变换
-	this->state->SetModelMatrix(modelMatrix);
-	Matrix3x4 modelMatrixInverse = state->m_modelMatrix.Inverse();
-	state->m_modelframePickFrustum = state->GetFramePickFrustum();
-	state->m_modelframePickFrustum = state->m_modelframePickFrustum.Transformed(modelMatrixInverse);
-
-	//定义视锥的四条射线
-	state->m_frustumRightTopModelRay = this->GetData()->m_frustumRightTopCameraRay.Transformed(modelMatrixInverse);
-	state->m_frustumRightBottomModelRay = this->GetData()->m_frustumRightBottomCameraRay.Transformed(modelMatrixInverse);
-	state->m_frustumLeftBottomModelRay = this->GetData()->m_frustumLeftBottomCameraRay.Transformed(modelMatrixInverse);
-	state->m_frustumLeftTopModelRay = this->GetData()->m_frustumLeftTopcameraRay.Transformed(modelMatrixInverse);
-}
-
 void RayPickAction::AddIntersectPnt(const Vector3& pos)
 {
-	this->state->m_Intersect.m_IntersectPnts.push_back(pos);
-}
-void RayPickAction::AddIntersectTrianglePnts(const Vector3& normal)
-{
-	this->state->m_Intersect.m_IntersectTriglePnts.push_back(normal);
-}
-
-void RayPickAction::UpdataIntersecPnts(Matrix3x4& modelMatrix)
-{
-	for (int i =0;i<this->state->m_Intersect.m_IntersectPnts.size();i++)
-	{
-		Vector3 tempVec = modelMatrix
-			* this->state->m_Intersect.m_IntersectPnts[i];
-		this->state->m_Intersect.m_IntersectPnts[i] = tempVec;
-	}
-}
-
-void RayPickAction::UpdateGroupPickPnts()
-{
-	m_pickAsGroupIntersectPnts = this->state->m_Intersect.m_IntersectPnts;
+	this->state->m_IntersectPnts.push_back(pos);
 }
 
 int RayPickAction::GetPickShapeType()
@@ -1341,32 +1055,6 @@ void RayPickAction::SetCamera(CameraNode* camera)
 	this->m_camera = camera;
 }
 
-void RayPickAction::BeginOnceFramePick()
-{
-	this->m_onceFramePickCount = 0;
-	this->m_onceFramePickMatchCount =0;
-}
-
-void RayPickAction::IncreaseFramePickPntCount()
-{
-	this->m_onceFramePickCount++;
-}
-
-int RayPickAction::GetOnceFramePickCount()
-{
-	return this->m_onceFramePickCount;
-}
-
-void RayPickAction::IncreaseFramePickMatchPntCount()
-{
-	this->m_onceFramePickMatchCount++;
-}
-
-int RayPickAction::GetFramePickMatchPntCount()
-{
-	return this->m_onceFramePickMatchCount;
-}
-
 CameraNode* RayPickAction::GetCamera()
 {
 	return this->m_camera;
@@ -1376,5 +1064,4 @@ RayPickActionData* RayPickAction::GetData()
 {
 	return this->state;
 }
-
 }

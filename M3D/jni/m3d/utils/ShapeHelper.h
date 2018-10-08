@@ -17,6 +17,7 @@
 #include "m3d/base/Vector2.h"
 #include "m3d/base/Vector3.h"
 #include "m3d/SceneManager.h"
+#include "m3d/scene/ModelNode.h"
 #include "m3d/model/Model.h"
 
 namespace M3D
@@ -67,6 +68,14 @@ public:
 	 * @return
 	 */
 	static  Vector2 GetCommonSize(SceneManager* scene,const Vector2& size);
+
+
+	/**
+	 * 获取模型节点
+	 * @param model
+	 * @return 模型对应的ModelNode节点指针
+	 */
+	static ModelNode * GetModelNode(Model * model);
 };
 }
 #endif /*M3D_SHAPEHELPER_H_*/

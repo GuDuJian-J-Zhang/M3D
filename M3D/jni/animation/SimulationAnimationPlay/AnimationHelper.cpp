@@ -1,5 +1,7 @@
 ﻿#include "animation/SimulationAnimationPlay/AnimationHelper.h"
 
+#include "m3d/scene/ModelNode.h"
+
 #include "m3d/model/Model.h"
 #include "m3d/model/PMIData.h"
 
@@ -10,12 +12,12 @@
 #include "m3d/M3Dmacros.h"
 
 #include "m3d/SceneManager.h"
-#include "m3d/RenderManager.h"
 #include "m3d/utils/PathHelper.h"
-#include "m3d/M3DMacros.h"
+
 using namespace M3D;
 
 #include "sview/views/View.h"
+#include "m3d/scene/ModelNode.h"
 #include <string.h>
 using namespace SVIEW;
 
@@ -32,14 +34,26 @@ AnimationHelper::~AnimationHelper()
 //Model----------------------
 Model* AnimationHelper::GetModel(const string& modelPath, View* view)
 {
+	Model* model = NULL;
+
 	string m3dModelPath = AnimationHelper::AniDecPathToM3DHexPath(modelPath);
 	SceneManager* sceneMgr = view->GetSceneManager();
-	Model* model = sceneMgr->GetNode(m3dModelPath);
-	if (model && model->GetType() == SHAPE_MODEL)
+	SceneNode* node = sceneMgr->GetNode(m3dModelPath);
+	if (node && node->GetType() == MODEL_NODE)
 	{
-		return model;
+		ModelNode* modelNode = (ModelNode*) node;
+		ShapeNode* shapeNode = modelNode->GetShapeNode();
+		if (shapeNode)
+		{
+			Shape* shape = shapeNode->GetShape();
+			if (shape && shape->GetType() == SHAPETYPE::SHAPE_MODEL)
+			{
+				model = (Model*) shape;
+			}
+		}
 	}
-	return NULL;
+
+	return model;
 }
 
 void AnimationHelper::SetModelColor(const Color& color, Model* model)
@@ -48,9 +62,7 @@ void AnimationHelper::SetModelColor(const Color& color, Model* model)
 	{
 		if (color.m_r >= 0)
 		{
-			//不十分确定这么简单修改可以不?
-			//model->SetColor(color);
-			model->SetInitColor(color);
+			model->SetColor(color);
 		}
 		else //如果小于0 则说明颜色值无效，按照动画播放规则需要重置模型的颜色
 		{
@@ -71,9 +83,11 @@ void AnimationHelper::SetModelColorAlpha(float alpha, Model* model)
 void AnimationHelper::SetModelTransform(const Matrix3x4& transform,
 		Model* model)
 {
-	if (model)
+	ModelNode* modelNode = AnimationHelper::GetModelNode(model);
+
+	if (modelNode)
 	{
-		model->SetPlaceMatrix(transform);
+		modelNode->SetPlcMatrix(transform);
 	}
 }
 
@@ -89,43 +103,42 @@ void AnimationHelper::SetModelTransform(const float inMatrixAArray[4][4],
 
 void AnimationHelper::SetModelRotate(const Quaternion& rotation, Model* model)
 {
-	//ModelNode* modelNode = AnimationHelper::GetModelNode(model);
-	if (model)
+	ModelNode* modelNode = AnimationHelper::GetModelNode(model);
+
+	if (modelNode)
 	{
-		//TODO
-		//modelNode->SetRotation(rotation);
+		modelNode->SetRotation(rotation);
 	}
 }
 
 void AnimationHelper::SetModelPosition(const Vector3& movement, Model* model)
 {
-	//TODO
-	/*ModelNode* modelNode = AnimationHelper::GetModelNode(model);
+	ModelNode* modelNode = AnimationHelper::GetModelNode(model);
+
 	if (modelNode)
 	{
 		modelNode->SetPosition(movement);
-	}*/
+	}
 }
 
 void AnimationHelper::SetModelScale(float scale, Model* model)
 {
-	//TODO
-	/*ModelNode* modelNode = AnimationHelper::GetModelNode(model);
+	ModelNode* modelNode = AnimationHelper::GetModelNode(model);
 
 	if (modelNode)
 	{
 		modelNode->SetScale(Vector3(scale, scale, scale));
-	}*/
+	}
 }
 
 void AnimationHelper::SetModelScale(const Vector3& scale, Model* model)
 {
-	//TODO
-	/*ModelNode* modelNode = AnimationHelper::GetModelNode(model);
+	ModelNode* modelNode = AnimationHelper::GetModelNode(model);
+
 	if (modelNode)
 	{
 		modelNode->SetScale(scale);
-	}*/
+	}
 }
 
 void AnimationHelper::GetModelPlcMatrix(Model* model,
@@ -140,11 +153,11 @@ void AnimationHelper::GetModelPlcMatrix(Model* model,
 
 void AnimationHelper::GetModelPlcMatrix(Model* model, Matrix3x4& outMatrix)
 {
-	//ModelNode* modelNode = AnimationHelper::GetModelNode(model);
+	ModelNode* modelNode = AnimationHelper::GetModelNode(model);
 
-	if (model)
+	if (modelNode)
 	{
-		outMatrix = *model->GetPlaceMatrix();
+		outMatrix = modelNode->GetPlcMatrix();
 	}
 }
 
@@ -157,7 +170,7 @@ void AnimationHelper::SetModelVisible(bool visible, Model* model)
 }
 
 //Camera----------------------
-CameraNode* AnimationHelper::GetCamera(View* view)
+CameraNode* AnimationHelper::AnimationHelper::GetCamera(View* view)
 {
 	CameraNode* camera = view->GetSceneManager()->GetCamera();
 	return camera;
@@ -220,47 +233,34 @@ void AnimationHelper::GetCameraZoom(CameraNode* camera, float& zoom)
 	}
 }
 
-void AnimationHelper::AdjustCameraZoom(View* view , float aniWidth,
+void AnimationHelper::AdjustCameraZoom(CameraNode* camera, float aniWidth,
 		float aniHeight, float aniZoom, float& zoom)
 {
 	float width = 1, height = 1;
-	 CameraNode* camera = view->GetSceneManager()->GetCamera();
 
-	 if (camera != NULL) {
+	if (camera != NULL)
+	{
+		camera->GetOrthoSize(&width, &height);
+	}
 
-	  camera->GetOrthoSize(&width, &height);
-	 }
-	 float dx = aniWidth / width;
+	float dx = aniWidth / width;
+	float dy = aniHeight / height;
 
-	 float dy = aniHeight / height;
-	 if (dx > dy) {
-	  aniZoom = aniZoom / dx;
-	 } else {
-	  aniZoom = aniZoom / dy;
-	 }
-	#ifdef _WIN32
+	if (dx > dy)
+	{
+		aniZoom = aniZoom / dx;
+	}
+	else
+	{
+		aniZoom = aniZoom / dy;
+	}
 
-	#else
+	if (aniZoom <= 0)
+	{
+		aniZoom = 1.0f;
+	}
 
-	 int Mob_height =
-	   view->GetSceneManager()->GetRenderManager()->GetWindowHeight() * 2;
-	 int Mob_width =
-	   view->GetSceneManager()->GetRenderManager()->GetWindowWidth() * 2;
-	 float Mob_dx = aniWidth / Mob_width;
-	 float Mob_dy = aniHeight / Mob_height;
-	 if (dx > dy) {
-	  aniZoom = aniZoom * Mob_width / width;
-	 } else {
-	  aniZoom = aniZoom * Mob_height / height;
-	 }
-
-	#endif
-
-	 //LOGI("cur aniZoom-> %f\n",aniZoom);
-	 if (aniZoom <= 0) {
-	  aniZoom = 1.0f;
-	 }
-	 zoom = aniZoom;
+	zoom = aniZoom;
 }
 
 void AnimationHelper::SetCameraRotate(const Quaternion& rotation,
@@ -281,29 +281,11 @@ void AnimationHelper::SetCameraPosition(const Vector3& position,
 	}
 }
 
-void AnimationHelper::SetCameraZoom(float zoom, CameraNode* camera, View* view)
+void AnimationHelper::SetCameraZoom(float zoom, CameraNode* camera)
 {
 	if (camera != NULL)
 	{
-		if (camera->IsOrthographic())
-		{
-			camera->SetZoom(zoom);
-		}
-		else
-		{
-			Vector3 cameraPosition = camera->GetPosition();
-			float fPosTargetDistance = 1.0;
-			GetCameraFocal(view ,fPosTargetDistance);
-			Matrix3x4 camMatrix = Matrix3x4::IDENTITY;
-			GetCameraTransform(camera, camMatrix);
-			Vector3 direction(-camMatrix.m_m02, -camMatrix.m_m12, -camMatrix.m_m22);
-			Vector3 cameraTarget = cameraPosition.Add(direction.Multiply(fPosTargetDistance));;
-
-			float fNewFocusLength = fPosTargetDistance/zoom;
-			cameraPosition = cameraTarget.Sub(direction.Multiply(fNewFocusLength));
-			AnimationHelper::SetCameraPosition(cameraPosition, camera);
-			camera->SetZoom(1.0f);
-		}
+		camera->SetZoom(zoom);
 	}
 }
 
@@ -311,16 +293,15 @@ void AnimationHelper::SetCameraZoom(float zoom, CameraNode* camera, View* view)
 PMIData* AnimationHelper::GetPMI(unsigned long pmiId, View* view)
 {
 	PMIData* pmi = NULL;
-	map<int, PMIData*>* pmis = view->GetModel()->GetPMIs();
-	if (pmis)
-	{
-		map<int, PMIData*>::iterator it = pmis->find(pmiId);
-		if (it != pmis->end())
-		{
-			pmi = (*it).second;
-
-		}
-	}
+	map<int, PMIData*>& pmis = view->GetModel()->GetPMIs();
+    if (pmis.size() > 0) {
+        map<int, PMIData*>::iterator it = pmis.find(pmiId);
+        if (it != pmis.end())
+        {
+            pmi = (*it).second;
+            
+        }
+    }
 	return pmi;
 }
 
@@ -396,17 +377,36 @@ void AnimationHelper::GetCameraFocal(View* view, float& focal)
 	{
 		//此代码只在平行视图下可以正确播放，将来添加透视投影视图模式后，在透视投影模式下需要获取实际的焦距
 		BoundingBox box = view->GetSceneManager()->GetSceneBox();
-		fPosTargetDistance = view->GetSceneManager()->GetSceneBox().Length()
-			* CAMERA_POSFACTOR;
+		fPosTargetDistance = view->GetSceneManager()->GetCamera()->GetHalfClip()
+				* 0.5;
 	}
 	focal = fPosTargetDistance;
+}
+
+ModelNode * AnimationHelper::GetModelNode(Model * model)
+{
+	ModelNode* ret = NULL;
+	if (model)
+	{
+		SceneNode* tempRet = model->GetSceneNode()->GetParent();
+		if (tempRet && tempRet->GetType() == MODEL_NODE)
+		{
+			ret = (ModelNode *) tempRet;
+		}
+	}
+	return ret;
 }
 
 const Matrix3x4& AnimationHelper::GetPlaceMatrix(Model* model)
 {
 	if (model)
 	{
-		return *model->GetPlaceMatrix();
+		ModelNode * tempNode = GetModelNode(model);
+		if (tempNode)
+		{
+			return tempNode->GetPlcMatrix();
+		}
+
 	}
 	return Matrix3x4::IDENTITY;
 }
@@ -455,4 +455,6 @@ string AnimationHelper::M3DDecPathToAniDecPath(const string& m3dDecPath)
 {
 	return "";
 }
+
+
 

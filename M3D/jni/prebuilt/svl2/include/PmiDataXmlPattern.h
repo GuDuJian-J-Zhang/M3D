@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include "tinyxml/tinyxml2.h"
+#include "tinyxml\tinyxml2.h"
 #include "Stk_Define.h"
 #include "Stk_File.h"
 #include "Stk_PMIEntity.h"

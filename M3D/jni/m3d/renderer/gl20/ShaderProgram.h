@@ -9,6 +9,9 @@
 #ifndef SHADERPROGRAM_H_
 #define SHADERPROGRAM_H_
 
+#include "m3d/renderer/gl20/Shader.h"
+#include "m3d/base/StringHash.h"
+
 #ifdef __MOBILE__
 #ifdef __GNUC__
 #include <ext/hash_map>
@@ -24,8 +27,6 @@ using namespace stdext;
 
 #endif
 
-#include "m3d/renderer/gl20/Shader.h"
-#include "m3d/base/StringHash.h"
 #include "m3d/base/Color.h"
 #include "m3d/base/Matrix3.h"
 #include "m3d/base/Matrix4.h"
@@ -48,9 +49,6 @@ enum ShaderMaterialType
 	SMT_BaseVertex,    //!< SMT_BaseVertex
 	SMT_Background,    //!< SMT_Background
 	SMT_Axis,          //!< SMT_Axis
-	SMT_Dragger,       //!< SMT_Dragger
-	SMT_DraggerEdge,
-	SMT_XRay,		   //!< SMT_XRay
 	SMT_Edge,          //!< SMT_Edge
 	SMT_PlaneShadow,   //!< SMT_PlaneShadow
 	SMT_Blur,          //!< SMT_Blur
@@ -58,27 +56,6 @@ enum ShaderMaterialType
 	SMT_EdgeDetection,  //!< SMT_EdgeDetection
 	SMT_Quad,
 	SMT_MultilightPerFrag,
-	SMT_NoteEdge,
-	SMT_NoteImage,
-	SMT_CapPlane,
-	SMT_JewelFront,
-	SMT_JewelBack,
-	SMT_JewelFinalQuad,
-	SMT_Ring,
-	SMT_JewelType,
-	SMT_JewelHighLight,
-	SMT_JewelBlendQuad,
-	SMT_Outline,
-	SMT_GaussianBlur,
-	SMT_GaussianBlurOutline,
-	SMT_CombineOutline,
-	SMT_SceneGround,
-	SMT_SsaoEffect,
-	SMT_SsaoBlur,
-	SMT_SaoEffect,
-	SMT_SaoReconstructCSZ,
-	SMT_SaoMinifyCSZ,
-	SMT_SaoBlur,
 };
 
 #ifdef __MOBILE__
@@ -119,7 +96,7 @@ public:
 
 #endif 
 
-typedef map<string, ShaderParameter > SPHashMap;
+typedef hash_map<StringHash, ShaderParameter,StrHash > SPHashMap;
 
 
 /**
@@ -170,8 +147,7 @@ public:
 	Shader * GetFragmentShader();
 	/*以下是Uniform 向量赋值函数*/
 	void SetUniformValue(GLint location, GLint value);
-	void SetUniformValue(const string& location, GLfloat value);
-	void SetUniformValue(const string& paraName, GLint value);
+
 
 	void SetUniformValue(GLint location, GLfloat value);
 
@@ -182,15 +158,14 @@ public:
 	void SetUniformValue(GLint location, GLfloat x, GLfloat y, GLfloat z,
 		GLfloat w);
 
-	void SetUniformValue(const string& paraName,const GLfloat * v);
-	void SetUniformValue(const string& paraName,const GLint * v);
+	void SetUniformValue(const StringHash& paraName,const GLfloat * v);
+	void SetUniformValue(const StringHash& paraName,const GLint * v);
 
-	void SetUniformValue(const string& paraName, GLsizei count,
+	void SetUniformValue(const StringHash& paraName, GLsizei count,
 		const GLfloat * v);
 
-	void SetUniformValue(const string& paraName, GLsizei count,
+	void SetUniformValue(const StringHash& paraName, GLsizei count,
 		const GLint * v);
-
 	/**
 	 * 为矩阵赋值
 	 * @param paraName
@@ -198,34 +173,33 @@ public:
 	 * @param transpose
 	 * @param v
 	 */
-	void SetUniformValue(const string& paraName, GLsizei count,
+	void SetUniformValue(const StringHash& paraName, GLsizei count,
 		GLboolean transpose, const GLfloat * v);
 	/**
 	 * 为内部类型赋值
 	 * @param paraName
 	 * @param
 	 */
-	void SetUniformValue(const string& paraName, const Color & color);
-	void SetUniformValue(const string& paraName, const Vector2 & vec2);
-	void SetUniformValue(const string& paraName, const Vector3 & vec3);
-	void SetUniformValue(const string& paraName, const Vector4 & vec4);
-	void SetUniformValue(const string& paraName, const Matrix3 & mat3);
-	void SetUniformValue(const string& paraName, const Matrix4 & mat4);
-	void SetUniformValue(const string& paraName, const Matrix3x4 & mat3x4);
-	void SetUniformValue(const string& paraName, GLsizei count, const Vector4* vec4);
+	void SetUniformValue(const StringHash& paraName, const Color & color);
+	void SetUniformValue(const StringHash& paraName, const Vector2 & vec2);
+	void SetUniformValue(const StringHash& paraName, const Vector3 & vec3);
+	void SetUniformValue(const StringHash& paraName, const Vector4 & vec4);
+	void SetUniformValue(const StringHash& paraName, const Matrix3 & mat3);
+	void SetUniformValue(const StringHash& paraName, const Matrix4 & mat4);
+	void SetUniformValue(const StringHash& paraName, const Matrix3x4 & mat3x4);
 
 	/**
 	 * 获取uniform参数
 	 * @param name
 	 * @return
 	 */
-	ShaderParameter* GetShaderUniformParameter(const string&  name);
+	ShaderParameter* GetShaderUniformParameter(const StringHash&  name);
 	/**
 	 * 获取attribute参数
 	 * @param name
 	 * @return
 	 */
-	ShaderParameter* GetShaderAttributeParameter(const string&  name);
+	ShaderParameter* GetShaderAttributeParameter(const StringHash&  name);
 	/**
 	 * @brief 	链接程序
 	 * @return
@@ -286,11 +260,6 @@ public:
 	ShaderMaterialType GetType(){return m_type;}
 	void SetType(ShaderMaterialType type){this->m_type = type;}
 
-	SPHashMap& GetShaderUniformMap();
-
-	void SetName(string& name) { this->name = name; }
-	string GetName() { return this->name; }
-
 private:
 	/**
 	 * @brief 创建着色器程序
@@ -311,9 +280,6 @@ private:
 	bool m_dirty;//!<标记位
 
 	ShaderMaterialType m_type; //!<shader材质类型
-
-	string name;
-	
 };
 
 } /* namespace M3D */

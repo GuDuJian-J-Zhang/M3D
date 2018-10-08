@@ -8,8 +8,6 @@
 #include "AssimpReader.h"
 
 #include "m3d/ResourceManager.h"
-#include "m3d/SceneManager.h"
-
 
 #include "m3d/graphics/Material.h"
 #include "m3d/graphics/Texture.h"
@@ -19,36 +17,30 @@
 #include "m3d/base/Vector3.h"
 #include "m3d/base/Matrix4.h"
 #include "m3d/utils/FileHelper.h"
+#include "m3d/utils/LoggerHelper.h"
 #include "m3d/graphics/Texture2D.h"
 #include "m3d/utils/StringHelper.h"
 #include <assimp/Importer.hpp>      // C++ importer interface
 #include <assimp/scene.h>           // Output data structure
 #include <assimp/postprocess.h>     // Post processing flags
+#include "m3d/SceneManager.h"
+#include "sview/views/View.h"
 
 #include <fstream>
 #include <sstream>   // Post processing flags
-#include "m3d/model/ModelShape.h"
-#include "sview/views/View.h"
-#include "m3d/model/MeshData.h"
-
-#include <assimp/Importer.hpp>      // C++ importer interface
-#include <assimp/scene.h>           // Output data structure
-#include <assimp/postprocess.h>     // Post processing flags
-
 
 using M3D::Body;
 using M3D::Face;
 using M3D::Vector3;
 using M3D::Matrix4;
 using M3D::FileHelper;
+using M3D::LoggerHelper;
 using M3D::StringHelper;
 using M3D::ResourceManager;
-using M3D::BaseMaterial;
 using M3D::Material;
 using M3D::Texture;
 using M3D::Color;
 using M3D::Texture2D;
-using M3D::ModelShape;
 using Assimp::Importer;
 
 namespace SVIEW {
@@ -142,12 +134,8 @@ Model* AssimpReader::GetModel(int id) {
 	if (m_M3DModel == NULL)
 	{
 		m_M3DModel = ReadFile(this->GetFile().c_str());
-		if (m_M3DModel)
-		{
-			m_M3DModel->AddRef();
-			m_M3DModel->SetDrawDataPrepared(true, true);
-		}
-
+		if(m_M3DModel)
+		m_M3DModel->AddRef();
 	}
 
 	return m_M3DModel;
@@ -242,7 +230,8 @@ void AssimpReader::GetMtlPath(const string& filePath)
 
 Model* AssimpReader::CreateModelByAINode(const aiScene* scene,aiNode* curAINode,const string& strParentPlacePath,int sortId)
 {
-	//ResourceManager* resourceMgr = this->m_view->GetSceneManager()->GetResourceManager();
+	ResourceManager* resourceMgr = this->m_view->GetSceneManager()->GetResourceManager();
+
 	READER_LOGI("CreateModelByAINode:%s ", curAINode->mName.C_Str());
 
 	Model* curModel = new Model();
@@ -252,23 +241,17 @@ Model* AssimpReader::CreateModelByAINode(const aiScene* scene,aiNode* curAINode,
 	Matrix4 curMtx(curAINode->mTransformation[0]);
 	curModel->SetPlaceMatrix(curMtx);
 
-	////获取配置ID路径
-	//char tmpCurPlcIDStr[200];
-	//memset(tmpCurPlcIDStr, '\0', sizeof(tmpCurPlcIDStr));
-	//sprintf(tmpCurPlcIDStr, "%x", sortId); //配置路径按照16进制解析
-	//string curPlacePath;
-	//if (strParentPlacePath.length()>0) {
-	//	curPlacePath = strParentPlacePath + "|" + tmpCurPlcIDStr;
-	//} else {//如果没有设置父级path，则为根节点
-	//	curPlacePath = tmpCurPlcIDStr;
-	//}
-	//curModel->SetPlcPath(curPlacePath);
-
-	if (curAINode->mNumMeshes && curModel->GetModelShape() == NULL)
-	{
-		ModelShape* tShapeNode = new ModelShape();
-		curModel->SetModelShape(tShapeNode);
+	//获取配置ID路径
+	char tmpCurPlcIDStr[200];
+	memset(tmpCurPlcIDStr, '\0', sizeof(tmpCurPlcIDStr));
+	sprintf(tmpCurPlcIDStr, "%x", sortId); //配置路径按照16进制解析
+	string curPlacePath;
+	if (strParentPlacePath.length()>0) {
+		curPlacePath = strParentPlacePath + "|" + tmpCurPlcIDStr;
+	} else {//如果没有设置父级path，则为根节点
+		curPlacePath = tmpCurPlcIDStr;
 	}
+	curModel->SetPlcPath(curPlacePath);
 
 	//mesh
 	READER_LOGI("mesh count:%d ", curAINode->mNumMeshes);
@@ -279,9 +262,7 @@ Model* AssimpReader::CreateModelByAINode(const aiScene* scene,aiNode* curAINode,
 
 		Body* body = new Body();
 		VertexSet* bodyDrawData = new VertexSet();
-		//TOOD
-		//body->AddData(bodyDrawData);
-
+		body->AddData(bodyDrawData);
 		curModel->AddBody(body);
 
 		bodyDrawData->SetUseIndex(true);
@@ -370,14 +351,12 @@ Model* AssimpReader::CreateModelByAINode(const aiScene* scene,aiNode* curAINode,
 		}
 
 		facemeshData->SetDataLength(bodyDrawData->GetIndexArray()->size());
-		pFace->SetData(facemeshData);
-		if (this->m_MaterialList.size()>curAIMesh->mMaterialIndex)
-		{
-			pFace->SetInitColor(this->m_MaterialList[curAIMesh->mMaterialIndex]->GetDiffuse());
-			LOGE("face material index %d", curAIMesh->mMaterialIndex);
-			pFace->SetMaterial(this->m_MaterialList[curAIMesh->mMaterialIndex]);
-		}
-	
+
+		pFace->AddData(facemeshData, 0);
+
+		pFace->SetInitColor(this->m_MaterialList[curAIMesh->mMaterialIndex]->GetDiffuse());
+		LOGE("face material index %d",curAIMesh->mMaterialIndex);
+		pFace->SetMaterial(this->m_MaterialList[curAIMesh->mMaterialIndex]);
 		body->AddFace(pFace);
 	}
 
@@ -385,7 +364,7 @@ Model* AssimpReader::CreateModelByAINode(const aiScene* scene,aiNode* curAINode,
 	for (int iChild = 0; iChild < curAINode->mNumChildren; iChild++)
 	{
 		aiNode* childNode = curAINode->mChildren[iChild];
-		Model* childModel = CreateModelByAINode(scene, childNode,"",iChild);
+		Model* childModel = CreateModelByAINode(scene, childNode,curPlacePath,iChild);
 		curModel->AddSubModel(childModel);
 	}
 
@@ -394,10 +373,6 @@ Model* AssimpReader::CreateModelByAINode(const aiScene* scene,aiNode* curAINode,
 
 void AssimpReader::LoadMaterials(const aiScene* scene,const string& fileDir, const string& file_name,const string& preFix)
 {
-	if (!this->m_view)
-	{
-		return;
-	}
 	//store material
 	for (int i = 0; i < scene->mNumMaterials; i++)
 	{
@@ -408,13 +383,13 @@ void AssimpReader::LoadMaterials(const aiScene* scene,const string& fileDir, con
 		float shininess = 1.0f;
 		aiMaterial * the_material = scene->mMaterials[i];
 
-		char file_postfix[100] = {0};
+		char file_postfix[100];
 		sprintf(file_postfix, "%s_%d", file_name.c_str(), i + 1);
 
 		ResourceManager* resourceMgr = this->m_view->GetSceneManager()->GetResourceManager();
 
 		//从资源管理器中创建材质
-		Material * material = (Material*)resourceMgr->GetOrCreateMaterial(file_postfix);
+		Material * material = resourceMgr->GetOrCreateMaterial(file_postfix);
 
 		the_material->Get(AI_MATKEY_COLOR_AMBIENT, amb);
 		the_material->Get(AI_MATKEY_COLOR_DIFFUSE, dif);
@@ -456,10 +431,8 @@ void AssimpReader::LoadMaterials(const aiScene* scene,const string& fileDir, con
 			if(tempTexture && tempTexture->GetType() == Texture::TEXTURE_2D)
 			{
 				Texture2D* texture2d = (Texture2D*)tempTexture;
-				//texture2d->SetImagePath(diffuseTexturePath);
-				material->SetDiffuseMap(tempTexture);
-				texture2d->SetPath(diffuseTexturePath);
-				//material->SetTexture(tempTexture);
+				texture2d->SetImagePath(diffuseTexturePath);
+				material->SetTexture(tempTexture);
 			}
 
 			//将文件路径加入到资源管理中
@@ -484,16 +457,15 @@ void AssimpReader::LoadMaterials(const aiScene* scene,const string& fileDir, con
 			if (tempTexture && tempTexture->GetType() == Texture::TEXTURE_2D)
 			{
 				Texture2D* texture2d = (Texture2D*) tempTexture;
-				//texture2d->SetImagePath(ambientTexturePath);
-				material->SetAmbientMap(tempTexture);
-
-				texture2d->SetPath(ambientTexturePath);
-				//material->SetAmbientTexture(tempTexture);
+				texture2d->SetImagePath(ambientTexturePath);
+				material->SetAmbientTexture(tempTexture);
 			}
 
 			//将文件路径加入到资源管理中
 			this->AddSourceFile(ambientTexturePath);
 		}
+
+
 		this->m_MaterialList.push_back(material);
 	}
 }

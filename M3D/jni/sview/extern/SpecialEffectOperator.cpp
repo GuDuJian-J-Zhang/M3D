@@ -4,6 +4,7 @@
 
 #include "sview/extern/SpecialEffectOperator.h"
 #include "m3d/scene/SceneNode.h"
+#include "sview/extern/WorkNodes.h"
 #include "m3d/SceneManager.h"
 #include "sview/extern/PerspectiveData.h"
 #include "sview/views/View.h"

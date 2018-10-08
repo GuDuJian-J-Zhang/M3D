@@ -11,6 +11,7 @@
 #include "m3d/M3D.h"
 #include "m3d/renderer/gl10/GLDrawer.h"
 #include "m3d/action/RenderAction.h"
+
 namespace M3D
 {
 class Body;
@@ -25,9 +26,9 @@ class HandlerPoint;
 class SectionPlane;
 class Handler;
 
-class DirectionalLight;
+class Light;
 
-typedef vector<DirectionalLight*> LightList;
+typedef vector<Light*> LightList;
 
 /**
  * @class
@@ -179,9 +180,6 @@ public:
 	static void DrawTriWithIndex(Vector3* pointsBuffer, Vector3* normalBuffer,
 			M3D_INDEX_TYPE* indexBuffer, int num);
 
-	static void DrawTriWithIndex(HardWareVertexBuffer* vertexBuffer, HardWareIndexBuffer * indexBuffer, int dataLength,
-		M3D_OFFSET_TYPE indexOffset);
-
 	/**
 	 * 以非索引绘制三角网格
 	 * @param pointsBuffer
@@ -190,9 +188,6 @@ public:
 	 */
 	static void DrawTriNoIndex(Vector3* pointsBuffer, Vector3* normalBuffer,
 			int num);
-
-	static void
-		DrawTriNoIndex(HardWareVertexBuffer* vertexBuffer, int dataLength);
 
 	/**
 	 * 通过索引绘制点
@@ -235,9 +230,6 @@ public:
 	static void DrawTexture2DWithIndex(GLuint OGLObj, Vector3* pointsBuffer, Vector3* normalsBuffer, Vector3* textureCoordsBuffer,
 			M3D_INDEX_TYPE* indexBuffer, int num,Matrix4* texture2DTransform);
 
-	static void DrawTexture2DWithIndex(GLuint OGLObj, HardWareVertexBuffer* vertexBuffer,
-		HardWareIndexBuffer * indexBuffer, Matrix4* texture2DTransform, int dataLength, M3D_OFFSET_TYPE indexOffset);
-
 	/**
 	 * 使用非索引方式绘制纹理
 	 * @param OGLObj 纹理对象id
@@ -247,9 +239,6 @@ public:
 	 */
 	static void DrawTexture2DNoIndex(GLuint OGLObj, Vector3* pointsBuffer, Vector3* normalsBuffer, Vector3* textureCoordsBuffer,
 			int num,Matrix4* texture2DTransform);
-
-	static void DrawTexture2DNoIndex(GLuint OGLObj, HardWareVertexBuffer* vertexBuffer, Matrix4* texture2DTransform,
-		int dataLength);
 
 	/**
 	 * 绘制包围盒
@@ -316,7 +305,7 @@ public:
 	 * @param dataLength
 	 * @return
 	 */
-	static bool ComputerSphereTexCoords(unsigned int OGLObj,BaseMaterial* material,Renderable* faceRenderData,Vector3 * texArray,const M3D_INDEX_TYPE* indexArray,
+	static bool ComputerSphereTexCoords(unsigned int OGLObj,Material* material,Renderable* faceRenderData,Vector3 * texArray,const M3D_INDEX_TYPE* indexArray,
 			const Vector3 * normalArray,const Vector3 * positionArray,
 			Matrix3 & rotateMatrix,int dataLength);
 

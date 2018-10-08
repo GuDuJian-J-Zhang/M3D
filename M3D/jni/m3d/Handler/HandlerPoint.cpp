@@ -1,7 +1,7 @@
 ﻿#include "m3d/Handler/HandlerPoint.h"
 #include "m3d/action/RayPickAction.h"
 #include "m3d/model/Point.h"
-#include "m3d/action/RenderAction.h"
+
 namespace M3D
 {
 

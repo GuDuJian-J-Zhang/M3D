@@ -17,10 +17,9 @@ class M3D_API GL20Context: public RenderContext
 {
 public:
 	friend class RenderContext;
- 
+
 	virtual ~GL20Context();
 
-	virtual void OptimizeContext();
 	/**
 	 * 获取上下文类型
 	 * @return
@@ -34,8 +33,6 @@ public:
 
 private:
 	GL20Context();
-	bool initialized;
-	int m_deviceSupportMsaaNum;
 };
 }
 

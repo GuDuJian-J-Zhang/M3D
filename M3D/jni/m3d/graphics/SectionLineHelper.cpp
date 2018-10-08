@@ -17,7 +17,6 @@
 #include "m3d/model/Model.h"
 #include "m3d/extras/modelmanager/ModelAssemblyHelper.h"
 #include "m3d/model/Face.h"
-#include "m3d/model/Face.h"
 #include "m3d/model/MeshData.h"
 #include "m3d/base/poly2tri/poly2tri.h"
 #include "m3d/SceneManager.h"
@@ -50,19 +49,18 @@ void SectionLineHelper::DoSectionLines(void * data,SceneManager * pScene)
 	}
 }
 
-void SectionLineHelper::GetSectionLines(void* data, Model* node)
+void SectionLineHelper::GetSectionLines(void* data, SceneNode* node)
 {
 
 	//	LOGI("begin GetSectionLines");
-		if (node != NULL && node->GetType() == SHAPE_MODEL)
+		if (node != NULL && node->GetType() == SHAPE_NODE)
 		{
 			SectionDataBase* sectionData = (SectionDataBase*) data;
 			int i = 0;
 			float * tempPointer = NULL;
-			tempPointer = sectionData->m_sectionPlane->GetTransformPlaneParam();
+			tempPointer = sectionData->m_sectionPlane->GetEquation();
 			BoundingBox& shapeNodeBox = node->GetWorldBoundingBox();
-			vector<float> boxVertex; shapeNodeBox.GetVertexs(boxVertex);
-			float* points = boxVertex.data();
+			float* points = shapeNodeBox.GetVertexs();
 			float A = tempPointer[0],B = tempPointer[1],C=tempPointer[2],D = tempPointer[3];
 			float value0 = A * points[0]+B * points[1]+C * points[2]+D ;
 			for(int j = 3;j<24;j =j+3)
@@ -70,7 +68,8 @@ void SectionLineHelper::GetSectionLines(void* data, Model* node)
 				float temp = A* points[j]+B * points[j+1]+C * points[j+2]+D ;
 				if(value0*temp<0)
 				{
-					Model * model = (Model *)node;
+					ShapeNode *shapeNode = (ShapeNode *)node;
+					Model * model = (Model *)shapeNode->GetShape();
 					GetInsectModel(data,tempPointer,model);
 					break;
 				}
@@ -92,14 +91,13 @@ void SectionLineHelper::GetInsectModel(void* data, const float* factors, Model* 
 			SectionDataBase* sectionDataBase = (SectionDataBase*) data;
 			BoundingBox & box = model->GetBoundingBox();
 
-			Matrix3x4 mat = ModelAssemblyHelper::GetWorldMatrix((Model*)model); //TODO
+			Matrix3x4 mat = ModelAssemblyHelper::GetWorldMatrix(model); //TODO
 
 			clipPlane.Transform(mat.Inverse());
 
 			Vector4 transFactor = clipPlane.ToVector4();
 
-			vector<float> boxVertex; box.GetVertexs(boxVertex);
-			float* points = boxVertex.data();
+			float* points = box.GetVertexs();
 			float A = transFactor.m_x;
 			float B = transFactor.m_y;
 			float C = transFactor.m_z;
@@ -110,14 +108,14 @@ void SectionLineHelper::GetInsectModel(void* data, const float* factors, Model* 
 				float temp = A * points[j] + B * points[j + 1] + C * points[j + 2] + D;
 				if (value0 * temp < 0)
 				{
-					vector<Body*>* bodies = model->GetBodys();
-					int bodiesSize = bodies->size();
+					vector<Body*>&bodies = model->GetBodys();
+					int bodiesSize = bodies.size();
 					vector<Vector3> lineDatas; //该model中的所有剖切线
 //					lineDatas.reserve(20);//预留空间，减少拷贝次数
 					//vector<Vector3> *orderLineDatas  = new vector<Vector3>;//创建顺序交点点集
 					for (int i = 0; i < bodiesSize; i++)
 					{
-						GetInsectBody(lineDatas,transFactor.Data(), bodies->at(i));
+						GetInsectBody(lineDatas,transFactor.Data(), bodies[i]);
 					}
 					//TODO
 
@@ -206,8 +204,7 @@ void SectionLineHelper::GetInsectBody(vector<Vector3>& lineDatas, const float* f
 
 	//	LOGI("begin GetInsectBody");
 		BoundingBox & box = body->GetBoundingBox();
-		vector<float> boxVertex; box.GetVertexs(boxVertex);
-		float* points = boxVertex.data();
+		float* points = box.GetVertexs();
 		float A =factors[0];
 		float B = factors[1];
 		float C = factors[2];
@@ -237,8 +234,7 @@ void SectionLineHelper::GetInsectFace(vector<Vector3>& lineDatas, const float* f
 
 	//	LOGI("begin GetInsectFace");
 		BoundingBox & box = face->GetBoundingBox();
-		vector<float> boxVertex; box.GetVertexs(boxVertex);
-		float* points = boxVertex.data();
+		float* points = box.GetVertexs();
 		float A =factors[0];
 		float B = factors[1];
 		float C = factors[2];
@@ -249,14 +245,14 @@ void SectionLineHelper::GetInsectFace(vector<Vector3>& lineDatas, const float* f
 			float temp = A* points[j]+B * points[j+1]+C * points[j+2]+D ;
 			if(value0*temp<0)
 			{
-				//TODO
-				Mesh * mesh = face->GetData();//(Mesh*)(((Face*)face)->GetData());
+				Mesh * mesh = (Mesh*) face->GetData();
 				vector<Vector3> tempLineData;
-				GetInsectMesh(tempLineData, factors, mesh);
+				GetInsectMesh(tempLineData,factors, mesh);
+
 
 				if (tempLineData.size() > 0)
 				{
-					lineDatas.insert(lineDatas.end(), tempLineData.begin(), tempLineData.end());
+					lineDatas.insert(lineDatas.end(),tempLineData.begin(),tempLineData.end());
 				}
 
 				break;
@@ -604,7 +600,7 @@ bool SectionLineHelper::TransformTo2D(SectionPlane* pCurSectionPlane)
 	}
 
 	///获取法线
-	float * eauqtion = pCurSectionPlane->GetTransformPlaneParam();
+	float * eauqtion = pCurSectionPlane->GetEquation();
 	Vector3 normal(eauqtion[0], eauqtion[1], eauqtion[2]);
 	normal.Normalize();
 
@@ -1195,7 +1191,7 @@ void SectionLineHelper::Triangulation(SectionPlane* pCurSectionPlane)
 	///准备三角剖分所需的数据
 //	PrepareTriangulationData(pCurSectionPlane->m_corssSections);
 
-	//LOGE("==========================pCurSectionPlane->m_corssSections == %d",pCurSectionPlane->m_corssSections.size());
+	LOGE("==========================pCurSectionPlane->m_corssSections == %d",pCurSectionPlane->m_corssSections.size());
 	///运用Triangle库进行三角剖分
 	if(!PolyToTriTriangulation(pCurSectionPlane->m_corssSections,pCurSectionPlane->m_scetionLinesDataBase))
 	{
@@ -1219,49 +1215,25 @@ void SectionLineHelper::DoFigureSectionLine(void * data,SceneManager * pScene)
 
 }
 
-void SectionLineHelper::GetFigureSectionLines(void* data, Model* node)
+void SectionLineHelper::GetFigureSectionLines(void* data, SceneNode* node)
 {
 
 
 	//	LOGI("begin GetSectionLines");
-		if (node != NULL && node->GetType() == SHAPE_MODEL)
+		if (node != NULL && node->GetType() == SHAPE_NODE)
 		{
 			FigureSectionLine* sectionData = (FigureSectionLine*) data;
 			int i = 0;
 			float * tempPointer = NULL;
-			tempPointer = sectionData->sectionPlane->GetTransformPlaneParam();
+			tempPointer = sectionData->sectionPlane->GetEquation();
 			sectionData->boundingNode = node;
 			BoundingBox& shapeNodeBox = node->GetWorldBoundingBox();
-			shapeNodeBox.Clear();
-			shapeNodeBox = node->GetWorldBoundingBox();
-			vector<float> boxVertex; shapeNodeBox.GetVertexs(boxVertex);
-			float* points = boxVertex.data();
+			float* points = shapeNodeBox.GetVertexs();
 			float A = tempPointer[0],B = tempPointer[1],C=tempPointer[2],D = tempPointer[3];
-
-
-#if 0        //方案1
-			ShapeNode *shapeNode = (ShapeNode *)node;
-			Model * model = (Model *)shapeNode->GetShape();
-			BoundingBox & box = model->GetBoundingBox();
-
-			Matrix3x4 mat = ModelAssemblyHelper::GetWorldMatrix((Model*)model); //TODO
-			Vector4 originFactor(tempPointer[0], tempPointer[1], tempPointer[2], tempPointer[3]);
-			Plane clipPlane(originFactor);
-			clipPlane.Transform(mat.Inverse());
-
-			Vector4 transFactor = clipPlane.ToVector4();
-
-			float* pointss = box.GetVertexs();			
-			float AA = transFactor.m_x;
-			float BB = transFactor.m_y;
-			float CC = transFactor.m_z;
-			float DD = transFactor.m_w;
-//			float value0 = A * points[0]+B * points[1]+C * points[2]+D ;
-			float value0 = AA * pointss[0] + BB * pointss[1] + CC * pointss[2] + DD;
+			float value0 = A * points[0]+B * points[1]+C * points[2]+D ;
 			for(int j = 3;j<24;j =j+3)
 			{
-//				float temp = A* points[j]+B * points[j+1]+C * points[j+2]+D ;
-				float temp = AA* pointss[j] + BB * pointss[j + 1] + CC * pointss[j + 2] + DD;
+				float temp = A* points[j]+B * points[j+1]+C * points[j+2]+D ;
 				if(value0*temp<0)
 				{
 					ShapeNode *shapeNode = (ShapeNode *)node;
@@ -1270,22 +1242,6 @@ void SectionLineHelper::GetFigureSectionLines(void* data, Model* node)
 					break;
 				}
 			}
-
-
-#else       //方案2
-			Vector3 minPoint = shapeNodeBox.m_min;
-			Vector3 maxPoint = shapeNodeBox.m_max;
-			float value00 = A * minPoint.m_x + B * minPoint.m_y + C * minPoint.m_z + D;
-			float temp = A* maxPoint.m_x + B * maxPoint.m_y + C * maxPoint.m_z + D;
-			if (value00*temp < 0)
-			{
-				//ShapeNode *shapeNode = (ShapeNode *)node;
-				//Model * model = (Model *)shapeNode->GetShape();
-				GetFigureInsectModel(data, tempPointer, node);
-
-			}
-
-#endif
 
 		}
 	//	LOGI("end GetSectionLines");
@@ -1305,14 +1261,13 @@ void SectionLineHelper::GetFigureInsectModel(void * data, const float * factors,
 			FigureSectionLine* sectionDataBase = (FigureSectionLine*) data;
 			BoundingBox & box = model->GetBoundingBox();
 
-			Matrix3x4 mat = model->GetWorldTransform();//ModelAssemblyHelper::GetWorldMatrix((Model*)model); //TODO
+			Matrix3x4 mat = ModelAssemblyHelper::GetWorldMatrix(model); //TODO
 
 			clipPlane.Transform(mat.Inverse());
 
 			Vector4 transFactor = clipPlane.ToVector4();
 
-			vector<float> boxVertex; box.GetVertexs(boxVertex);
-			float* points = boxVertex.data();
+			float* points = box.GetVertexs();
 			float A = transFactor.m_x;
 			float B = transFactor.m_y;
 			float C = transFactor.m_z;
@@ -1323,14 +1278,14 @@ void SectionLineHelper::GetFigureInsectModel(void * data, const float * factors,
 				float temp = A * points[j] + B * points[j + 1] + C * points[j + 2] + D;
 				if (value0 * temp < 0)
 				{
-					vector<Body*>* bodies = model->GetBodys();
-					int bodiesSize = bodies->size();
+					vector<Body*>&bodies = model->GetBodys();
+					int bodiesSize = bodies.size();
 					vector<Vector3> lineDatas; //该model中的所有剖切线
 //					lineDatas.reserve(20);//预留空间，减少拷贝次数
 					//vector<Vector3> *orderLineDatas  = new vector<Vector3>;//创建顺序交点点集
 					for (int i = 0; i < bodiesSize; i++)
 					{
-						GetInsectBody(lineDatas,transFactor.Data(), bodies->at(i));
+						GetInsectBody(lineDatas,transFactor.Data(), bodies[i]);
 					}
 					int insectLinesSize = lineDatas.size();
 					for (int i = 0; i < insectLinesSize; i++)

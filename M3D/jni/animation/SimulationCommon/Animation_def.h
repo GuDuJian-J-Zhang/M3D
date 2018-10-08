@@ -9,7 +9,7 @@
 
 #include <string.h>
 
-#define ANIMATION_VERSION "2.6"
+#define ANIMATION_VERSION "2.4"
 
 #define TARGETOBJECTTYPE_INS	"PLCID"
 #define TARGETOBJECTTYPE_CAM	"CAMERA"
@@ -21,7 +21,6 @@
 #define TARGETOBJECTTYPE_ZOOM	"ZOOM"
 #define TARGETOBJECTTYPE_GROUP	"GROUPID"
 #define TARGETOBJECTTYPE_ARROW	"ARROW"
-#define TARGETOBJECTTYPE_TOOL	"TOOL"
 
 #define TARGETOBJECTTYPE_NAME_INS	"模型"
 #define TARGETOBJECTTYPE_NAME_CAM	"摄像机"
@@ -53,7 +52,7 @@ struct TargetObjectInfo
 	char m_Path[SA_BUFFER_SIZE_SMALL]; //对象全路径
 	char m_InsPath[SA_BUFFER_SIZE_SMALL];  //路径实例部分 
 	int m_EntId;                                  //路径ID部分 
-	float m_Pos[3];//= {0.0f,0.0f,0.0f };                             //位置
+	float m_Pos[3];                             //位置
 	float m_Quat[4];                             //旋转
 	float m_Scale[3];                           //缩放
 	bool m_bVisible;                          //显隐
@@ -68,14 +67,9 @@ struct TargetObjectInfo
 		strcpy(m_InsPath, "");
 		m_EntId = -1;
 		m_bVisible = false;
-		m_Trans = -1.0;
+		m_Trans = 0.0;
 		m_Type = -1;
-
-		m_Pos[0] = m_Pos[1] = m_Pos[2] = 0.0f;
-		m_Quat[0] = m_Quat[1] = m_Quat[2] = 0.0f;
-		m_Quat[3] = 1.0f;
-		m_Scale[0] = m_Scale[1] = m_Scale[2] = 1.0f;
-		m_Color[0] = m_Color[1] = m_Color[2] = -1.0f;
+        m_Color[0] = m_Color[1] = m_Color[2] = -1;
 	}
 
 	~TargetObjectInfo()
@@ -86,7 +80,7 @@ struct TargetObjectInfo
 		strcpy(m_InsPath, "");
 		m_EntId = -1;
 		m_bVisible = false;
-		m_Trans = -1.0;
+		m_Trans = 0.0;
 		m_Type = -1;
 	}
 };

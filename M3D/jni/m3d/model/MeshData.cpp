@@ -8,6 +8,7 @@
 #include "m3d/SceneManager.h"
 #include "m3d/graphics/HardWareIndexBuffer.h"
 #include "m3d/graphics/HardWareVertexBuffer.h"
+#include <new>
 
 #include "m3d/utils/MeshTools.h"
 
@@ -72,8 +73,6 @@ void VertexSet::ClearGPUData()
 		m_hardWareIndexBuffer->Release();
 		m_hardWareIndexBuffer = NULL;
 	}
-
-	this->MarkDirty();
 }
 
 
@@ -242,8 +241,9 @@ void VertexSet::UpdateHardWareBuffer(SceneManager* sceneMgr)
 
 				if(SVIEW::Parameters::Instance()->m_bufferType == GPUObject::DISK_CACHE)
 				{ 
-					//vector<Vector3> temp;
-					//vector<M3D_INDEX_TYPE> indexTemp;
+ 
+					vector<Vector3> temp;
+					vector<M3D_INDEX_TYPE> indexTemp;
 					this->m_NormalArray.resize(0);
 					//this->m_IndexArray.swap(indexTemp);
 					this->m_positionArray.resize(0);
@@ -293,8 +293,8 @@ void VertexSet::UpdateHardWareBuffer(SceneManager* sceneMgr)
 				m_hardWareIndexBuffer->WriteBuffer();
 				if(SVIEW::Parameters::Instance()->m_bufferType == GPUObject::DISK_CACHE)
 				{ 
-					//vector<Vector3> temp;
-					//vector<M3D_INDEX_TYPE> indexTemp;
+					vector<Vector3> temp;
+					vector<M3D_INDEX_TYPE> indexTemp;
  
 					this->m_IndexArray.resize(0);
 					this->m_IndexArray.shrink_to_fit();
@@ -306,205 +306,6 @@ void VertexSet::UpdateHardWareBuffer(SceneManager* sceneMgr)
 		}
 	}
 }
-
-void VertexSet::UpdateHardWareBuffer(SceneManager* sceneMgr, int bufferType)
-{
-	this->m_dirty = false;
-	if (!m_hardWareVertexBuffer && this->m_positionArray.size() > 0)
-	{
-		//创建VertexBuffer
-		m_hardWareVertexBuffer = new HardWareVertexBuffer();
-		m_hardWareVertexBuffer->AddRef();
-
-		m_hardWareVertexBuffer->SetResourceManager(sceneMgr->GetResourceManager());
-		//////填充数据
-		//计算顶点数据需要申请的硬件空间大小
-		unsigned bufferSize = 0, positionOffset, normalOffset,
-			textureOffset, positionSize, normalSize, textureSize;
-
-		positionSize = m_positionArray.size() * sizeof(Vector3);
-		normalSize = m_NormalArray.size() * sizeof(Vector3);
-		textureSize = m_textureCoords.size() * sizeof(Vector3);
-
-		//顶点位置1
-		positionOffset = 0;
-		//顶点法向量
-		normalOffset = positionOffset + positionSize;
-		//纹理坐标
-		textureOffset = normalOffset + normalSize;
-
-		bufferSize = positionSize + normalSize + textureSize;
-
-		m_hardWareVertexBuffer->SetSize(bufferSize);
- 
-		bool createState = m_hardWareVertexBuffer->Create(bufferType);
-
-		//如果创建不成功，释放该buffer
-		if (!createState)
-		{
-			m_hardWareVertexBuffer->Release();
-			m_hardWareVertexBuffer = NULL;
-		}
-		else
-		{
-			//将内存中的数据拷贝到显存中
-			//设置顶点坐标
-			m_hardWareVertexBuffer->SetDataRange(m_positionArray.data(),
-				positionOffset, positionSize);
-			//设置法线
-			m_hardWareVertexBuffer->SetDataRange(m_NormalArray.data(),
-				normalOffset, normalSize);
-			//设置纹理坐标
-			m_hardWareVertexBuffer->SetDataRange(m_textureCoords.data(),
-				textureOffset, textureSize);
-
-			m_hardWareVertexBuffer->SetVertexOffset(positionOffset);
-			m_hardWareVertexBuffer->SetNormalOffset(normalOffset);
-			m_hardWareVertexBuffer->SetTextureCoordsOffset(textureOffset);
-
-			m_hardWareVertexBuffer->WriteBuffer();
-
-			if (bufferType == GPUObject::DISK_CACHE)
-			{
-				//vector<Vector3> temp;
-				//vector<M3D_INDEX_TYPE> indexTemp;
-				this->m_NormalArray.resize(0);
-				//this->m_IndexArray.swap(indexTemp);
-				this->m_positionArray.resize(0);
-				this->m_textureCoords.resize(0);
-				this->m_NormalArray.shrink_to_fit();
-				//this->m_IndexArray.swap(indexTemp);
-				this->m_positionArray.shrink_to_fit();
-				this->m_textureCoords.shrink_to_fit();
-				//this->m_linesModeIndexArray.swap(indexTemp);
-				//this->m_linesModepositionArray.swap(temp);
-				//Clear();
-			}
-		}
-	}
-
-	if (!m_hardWareIndexBuffer && this->IsUseIndex())
-	{
-		//创建Indexbuffer
-		m_hardWareIndexBuffer = new HardWareIndexBuffer();
-		m_hardWareIndexBuffer->AddRef();
-
-		m_hardWareIndexBuffer->SetResourceManager(sceneMgr->GetResourceManager());
-		//////填充数据
-		//计算索引数据需要申请的硬件空间大小
-		unsigned bufferSize = 0;
-		//索引
-		bufferSize += m_IndexArray.size() * sizeof(M3D_INDEX_TYPE);
-
-		m_hardWareIndexBuffer->SetSize(bufferSize);
-
-		bool createState = m_hardWareIndexBuffer->Create(bufferType);
-
-		if (!createState)
-		{
-			m_hardWareIndexBuffer->Release();
-			m_hardWareIndexBuffer = NULL;
-		}
-		else
-		{
-			unsigned indexOffset = 0;
-			//将内存中的数据拷贝到显存中
-			m_hardWareIndexBuffer->SetDataRange(m_IndexArray.data(), indexOffset, bufferSize);
-			m_hardWareIndexBuffer->SetOffset(indexOffset);
-
-			m_hardWareIndexBuffer->WriteBuffer();
-			if (bufferType == GPUObject::DISK_CACHE)
-			{
-				//vector<Vector3> temp;
-				//vector<M3D_INDEX_TYPE> indexTemp;
-
-				this->m_IndexArray.resize(0);
-				this->m_IndexArray.shrink_to_fit();
-				//this->m_linesModeIndexArray.swap(indexTemp);
-				//this->m_linesModepositionArray.swap(temp);
-				//Clear();
-			}
-		}
-	}
-}
-
-void VertexSet::UnCacheFromDisk(SceneManager* sceneMgr)
-{
-	if (m_hardWareVertexBuffer && this->m_positionArray.size() == 0)
-	{
-		if (m_hardWareVertexBuffer->BufferType() == GPUObject::DISK_CACHE)
-		{
-			HardWareVertexBuffer* vertexBuffer = this->GetHardWareVertexBuffer();
-			Vector3* allpntArray = (Vector3*)vertexBuffer->Bind();
-
-			//求出所有点的个数
-			long ontvertexSize = sizeof(Vector3);
-			long allVertexCount = m_hardWareVertexBuffer->GetBufferSize() / ontvertexSize;
-
-			unsigned positionOffset = m_hardWareVertexBuffer->GetVertexOffset();
-			unsigned normalOffset = m_hardWareVertexBuffer->GetNormalOffset();
-			unsigned textureOffset = m_hardWareVertexBuffer->GetTextureCoordsOffset();
-
-			long  textureSize = allVertexCount - textureOffset/ ontvertexSize;
-			long  normalSize = (textureOffset - normalOffset) / ontvertexSize;
-			long  positionSize = (normalOffset - positionOffset)/ontvertexSize; 
-
-			vector<Vector3>* pntsArray = this->GetPositionArray();
-			for (int i = 0; i < positionSize; i++)
-			{
-				pntsArray->push_back(*(allpntArray + i));
-			}
-
-			vector<Vector3>* normalArray = this->GetNormalArray();
-			for (int i = positionSize; i < normalSize + positionSize; i++)
-			{
-				normalArray->push_back(*(allpntArray + i));
-			}
-
-			vector<Vector3>* textArray = this->GetTextureCoordArray();
-			for (int i = normalSize + positionSize; i < normalSize + positionSize + textureSize; i++)
-			{
-				textArray->push_back(*(allpntArray + i));
-			}
-			//将磁盘缓存对应的buffer释放掉
-
- 
-			m_hardWareVertexBuffer->UnBind();
-		 
-			m_hardWareVertexBuffer->Release();
-			m_hardWareVertexBuffer = NULL;
-
-			bool useIndex = this->IsUseIndex();
-			if (useIndex)
-			{ //使用索引
-				 
-				if (m_hardWareIndexBuffer && m_hardWareIndexBuffer->BufferType() == GPUObject::DISK_CACHE)
-				{
-					M3D_INDEX_TYPE* allIndexdata = (M3D_INDEX_TYPE*)m_hardWareIndexBuffer->Bind();
-					long indexbufferSize = m_hardWareIndexBuffer->GetBufferSize()/sizeof(M3D_INDEX_TYPE);
-
-					vector<M3D_INDEX_TYPE>* indexArray = this->GetIndexArray();
-
-					for (int i = 0; i < indexbufferSize; i++)
-					{
-						indexArray->push_back(*(allIndexdata + i));
-					}
-
-					m_hardWareIndexBuffer->UnBind();
-
-					m_hardWareIndexBuffer->Release();
-					m_hardWareIndexBuffer = NULL;
-				}
-			}
-
-
-			//创建VertexBuffer
-			//通过正常的流程创建内存缓存中的buffer
-			this->UpdateHardWareBuffer(sceneMgr, GPUObject::NO_CACHE);
-		}
-	}
-}
-
 
 float VertexSet::GetVolumeAndArea(float& volume,float& area)
 {
@@ -652,60 +453,6 @@ float VertexSet::GetVolumeAndArea(float& volume,float& area)
 	area = air;
 
 	return cap;
-}
-
-void VertexSet::RecalculateNormal()
-{
-	if (IsUseIndex())
-	{				
-		m_NormalArray.clear();
-		int positionSize = m_positionArray.size();
-		m_NormalArray.resize(positionSize);
-		int indexSize = this->m_IndexArray.size();
-		for (int i = 0;i<indexSize-2;i=i+3)
-		{
-			Vector3 &p0 = m_positionArray[m_IndexArray[i+0]];
-			Vector3 &p1 = m_positionArray[m_IndexArray[i+1]];
-			Vector3 &p2 = m_positionArray[m_IndexArray[i+2]];
-			Vector3 p0p1 = p1 - p0;
-			Vector3 p0p2 = p2 - p0;
-			Vector3 faceNormal = (p0p1.CrossProduct(p0p2)).Normalized();
-			m_NormalArray[m_IndexArray[i + 0]] += faceNormal;
-			m_NormalArray[m_IndexArray[i + 1]] += faceNormal;
-			m_NormalArray[m_IndexArray[i + 2]] += faceNormal;
-		}
-
-		//单位化
-		for (int j = 0;j<positionSize;j++)
-		{
-			m_NormalArray[j].Normalize();
-		}
-	}
-	else
-	{
-		m_NormalArray.clear();
-		int positionSize = m_positionArray.size();
-		m_NormalArray.resize(positionSize);
-		for (int i = 0; i < positionSize-2; i=i+3)
-		{
-			Vector3 &p0 = m_positionArray[i];
-			Vector3 &p1 = m_positionArray[i + 1];
-			Vector3 &p2 = m_positionArray[i + 2];
-			Vector3 p0p1 = p1 - p0;
-			Vector3 p0p2 = p2 - p0;
-			Vector3 faceNormal = (p0p1.CrossProduct(p0p2)).Normalized();
-			m_NormalArray[i + 0] = faceNormal;
-			m_NormalArray[i + 1] = faceNormal;
-			m_NormalArray[i + 2] = faceNormal;
-		}
-
-		//单位化
-		for (int j = 0; j<positionSize; j++)
-		{
-			m_NormalArray[j].Normalize();
-		}
-		
-	}
 }
 
 vector<Vector3>* VertexSet::GetPositionArray()
@@ -891,8 +638,7 @@ void Mesh::RayPick(RayPickAction* action)
 			}
  
 			int v0,v1,v2;
-			float min = INT_MAX;
-			float tempLength = 0;
+
 			for (int i = 0; i < indexCount/3; i++)
 			{
 				v0 = tempIndex[i*3];
@@ -901,9 +647,6 @@ void Mesh::RayPick(RayPickAction* action)
 				if (action->IsintersectRayAndTriangle(pntArray[v0],pntArray[v1],pntArray[v2],intersectPos))
 				{
 					action->AddIntersectPnt(intersectPos);
-					action->AddIntersectTrianglePnts(pntArray[v0]);
-					action->AddIntersectTrianglePnts(pntArray[v1]);
-					action->AddIntersectTrianglePnts(pntArray[v2]);
 				}
 			}
 
@@ -950,275 +693,6 @@ void Mesh::RayPick(RayPickAction* action)
 		}
 	}
 }
-
-void Mesh::FramePickFast(RayPickAction* action)
-{
-	//if (action->Intersect(GetBoundingBox()))
-	{
-		Vector3 intersectPos;
-		bool useIndex = this->m_refMesh->IsUseIndex();
-		int count = 0;
-
-		if (useIndex)
-		{ //使用索引
-			int indexCount = this->m_dataLength;
-			count = indexCount;
-
-			HardWareVertexBuffer* vertexBuffer = this->m_refMesh->GetHardWareVertexBuffer();
-			Vector3* pntArray = NULL;
-			if (vertexBuffer && vertexBuffer->BufferType() == GPUObject::DISK_CACHE)
-			{
-				Vector3* vertexData = (Vector3*)vertexBuffer->Bind();
-				pntArray = vertexData;
-			}
-			else
-			{
-				pntArray = this->m_refMesh->GetPositionArray()->data();
-			}
-
-			HardWareIndexBuffer* indexBuffer = this->m_refMesh->GetHardWareIndexBuffer();
-			M3D_INDEX_TYPE* tempIndex = NULL;
-			if (indexBuffer && indexBuffer->BufferType() == GPUObject::DISK_CACHE)
-			{
-				M3D_INDEX_TYPE* vertexData = (M3D_INDEX_TYPE*)indexBuffer->Bind();
-				tempIndex = vertexData + this->m_dataOffset;
-			}
-			else
-			{
-				tempIndex = this->m_refMesh->GetIndexArray()->data()
-					+ this->m_dataOffset;
-			}
-
-			int v0, v1, v2;
-
-			for (int i = 0; i < indexCount / 3; i++)
-			{
-				v0 = tempIndex[i * 3];
-				v1 = tempIndex[i * 3 + 1];
-				v2 = tempIndex[i * 3 + 2];
-
-				action->IncreaseFramePickPntCount();
-				if (action->IsPointInFrustum(pntArray[v0]))
-				{
-					action->IncreaseFramePickMatchPntCount();
-				}
-
-				action->IncreaseFramePickPntCount();
-				if (action->IsPointInFrustum(pntArray[v1]))
-				{
-					action->IncreaseFramePickMatchPntCount();
-				}
-
-				action->IncreaseFramePickPntCount();
-				if (action->IsPointInFrustum(pntArray[v2]))
-				{
-					action->IncreaseFramePickMatchPntCount();
-				}
-
-				if (action->GetFramePickMatchPntCount()>0)
-				{
-					return;
-				}
-				else
-				{
-					if (action->IsintersecFrustumTriangle(pntArray[v0], pntArray[v1], pntArray[v2]))
-					{
-						action->IncreaseFramePickMatchPntCount();
-					}
-				}
-			}
-
-			if (indexBuffer && indexBuffer->BufferType() == GPUObject::DISK_CACHE)
-			{
-				indexBuffer->UnBind();
-			}
-
-			if (vertexBuffer && vertexBuffer->BufferType() == GPUObject::DISK_CACHE)
-			{
-				vertexBuffer->UnBind();
-			}
-
-		}
-		else
-		{ //不使用索引
-			count = this->m_dataLength;
-
-			HardWareVertexBuffer* vertexBuffer = this->m_refMesh->GetHardWareVertexBuffer();
-			Vector3* triData = NULL;
-			if (vertexBuffer && vertexBuffer->BufferType() == GPUObject::DISK_CACHE)
-			{
-				Vector3* vertexData = (Vector3*)vertexBuffer->Bind();
-				triData = vertexData + this->m_dataOffset;
-			}
-			else
-			{
-				triData = this->m_refMesh->GetPositionArray()->data()
-					+ this->m_dataOffset;
-			}
-
-			for (int i = 0; i < count / 3; i++)
-			{
-				action->IncreaseFramePickPntCount();
-				if (action->IsPointInFrustum(triData[i * 3]))
-				{
-					action->IncreaseFramePickMatchPntCount();
-				}
-
-				action->IncreaseFramePickPntCount();
-				if (action->IsPointInFrustum(triData[i * 3 + 1]))
-				{
-					action->IncreaseFramePickMatchPntCount();
-				}
-
-				action->IncreaseFramePickPntCount();
-				if (action->IsPointInFrustum(triData[i * 3 + 2]))
-				{
-					action->IncreaseFramePickMatchPntCount();
-				}
-				
-				if (action->GetFramePickMatchPntCount() > 0)
-				{
-					return;
-				}
-				else
-				{
-					if (action->IsintersecFrustumTriangle(triData[i * 3], triData[i * 3 + 1], triData[i * 3 + 2]))
-					{
-						action->IncreaseFramePickMatchPntCount();
-					}
-				}
-			}
-
-			if (vertexBuffer && vertexBuffer->BufferType() == GPUObject::DISK_CACHE)
-			{
-				vertexBuffer->UnBind();
-			}
-		}
-	}
-}
-
-void Mesh::FramePick(RayPickAction* action)
-{
-	//if (action->Intersect(GetBoundingBox()))
-	{
-		Vector3 intersectPos;
-		bool useIndex = this->m_refMesh->IsUseIndex();
-		int count = 0;
-
-		if (useIndex)
-		{ //使用索引
-			int indexCount = this->m_dataLength;
-			count = indexCount;
-
-			HardWareVertexBuffer* vertexBuffer = this->m_refMesh->GetHardWareVertexBuffer();
-			Vector3* pntArray = NULL;
-			if (vertexBuffer && vertexBuffer->BufferType() == GPUObject::DISK_CACHE)
-			{
-				Vector3* vertexData = (Vector3*)vertexBuffer->Bind();
-				pntArray = vertexData;
-			}
-			else
-			{
-				pntArray = this->m_refMesh->GetPositionArray()->data();
-			}
-
-			HardWareIndexBuffer* indexBuffer = this->m_refMesh->GetHardWareIndexBuffer();
-			M3D_INDEX_TYPE* tempIndex = NULL;
-			if (indexBuffer && indexBuffer->BufferType() == GPUObject::DISK_CACHE)
-			{
-				M3D_INDEX_TYPE* vertexData = (M3D_INDEX_TYPE*)indexBuffer->Bind();
-				tempIndex = vertexData + this->m_dataOffset;
-			}
-			else
-			{
-				tempIndex = this->m_refMesh->GetIndexArray()->data()
-					+ this->m_dataOffset;
-			}
-
-			int v0, v1, v2;
-
-			for (int i = 0; i < indexCount / 3; i++)
-			{
-				v0 = tempIndex[i * 3];
-				v1 = tempIndex[i * 3 + 1];
-				v2 = tempIndex[i * 3 + 2];
-
-				action->IncreaseFramePickPntCount();
-				if (action->IsPointInFrustum(pntArray[v0]))
-				{
-					action->IncreaseFramePickMatchPntCount();
-				}
-
-				action->IncreaseFramePickPntCount();
-				if (action->IsPointInFrustum(pntArray[v1]))
-				{
-					action->IncreaseFramePickMatchPntCount();
-				}
-
-				action->IncreaseFramePickPntCount();
-				if (action->IsPointInFrustum(pntArray[v2]))
-				{
-					action->IncreaseFramePickMatchPntCount();
-				}
-			}
-
-			if (indexBuffer && indexBuffer->BufferType() == GPUObject::DISK_CACHE)
-			{
-				indexBuffer->UnBind();
-			}
-
-			if (vertexBuffer && vertexBuffer->BufferType() == GPUObject::DISK_CACHE)
-			{
-				vertexBuffer->UnBind();
-			}
-
-		}
-		else
-		{ //不使用索引
-			count = this->m_dataLength;
-
-			HardWareVertexBuffer* vertexBuffer = this->m_refMesh->GetHardWareVertexBuffer();
-			Vector3* triData = NULL;
-			if (vertexBuffer && vertexBuffer->BufferType() == GPUObject::DISK_CACHE)
-			{
-				Vector3* vertexData = (Vector3*)vertexBuffer->Bind();
-				triData = vertexData + this->m_dataOffset;
-			}
-			else
-			{
-				triData = this->m_refMesh->GetPositionArray()->data()
-					+ this->m_dataOffset;
-			}
-
-			for (int i = 0; i < count / 3; i++)
-			{
-				action->IncreaseFramePickPntCount();
-				if (action->IsPointInFrustum(triData[i * 3]))
-				{
-					action->IncreaseFramePickMatchPntCount();
-				}
-
-				action->IncreaseFramePickPntCount();
-				if (action->IsPointInFrustum(triData[i * 3 + 1]))
-				{
-					action->IncreaseFramePickMatchPntCount();
-				}
-
-				action->IncreaseFramePickPntCount();
-				if (action->IsPointInFrustum(triData[i * 3 + 2]))
-				{
-					action->IncreaseFramePickMatchPntCount();
-				}
-			}
-
-			if (vertexBuffer && vertexBuffer->BufferType() == GPUObject::DISK_CACHE)
-			{
-				vertexBuffer->UnBind();
-			}
-		}
-	}
-}
-
 ///IMeshData virtual fun
 void Mesh::Clear()
 {
@@ -1227,10 +701,12 @@ void Mesh::Clear()
 		delete m_geoAttribute;
 		m_geoAttribute = NULL;
 	}
+
     m_dataOffset = 0; ///数据相对于refMeshData的偏移量
     m_dataLength = 0; ///数据总长度
  
 }
+
 int Mesh::GetVertexCount()
 {
 	return this->m_dataLength;
@@ -1276,7 +752,7 @@ unsigned int  Mesh::GetDataOffset()
 {
 	return this->m_dataOffset;
 }
-       
+
 float Mesh::GetVolumeAndArea(float& volume,float& area)
 {
 	double air = 0.;

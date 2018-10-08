@@ -8,7 +8,6 @@
 */
 
 //SA_NAMESPACE_BEGIN
-
 class SA_API CTickTimer
 {
 // Construction
@@ -28,10 +27,10 @@ public:
 
 protected:
 
-    static NS_SimulationAnimation::CTimer m_timer;
+    static CTimer m_timer;
 	static int     m_milliseconds;  //!< amount of time to tick
 
-    //static void timerTimeout(union sigval sig);
+    static void timerTimeout(union sigval sig);
     
     static void* timerTask(void* arg);
 

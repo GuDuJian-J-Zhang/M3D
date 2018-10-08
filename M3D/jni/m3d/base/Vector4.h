@@ -97,20 +97,11 @@ public:
 	{
 		return Vector4(m_x + rhs.m_x, m_y + rhs.m_y, m_z + rhs.m_z,
 				m_w + rhs.m_w);
-	}	
-	Vector4 Add(const Vector4& rhs) const
-	{
-		return Vector4(m_x + rhs.m_x, m_y + rhs.m_y, m_z + rhs.m_z,
-			m_w + rhs.m_w);
 	}
 	/**
 	 * @brief Return negation.
 	 */
 	Vector4 operator -() const
-	{
-		return Vector4(-m_x, -m_y, -m_z, -m_w);
-	}
-	Vector4 Negative() const
 	{
 		return Vector4(-m_x, -m_y, -m_z, -m_w);
 	}
@@ -122,19 +113,10 @@ public:
 		return Vector4(m_x - rhs.m_x, m_y - rhs.m_y, m_z - rhs.m_z,
 				m_w - rhs.m_w);
 	}
-	Vector4 Sub(const Vector4& rhs) const
-	{
-		return Vector4(m_x - rhs.m_x, m_y - rhs.m_y, m_z - rhs.m_z,
-			m_w - rhs.m_w);
-	}
 	/**
 	 * @brief Multiply with a scalar.
 	 */
 	Vector4 operator *(float rhs) const
-	{
-		return Vector4(m_x * rhs, m_y * rhs, m_z * rhs, m_w * rhs);
-	}
-	Vector4 Multiply(float rhs) const
 	{
 		return Vector4(m_x * rhs, m_y * rhs, m_z * rhs, m_w * rhs);
 	}
@@ -146,19 +128,10 @@ public:
 		return Vector4(m_x * rhs.m_x, m_y * rhs.m_y, m_z * rhs.m_z,
 				m_w * rhs.m_w);
 	}
-	Vector4 Multiply(const Vector4& rhs) const
-	{
-		return Vector4(m_x * rhs.m_x, m_y * rhs.m_y, m_z * rhs.m_z,
-			m_w * rhs.m_w);
-	}
 	/**
 	 * @brief Divide by a scalar.
 	 */
 	Vector4 operator /(float rhs) const
-	{
-		return Vector4(m_x / rhs, m_y / rhs, m_z / rhs, m_w / rhs);
-	}
-	Vector4 Divede(float rhs) const
 	{
 		return Vector4(m_x / rhs, m_y / rhs, m_z / rhs, m_w / rhs);
 	}
@@ -170,11 +143,7 @@ public:
 		return Vector4(m_x / rhs.m_x, m_y / rhs.m_y, m_z / rhs.m_z,
 				m_w / rhs.m_w);
 	}
-	Vector4 Divede(const Vector4& rhs) const
-	{
-		return Vector4(m_x / rhs.m_x, m_y / rhs.m_y, m_z / rhs.m_z,
-			m_w / rhs.m_w);
-	}
+
 	/**
 	 * @brief Add-assign a vector.
 	 */
@@ -186,14 +155,7 @@ public:
 		m_w += rhs.m_w;
 		return *this;
 	}
-	Vector4& Added(const Vector4& rhs)
-	{
-		m_x += rhs.m_x;
-		m_y += rhs.m_y;
-		m_z += rhs.m_z;
-		m_w += rhs.m_w;
-		return *this;
-	}
+
 	/**
 	 * @brief Subtract-assign a vector.
 	 */
@@ -205,14 +167,7 @@ public:
 		m_w -= rhs.m_w;
 		return *this;
 	}
-	Vector4& Subed(const Vector4& rhs)
-	{
-		m_x -= rhs.m_x;
-		m_y -= rhs.m_y;
-		m_z -= rhs.m_z;
-		m_w -= rhs.m_w;
-		return *this;
-	}
+
 	/**
 	 * @brief Multiply-assign a scalar.
 	 */
@@ -224,14 +179,7 @@ public:
 		m_w *= rhs;
 		return *this;
 	}
-	Vector4& Multiplyed(float rhs)
-	{
-		m_x *= rhs;
-		m_y *= rhs;
-		m_z *= rhs;
-		m_w *= rhs;
-		return *this;
-	}
+
 	/**
 	 * @brief Multiply-assign a vector.
 	 */
@@ -243,27 +191,11 @@ public:
 		m_w *= rhs.m_w;
 		return *this;
 	}
-	Vector4& Multiplyed(const Vector4& rhs)
-	{
-		m_x *= rhs.m_x;
-		m_y *= rhs.m_y;
-		m_z *= rhs.m_z;
-		m_w *= rhs.m_w;
-		return *this;
-	}
+
 	/**
 	 * @brief Divide-assign a scalar.
 	 */
 	Vector4& operator /=(float rhs)
-	{
-		float invRhs = 1.0f / rhs;
-		m_x *= invRhs;
-		m_y *= invRhs;
-		m_z *= invRhs;
-		m_w *= invRhs;
-		return *this;
-	}	
-	Vector4& Divided(float rhs)
 	{
 		float invRhs = 1.0f / rhs;
 		m_x *= invRhs;
@@ -284,14 +216,7 @@ public:
 		m_w /= rhs.m_w;
 		return *this;
 	}
-	Vector4& Divided(const Vector4& rhs)
-	{
-		m_x /= rhs.m_x;
-		m_y /= rhs.m_y;
-		m_z /= rhs.m_z;
-		m_w /= rhs.m_w;
-		return *this;
-	}
+
 	/**
 	 * @brief Calculate dot product.
 	 */
@@ -346,17 +271,6 @@ public:
 	{
 		return &m_x;
 	}
-	M3D_ADDRESSTYPE Address()
-	{
-		//获取地址的真实方式
-		return TAddress(*this);
-	}
-
-	void FillByAddress(M3D_ADDRESSTYPE memoryAddress)
-	{
-		*this = *TFromAddress<Vector4>(memoryAddress);
-	}
-
 	/**
 	 * @brief Return as string.
 	 */

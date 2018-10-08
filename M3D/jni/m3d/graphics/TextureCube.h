@@ -29,7 +29,7 @@ public:
 		\param flags can be any of SOIL_FLAG_POWER_OF_TWO | SOIL_FLAG_MIPMAPS | SOIL_FLAG_TEXTURE_REPEATS | SOIL_FLAG_MULTIPLY_ALPHA | SOIL_FLAG_INVERT_Y | SOIL_FLAG_COMPRESS_TO_DXT | SOIL_FLAG_DDS_LOAD_DIRECT
 		\return 0-failed, otherwise returns the OpenGL texture handle
 	**/
-	unsigned int LoadOGLTexture(const string& filename,
+	static unsigned int LoadOGLTexture(const string& filename,
 			const char face_order[6],
 			int force_channels,
 			unsigned int reuse_texture_ID,
@@ -41,38 +41,31 @@ public:
 	 * @param force_channels
 	 * @return
 	 */
-	unsigned int LoadOGLTextureFromSixImage(vector<string> & filenames,int force_channels);
+	static unsigned int LoadOGLTextureFromSixImage(vector<string> & filenames,int force_channels);
 
-	unsigned int LoadOGLTextureFromSixImageFromMemory(vector<unsigned char*> & imageBuffers,vector<int> &bufferLength, int force_channels);
-
-	bool FreeOGLTexture(unsigned int OGLObj);
+	static bool FreeOGLTexture(unsigned int OGLObj);
 public:
 	TextureCube();
 
-	//TextureCube(const string& imagePath);
-	//TextureCube(vector<string>& imagePathes);
-	//TextureCube(vector<unsigned char*>& imageBuffers,vector<int> bufferLengths);
-	TextureCube(vector<Image*>& images);
+	TextureCube(const string& imagePath);
+	TextureCube(vector<string>& imagePathes);
 
-	void SetCubeImages(vector<Image*>& images);
-	vector<Image*>& GetCubeImages();
 	virtual int GetType()
 	{
 		return TEXTURE_CUBE;
 	}
 
-	//TextureCube(const string& imagePath,int forceChannels,unsigned int flags);
+	TextureCube(const string& imagePath,int forceChannels,unsigned int flags);
 
 	virtual ~TextureCube();
+
+
 protected:
 	void Init();
 
 protected:
 	virtual void UpdataOGLObj();
-	vector<Image*> m_cubeimages;
-	//vector<string> m_imagePaths;
-	//vector<unsigned char*> m_imageBuffers;
-	//vector<int> m_bufferLengths;
+	vector<string> m_imagePaths;
 };
 }
 
