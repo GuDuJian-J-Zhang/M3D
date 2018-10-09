@@ -150,11 +150,11 @@ namespace M3D
 
 			//设置uniform值
 			SPHashMap& shaderUniformMap = shaderEffect->GetShaderUniformMap();
-			if(type == 104){
+			if(type == 104){ // 金属材质
 				continue;
 			}
 			this->SetUniform(shaderEffect, shaderUniformMap, tempUnifomValueList);
-#pragma region Draw
+#pragma region Draw //折叠代码
 			if (type != 104)
 			{
 				int dataLength = faceRenderData->GetDataLength();

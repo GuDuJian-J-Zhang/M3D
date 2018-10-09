@@ -184,7 +184,9 @@ namespace M3D
 
 	void SceneManager::RemoveModel()
 	{
+		LOGE("SceneManager::RemoveModel start ----");
 		MutexLock locked(this->m_mutex);
+		LOGE("SceneManager::RemoveModel 线程锁 locked  ----");
 		this->GetRenderManager()->ClearDelayDrawList();
 		if (this->m_TopModel)
 		{
@@ -193,15 +195,12 @@ namespace M3D
 		}
 
 		this->SetModel(NULL);
-
 		//如果八插树存在，则清空八叉树
 		if (this->m_ocTree)
 		{
 			this->m_ocTree->Clear();
 		}
-
 		this->ClearModelAndHandles();
-
 		this->GetRenderManager()->ClearGLResource();
 		this->GetRenderManager()->RequestRedraw();
 	}
@@ -901,7 +900,7 @@ namespace M3D
 
 	void SceneManager::RequestUpdateWhenSceneBoxChanged()
 	{
-		MutexLock locked(this->m_mutex);
+//		MutexLock locked(this->m_mutex);
 		m_SceneBoxChanged = true;
 		//if (this->m_ocTree)
 		//{

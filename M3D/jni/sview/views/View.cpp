@@ -1124,14 +1124,19 @@ void View::CloseFile() {
 			delete m_Reader;
 			m_Reader = NULL;
 		}
-
 		if (m_Model) {
 			m_Model->Release();
+		    m_Model = NULL;
 		}
-		m_Model = NULL;
+		if(m_curModelView){
+			m_curModelView->Release();
             m_curModelView = NULL;
+		}
+		if (m_Model) {
+		m_Model->Release();
+		 m_Model = NULL;
+		}
 		m_SceneManager->RemoveModel();
-
 		//int modelLightSize = m_SceneManager->GetModelLights()->size();
 		//for (int i = 0; i < modelLightSize; i++)
 		//{
@@ -1158,7 +1163,6 @@ void View::CloseFile() {
 	} catch (...) {
 		LOGE("View::CloseFile Error()");
 	}
-
 	RestoreBackgroundState();
 	RestoreViewModeState();
 
@@ -3761,19 +3765,19 @@ bool View::AsynReadClose() {
 	//设置ocTree区域
 	this->GetSceneManager()->RequestUpdateWhenSceneBoxChanged();
 
-	if (this->GetModel()) { //
-		if (this->GetModel()->GetChildren().size() == 1) {
-			this->RestoreView(false);
-		} else {
-			//this->GetTouchHandler()->SetRestoreCamera(false);
-			this->InitCamera();
-			//this->GetTouchHandler()->SetRestoreCamera(true);
-		}
-	}
-	scene->UnLock();
+//	if (this->GetModel()) { //
+//		if (this->GetModel()->GetChildren().size() == 1) {
+//			this->RestoreView(false);
+//		} else {
+//			//this->GetTouchHandler()->SetRestoreCamera(false);
+//			this->InitCamera();
+//			//this->GetTouchHandler()->SetRestoreCamera(true);
+//		}
+//	}
 	if (SVIEW::Parameters::Instance()->GetLoadExternInfo() && this->m_Reader) {
 		((SVL2AsynReader*) this->m_Reader)->LoadFileInfo();
 	}
+	scene->UnLock();
 	if (this->m_Reader) {
 		delete this->m_Reader;
 		this->m_Reader = NULL;
