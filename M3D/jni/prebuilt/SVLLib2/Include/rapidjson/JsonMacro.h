@@ -1,0 +1,23 @@
+#define BOM "bom"
+#define BOMVERSION "version"
+#define ATTRIBUTES "attributes"
+#define INSTANCES "instances"
+#define TOPID "topId"
+#define MODELS "models"
+#define MESH "mesh"
+#define LOD1 "lod1"
+#define ACCESOR "accesor"
+#define FILENAME "filename"
+#define OFFSET "offset"
+#define LENGTH "length"
+#define MATERIALS "materials"
+#define TYPE "type"
+#define  TRANSPARENCY "transparency"
+#define  DIFFUSECOLOR "diffuseColor"
+
+#define INDEX_INSTANCEID   0
+#define INDEX_PLCID			   1
+#define INDEX_MODELID        2
+#define INDEX_VISIBLE			   3
+#define INDEX_MATRIX		   4
+#define INDEX_INSCHILDREN 5
