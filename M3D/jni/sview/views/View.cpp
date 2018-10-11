@@ -1,4 +1,3 @@
-
 #include "m3d/ResourceManager.h"
 #include "m3d/graphics/MaterialTemplateManager.h"
 #include "m3d/action/RenderAction.h"
@@ -131,7 +130,7 @@ using NS_SimulationAnimation::CProcessManager;
 
 namespace SVIEW {
 ViewReadListener::ViewReadListener() :
-		ReaderListener() {
+	ReaderListener() {
 	m_readPercent = 0;
 	SetReadFileCount(1);
 	SetReadFileIndex(0);
@@ -145,8 +144,8 @@ ViewReadListener::~ViewReadListener() {
 void ViewReadListener::OnProcessPercent(Reader* reader, float percent) {
 	//
 	SetPercent(
-			this->m_readFileIndex * this->m_readSegRange
-					+ percent * this->m_readSegRange);
+	    this->m_readFileIndex * this->m_readSegRange
+	    + percent * this->m_readSegRange);
 }
 
 void ViewReadListener::OnBegin(Reader* reader) {
@@ -180,7 +179,7 @@ void ViewReadListener::SetReadFileIndex(int readFileIndex) {
 
 CTickTimer* View::pTDriver = NULL;
 View::View() :
-		IView() {
+	IView() {
 	//Logger::Instance()->SetLogPath("sview_log.txt");
 	memoryLeakDetector();
 	m_SceneManager = NULL;
@@ -401,7 +400,7 @@ void View::Initial() {
 		backgroundNode->SetBottomColor(buttomColor);
 		backgroundNode->SetTopColor(topColor);
 		backgroundNode->SetResourceManager(
-				this->m_SceneManager->GetResourceManager());
+		    this->m_SceneManager->GetResourceManager());
 		groupNode->AddChild(backgroundNode);
 		SetInterBackgroundState(false);
 		this->m_backgroundNode = backgroundNode;
@@ -521,7 +520,7 @@ void View::TouchMove(int moveType, float* p, int n) {
 	 */
 
 	m_workTouchHandler->HandleTouchEvent(p, n, CommonTouchHandler::TOUCHMOVE,
-			moveType);
+	                                     moveType);
 }
 
 void View::TouchUp(float* p, int n) {
@@ -652,7 +651,7 @@ M3D_STATUS View::ReadFile(string & path) {
 
 		if (m_Model) {
 			bool checkErrorPoint =
-					SVIEW::Parameters::Instance()->m_IsCheckErrorPoint;
+			    SVIEW::Parameters::Instance()->m_IsCheckErrorPoint;
 			if (checkErrorPoint) {
 				this->ChechErrorPoint(m_Model);
 			}
@@ -683,7 +682,7 @@ M3D_STATUS View::ReadFile(string & path) {
 		//缓存动画文件
 		this->SetAnimationXMLData(m_Reader->GetXMLAnimationData());
 		LOGI(
-				"ReadFile -- read animationXML %s sfs", this->m_AnimationXMLData.c_str());
+		    "ReadFile -- read animationXML %s sfs", this->m_AnimationXMLData.c_str());
 		//	LOGI("SetModel start");
 		m_SceneManager->SetModel(m_Model);
 		LOGI("View::ReadFile m_SceneManager->SetModel ok.");
@@ -1038,7 +1037,7 @@ M3D_STATUS View::SaveFile(string &path) {
  * @param srcPath SVLX路径
  */
 M3D_STATUS View::SaveSVLXFile(const string& tmpPath, const string &srcPath,
-		const string &srcName) {
+                              const string &srcName) {
 	M3D_STATUS readerState = M3D_STATUS::M_Read_NO_DEFINE_Error;
 	try {
 		MutexLock locked(this->m_mutex);
@@ -1070,16 +1069,16 @@ M3D_STATUS View::SaveSVLXFile(const string& tmpPath, const string &srcPath,
  * @param srcName 文件名称(完整-带后缀)
  */
 M3D_STATUS View::AddFileToSVLX(const string& srcPath, const string &svlxPath,
-		const string &srcName) {
+                               const string &srcName) {
 	SVLXWriter *writer = new SVLXWriter();
 
 	M3D_STATUS ret = (M3D_STATUS) (writer->AddFileToSVLX(this, srcPath,
-			svlxPath, srcName));
+	                               svlxPath, srcName));
 	return ret;
 }
 
 M3D_STATUS View::SaveSVLFileToSVLX(const string& srcPath,
-		const string &targetPath) {
+                                   const string &targetPath) {
 	M3D_STATUS readerState = M3D_STATUS::M_Read_NO_DEFINE_Error;
 	try {
 		LOGI("View::SaveFile path:%s %s", srcPath.c_str(), targetPath.c_str());
@@ -1124,14 +1123,19 @@ void View::CloseFile() {
 			delete m_Reader;
 			m_Reader = NULL;
 		}
-
 		if (m_Model) {
 			m_Model->Release();
+		    m_Model = NULL;
 		}
-		m_Model = NULL;
-            m_curModelView = NULL;
+		if(m_curModelView){
+			m_curModelView->Release();
+		m_curModelView = NULL;
+		}
+		if (m_Model) {
+		m_Model->Release();
+		 m_Model = NULL;
+		}
 		m_SceneManager->RemoveModel();
-
 		//int modelLightSize = m_SceneManager->GetModelLights()->size();
 		//for (int i = 0; i < modelLightSize; i++)
 		//{
@@ -1158,7 +1162,6 @@ void View::CloseFile() {
 	} catch (...) {
 		LOGE("View::CloseFile Error()");
 	}
-
 	RestoreBackgroundState();
 	RestoreViewModeState();
 
@@ -1178,7 +1181,7 @@ IDCreator* View::GetIDCreator() {
 }
 
 void View::TranslateSelectedShapes(float priX, float priY, float curX,
-		float curY) {
+                                   float curY) {
 	M3D::Vector3 startVec, endVec;
 	CameraNode* camera = GetSceneManager()->GetCamera();
 	const Viewport& viewPort = camera->GetViewPort();
@@ -1203,7 +1206,7 @@ void View::TranslateSelectedShapes(float priX, float priY, float curX,
 }
 
 void View::TranslateShape(float priX, float priY, float curX, float curY,
-		int id, int type) {
+                          int id, int type) {
 	M3D::Vector3 startVec, endVec;
 
 	CameraNode* camera = GetSceneManager()->GetCamera();
@@ -1415,7 +1418,7 @@ void View::RestoreView(bool useAni) {
 	//reset
 	if (m_pSAManager) {
 		CAnimationStepManager* pStepAni =
-				m_pSAManager->GetAnimationStepManager();
+		    m_pSAManager->GetAnimationStepManager();
 		if (pStepAni && pStepAni->GetCurProcessManagerID() != -1) {
 			pStepAni->SetCurProcessManagerID(-1);
 		}
@@ -1469,11 +1472,11 @@ IShape* View::GetPickShape(float x, float y, int shapeType, int geoType) {
 }
 
 vector<IShape*> View::GetFramePickShape(const Vector2& leftTop,
-		const Vector2& rightBottom, int shapeType, int geoType,
-		int framePickType) {
+                                        const Vector2& rightBottom, int shapeType, int geoType,
+                                        int framePickType) {
 	if (this->m_SceneManager != NULL) {
 		return this->m_SceneManager->GetFramePickShape(leftTop, rightBottom,
-				shapeType, geoType, framePickType);
+		        shapeType, geoType, framePickType);
 	}
 
 	vector<IShape*> ret;
@@ -1487,15 +1490,15 @@ void View::SetSelectType(int type) {
 }
 
 void View::SetClipPlane(int direction, float position, bool isShowClipPlane,
-		bool isShowCappingPlane, bool isReverseClip) {
+                        bool isShowCappingPlane, bool isReverseClip) {
 	int sectionPlaneId = 1001;
 	M3D::SectionOperator::Show(this, sectionPlaneId, direction, position,
-			isShowClipPlane, isShowCappingPlane, isReverseClip);
+	                           isShowClipPlane, isShowCappingPlane, isReverseClip);
 }
 
 void View::SetMultiClipPlane(int directionX, int directionY, int directionZ,
-		float positionX, float positionY, float positionZ, bool isShowClipPlane,
-		bool isShowCappingPlane, bool isReverseClip) {
+                             float positionX, float positionY, float positionZ, bool isShowClipPlane,
+                             bool isShowCappingPlane, bool isReverseClip) {
 	int dX = directionX, dY = directionY, dZ = directionZ;
 	int sectionPlaneId = 1001;
 	if (directionX == 1)
@@ -1503,21 +1506,21 @@ void View::SetMultiClipPlane(int directionX, int directionY, int directionZ,
 	if (directionX == -1)
 		directionX = -Direction::X;
 	M3D::SectionOperator::Show(this, sectionPlaneId++, directionX, positionX,
-			isShowClipPlane, isShowCappingPlane, isReverseClip);
+	                           isShowClipPlane, isShowCappingPlane, isReverseClip);
 
 	if (directionY == 1)
 		directionY = Direction::Y;
 	if (directionY == -1)
 		directionY = -Direction::Y;
 	M3D::SectionOperator::Show(this, sectionPlaneId++, directionY, positionY,
-			isShowClipPlane, isShowCappingPlane, isReverseClip);
+	                           isShowClipPlane, isShowCappingPlane, isReverseClip);
 
 	if (directionZ == 1)
 		directionZ = Direction::Z;
 	if (directionZ == -1)
 		directionZ = -Direction::Z;
 	M3D::SectionOperator::Show(this, sectionPlaneId, directionZ, positionZ,
-			isShowClipPlane, isShowCappingPlane, isReverseClip);
+	                           isShowClipPlane, isShowCappingPlane, isReverseClip);
 
 	SectionOperator::Instance->m_Direction = 0;
 	SectionOperator::Instance->m_DirectionX = dX;
@@ -1555,7 +1558,7 @@ void View::SetMatrixByPlcPath(char* plcPath, float matrix[4][4]) {
 void View::GetMatrixByPlcPath(char* plcPath, float matrix[4][4]) {
 	if (this->m_SceneManager != NULL) {
 		Model* node = this->m_SceneManager->GetNode(
-				"M3D|MAIN|" + string(plcPath));
+		                  "M3D|MAIN|" + string(plcPath));
 		//		if (node != NULL)
 		//		{
 		//			//LOGE("node is not null");
@@ -1615,7 +1618,7 @@ void View::SetDrawMode(int drawMode) {
 	}
 
 	RenderEffect* renderType =
-			m_SceneManager->GetRenderManager()->GetRenderEffect();
+	    m_SceneManager->GetRenderManager()->GetRenderEffect();
 	if (!renderType) {
 		return;
 	}
@@ -1623,8 +1626,8 @@ void View::SetDrawMode(int drawMode) {
 	RenderableTypeGroup& renderData = renderType->GetRenderableTypeFilter();
 	switch (drawMode) {
 	case 0: //Solid
-			//if (m_Model != NULL)
-			//	m_Model->ResetAlpha();
+		//if (m_Model != NULL)
+		//	m_Model->ResetAlpha();
 		renderData.SetRenderTypes(RenderableTypeGroup::RENDERDATA_NORMALEFFCT);
 		renderData.Close(RenderableType::RGT_EDGELINE);
 		if (Parameters::Instance()->m_IsShowTrilateralEdge == true) {
@@ -1658,10 +1661,10 @@ void View::SetDrawMode(int drawMode) {
 		}
 		break;
 	case 5: //
-			//renderData.SetRenderTypes(RenderableTypeGroup::RENDERDATA_NORMALEFFCT);
-			//三角网格显示
+		//renderData.SetRenderTypes(RenderableTypeGroup::RENDERDATA_NORMALEFFCT);
+		//三角网格显示
 		Parameters::Instance()->m_IsShowTrilateralEdge =
-				!Parameters::Instance()->m_IsShowTrilateralEdge;
+		    !Parameters::Instance()->m_IsShowTrilateralEdge;
 
 		if (Parameters::Instance()->m_IsShowTrilateralEdge == true) {
 			RenderManager::isShowTriLine = true;
@@ -1676,10 +1679,10 @@ void View::SetDrawMode(int drawMode) {
 			m_Model->ResetAlpha();
 		break;
 	case 7: //
-			//包围盒显示
-			//renderData.Open(RenderableType::RGT_BOX);
+		//包围盒显示
+		//renderData.Open(RenderableType::RGT_BOX);
 		Parameters::Instance()->m_IsShowBox =
-				!Parameters::Instance()->m_IsShowBox;
+		    !Parameters::Instance()->m_IsShowBox;
 		if (Parameters::Instance()->m_IsShowBox == true) {
 			renderData.Open(RenderableType::RGT_BOX);
 		} else if (Parameters::Instance()->m_IsShowBox == false) {
@@ -1758,7 +1761,7 @@ int View::AddHandle(float x, float y, int type) {
 }
 
 Vector3 View::GetSelectedPoint(float x, float y, int type,
-		bool inModel/* = true*/) {
+                               bool inModel/* = true*/) {
 	M3D::Vector3 vec = this->GetSceneManager()->GetPickPoint(x, y, inModel);
 
 	return vec;
@@ -1790,65 +1793,61 @@ int View::AddShape(float x, float y, float z, int type) {
 }
 
 void View::RemoveShape(int id) {
-        bool isRemove = true;
-        bool isNote = false;
-        //当前视图关联note
+	bool isRemove = true;
+	bool isNote = false;
+	//当前视图关联note
 	if (m_curModelView) {
 		vector<int> ids = m_curModelView->GetNoteList();
 		vector<int>::iterator it = find(ids.begin(), ids.end(), id);
 		if (it != ids.end()) {
-                isRemove = true;
-                isNote = true;
+			isRemove = true;
+			isNote = true;
 		}
 	}
-        //判断是否和其他视图关联
-        vector<ModelView*>* allViews = this->GetSceneManager()->GetModel()->GetModelViewList();
-        if (allViews) {
-            for (vector<ModelView*>::iterator it = allViews->begin(); it != allViews->end(); it++)
-            {
-                if (m_curModelView && (*it) != m_curModelView) {
-                    vector<int> ids = (*it)->GetNoteList();
-                    vector<int>::iterator result = find( ids.begin( ), ids.end( ), id ); //查找
-                    if ( result != ids.end( ) ) //找到
-                    {
-                        isRemove = false;
-                        break;
-                    }
-                }
-            }
-        }
-	LOGE("View::RemoveShape");
-        //TODO 视图关联note是否可删除
-        if (isRemove == true) {
-		this->GetSceneManager()->RemoveShape(id);
-        }else if (isNote){
-            //显示关联的批注信息
-            NoteGroup* pNoteGroup = this->GetSceneManager()->GetNoteGroup();
-            for (int j = 0; j < pNoteGroup->Size(); j++)
-            {
-                SceneNode* pNode = pNoteGroup->GetChild(j);
-                if (!pNode)
-                    continue;
-                IShape* pShape = ((ShapeNode*)pNode)->GetShape();
-                if (pShape && id == pShape->GetID())
-                {
-                    pNode->SetVisible(false);
-                    pShape->SetVisible(false);
-                    break;
-                }
-            }
-        }
-        if (isNote) {
-            if (m_curModelView) {
-                vector<int> ids = m_curModelView->GetNoteList();
-                vector<int>::iterator it = find(ids.begin(),ids.end(),id);
-                if (it != ids.end()) {
-                    ids.erase(it);
-                    m_curModelView->SetNoteIds(ids);
-                }
-            }
-        }
+	//判断是否和其他视图关联
+	vector<ModelView*>* allViews = this->GetSceneManager()->GetModel()->GetModelViewList();
+	if (allViews) {
+		for (vector<ModelView*>::iterator it = allViews->begin(); it != allViews->end(); it++) {
+			if (m_curModelView && (*it) != m_curModelView) {
+				vector<int> ids = (*it)->GetNoteList();
+				vector<int>::iterator result = find( ids.begin( ), ids.end( ), id ); //查找
+				if ( result != ids.end( ) ) { //找到
+					isRemove = false;
+					break;
+				}
+			}
+		}
 	}
+	LOGE("View::RemoveShape");
+	//TODO 视图关联note是否可删除
+	if (isRemove == true) {
+		this->GetSceneManager()->RemoveShape(id);
+	} else if (isNote) {
+		//显示关联的批注信息
+		NoteGroup* pNoteGroup = this->GetSceneManager()->GetNoteGroup();
+		for (int j = 0; j < pNoteGroup->Size(); j++) {
+			SceneNode* pNode = pNoteGroup->GetChild(j);
+			if (!pNode)
+				continue;
+			IShape* pShape = ((ShapeNode*)pNode)->GetShape();
+			if (pShape && id == pShape->GetID()) {
+				pNode->SetVisible(false);
+				pShape->SetVisible(false);
+				break;
+			}
+		}
+	}
+	if (isNote) {
+		if (m_curModelView) {
+			vector<int> ids = m_curModelView->GetNoteList();
+			vector<int>::iterator it = find(ids.begin(),ids.end(),id);
+			if (it != ids.end()) {
+				ids.erase(it);
+				m_curModelView->SetNoteIds(ids);
+			}
+		}
+	}
+}
 
 void View::GetShapePos(int id, int type, float* p) {
 	M3D::Vector3 pos;
@@ -1896,7 +1895,7 @@ void View::AddPoint(int parentId, int parentType, float pntBuf[]) {
 }
 
 void View::AddLine(int parentId, int parentType, float startPointBuf[],
-		float endPointBuf[], int width, int startArrow, int endArrow) {
+                   float endPointBuf[], int width, int startArrow, int endArrow) {
 	Vector3 pnt1(startPointBuf[0], startPointBuf[1], startPointBuf[2]);
 	Vector3 pnt2(endPointBuf[0], endPointBuf[1], endPointBuf[2]);
 	Line3D* line = new Line3D(&pnt1, &pnt2);
@@ -1914,7 +1913,7 @@ void View::AddLine(int parentId, int parentType, float startPointBuf[],
 }
 
 void View::AddPolyLine(int parentId, int parentType, int pointCnt,
-		float pointBuf[], int indexCnt, M3D_INDEX_TYPE indexBuf[]) {
+                       float pointBuf[], int indexCnt, M3D_INDEX_TYPE indexBuf[]) {
 	LOGI("View::AddPolyLine");
 	PolyLine *pPolyLine = new PolyLine();
 	pPolyLine->SetBuffer(pointCnt, pointBuf, indexCnt, indexBuf);
@@ -1930,7 +1929,7 @@ void View::AddPolyLine(int parentId, int parentType, int pointCnt,
 }
 
 void View::AddText(int parentId, int parentType, float posBuf[], string text,
-		float fontSize) {
+                   float fontSize) {
 	LOGI("View::AddText '%s'", text.c_str());
 	//临时这样用
 	ComText* ct = new ComText();
@@ -1974,7 +1973,7 @@ void View::ShowModelView(int viewId, bool isAnni) {
 	m_curModelView = pView;
 	//老版本设计器中创建的剖面也保存为自定义视图，剖面数据不应执行视图切换处理
 	if (pView->GetSvlUseType()
-			== M3D::ModelView::ViewSvlUseTypeEnum::VIEW_USAGE_USER_CLIPPLANE) {
+	        == M3D::ModelView::ViewSvlUseTypeEnum::VIEW_USAGE_USER_CLIPPLANE) {
 		this->m_SceneManager->UnLock();
 		return;
 	}
@@ -1998,8 +1997,8 @@ void View::ShowModelView(int viewId, bool isAnni) {
 			currentCamera->SetOrthographic(camera.IsOrthographic());
 			if (currentCamera->IsOrthographic()) {
 				currentCamera->SetZoom(
-						currentCamera->GetOrthoSize() / camera.GetOrthoSize()
-								* camera.GetZoom());
+				    currentCamera->GetOrthoSize() / camera.GetOrthoSize()
+				    * camera.GetZoom());
 			} else {
 				//currentCamera->SetZoom(camera.GetZoom());
 				float defaultZoom = m_SceneManager->GetDefaultZoom();
@@ -2014,7 +2013,7 @@ void View::ShowModelView(int viewId, bool isAnni) {
 				if (sceneBox.IsInside(cameraPos) == INSIDE) {
 					Matrix3 viewMat = currentCamera->GetView().ToMatrix3();
 					Vector3 direction(viewMat.m_m20, viewMat.m_m21,
-							viewMat.m_m22);
+					                  viewMat.m_m22);
 					direction.Normalize();
 					Vector3 newPos = cameraPos + direction * sceneBox.Length();
 					currentCamera->SetWorldPosition(newPos);
@@ -2028,9 +2027,9 @@ void View::ShowModelView(int viewId, bool isAnni) {
 
 			//insAtt
 			const map<int, InstanceAttribute>& insAttMap =
-					pView->GetInstanceAttributeMap();
+			    pView->GetInstanceAttributeMap();
 			for (map<int, InstanceAttribute>::const_iterator it =
-					insAttMap.begin(); it != insAttMap.end(); it++) {
+			            insAttMap.begin(); it != insAttMap.end(); it++) {
 				const InstanceAttribute &curInsAtt = it->second;
 
 				IShape* shape = this->GetShapeBySVLPath(curInsAtt.path);
@@ -2041,8 +2040,8 @@ void View::ShowModelView(int viewId, bool isAnni) {
 						Color tmpColor = curInsAtt.insColor;
                         //TODO 贴图类型
                         if (tmpColor != Color(0.0, 0.0, 0.0, 1.0)) {
-                            curModel->SetColor(tmpColor);
-                        }
+						curModel->SetColor(tmpColor);
+					}
 					}
 					//ModelShape* shapeNode = curModel->GetModelShape();
 					//if (shapeNode)
@@ -2055,16 +2054,16 @@ void View::ShowModelView(int viewId, bool isAnni) {
 
 					Matrix3x4 transform = curInsAtt.placeMatrix;
 					if ((int) transform.m_m00 == 0 && (int) transform.m_m01 == 0
-							&& (int) transform.m_m02 == 0
-							&& (int) transform.m_m03 == 0
-							&& (int) transform.m_m10 == 0
-							&& (int) transform.m_m11 == 0
-							&& (int) transform.m_m12 == 0
-							&& (int) transform.m_m13 == 0
-							&& (int) transform.m_m20 == 0
-							&& (int) transform.m_m21 == 0
-							&& (int) transform.m_m22 == 0
-							&& (int) transform.m_m23 == 0) {
+					        && (int) transform.m_m02 == 0
+					        && (int) transform.m_m03 == 0
+					        && (int) transform.m_m10 == 0
+					        && (int) transform.m_m11 == 0
+					        && (int) transform.m_m12 == 0
+					        && (int) transform.m_m13 == 0
+					        && (int) transform.m_m20 == 0
+					        && (int) transform.m_m21 == 0
+					        && (int) transform.m_m22 == 0
+					        && (int) transform.m_m23 == 0) {
 						continue;
 					}
 					ModelShape* modelshape = curModel->GetModelShape();
@@ -2113,13 +2112,13 @@ void View::ShowModelView(int viewId, bool isAnni) {
 			//如果视图名为“DEFAULT”则显示所有PMI
 			if (pView->GetViewType() == 0) {
 				for (map<int, PMIData*>::iterator itPMI = pmis->begin();
-						itPMI != pmis->end(); itPMI++) {
+				        itPMI != pmis->end(); itPMI++) {
 					(*itPMI).second->SetVisible(true);
 				}
 			} else { //否则只显示当前视图关联的PMI
-					 //首先所有PMI设为隐藏
+				//首先所有PMI设为隐藏
 				for (map<int, PMIData*>::iterator itPMI = pmis->begin();
-						itPMI != pmis->end(); itPMI++) {
+				        itPMI != pmis->end(); itPMI++) {
 					(*itPMI).second->SetVisible(false);
 				}
 
@@ -2169,37 +2168,37 @@ void View::ShowModelView(int viewId, bool isAnni) {
 					}
 				}
 				if (isCreate
-						&& GetTextJsonData(StringHelper::IntToString(iNoteID))
-								!= M3D::NO_VALUE) {
+				        && GetTextJsonData(StringHelper::IntToString(iNoteID))
+				        != M3D::NO_VALUE) {
 					string jsonValue = GetTextJsonData(
-							StringHelper::IntToString(iNoteID));
+					                       StringHelper::IntToString(iNoteID));
 					Note *pNode = NoteFactory::CreateTextNoteFromJSON(
-							this->GetSceneManager(), jsonValue);
+					                  this->GetSceneManager(), jsonValue);
 				}
 				if (isCreate
-						&& GetSequenceJsonData(
-								StringHelper::IntToString(iNoteID))
-								!= M3D::NO_VALUE) {
+				        && GetSequenceJsonData(
+				            StringHelper::IntToString(iNoteID))
+				        != M3D::NO_VALUE) {
 					string jsonValue = GetSequenceJsonData(
-							StringHelper::IntToString(iNoteID));
+					                       StringHelper::IntToString(iNoteID));
 					Note *pNode = NoteFactory::CreateSequenceNoteFromJSON(
-							this->GetSceneManager(), jsonValue);
+					                  this->GetSceneManager(), jsonValue);
 				}
 				if (isCreate
-						&& GetGestureJsonData(
-								StringHelper::IntToString(iNoteID))
-								!= M3D::NO_VALUE) {
+				        && GetGestureJsonData(
+				            StringHelper::IntToString(iNoteID))
+				        != M3D::NO_VALUE) {
 					string jsonValue = GetGestureJsonData(
-							StringHelper::IntToString(iNoteID));
+					                       StringHelper::IntToString(iNoteID));
 					Note *pNode = NoteFactory::CreateThreeDGestureNoteFromJson(
-							this->GetSceneManager(), jsonValue);
+					                  this->GetSceneManager(), jsonValue);
 				}
 			}
 		}
 
 		//文本批注
 		AnnotationGroup* pAnnotationGroup =
-				this->GetSceneManager()->GetAnnotationGroup();
+		    this->GetSceneManager()->GetAnnotationGroup();
 		if (pAnnotationGroup) {
 			int iAnnotationCount = pAnnotationGroup->Size();
 			//隐藏所有批注
@@ -2230,7 +2229,7 @@ void View::ShowModelView(int viewId, bool isAnni) {
 
 		//测量批注
 		MeasureGroup* pMeasureGroup =
-				this->GetSceneManager()->GetMeasureGroup();
+		    this->GetSceneManager()->GetMeasureGroup();
 		if (pMeasureGroup) {
 			int iMeasureCount = pMeasureGroup->Size();
 			//隐藏所有批注
@@ -2275,7 +2274,7 @@ void View::ShowModelViewAnimation(ModelView *pView) {
 		return;
 	int iCurrentBehaviorActionID = m_pSAManager->GetCurSAID();
 	NS_SimulationAnimation::CSBehaviorAction* pChgViewBehaviorAction =
-			m_pSAManager->GetAnimationStepManager()->GetBehaviorActionChgCam();
+	    m_pSAManager->GetAnimationStepManager()->GetBehaviorActionChgCam();
 
 	if (!pChgViewBehaviorAction) {
 		return;
@@ -2303,7 +2302,7 @@ void View::ShowModelViewAnimation(ModelView *pView) {
 		Quaternion curCamRotaion = currentCamera->GetRotation();
 		Matrix4 curCamMatrix(curCamPos, curCamRotaion, 1.0f);
 		Vector3 curDirection(-curCamMatrix.m_m02, -curCamMatrix.m_m12,
-				-curCamMatrix.m_m22);
+		                     -curCamMatrix.m_m22);
 		curCamPos = curCamPos.Add(curDirection.Multiply(fFlocalDistance));
 		//curCamMatrix.SetTranslation(curCamPos);
 		curCamMatrix = curCamMatrix.Transpose();
@@ -2342,15 +2341,15 @@ void View::ShowModelViewAnimation(ModelView *pView) {
 		} else {
 			double fHeightAngle = 1.0;
 			fCurInitWind[1] = (float) (fFlocalDistance * 2.0
-					* tan(fHeightAngle / 2.0));
+			                           * tan(fHeightAngle / 2.0));
 			fCurInitWind[0] =
-					fCurInitWind[1]
-							* currentCamera->GetAspectRatio()/* * (cameraOrthoSize.m_x / cameraOrthoSize.m_y)*/;
+			    fCurInitWind[1]
+			    * currentCamera->GetAspectRatio()/* * (cameraOrthoSize.m_x / cameraOrthoSize.m_y)*/;
 			fCurScale = 1.0f;
 		}
 
 		pAnimationAPI->RecCamera(fCenter, fCurMatrix, fCurScale, fCurInitWind,
-				true, pChgViewBehaviorAction);
+		                         true, pChgViewBehaviorAction);
 
 		//目标状态
 		Vector3 newCamPos = camera.GetPosition();
@@ -2358,9 +2357,9 @@ void View::ShowModelViewAnimation(ModelView *pView) {
 		Matrix4 newCamMatrix(newCamPos, newCamRotaion, 1.0f);
 
 		Vector3 direction(-newCamMatrix.m_m02, -newCamMatrix.m_m12,
-				-newCamMatrix.m_m22);
+		                  -newCamMatrix.m_m22);
 		newCamPos = newCamPos.Add(
-				direction.Multiply(sceneBox.Size().Length() * 0.8f));
+		                direction.Multiply(sceneBox.Size().Length() * 0.8f));
 		//newCamMatrix.SetTranslation(newCamPos);
 		newCamMatrix = newCamMatrix.Transpose();
 		float fNewMatrix[4][4];
@@ -2408,7 +2407,7 @@ void View::ShowModelViewAnimation(ModelView *pView) {
 		}
 
 		pAnimationAPI->RecCamera(fCenter, fNewMatrix, fNewScale, fNewInitWind,
-				true, pChgViewBehaviorAction);
+		                         true, pChgViewBehaviorAction);
 	}
 
 	//更新零件状态
@@ -2420,7 +2419,7 @@ void View::ShowModelViewAnimation(ModelView *pView) {
 		//	pChgViewBehaviorAction->SetCurrentTick(pChgViewBehaviorAction->GetCurrentTick() + 10);
 		//insAtt
 		const map<int, InstanceAttribute>& insAttMap =
-				pView->GetInstanceAttributeMap();
+		    pView->GetInstanceAttributeMap();
 
 		Vector3 boxCenter = Vector3::ZERO;
 
@@ -2433,7 +2432,7 @@ void View::ShowModelViewAnimation(ModelView *pView) {
 		VHPointArray aInsCenter;
 		char plcID[1024];
 		for (map<int, InstanceAttribute>::const_iterator it = insAttMap.begin();
-				it != insAttMap.end(); it++) {
+		        it != insAttMap.end(); it++) {
 			const InstanceAttribute &curInsAtt = it->second;
 
 			IShape* shape = this->GetShapeBySVLPath(curInsAtt.path);
@@ -2461,16 +2460,16 @@ void View::ShowModelViewAnimation(ModelView *pView) {
 				plcMatrix = *pModel->GetPlaceMatrix();
 				Matrix3x4 transform = curInsAtt.placeMatrix;
 				if ((int) transform.m_m00 == 0 && (int) transform.m_m01 == 0
-						&& (int) transform.m_m02 == 0
-						&& (int) transform.m_m03 == 0
-						&& (int) transform.m_m10 == 0
-						&& (int) transform.m_m11 == 0
-						&& (int) transform.m_m12 == 0
-						&& (int) transform.m_m13 == 0
-						&& (int) transform.m_m20 == 0
-						&& (int) transform.m_m21 == 0
-						&& (int) transform.m_m22 == 0
-						&& (int) transform.m_m23 == 0) {
+				        && (int) transform.m_m02 == 0
+				        && (int) transform.m_m03 == 0
+				        && (int) transform.m_m10 == 0
+				        && (int) transform.m_m11 == 0
+				        && (int) transform.m_m12 == 0
+				        && (int) transform.m_m13 == 0
+				        && (int) transform.m_m20 == 0
+				        && (int) transform.m_m21 == 0
+				        && (int) transform.m_m22 == 0
+				        && (int) transform.m_m23 == 0) {
 					continue;
 				}
 
@@ -2480,7 +2479,7 @@ void View::ShowModelViewAnimation(ModelView *pView) {
 
 				strPlcID = pModel->GetPlcPath();
 				pAnimationAPI->ConvertPlcPathToSAPlcPath(strPlcID.c_str(),
-						plcID, 16, 0);
+				        plcID, 16, 0);
 				saPlcID = plcID;
 				aInsPlcPath.Append(saPlcID);
 
@@ -2525,8 +2524,8 @@ void View::ShowModelViewAnimation(ModelView *pView) {
 		//动画录制
 
 		pAnimationAPI->RecInsPosRot(aInsPlcPath, aInsName, aInsStartTranslate,
-				aInsEndTranslate, aInsStartRotaion, aInsEndRotaion, aInsCenter,
-				true, false, pChgViewBehaviorAction);
+		                            aInsEndTranslate, aInsStartRotaion, aInsEndRotaion, aInsCenter,
+		                            true, false, pChgViewBehaviorAction);
 	}
 	pAnimationAPI->m_bShowRecUI = bTempShowRecUI;
 	//pAnimationAPI->m_numAutoKeyFrame = iTempNumAutoKeyFrame;
@@ -2650,7 +2649,7 @@ bool View::LoadAllUserViews(string &xmlPath) {
 	}
 
 	if (this->GetModel()->GetModelViewList()
-			&& this->GetModel()->GetModelViewList()->size() > 0) {
+	        && this->GetModel()->GetModelViewList()->size() > 0) {
 		ret = true;
 	}
 
@@ -2697,7 +2696,7 @@ View::GetDefaultModelView() {
 		vector<ModelView*>* allViews = GetModel()->GetModelViewList();
 		if (allViews) {
 			for (vector<ModelView*>::iterator it = allViews->begin();
-					it != allViews->end(); it++) {
+			        it != allViews->end(); it++) {
 				if ((*it)->GetViewType() == ModelView::DefaultView) {
 					defaultView = *it;
 					LOGI("DefaultModelView found!");
@@ -2800,7 +2799,7 @@ bool View::UpdateViewByCurrentScene(ModelView* newView) {
 	//记录场景中的剖面ID
 	if (this->GetSceneManager()->GetSectionNode()) {
 		Section* pSection =
-				this->GetSceneManager()->GetSectionNode()->GetSection();
+		    this->GetSceneManager()->GetSectionNode()->GetSection();
 		if (pSection) {
 			Model* topModel = this->GetSceneManager()->GetModel();
 			newView->ClearSectionPlaneId();
@@ -2831,7 +2830,7 @@ bool View::UpdateViewByCurrentScene(ModelView* newView) {
 		map<int, PMIData*>* pmis = topModel->GetPMIs();
 		if (pmis != NULL && pmis->size() > 0) {
 			for (map<int, PMIData*>::iterator itPMI = pmis->begin();
-					itPMI != pmis->end(); itPMI++) {
+			        itPMI != pmis->end(); itPMI++) {
 				if (!(*itPMI).second)
 					continue;
 				if ((*itPMI).second->IsVisible()) {
@@ -2869,9 +2868,9 @@ bool View::UpdateViewByCurrentScene(ModelView* newView) {
 						vecNoteIds.push_back(pNote->GetID());
 
 						string noteData = NoteFactory::TextNoteToXMLElement(
-								this->GetSceneManager(), pNote);
+						                      this->GetSceneManager(), pNote);
 						newView->GetNoteDataList(SHAPE_TEXT_NOTE)->push_back(
-								noteData);
+						    noteData);
 
 					} else if (shape->GetType() == SHAPE_VOICE_NOTE) {
 						LOGI("UpdateViewByCurrentScene::SHAPE_VOICE_NOTE");
@@ -2881,34 +2880,34 @@ bool View::UpdateViewByCurrentScene(ModelView* newView) {
 						vecNoteIds.push_back(pNote->GetID());
 
 						string noteData = NoteFactory::VoiceNoteToXMLElement(
-								this->GetSceneManager(), pNote);
+						                      this->GetSceneManager(), pNote);
 						newView->GetNoteDataList(SHAPE_VOICE_NOTE)->push_back(
-								noteData);
+						    noteData);
 					} else if (shape->GetType() == SHAPE_SEQUENCE_NUMBER_NOTE) {
 						LOGI(
-								"UpdateViewByCurrentScene::SHAPE_SEQUENCE_NUMBER_NOTE");
+						    "UpdateViewByCurrentScene::SHAPE_SEQUENCE_NUMBER_NOTE");
 						SequenceNumberNote* pNote = (SequenceNumberNote *) shape;
 
 						//在此处填充View中使用的TextNote ID。//TODO
 						vecNoteIds.push_back(pNote->GetID());
 
 						string noteData = NoteFactory::SequenceNoteToXMLElement(
-								this->GetSceneManager(), pNote);
+						                      this->GetSceneManager(), pNote);
 						newView->GetNoteDataList(SHAPE_SEQUENCE_NUMBER_NOTE)->push_back(
-								noteData);
+						    noteData);
 					} else if (shape->GetType() == SHAPE_THREED_GESTURE_NOTE) {
 						LOGI(
-								"UpdateViewByCurrentScene::SHAPE_THREED_GESTURE_NOTE");
+						    "UpdateViewByCurrentScene::SHAPE_THREED_GESTURE_NOTE");
 						ThreeDGesturesNote* pNote = (ThreeDGesturesNote *) shape;
 
 						//在此处填充View中使用的TextNote ID。//TODO
 						vecNoteIds.push_back(pNote->GetID());
 
 						string noteData =
-								NoteFactory::ThreeDGestureNoteToXMLElement(
-										this->GetSceneManager(), pNote);
+						    NoteFactory::ThreeDGestureNoteToXMLElement(
+						        this->GetSceneManager(), pNote);
 						newView->GetNoteDataList(SHAPE_THREED_GESTURE_NOTE)->push_back(
-								noteData);
+						    noteData);
 					}
 
 				}
@@ -2917,7 +2916,7 @@ bool View::UpdateViewByCurrentScene(ModelView* newView) {
 
 		//文本批注
 		AnnotationGroup* pAnnotationGroup =
-				this->GetSceneManager()->GetAnnotationGroup();
+		    this->GetSceneManager()->GetAnnotationGroup();
 		if (pAnnotationGroup && pAnnotationGroup->Size() > 0) {
 			int iAnnotationCount = pAnnotationGroup->Size();
 			for (int i = 0; i < iAnnotationCount; i++) {
@@ -2934,7 +2933,7 @@ bool View::UpdateViewByCurrentScene(ModelView* newView) {
 
 		//测量批注
 		MeasureGroup* pMeasureGroup =
-				this->GetSceneManager()->GetMeasureGroup();
+		    this->GetSceneManager()->GetMeasureGroup();
 		if (pMeasureGroup && pMeasureGroup->Size() > 0) {
 			int iMeasureCount = pMeasureGroup->Size();
 			for (int i = 0; i < iMeasureCount; i++) {
@@ -2953,12 +2952,13 @@ bool View::UpdateViewByCurrentScene(ModelView* newView) {
 	}
 
 	LOGI(
-			"voice note number = %d", newView->GetNoteDataList(SHAPE_VOICE_NOTE)->size());
+	    "voice note number = %d", newView->GetNoteDataList(SHAPE_VOICE_NOTE)->size());
 
 	LOGI("end update textnote by current scene");
 
 	ret = true;
-	RET: return ret;
+RET:
+	return ret;
 
 }
 
@@ -3063,7 +3063,7 @@ bool View::UpdateSpecialViewByCurrentScene(ModelView* newView) {
 	//记录场景中的剖面ID
 	if (this->GetSceneManager()->GetSectionNode()) {
 		Section* pSection =
-				this->GetSceneManager()->GetSectionNode()->GetSection();
+		    this->GetSceneManager()->GetSectionNode()->GetSection();
 		if (pSection) {
 			Model* topModel = this->GetSceneManager()->GetModel();
 			newView->ClearSectionPlaneId();
@@ -3109,7 +3109,7 @@ bool View::UpdateSpecialViewByCurrentScene(ModelView* newView) {
 		map<int, PMIData*>* pmis = topModel->GetPMIs();
 		if (pmis != NULL && pmis->size() > 0) {
 			for (map<int, PMIData*>::iterator itPMI = pmis->begin();
-					itPMI != pmis->end(); itPMI++) {
+			        itPMI != pmis->end(); itPMI++) {
 				if (!(*itPMI).second)
 					continue;
 				if ((*itPMI).second->IsVisible()) {
@@ -3152,9 +3152,9 @@ bool View::UpdateSpecialViewByCurrentScene(ModelView* newView) {
 						vecNoteIds.push_back(pNote->GetID());
 
 						string noteData = NoteFactory::TextNoteToXMLElement(
-								this->GetSceneManager(), pNote);
+						                      this->GetSceneManager(), pNote);
 						newView->GetNoteDataList(SHAPE_TEXT_NOTE)->push_back(
-								noteData);
+						    noteData);
 
 					} else if (shape->GetType() == SHAPE_VOICE_NOTE) {
 						LOGI("UpdateViewByCurrentScene::SHAPE_VOICE_NOTE");
@@ -3164,34 +3164,34 @@ bool View::UpdateSpecialViewByCurrentScene(ModelView* newView) {
 						vecNoteIds.push_back(pNote->GetID());
 
 						string noteData = NoteFactory::VoiceNoteToXMLElement(
-								this->GetSceneManager(), pNote);
+						                      this->GetSceneManager(), pNote);
 						newView->GetNoteDataList(SHAPE_VOICE_NOTE)->push_back(
-								noteData);
+						    noteData);
 					} else if (shape->GetType() == SHAPE_SEQUENCE_NUMBER_NOTE) {
 						LOGI(
-								"UpdateViewByCurrentScene::SHAPE_SEQUENCE_NUMBER_NOTE");
+						    "UpdateViewByCurrentScene::SHAPE_SEQUENCE_NUMBER_NOTE");
 						SequenceNumberNote* pNote = (SequenceNumberNote *) shape;
 
 						//在此处填充View中使用的TextNote ID。//TODO
 						vecNoteIds.push_back(pNote->GetID());
 
 						string noteData = NoteFactory::SequenceNoteToXMLElement(
-								this->GetSceneManager(), pNote);
+						                      this->GetSceneManager(), pNote);
 						newView->GetNoteDataList(SHAPE_SEQUENCE_NUMBER_NOTE)->push_back(
-								noteData);
+						    noteData);
 					} else if (shape->GetType() == SHAPE_THREED_GESTURE_NOTE) {
 						LOGI(
-								"UpdateViewByCurrentScene::SHAPE_THREED_GESTURE_NOTE");
+						    "UpdateViewByCurrentScene::SHAPE_THREED_GESTURE_NOTE");
 						ThreeDGesturesNote* pNote = (ThreeDGesturesNote *) shape;
 
 						//在此处填充View中使用的TextNote ID。//TODO
 						vecNoteIds.push_back(pNote->GetID());
 
 						string noteData =
-								NoteFactory::ThreeDGestureNoteToXMLElement(
-										this->GetSceneManager(), pNote);
+						    NoteFactory::ThreeDGestureNoteToXMLElement(
+						        this->GetSceneManager(), pNote);
 						newView->GetNoteDataList(SHAPE_THREED_GESTURE_NOTE)->push_back(
-								noteData);
+						    noteData);
 					}
 
 				}
@@ -3242,7 +3242,7 @@ bool View::UpdateSpecialViewByCurrentScene(ModelView* newView) {
 	}
 
 	LOGI(
-			"voice note number = %d", newView->GetNoteDataList(SHAPE_VOICE_NOTE)->size());
+	    "voice note number = %d", newView->GetNoteDataList(SHAPE_VOICE_NOTE)->size());
 
 	LOGI("end update textnote by current scene");
 
@@ -3277,7 +3277,8 @@ bool View::UpdateSpecialViewByCurrentScene(ModelView* newView) {
 	//	delete action;
 	//LOGI("View::UpdateViewByCurrentScene end.");
 	ret = true;
-	RET: return ret;
+RET:
+	return ret;
 
 }
 
@@ -3414,7 +3415,7 @@ bool View::AnimationOpenXMLData(const string& xmlData) {
 
 	if (m_pSAManager == NULL) {
 		m_pSAManager =
-				new NS_SimulationAnimation::CSimulationAnimationManager();
+		    new NS_SimulationAnimation::CSimulationAnimationManager();
 	}
 	if (pTDriver == NULL) {
 		pTDriver = new CTickTimer();
@@ -3455,7 +3456,7 @@ bool View::AnimationOpen(const string& file) {
 	LOGI("AnimationOpen  000000000");
 	if (m_pSAManager == NULL) {
 		m_pSAManager =
-				new NS_SimulationAnimation::CSimulationAnimationManager();
+		    new NS_SimulationAnimation::CSimulationAnimationManager();
 	}
 	if (pTDriver == NULL) {
 		pTDriver = new CTickTimer();
@@ -3485,7 +3486,7 @@ bool View::AnimationOpen(const string& file) {
 		m_bHasAni = true;
 	} else {
 		m_pSAManager->SetSAFilePath(
-				(wchar_t*) Platform::StringToWString(tempFile, "auto").c_str());
+		    (wchar_t*) Platform::StringToWString(tempFile, "auto").c_str());
 	}
 
 	m_isNeedChangeViewAnimation = true;
@@ -3531,13 +3532,13 @@ void View::SetCameraProjectionType(int projectionType) {
 			float lenght = m_SceneManager->GetDefaultFocusLength();
 
 			float dis = (lenght / 90) * zoomFactor
-					/ (Tan(cameraFov * 0.5f / 180.f * static_cast<float>(M_PI))
-							* 2.f);
+			            / (Tan(cameraFov * 0.5f / 180.f * static_cast<float>(M_PI))
+			               * 2.f);
 
 			camera->SetWorldPosition(
-					rotateCenter
-							+ (cameraWorldPos - rotateCenter).Normalized()
-									* dis);
+			    rotateCenter
+			    + (cameraWorldPos - rotateCenter).Normalized()
+			    * dis);
 
 			camera->SetOrthographic(false);
 
@@ -3563,14 +3564,14 @@ void View::SetCameraProjectionType(int projectionType) {
 			float lenght = m_SceneManager->GetDefaultFocusLength();
 
 			float zoomFactor = (rotateCenter - cameraWorldPos).Length()
-					/ (lenght / 90)
-					* (Tan(cameraFov * 0.5f / 180.f * static_cast<float>(M_PI))
-							* 2.f);
+			                   / (lenght / 90)
+			                   * (Tan(cameraFov * 0.5f / 180.f * static_cast<float>(M_PI))
+			                      * 2.f);
 
 			camera->SetWorldPosition(
-					rotateCenter
-							+ (cameraWorldPos - rotateCenter).Normalized()
-									* lenght);
+			    rotateCenter
+			    + (cameraWorldPos - rotateCenter).Normalized()
+			    * lenght);
 
 			camera->ZoomView(1 / zoomFactor);
 			camera->SetOrthographic(true);
@@ -3607,19 +3608,18 @@ void View::FoucusView(BoundingBox& foucusBox, bool useAni) {
 	Quaternion disRotation;
 	Vector3 disScale;
 
-	if (camera && camera->IsOrthographic()) //平行投影聚焦显示
-			{
+	if (camera && camera->IsOrthographic()) { //平行投影聚焦显示
 		Vector3 center = foucusBox.Center();
 		IntVector2 scrPnt = camera->GetViewPort().WorldToScreenPoint(center);
 		IntVector2 scrCenter = camera->GetViewPort().GetRect().Center();
 
 		//从屏幕上的一点移动到另一点
 		Vector3 m_cacheCurPointNear =
-				/* camera->GetView()* */camera->GetViewPort().ScreenToWorldPoint(
-						scrPnt.m_x, scrPnt.m_y, 0.5f);
+		    /* camera->GetView()* */camera->GetViewPort().ScreenToWorldPoint(
+		        scrPnt.m_x, scrPnt.m_y, 0.5f);
 		Vector3 m_cachePriPoint =
-				/*camera->GetView()* */camera->GetViewPort().ScreenToWorldPoint(
-						scrCenter.m_x, scrCenter.m_y, 0.5f);
+		    /*camera->GetView()* */camera->GetViewPort().ScreenToWorldPoint(
+		        scrCenter.m_x, scrCenter.m_y, 0.5f);
 
 		//设置位置到合理值
 		Vector3 moveVector = m_cacheCurPointNear - m_cachePriPoint;
@@ -3635,15 +3635,14 @@ void View::FoucusView(BoundingBox& foucusBox, bool useAni) {
 		defaultZoom = defaultZoom * screenHeight / screenWidth;
 		if (screenHeight > screenWidth) {
 			defaultZoom = defaultZoom * 0.5
-					* (screenWidth * 1.0 / screenHeight);
+			              * (screenWidth * 1.0 / screenHeight);
 		}
 		BoundingBox& sceneBox = scene->GetSceneBox();
 		float scale = Parameters::m_foucsScalFactor * defaultZoom
-				* sceneBox.Length() / foucusBox.Length();
+		              * sceneBox.Length() / foucusBox.Length();
 		disScale = Vector3(scale, scale, scale);
 		disRotation = camera->GetRotation();
-	} else if (camera && !camera->IsOrthographic()) //处理透视投影
-			{
+	} else if (camera && !camera->IsOrthographic()) { //处理透视投影
 		Vector3 center = foucusBox.Center();
 
 		scene->SetRotationCenter(center);
@@ -3654,7 +3653,7 @@ void View::FoucusView(BoundingBox& foucusBox, bool useAni) {
 		///乘上camera->GetView()将点转换到摄像机eye坐标系，进行求两次的变化量,由于此处摄像机采用继承的方式实现，没有采用节点挂载的方式
 		//此处的部分变换处理算法，待调整为节点挂载的方式后重构。。 TODO
 		Vector3 m_cachePriPoint = camera->GetViewPort().ScreenToWorldPoint(
-				scrCenter.m_x, scrCenter.m_y, fitDepth);
+		                              scrCenter.m_x, scrCenter.m_y, fitDepth);
 		Vector3 m_cacheCurPointNear = center;
 
 		//设置位置到合理值
@@ -3666,7 +3665,7 @@ void View::FoucusView(BoundingBox& foucusBox, bool useAni) {
 		BoundingBox& sceneBox = scene->GetSceneBox();
 
 		float moveFactor = foucusBox.Length()
-				* (1 + Parameters::m_foucsScalFactor);
+		                   * (1 + Parameters::m_foucsScalFactor);
 
 		//Vector3
 		moveVector = (center - cameraPos).Normalized() * moveFactor;
@@ -3679,7 +3678,7 @@ void View::FoucusView(BoundingBox& foucusBox, bool useAni) {
 
 	if (useAni) {
 		this->GetPerspectiveOperator()->ExecuteCommonCameraAnimation(this,
-				disPosition, disRotation, disScale, true, true, true);
+		        disPosition, disRotation, disScale, true, true, true);
 	} else {
 		camera->SetRotation(disRotation);
 		camera->SetWorldPosition(disPosition);
@@ -3711,32 +3710,32 @@ void View::CloseReader() {
 }
 
 int View::GetSVLXFileItem(const std::string& i_strFileName,
-		unsigned int& o_bufSize, char** o_bufP, bool b_ByExt) {
+                          unsigned int& o_bufSize, char** o_bufP, bool b_ByExt) {
 	if (this->m_Reader) {
 		SVL2AsynReader* svl2Reader = dynamic_cast<SVL2AsynReader*>(m_Reader);
 		if (svl2Reader) {
 			return svl2Reader->GetSVLXFileItem(i_strFileName, o_bufSize, o_bufP,
-					b_ByExt);
+			                                   b_ByExt);
 		}
 	}
 	return 0;
 }
 
 M3D_STATUS View::GetSVLXFileItemToFile(const std::string& i_strFileName,
-		const std::string& i_strOutFilePath, bool bByExt) {
+                                       const std::string& i_strOutFilePath, bool bByExt) {
 	if (this->m_Reader) {
 		SVL2AsynReader* svl2Reader = static_cast<SVL2AsynReader*>(m_Reader);
 		if (svl2Reader) {
 			svl2Reader->GetSVLXFileItemToFile(i_strFileName, i_strOutFilePath,
-					bByExt);
+			                                  bByExt);
 			return M_SUCCESS;
 		}
 	}
 	return M_ERROR;
 }
 M3D_STATUS View::CopySVLXFileItemToFileByReOpen(
-		const std::string& i_strFileName, const std::string& i_strOutFilePath,
-		bool bByExt) {
+    const std::string& i_strFileName, const std::string& i_strOutFilePath,
+    bool bByExt) {
 	//如果"readfrombufferXXX.svlx" 是远端模型标识
 	if (m_CurFilePath != "readfrombuffer.svlx") {
 		m_Reader = Reader::GetReader(m_CurFilePath);
@@ -3744,7 +3743,7 @@ M3D_STATUS View::CopySVLXFileItemToFileByReOpen(
 		if (svl2Reader) {
 			LOGI("GetSVLXFileItemToFileByReOpen %s", i_strFileName.c_str());
 			svl2Reader->GetSVLXFileItemToFileByReOpen(m_CurFilePath,
-					i_strFileName, i_strOutFilePath, bByExt);
+			        i_strFileName, i_strOutFilePath, bByExt);
 			if (m_Reader) {
 				delete m_Reader;
 				m_Reader = NULL;
@@ -3761,19 +3760,19 @@ bool View::AsynReadClose() {
 	//设置ocTree区域
 	this->GetSceneManager()->RequestUpdateWhenSceneBoxChanged();
 
-	if (this->GetModel()) { //
-		if (this->GetModel()->GetChildren().size() == 1) {
-			this->RestoreView(false);
-		} else {
-			//this->GetTouchHandler()->SetRestoreCamera(false);
-			this->InitCamera();
-			//this->GetTouchHandler()->SetRestoreCamera(true);
-		}
-	}
-	scene->UnLock();
+//	if (this->GetModel()) { //
+//		if (this->GetModel()->GetChildren().size() == 1) {
+//			this->RestoreView(false);
+//		} else {
+//			//this->GetTouchHandler()->SetRestoreCamera(false);
+//			this->InitCamera();
+//			//this->GetTouchHandler()->SetRestoreCamera(true);
+//		}
+//	}
 	if (SVIEW::Parameters::Instance()->GetLoadExternInfo() && this->m_Reader) {
 		((SVL2AsynReader*) this->m_Reader)->LoadFileInfo();
 	}
+	scene->UnLock();
 	if (this->m_Reader) {
 		delete this->m_Reader;
 		this->m_Reader = NULL;
@@ -3782,7 +3781,7 @@ bool View::AsynReadClose() {
 }
 
 Model* View::AsynGetModel(char* fileBuffer, int length,
-		const string& filePath) {
+                          const string& filePath) {
 	Model* retModel = NULL;
 	SceneManager *scene = this->GetSceneManager();
 	scene->Lock();
@@ -3863,21 +3862,21 @@ Model* View::AsynCreateTopModel() {
 bool View::AsynAddModel(Model* parentModel, Model* addModel) {
 	bool addState = false;
 	addState = this->GetSceneManager()->AsynAddModelToParent(parentModel,
-			addModel);
+	           addModel);
 	return addState;
 }
 
 bool View::AsynRemoveModel(Model* removeModel) {
 	bool removeState = false;
 	removeState = this->GetSceneManager()->AsynRemoveModelFromeScene(
-			removeModel->GetParent(), removeModel);
+	                  removeModel->GetParent(), removeModel);
 	return removeState;
 }
 
 bool View::SetAsynFillModelBuffer(char* fileLength, int bufferLength) {
 	if (this->m_Reader) {
 		((SVL2AsynReader*) this->m_Reader)->ReadFromBuffer(fileLength,
-				bufferLength);
+		        bufferLength);
 	}
 	return true;
 }
@@ -3889,16 +3888,16 @@ M3D_STATUS View::AsynFillModel(Model* singleModel) {
 			SceneManager* scene = this->GetSceneManager();
 			scene->Lock();
 			((SVL2AsynReader*) this->m_Reader)->FillModelMesh(this,
-					singleModel);
+			        singleModel);
 
 			bool checkErrorPoint =
-					SVIEW::Parameters::Instance()->m_IsCheckErrorPoint;
+			    SVIEW::Parameters::Instance()->m_IsCheckErrorPoint;
 			if (checkErrorPoint) {
 				this->ChechErrorPoint(singleModel);
 			}
 
 			this->GetSceneManager()->AsynUpdateModelCacheInfo(singleModel, true,
-					false);
+			        false);
 			scene->UnLock();
 		} catch (const std::bad_alloc& e) {
 			LOGE("AsynFillModel error 1");
@@ -3949,9 +3948,9 @@ void View::AnimationInit() {
 		// 		//TODO 暂时屏蔽场景状态切换到动画播放位置 动画插值
 		if (isUseCamera == false) {
 			this->GetPerspectiveOperator()->SetAnimationFinishCallback(
-					View::AnimationStartCallback, (void*) this);
+			    View::AnimationStartCallback, (void*) this);
 			this->GetPerspectiveOperator()->Apply(this, cameraState, true,
-					false, false);
+			                                      false, false);
 		}
 	}
 
@@ -3994,7 +3993,7 @@ bool View::AnimationPlay() {
 
 	//	LOGI("Java_ht_svbase_natives_Natives_nativeAnimationPlay:");
 	NS_SimulationAnimation::CSBehaviorAction* pBehaviorAction =
-			m_pSAManager->GetCurrentSA();
+	    m_pSAManager->GetCurrentSA();
 
 	if (NULL == pBehaviorAction)
 		return false;
@@ -4009,7 +4008,7 @@ bool View::AnimationPlay() {
 
 	CAnimationStepManager* pStepAni = m_pSAManager->GetAnimationStepManager();
 	if (!m_pSAManager->IsPlaying())
-	//&& m_isNeedChangeViewAnimation)
+		//&& m_isNeedChangeViewAnimation)
 	{
 		//		ControlInfo cameraState;
 		//		bool isUseCamera = this->GetAnimationDisState(cameraState);
@@ -4028,12 +4027,12 @@ bool View::AnimationPlay() {
 			this->SaveAnimatinState();
 
 			pStepAni->SetPlayMode(
-					CAnimationStepManager::AnimationPlayMode::PLAY_MODE_PROCESS);
+			    CAnimationStepManager::AnimationPlayMode::PLAY_MODE_PROCESS);
 
 			pStepAni->Pause();
 			//			pStepAni->StartChangeCamera(pStepAni->GetCurrentProcess());
 			pStepAni->Play(
-					CAnimationStepManager::AnimationPlayMode::PLAY_MODE_PROCESS);
+			    CAnimationStepManager::AnimationPlayMode::PLAY_MODE_PROCESS);
 
 			//			LOGE("palying");
 			this->UpdateDrawLimit();
@@ -4071,7 +4070,7 @@ bool View::AnimationRewind() {
 		return false;
 
 	pStepAni->Rewind(
-			CAnimationStepManager::AnimationPlayMode::PLAY_MODE_PROCESS, false);
+	    CAnimationStepManager::AnimationPlayMode::PLAY_MODE_PROCESS, false);
 
 	this->RestoreAnimationState();
 	//	pBehaviorAction->Rewind();
@@ -4087,7 +4086,7 @@ bool View::AnimationSetTick(float percentage) {
 
 	//	LOGI("Java_ht_svbase_natives_Natives_nativeAnimationSetTick:");
 	NS_SimulationAnimation::CSBehaviorAction* pBehaviorAction =
-			m_pSAManager->GetCurrentSA();
+	    m_pSAManager->GetCurrentSA();
 
 	if (NULL == pBehaviorAction)
 		return false;
@@ -4097,12 +4096,12 @@ bool View::AnimationSetTick(float percentage) {
 
 		pBehaviorAction->SetCurrentTickByPercentage(percentage);
 		pBehaviorAction->ExecuteAnimations(pBehaviorAction->GetCurrentTick(),
-				0);
+		                                   0);
 		pBehaviorAction->Continue();
 	} else {
 		pBehaviorAction->SetCurrentTickByPercentage(percentage);
 		pBehaviorAction->ExecuteAnimations(pBehaviorAction->GetCurrentTick(),
-				0);
+		                                   0);
 	}
 
 	this->m_SceneManager->UnLock();
@@ -4121,7 +4120,7 @@ float View::AnimationGetTick() {
 			CProcess* process = step->GetCurrentProcess();
 			if (process) {
 				NS_SimulationAnimation::CSBehaviorAction* pBehaviorAction =
-						process->GetBehaviorAction();
+				    process->GetBehaviorAction();
 				if (pBehaviorAction) {
 					tick = pBehaviorAction->GetCurrentTickByPercentage();
 				}
@@ -4155,7 +4154,7 @@ bool View::AnimationTransitionIsPlaying() {
 	}
 
 	return (m_pSAManager->GetAnimationStepManager()->GetBehaviorActionChgCam()
-			!= NULL);
+	        != NULL);
 }
 
 bool View::AnimationExecute(float percentage) {
@@ -4163,7 +4162,7 @@ bool View::AnimationExecute(float percentage) {
 
 	//LOGI("Java_ht_svbase_natives_Natives_nativeAnimationExecute:");
 	NS_SimulationAnimation::CSBehaviorAction* pBehaviorAction =
-			m_pSAManager->GetCurrentSA();
+	    m_pSAManager->GetCurrentSA();
 	if (NULL == pBehaviorAction)
 		return false;
 
@@ -4191,14 +4190,14 @@ bool View::AnimationPlaySpeed(float speed) {
 
 	if (speed > 0 && speed < 10 && m_pSAManager != NULL) {
 		NS_SimulationAnimation::CSBehaviorAction* pBehaviorAction =
-				m_pSAManager->GetCurrentSA();
+		    m_pSAManager->GetCurrentSA();
 		if (NULL == pBehaviorAction)
 			return false;
 
 		if (m_pSAManager->IsPlaying()) {
 			pBehaviorAction->Stop();
 			pBehaviorAction->GetSimulationAnimationManager()->SetPlaySpeed(
-					(float) m_animationPlaySpeed);
+			    (float) m_animationPlaySpeed);
 
 			bool bReversPlay = pBehaviorAction->IsReversePlay();
 			pBehaviorAction->ScheduleAllAnimations(true);
@@ -4210,7 +4209,7 @@ bool View::AnimationPlaySpeed(float speed) {
 			}
 		} else {
 			pBehaviorAction->GetSimulationAnimationManager()->SetPlaySpeed(
-					(float) m_animationPlaySpeed);
+			    (float) m_animationPlaySpeed);
 		}
 	} else {
 		LOGE("View::AnimationPlaySpeed allowed speed from 0 to 10");
@@ -4284,8 +4283,8 @@ bool View::SetBackgroundColor(const Color& topColor, const Color& bottomColor) {
 	string backgroundNodePath = BACKGROUNDCOLOR;
 
 	BackgroundNode* backgroundNode =
-			(BackgroundNode*) this->GetSceneManager()->GetSceneRoot()->Search(
-					M3D::BACKGROUNDCOLOR);
+	    (BackgroundNode*) this->GetSceneManager()->GetSceneRoot()->Search(
+	        M3D::BACKGROUNDCOLOR);
 
 	if (backgroundNode != NULL) {
 		backgroundNode->SetTopColor(topColor);
@@ -4301,8 +4300,8 @@ bool View::GetBackgroundColor(Color& topColor, Color& bottomColor) {
 	bool retState = false;
 
 	BackgroundNode* backgroundNode =
-			(BackgroundNode*) this->GetSceneManager()->GetSceneRoot()->Search(
-					M3D::BACKGROUNDCOLOR);
+	    (BackgroundNode*) this->GetSceneManager()->GetSceneRoot()->Search(
+	        M3D::BACKGROUNDCOLOR);
 
 	if (backgroundNode != NULL) {
 		backgroundNode->GetTopColor(topColor);
@@ -4317,8 +4316,8 @@ bool View::GetBackgroundColor(Color& topColor, Color& bottomColor) {
 bool View::SetBackgroundImage(const string& path, int mappingStyle) {
 	bool setState = false;
 	BackgroundNode* backgroundNode =
-			(BackgroundNode*) this->GetSceneManager()->GetSceneRoot()->Search(
-					M3D::BACKGROUNDCOLOR);
+	    (BackgroundNode*) this->GetSceneManager()->GetSceneRoot()->Search(
+	        M3D::BACKGROUNDCOLOR);
 
 	if (backgroundNode != NULL) {
 		backgroundNode->SetImage(path, mappingStyle);
@@ -4331,8 +4330,8 @@ bool View::SetBackgroundImage(const string& path, int mappingStyle) {
 
 void View::SetBackgroundUseImage(bool useImage) {
 	BackgroundNode* backgroundNode =
-			(BackgroundNode*) this->GetSceneManager()->GetSceneRoot()->Search(
-					M3D::BACKGROUNDCOLOR);
+	    (BackgroundNode*) this->GetSceneManager()->GetSceneRoot()->Search(
+	        M3D::BACKGROUNDCOLOR);
 
 	if (backgroundNode != NULL) {
 		backgroundNode->SetUseImage(useImage);
@@ -4343,8 +4342,8 @@ void View::SetBackgroundUseImage(bool useImage) {
 bool View::GetBackgroundUseImage() {
 	bool state = false;
 	BackgroundNode* backgroundNode =
-			(BackgroundNode*) this->GetSceneManager()->GetSceneRoot()->Search(
-					M3D::BACKGROUNDCOLOR);
+	    (BackgroundNode*) this->GetSceneManager()->GetSceneRoot()->Search(
+	        M3D::BACKGROUNDCOLOR);
 
 	if (backgroundNode != NULL) {
 		state = backgroundNode->IsUseImage();
@@ -4356,8 +4355,8 @@ bool View::GetBackgroundUseImage() {
 bool View::SetBackgroundTexture(Texture * texture) {
 	bool setState = false;
 	BackgroundNode* backgroundNode =
-			(BackgroundNode*) this->GetSceneManager()->GetSceneRoot()->Search(
-					M3D::BACKGROUNDCOLOR);
+	    (BackgroundNode*) this->GetSceneManager()->GetSceneRoot()->Search(
+	        M3D::BACKGROUNDCOLOR);
 
 	if (backgroundNode != NULL) {
 		backgroundNode->SetTexture(texture);
@@ -4371,8 +4370,8 @@ bool View::SetBackgroundTexture(Texture * texture) {
 bool View::AddBackgroundSkyBoxTexture(string name, Texture * texture) {
 	bool setState = false;
 	BackgroundNode* backgroundNode =
-			(BackgroundNode*) this->GetSceneManager()->GetSceneRoot()->Search(
-					M3D::BACKGROUNDCOLOR);
+	    (BackgroundNode*) this->GetSceneManager()->GetSceneRoot()->Search(
+	        M3D::BACKGROUNDCOLOR);
 
 	if (backgroundNode != NULL) {
 		backgroundNode->AddSkyBoxTexture(name, texture);
@@ -4385,8 +4384,8 @@ bool View::AddBackgroundSkyBoxTexture(string name, Texture * texture) {
 
 void View::SetBackgroundUseSkyBox(bool useSkyBox) {
 	BackgroundNode* backgroundNode =
-			(BackgroundNode*) this->GetSceneManager()->GetSceneRoot()->Search(
-					M3D::BACKGROUNDCOLOR);
+	    (BackgroundNode*) this->GetSceneManager()->GetSceneRoot()->Search(
+	        M3D::BACKGROUNDCOLOR);
 
 	if (backgroundNode != NULL) {
 		backgroundNode->SetUseSkyBox(useSkyBox);
@@ -4396,8 +4395,8 @@ void View::SetBackgroundUseSkyBox(bool useSkyBox) {
 bool View::GetBackgroundUseSkyBox() {
 	bool state = false;
 	BackgroundNode* backgroundNode =
-			(BackgroundNode*) this->GetSceneManager()->GetSceneRoot()->Search(
-					M3D::BACKGROUNDCOLOR);
+	    (BackgroundNode*) this->GetSceneManager()->GetSceneRoot()->Search(
+	        M3D::BACKGROUNDCOLOR);
 
 	if (backgroundNode != NULL) {
 		state = backgroundNode->IsUseSkyBox();
@@ -4407,8 +4406,8 @@ bool View::GetBackgroundUseSkyBox() {
 bool View::GetBackgroundUseColor() {
 	bool state = false;
 	BackgroundNode* backgroundNode =
-			(BackgroundNode*) this->GetSceneManager()->GetSceneRoot()->Search(
-					M3D::BACKGROUNDCOLOR);
+	    (BackgroundNode*) this->GetSceneManager()->GetSceneRoot()->Search(
+	        M3D::BACKGROUNDCOLOR);
 
 	if (backgroundNode != NULL) {
 		state = backgroundNode->IsUseColor();
@@ -4417,8 +4416,8 @@ bool View::GetBackgroundUseColor() {
 }
 void View::SetBackgroundUseColor(bool useColor) {
 	BackgroundNode* backgroundNode =
-			(BackgroundNode*) this->GetSceneManager()->GetSceneRoot()->Search(
-					M3D::BACKGROUNDCOLOR);
+	    (BackgroundNode*) this->GetSceneManager()->GetSceneRoot()->Search(
+	        M3D::BACKGROUNDCOLOR);
 
 	if (backgroundNode != NULL) {
 		backgroundNode->SetUseColor(useColor);
@@ -4427,8 +4426,8 @@ void View::SetBackgroundUseColor(bool useColor) {
 
 void View::KeepBackgroundState() {
 	BackgroundNode* backgroundNode =
-			(BackgroundNode*) this->GetSceneManager()->GetSceneRoot()->Search(
-					M3D::BACKGROUNDCOLOR);
+	    (BackgroundNode*) this->GetSceneManager()->GetSceneRoot()->Search(
+	        M3D::BACKGROUNDCOLOR);
 
 	if (backgroundNode != NULL) {
 		backgroundNode->KeepBackgroundState();
@@ -4437,8 +4436,8 @@ void View::KeepBackgroundState() {
 
 void View::RestoreBackgroundState() {
 	BackgroundNode* backgroundNode =
-			(BackgroundNode*) this->GetSceneManager()->GetSceneRoot()->Search(
-					M3D::BACKGROUNDCOLOR);
+	    (BackgroundNode*) this->GetSceneManager()->GetSceneRoot()->Search(
+	        M3D::BACKGROUNDCOLOR);
 
 	if (backgroundNode != NULL) {
 		backgroundNode->RestoreBackgroundState();
@@ -4457,7 +4456,7 @@ void View::LoadScene(const string& sceneInfo) {
 }
 
 void View::SetRefreshFun(void* refreshCallBackClassInstance,
-		RefreshFun refreshFun) {
+                         RefreshFun refreshFun) {
 	m_RefreshCallBackClassInstance = refreshCallBackClassInstance;
 	m_RefreshFun = refreshFun;
 }
@@ -4505,7 +4504,7 @@ void View::AnimationStartCallback(void* data) {
 	View* view = (View*) data;
 
 	NS_SimulationAnimation::CSBehaviorAction* pBehaviorAction =
-			view->m_pSAManager->GetCurrentSA();
+	    view->m_pSAManager->GetCurrentSA();
 	if (NULL == pBehaviorAction)
 		return;
 	LOGI(" View::AnimationStartCallback(void* data)");
@@ -4642,26 +4641,26 @@ void View::ChechErrorPoint(M3D::Model* model) {
 						VertexSet* vertexSet = renderMeshData->GetRefMesh();
 						if (vertexSet) {
 							vector<Vector3>* pointArray =
-									vertexSet->GetPositionArray();
+							    vertexSet->GetPositionArray();
 							if (pointArray != NULL) {
 								for (int pi = 0; pi < pointArray->size();
-										pi++) {
+								        pi++) {
 									static float checkLimint = 9.0e+5f;
 									Vector3& checkPoint = pointArray->at(pi);
 									if (checkPoint.m_x < -checkLimint
-											|| checkPoint.m_x > checkLimint
-											|| checkPoint.m_y < -checkLimint
-											|| checkPoint.m_y > checkLimint
-											|| checkPoint.m_z < -checkLimint
-											|| checkPoint.m_z > checkLimint) {
+									        || checkPoint.m_x > checkLimint
+									        || checkPoint.m_y < -checkLimint
+									        || checkPoint.m_y > checkLimint
+									        || checkPoint.m_z < -checkLimint
+									        || checkPoint.m_z > checkLimint) {
 										checkPoint.m_x = 0;
 										checkPoint.m_y = 0;
 										checkPoint.m_z = 0;
 									}
 
 									if (IsNaN(checkPoint.m_x)
-											|| IsNaN(checkPoint.m_y)
-											|| IsNaN(checkPoint.m_z)) {
+									        || IsNaN(checkPoint.m_y)
+									        || IsNaN(checkPoint.m_z)) {
 										checkPoint.m_x = 0;
 										checkPoint.m_y = 0;
 										checkPoint.m_z = 0;
@@ -4686,7 +4685,7 @@ bool View::GetAnimationDisState(ControlInfo& controlInfo) {
 	bool ret = false;
 	ControlInfo cameraState;
 	NS_SimulationAnimation::CSBehaviorAction* pBehaviorAction =
-			m_pSAManager->GetCurrentSA();
+	    m_pSAManager->GetCurrentSA();
 	if (NULL == pBehaviorAction)
 		return false;
 
@@ -4694,11 +4693,11 @@ bool View::GetAnimationDisState(ControlInfo& controlInfo) {
 	float scales[3];
 
 	bool isCameraUseCamera = pBehaviorAction->GetPlayBeginCamera(cameraMatrix,
-			scales);
+	                         scales);
 
 	if (isCameraUseCamera) {
 		NS_SimulationAnimation::CSimulationAnimationManager* simMgr =
-				this->GetSimulationMgr();
+		    this->GetSimulationMgr();
 		string animationVersion = "1.0";
 		if (simMgr != NULL) {
 			animationVersion = simMgr->GetCurrentSA()->GetVersion();
@@ -4707,7 +4706,7 @@ bool View::GetAnimationDisState(ControlInfo& controlInfo) {
 		float scale = scales[0];
 
 		if (atof(animationVersion.c_str()) >= 1.15f && ((int) scales[1]) > 0
-				&& ((int) scales[2]) > 0) {
+		        && ((int) scales[2]) > 0) {
 			float width = 1, height = 1;
 			CameraNode* camera = this->GetSceneManager()->GetCamera();
 			if (camera != NULL) {
@@ -4736,7 +4735,7 @@ bool View::GetAnimationDisState(ControlInfo& controlInfo) {
 
 		Quaternion rotation((float*) tmatrix);
 		M3D::Vector3 vec(cameraMatrix[3 * 4 + 0], cameraMatrix[3 * 4 + 1],
-				cameraMatrix[3 * 4 + 2]);
+		                 cameraMatrix[3 * 4 + 2]);
 
 		controlInfo.scaleFactor = 1 / scales[0];
 
@@ -4830,7 +4829,7 @@ string View::GetShapeStates(const string& value) {
 				if (model) {
 					string realPath = model->GetPlcPath();
 					retJson["Path"] = string(realPath.begin() + 9,
-							realPath.end());
+					                         realPath.end());
 				}
 			}
 		}
@@ -5012,7 +5011,7 @@ NS_SimulationAnimation::CSimulationAnimationManager* View::GetSimulationMgr() {
 }
 
 void View::SetSimulationMgr(
-		NS_SimulationAnimation::CSimulationAnimationManager* pSAManager) {
+    NS_SimulationAnimation::CSimulationAnimationManager* pSAManager) {
 	this->m_pSAManager = pSAManager;
 	if (pTDriver == NULL) {
 		pTDriver = new CTickTimer();
@@ -5074,9 +5073,9 @@ void View::UpdateDrawLimit() {
 
 }
 bool View::SetExplosiveViewWithDirection(vector<Model*> arrayModels, int stype,
-		int pos, Vector3 direction) {
+        int pos, Vector3 direction) {
 	this->GetExplosiveView()->setPercentWithDirection(this, arrayModels, stype,
-			pos, direction);
+	        pos, direction);
 	return false;
 }
 bool View::SetExplosiveView(int stype, int pos, bool useAnimation) {
@@ -5087,16 +5086,16 @@ bool View::SetExplosiveView(int stype, int pos, bool useAnimation) {
 	return false;
 }
 bool View::SetExplosiveView(vector<Model*> arrayModels, int stype, int pos,
-		bool useAnimation) {
+                            bool useAnimation) {
 	this->GetExplosiveView()->SetPercent(this, arrayModels, stype, pos,
-			useAnimation);
+	                                     useAnimation);
 
 	return false;
 }
 bool View::SetExplosiveViewWithoutRestore(int stype, int pos,
-		bool useAnimation) {
+        bool useAnimation) {
 	this->GetExplosiveView()->SetPercentWithoutRestore(this, stype, pos,
-			useAnimation);
+	        useAnimation);
 
 	return false;
 }
@@ -5201,7 +5200,7 @@ void * View::RotateAndExplosiveTask(void * data) {
 		isRotateComplete = true;
 		m_excStep1 = true;
 		sview->SetExplosiveViewWithoutRestore(0,
-				100 * abs(sin(explosivePercent))) * 0.3;
+		                                      100 * abs(sin(explosivePercent))) * 0.3;
 		explosivePercent += 3.1415926 / 180.0 * 0.3 * explorsiveSpeed;
 		if (explosivePercent >= 3.1415926 / 2.0) {
 			m_isNeedRotate = true;
@@ -5213,7 +5212,7 @@ void * View::RotateAndExplosiveTask(void * data) {
 		m_isNeedRotate = false;
 		handler->OnlyRotateOnAxisFunc(handler);
 		sview->SetExplosiveViewWithoutRestore(0,
-				100 * abs(sin(explosivePercent))) * 0.3;
+		                                      100 * abs(sin(explosivePercent))) * 0.3;
 		explosivePercent -= 3.1415926 / 180.0 * 0.3 * explorsiveSpeed;
 		if (explosivePercent <= 0) {
 			m_isNeedRotate = true;
@@ -5250,8 +5249,8 @@ map<int, vector<string> > View::GetFixPMIInfo() {
 					}
 				}
 				m_fixPMIInfo.insert(
-						map<int, vector<string> >::value_type(it->first,
-								vecText));
+				    map<int, vector<string> >::value_type(it->first,
+				            vecText));
 			}
 			it++;
 		}
@@ -5261,10 +5260,10 @@ map<int, vector<string> > View::GetFixPMIInfo() {
 
 void View::KeepViewModeState() {
 	m_viewModeTouchHandlerType =
-			this->m_workTouchHandler->GetTouchHandlerType();
+	    this->m_workTouchHandler->GetTouchHandlerType();
 	m_viewModeUpDirection = this->m_workTouchHandler->GetCurrentUpDirection();
 	this->m_workTouchHandler->GetCurrentObservingPattern(m_viewModeOribit,
-			m_viewModeFreeLook, m_viewModeControlLockXY);
+	        m_viewModeFreeLook, m_viewModeControlLockXY);
 }
 
 void View::RestoreViewModeState() {
@@ -5326,7 +5325,7 @@ void View::HasModelAttribute(Model* model, bool& bHas) {
 	vector<Body*>* bodyList = model->GetBodys();
 	if (bodyList) {
 		for (vector<Body*>::iterator it = bodyList->begin();
-				it != bodyList->end(); it++) {
+		        it != bodyList->end(); it++) {
 			if (*it) {
 				vector<Face*> faceList = (*it)->GetFaces();
 				for (int i = 0; i < faceList.size(); i++) {
@@ -5409,7 +5408,7 @@ M3D::SectionManager* View::GetSectionManager() {
 }
 
 void View::UpdateAnimationInitTargetObjects(
-		vector<TARGETOBJECTINFO*> &vcObjectInfo) {
+    vector<TARGETOBJECTINFO*> &vcObjectInfo) {
 	if (!m_pSAManager || vcObjectInfo.size() <= 0)
 		return;
 	m_pSAManager->UpdateInitTargetObjectList(vcObjectInfo);
@@ -5477,16 +5476,15 @@ void View::ParseAnnotation(const string& value) {
 				int _id = annoValue["createID"].asInt();
 				//判断数据是否有效
 				vector<ModelView*>* allViews =
-						scene->GetModel()->GetModelViewList();
+				    scene->GetModel()->GetModelViewList();
 				bool valid = false;
 				if (allViews) {
 					for (vector<ModelView*>::iterator it = allViews->begin();
-							it != allViews->end(); it++) {
+					        it != allViews->end(); it++) {
 						vector<int> ids = (*it)->GetNoteList();
 						vector<int>::iterator result = find(ids.begin(),
-								ids.end(), _id); //查找3
-						if (result != ids.end()) //找到
-								{
+						                                    ids.end(), _id); //查找3
+						if (result != ids.end()) { //找到
 							valid = true;
 							break;
 						}
@@ -5494,32 +5492,29 @@ void View::ParseAnnotation(const string& value) {
 				}
 				if (valid) {
 					switch (type) {
-					case 0: //基本-文本
-					{
+					case 0: { //基本-文本
 						string jsonValue = writer.write(annoValue);
 						this->AddTextJsonData(StringHelper::IntToString(_id),
-								jsonValue);
+						                      jsonValue);
 //                                Note *pNode = NoteFactory::CreateTextNoteFromJSON(scene, jsonValue);
 					}
-						break;
+					break;
 					case 1: //零组件
 						break;
-					case 2: //序号
-					{
+					case 2: { //序号
 						string jsonValue = writer.write(annoValue);
 						this->AddSequenceJsonData(
-								StringHelper::IntToString(_id), jsonValue);
+						    StringHelper::IntToString(_id), jsonValue);
 //                                Note *pNode = NoteFactory::CreateSequenceNoteFromJSON(scene, jsonValue);
 					}
-						break;
-					case 1002: //手势批注
-					{
+					break;
+					case 1002: { //手势批注
 						string jsonValue = writer.write(annoValue);
 						this->AddGestureJsonData(StringHelper::IntToString(_id),
-								jsonValue);
+						                         jsonValue);
 //                                Note *pNode = NoteFactory::CreateThreeDGestureNoteFromJson(scene, jsonValue);
 					}
-						break;
+					break;
 					default:
 						break;
 					}

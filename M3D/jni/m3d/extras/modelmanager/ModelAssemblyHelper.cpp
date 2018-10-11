@@ -264,20 +264,19 @@ bool ModelAssemblyHelper::InsertInLast(View * view,Model* sourceModel, Model* de
 			{
 			*/	//若原零件是个装配，那么把要插入的零件之间放入最后
 			int tempId = desModel->GetUseablePlcId();
-			SceneManager* scene = view->GetSceneManager(); scene->Lock();
+			SceneManager* scene = view->GetSceneManager();
+			scene->Lock();
 				//desModelNod->AddChild(sourceModelNod);
 				desModel->AddSubModel(sourceModel);
 				sourceModel->SetPlcId(tempId);
 				sourceModel->ClearPlcPath(true);
-//				LOGI("temoId == %d",tempId);
 				view->GetSceneManager()->AsynUpdateModelCacheInfo(sourceModel,true);
-				//sourceModelNod->UpdateName();
 //				PrintPlcID(sourceModel);
             //设置ocTree区域
                 view->GetSceneManager()->RequestUpdateWhenSceneBoxChanged();    //将模型加入装配中
 /*			}*/
 
-                scene->UnLock();
+              scene->UnLock();
 		}
 
 		msg =  true;
@@ -287,7 +286,7 @@ bool ModelAssemblyHelper::InsertInLast(View * view,Model* sourceModel, Model* de
 		//LOGI("ModelManager::InsertBefor ASSEMBLYMSG::ASSAMBLY_INS_BEFO_ERR");
 		msg = false;
 	}
-	LOGI(" ModelManager::InsertBefore END");
+	LOGI(" ModelManager::InsertBefore END %s ",msg);
 	return msg;
 
 }

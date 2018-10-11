@@ -6925,7 +6925,6 @@ namespace M3D
 			"    totalDiffuse =  diffuseReflection;\n"
 			"    diffuseColor = min(totalDiffuse,vec3(1.0));\n"
 
-
 			"	if(u_useFrontCubeTexture||u_useFrontTexture)"
 			"	 {"
 			"       if(u_useHighlightTexture == true){"

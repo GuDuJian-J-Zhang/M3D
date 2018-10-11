@@ -9,11 +9,19 @@ namespace M3D
 	{
 		m_materialType = MaterialType_Shader;
 	}
-
+	ShaderMaterial::ShaderMaterial(ShaderMaterial& org):BaseMaterial(org)
+	{
+		m_fragmentShader = org.m_fragmentShader;
+		m_vertexShader = org.m_vertexShader;
+	}
 
 	ShaderMaterial::~ShaderMaterial()
 	{
 		RealeseParameters();
+	}
+	BaseMaterial* ShaderMaterial::Clone()
+	{
+		return new ShaderMaterial(*this);
 	}
 	void ShaderMaterial::RealeseParameters()
 	{

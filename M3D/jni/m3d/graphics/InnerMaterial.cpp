@@ -13,11 +13,25 @@ namespace M3D
 		m_acceptLight = true;
 	}
 
+	InnerMaterial::InnerMaterial(InnerMaterial& org):BaseMaterial(org)
+	{
+		m_updateUvTransform = org.m_updateUvTransform;
+		m_uvScale = org.m_uvScale;
+		m_uvTranslate = org.m_uvTranslate;
+		m_uvRotate = org.m_uvRotate;
+		m_materialType = org.m_materialType;
+		m_acceptLight = org.m_acceptLight;
+	}
+
 	InnerMaterial::~InnerMaterial()
 	{
 
 	}
 
+	BaseMaterial* InnerMaterial::Clone()
+	{
+		return new InnerMaterial(*this);
+	}
 	void InnerMaterial::UpdateUvTransform()
 	{
 		float c = cosf(m_uvRotate);

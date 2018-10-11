@@ -19,7 +19,69 @@ namespace M3D
 		m_lightHash = "";
         needsUpdateUniformParameters = true;
 	}
+	BaseMaterial::BaseMaterial(BaseMaterial& org)
+	{
+		m_materialType = org.m_materialType;
+		m_useLight = org.m_useLight;
+		m_uuid = IDCreator::GetUUID();
+		m_program = org.m_program;
+		m_needUpdate = org.m_needUpdate;
+		m_define = org.m_define;
+		m_lightHash = org.m_lightHash;
+		needsUpdateUniformParameters = org.needsUpdateUniformParameters;
 
+		map<string, Uniform>::iterator it = org.m_uniformParameters.begin();
+		for (; it != org.m_uniformParameters.end(); ++it)
+		{
+			Uniform uniform;
+			string type = it->second.type;
+			uniform.type = type;
+			if (type == "Texture2D")
+			{
+				Texture2D* value = anyCast<Texture2D*>(it->second.value);
+				value->AddRef();
+				uniform.value = value;
+			}
+			else if (type == "TextureCube")
+			{
+				TextureCube* value = anyCast<TextureCube*>(it->second.value);
+				value->AddRef();
+				uniform.value = value;
+			}
+			else if (type == "Float")
+			{
+				float value = anyCast<float>(it->second.value);
+				uniform.value = value;
+			}
+			else if (type == "Int")
+			{
+				int value = anyCast<int>(it->second.value);
+				uniform.value = value;
+			}
+			else if (type == "Vector3")
+			{
+				Vector3 * vec3 = new Vector3();
+				*vec3 = *(anyCast<Vector3*>(it->second.value));
+				uniform.value = vec3;
+			}
+			else if (type == "Vector4")
+			{
+				Vector4 * vec4 = new Vector4();
+				*vec4 = *(anyCast<Vector4*>(it->second.value));
+				uniform.value = vec4;
+			}
+			else if (type == "Bool")
+			{
+				int value = anyCast<int>(it->second.value);
+				uniform.value = value;
+			}
+			SetUniformParameter(it->first,uniform);
+		}
+	}
+	BaseMaterial* BaseMaterial::Clone()
+	{
+		return new BaseMaterial(*this);
+	}
 
 	BaseMaterial::~BaseMaterial()
 	{
