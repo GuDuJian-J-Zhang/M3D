@@ -1,4 +1,3 @@
-
 #include "m3d/ResourceManager.h"
 #include "m3d/graphics/MaterialTemplateManager.h"
 #include "m3d/action/RenderAction.h"
@@ -1808,13 +1807,11 @@ void View::RemoveShape(int id) {
         //判断是否和其他视图关联
         vector<ModelView*>* allViews = this->GetSceneManager()->GetModel()->GetModelViewList();
         if (allViews) {
-            for (vector<ModelView*>::iterator it = allViews->begin(); it != allViews->end(); it++)
-            {
+		for (vector<ModelView*>::iterator it = allViews->begin(); it != allViews->end(); it++) {
                 if (m_curModelView && (*it) != m_curModelView) {
                     vector<int> ids = (*it)->GetNoteList();
                     vector<int>::iterator result = find( ids.begin( ), ids.end( ), id ); //查找
-                    if ( result != ids.end( ) ) //找到
-                    {
+				if ( result != ids.end( ) ) { //找到
                         isRemove = false;
                         break;
                     }
@@ -1828,14 +1825,12 @@ void View::RemoveShape(int id) {
         }else if (isNote){
             //显示关联的批注信息
             NoteGroup* pNoteGroup = this->GetSceneManager()->GetNoteGroup();
-            for (int j = 0; j < pNoteGroup->Size(); j++)
-            {
+		for (int j = 0; j < pNoteGroup->Size(); j++) {
                 SceneNode* pNode = pNoteGroup->GetChild(j);
                 if (!pNode)
                     continue;
                 IShape* pShape = ((ShapeNode*)pNode)->GetShape();
-                if (pShape && id == pShape->GetID())
-                {
+			if (pShape && id == pShape->GetID()) {
                     pNode->SetVisible(false);
                     pShape->SetVisible(false);
                     break;
@@ -2962,7 +2957,8 @@ bool View::UpdateViewByCurrentScene(ModelView* newView) {
 	LOGI("end update textnote by current scene");
 
 	ret = true;
-	RET: return ret;
+RET:
+	return ret;
 
 }
 
@@ -3281,7 +3277,8 @@ bool View::UpdateSpecialViewByCurrentScene(ModelView* newView) {
 	//	delete action;
 	//LOGI("View::UpdateViewByCurrentScene end.");
 	ret = true;
-	RET: return ret;
+RET:
+	return ret;
 
 }
 
@@ -3611,8 +3608,7 @@ void View::FoucusView(BoundingBox& foucusBox, bool useAni) {
 	Quaternion disRotation;
 	Vector3 disScale;
 
-	if (camera && camera->IsOrthographic()) //平行投影聚焦显示
-			{
+	if (camera && camera->IsOrthographic()) { //平行投影聚焦显示
 		Vector3 center = foucusBox.Center();
 		IntVector2 scrPnt = camera->GetViewPort().WorldToScreenPoint(center);
 		IntVector2 scrCenter = camera->GetViewPort().GetRect().Center();
@@ -3646,8 +3642,7 @@ void View::FoucusView(BoundingBox& foucusBox, bool useAni) {
 				* sceneBox.Length() / foucusBox.Length();
 		disScale = Vector3(scale, scale, scale);
 		disRotation = camera->GetRotation();
-	} else if (camera && !camera->IsOrthographic()) //处理透视投影
-			{
+	} else if (camera && !camera->IsOrthographic()) { //处理透视投影
 		Vector3 center = foucusBox.Center();
 
 		scene->SetRotationCenter(center);
@@ -5488,8 +5483,7 @@ void View::ParseAnnotation(const string& value) {
 						vector<int> ids = (*it)->GetNoteList();
 						vector<int>::iterator result = find(ids.begin(),
 								ids.end(), _id); //查找3
-						if (result != ids.end()) //找到
-								{
+						if (result != ids.end()) { //找到
 							valid = true;
 							break;
 						}
@@ -5497,8 +5491,7 @@ void View::ParseAnnotation(const string& value) {
 				}
 				if (valid) {
 					switch (type) {
-					case 0: //基本-文本
-					{
+					case 0: { //基本-文本
 						string jsonValue = writer.write(annoValue);
 						this->AddTextJsonData(StringHelper::IntToString(_id),
 								jsonValue);
@@ -5507,16 +5500,14 @@ void View::ParseAnnotation(const string& value) {
 						break;
 					case 1: //零组件
 						break;
-					case 2: //序号
-					{
+					case 2: { //序号
 						string jsonValue = writer.write(annoValue);
 						this->AddSequenceJsonData(
 								StringHelper::IntToString(_id), jsonValue);
 //                                Note *pNode = NoteFactory::CreateSequenceNoteFromJSON(scene, jsonValue);
 					}
 						break;
-					case 1002: //手势批注
-					{
+					case 1002: { //手势批注
 						string jsonValue = writer.write(annoValue);
 						this->AddGestureJsonData(StringHelper::IntToString(_id),
 								jsonValue);

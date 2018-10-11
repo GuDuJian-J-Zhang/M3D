@@ -258,8 +258,9 @@ class M3D_API Material:public InnerMaterial
 {
 public:
 	Material();
+	Material(Material& org);
 	virtual ~Material();
-
+	virtual BaseMaterial* Clone();
 	/**
 	 *
 	 * @param ambient

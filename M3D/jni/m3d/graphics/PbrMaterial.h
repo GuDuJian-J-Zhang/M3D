@@ -13,7 +13,9 @@ namespace M3D
 	{
 	public:
 		PbrMaterial();
+		PbrMaterial(PbrMaterial& org);
 		~PbrMaterial();
+		virtual BaseMaterial* Clone();
 		//************************************
 		// Method:    AlbedoMap
 		// FullName:  M3D::PbrMaterial::AlbedoMap

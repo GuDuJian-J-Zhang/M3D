@@ -60,8 +60,9 @@ namespace M3D
 	{
 	public:
 		BaseMaterial();
+		BaseMaterial(BaseMaterial& org);
 		~BaseMaterial();
-
+		virtual BaseMaterial* Clone();
 		/**
 		*
 		* @param name

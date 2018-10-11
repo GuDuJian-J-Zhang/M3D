@@ -17,9 +17,19 @@ namespace M3D
 		m_materialType = MaterialType_MatCap;
 	}
 
+	MatCapMaterial::MatCapMaterial(MatCapMaterial& org):Material(org)
+	{
+
+	}
+
 	MatCapMaterial::~MatCapMaterial()
 	{
 
+	}
+
+	BaseMaterial* MatCapMaterial::Clone()
+	{
+		return new MatCapMaterial(*this);
 	}
 
 	/*void MatCapMaterial::Init()

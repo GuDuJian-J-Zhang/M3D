@@ -13,7 +13,9 @@ namespace M3D
 	{
 	public:
 		DepthMaterial();
+		DepthMaterial(DepthMaterial& org);
 		~DepthMaterial();
+		virtual BaseMaterial* Clone();
 		bool GetUseLight() const ;
 		void SetUseLight(bool val) ;
 		
