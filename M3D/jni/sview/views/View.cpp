@@ -670,7 +670,6 @@ M3D_STATUS View::ReadFile(string & path) {
 			readerState = M3D_STATUS::M_Read_CANCEL;
 			return readerState;
 		}
-
 		if (m_Model == NULL) {
 			LOGE("Read is Error Model=NULL");
 			this->CloseFile();
@@ -772,6 +771,7 @@ M3D_STATUS View::ReadFiles(vector<string>& paths) {
 
 		this->RestoreView(false);
 		LOGI("readfile end");
+		readerState = M_Read_OK;
 	} catch (const std::bad_alloc& e) {
 		LOGE("C++ 内存分配失败...%s", e.what());
 		readerState = M_Read_OOM;
@@ -791,9 +791,9 @@ M3D_STATUS View::ReadFiles(vector<string>& paths) {
 	//CloseFile();
 	//dumpMemoryLeaks();
 	//if (this->m_Model && m_Model->GetSubModels().size()>0)
-	{
-		readerState = M_Read_OK;
-	}
+//	{
+//		readerState = M_Read_OK;
+//	}
 
 	return readerState;
 }
@@ -3894,7 +3894,6 @@ M3D_STATUS View::AsynFillModel(Model* singleModel) {
 			scene->Lock();
 			((SVL2AsynReader*) this->m_Reader)->FillModelMesh(this,
 					singleModel);
-
 			bool checkErrorPoint =
 					SVIEW::Parameters::Instance()->m_IsCheckErrorPoint;
 			if (checkErrorPoint) {
@@ -3904,6 +3903,7 @@ M3D_STATUS View::AsynFillModel(Model* singleModel) {
 			this->GetSceneManager()->AsynUpdateModelCacheInfo(singleModel, true,
 					false);
 			scene->UnLock();
+			readerState = M_Read_OK;
 		} catch (const std::bad_alloc& e) {
 			LOGE("AsynFillModel error 1");
 			readerState = M_Read_OOM;
@@ -3922,7 +3922,6 @@ M3D_STATUS View::AsynFillModel(Model* singleModel) {
 			return readerState;
 		}
 	}
-	readerState = M_Read_OK;
 	return readerState;
 }
 
