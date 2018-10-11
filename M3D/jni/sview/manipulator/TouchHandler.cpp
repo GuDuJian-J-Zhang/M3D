@@ -725,7 +725,9 @@ void TouchHandler::CameraRotateOnFixedPoint()
 	if(this->m_modelRotateAngle >= 2* M3D::M_PI)
 	{
 		m_modelRotateAngle = 0.0f;
-	}m_pView->RequestUILayerDrawCB(1);
+	}
+    m_pView->RequestUILayerDrawCB(1);
+    m_pView->RequestDraw();
 }
 
 void * TouchHandler::GetModelRotateOnFixedPointFunc(void * data) {

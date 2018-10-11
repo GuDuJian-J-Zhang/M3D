@@ -1,4 +1,4 @@
-﻿#include "sview/views/Parameters.h"
+#include "sview/views/Parameters.h"
 
 #include "m3d/action/RenderAction.h"
 #include "m3d/renderer/gl20/ShaderManager.h"
