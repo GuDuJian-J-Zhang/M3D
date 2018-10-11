@@ -12,8 +12,9 @@ namespace M3D
 	{
 	public:
 		InnerMaterial();
+		InnerMaterial(InnerMaterial& org);
 		~InnerMaterial();
-
+		virtual BaseMaterial* Clone();
 		//************************************
 		// Method:    UpdateUvTransform
 		// FullName:  M3D::InnerMaterial::UpdateUvTransform

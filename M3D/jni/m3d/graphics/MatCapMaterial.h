@@ -13,7 +13,9 @@ namespace M3D
 	{
 	public:
 		MatCapMaterial();
+		MatCapMaterial(MatCapMaterial& org);
 		~MatCapMaterial();
+		virtual BaseMaterial* Clone();
 	//	Texture* MatCapMap() const;
 	//	void MatCapMap(Texture* val);		
 	//	Texture* NormalMap() const;

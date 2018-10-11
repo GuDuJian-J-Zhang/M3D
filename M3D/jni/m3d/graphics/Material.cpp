@@ -11,10 +11,68 @@ Material::Material():InnerMaterial()
 	this->Init();
 }
 
-Material::~Material()
-{
-	if(this->m_resourceMgr)
-	{
+Material::Material(Material& org) :
+		InnerMaterial(org) {
+
+	m_ambient = org.m_ambient;
+	m_Diffuse = org.m_Diffuse;
+	m_Specular = org.m_Specular;
+	m_emissive = org.m_emissive;
+
+	m_texture =  new Texture();
+	*m_texture = *(org.m_texture);
+	m_texture->AddRef();
+
+	m_normalMap = new Texture();
+	*m_normalMap = *(org.m_normalMap);
+	m_normalMap->AddRef();
+
+	m_specularMap = new Texture();
+	*m_specularMap = *(org.m_specularMap);
+	m_specularMap->AddRef();
+
+	m_displacementMap = new Texture();
+	*m_displacementMap = *(org.m_displacementMap);
+	m_displacementMap->AddRef();
+
+	m_matcapMap = new Texture();
+	*m_matcapMap = *(org.m_matcapMap);
+
+	m_displacementScale = org.m_displacementScale;
+	m_displacementBias = org.m_displacementBias;
+	m_normalMapScale = org.m_normalMapScale;
+
+	m_bumpmap = new Texture();
+	*m_bumpmap = *(org.m_bumpmap);
+	m_bumpmap->AddRef();
+
+	this->m_textureTransform =  new Matrix4();
+	*m_textureTransform = *(org.m_textureTransform);
+
+	m_ambientTexture = new Texture();
+	*m_ambientTexture = *(org.m_ambientTexture);
+	m_ambientTexture->AddRef();
+
+	this->m_shininess = org.m_shininess;
+	m_reflectiveTexture = new Texture();
+	*m_reflectiveTexture = *(org.m_reflectiveTexture);
+	m_reflectiveTexture->AddRef();
+
+	needsUpdateUniformParameters = org.needsUpdateUniformParameters;
+	m_materialType = org.m_materialType;
+	m_opacity = org.m_opacity;
+	m_isGammaOutpute = org.m_isGammaOutpute;
+	m_emissiveMap =new Texture();
+	*m_emissiveMap = *(org.m_emissiveMap);
+	m_emissiveMap->AddRef();
+}
+
+BaseMaterial* Material::Clone() {
+	return new Material(*this);
+}
+
+Material::~Material() {
+	if (this->m_resourceMgr) {
 		//在析构时，将material从资源管理器中移除。此对象真正点不存在了
 		//this->m_resourceMgr->RemoveMaterial(m_name);
 

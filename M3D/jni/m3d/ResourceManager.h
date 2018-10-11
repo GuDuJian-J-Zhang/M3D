@@ -270,10 +270,11 @@ public:
 
 	/**
 	 * 得到或者创建Material，首先去查找存在的Material，如果没有找到，则创建名称为Key的Material
+	 * mode:指定重新创建还是使用原有的 0:使用原有的, 1:重新创建
 	 * @param key
 	 * @return
 	 */
-	BaseMaterial* GetOrCreateMaterial(string key, int type = MaterialType::MaterialType_Phong);
+	BaseMaterial* GetOrCreateMaterial(string key, int type = MaterialType::MaterialType_Phong, int mode = 0);
 
 	/**
 	 * 添加材质

@@ -33,6 +33,59 @@ namespace M3D
 		UseClearCoat(false);
 	}
 
+	PbrMaterial::PbrMaterial(PbrMaterial& org) :
+			InnerMaterial(org) {
+		m_materialType = org.m_materialType;
+		m_rougthnessFactor = org.m_rougthnessFactor;
+		m_metalnessFactor = org.m_metalnessFactor;
+		m_aoMapIntensity = org.m_aoMapIntensity;
+		m_emissiveColor = org.m_emissiveColor;
+		m_normalMapScale = org.m_normalMapScale;
+		m_displacementMap = new Texture();
+		*m_displacementMap = *(org.m_displacementMap);
+		m_displacementMap->AddRef();
+
+		m_displacementScale = org.m_displacementScale;
+		m_displacementBias = org.m_displacementBias;
+		m_envMapIntensity = org.m_envMapIntensity;
+		m_clearCoat = org.m_clearCoat;
+		m_clearCoatRoughness = org.m_clearCoatRoughness;
+		m_isUseClearCoat = org.m_isUseClearCoat;
+		m_albedoMap = new Texture();
+		*m_albedoMap = *(org.m_albedoMap);
+		m_albedoMap->AddRef();
+							//!<粗糙度贴图
+		m_metalnessRoughnessMap = new Texture();
+		*m_metalnessRoughnessMap = *(org.m_metalnessRoughnessMap);
+		m_metalnessRoughnessMap->AddRef();
+
+		m_envMap = new Texture();
+		*m_envMap = *(org.m_envMap);
+		m_envMap->AddRef();
+
+		m_envIrradianceMap = new Texture();
+		*m_envIrradianceMap = *(org.m_envIrradianceMap);
+		m_envIrradianceMap->AddRef();
+
+		m_emissiveMap = new Texture();
+		*m_emissiveMap = *(org.m_emissiveMap);
+		m_emissiveMap->AddRef();
+
+		m_ambientOcclusiontMap = new Texture();
+		*m_ambientOcclusiontMap = *(org.m_ambientOcclusiontMap);
+		m_ambientOcclusiontMap->AddRef();
+
+		m_normalMap =  new Texture();
+		*m_normalMap = *(org.m_normalMap);
+		m_normalMap->AddRef();
+		//m_define = "#define PHYSICALLY_CORRECT_LIGHTSS\n";
+		SetDefine("PHYSICALLY_CORRECT_LIGHTSS",
+				"#define PHYSICALLY_CORRECT_LIGHTSS\n");
+		m_envTextureMapping = org.m_envTextureMapping;
+		m_opacity = org.m_opacity;
+		m_isGammaOutpute = org.m_isGammaOutpute;
+		UseClearCoat(false);
+	}
 
 	PbrMaterial::~PbrMaterial()
 	{
@@ -87,6 +140,11 @@ namespace M3D
 			}
 			this->m_resourceMgr = NULL;
 		}
+	}
+
+	BaseMaterial* PbrMaterial::Clone()
+	{
+		return new PbrMaterial(*this);
 	}
 
 	void PbrMaterial::AlbedoMap(Texture* val)

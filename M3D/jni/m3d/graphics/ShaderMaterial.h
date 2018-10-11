@@ -11,7 +11,9 @@ namespace M3D
 	{
 	public:
 		ShaderMaterial();
+		ShaderMaterial(ShaderMaterial& org);
 		~ShaderMaterial();
+		virtual BaseMaterial* Clone();
 		string FragmentShader() const { return m_fragmentShader; }
 		void FragmentShader(string val) { m_fragmentShader = val; }
 		string VertexShader() const { return m_vertexShader; }

@@ -9,9 +9,19 @@ namespace M3D
 		m_useLight = false;
 	}
 
+	DepthMaterial::DepthMaterial(DepthMaterial& org):InnerMaterial(org)
+	{
+
+	}
+
 	DepthMaterial::~DepthMaterial()
 	{
 
+	}
+
+	BaseMaterial* DepthMaterial::Clone()
+	{
+		return new DepthMaterial(*this);
 	}
 
 	bool DepthMaterial::GetUseLight() const

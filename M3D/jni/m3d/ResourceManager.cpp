@@ -34,6 +34,7 @@
 #include "m3d/graphics/MaterialTemplateManager.h"
 #include "graphics/MatCapMaterial.h"
 #include "graphics/DepthMaterial.h"
+#include "m3d/utils/IDCreator.h"
 
 using namespace SVIEW;
 
@@ -552,7 +553,7 @@ BaseMaterial* ResourceManager::GetMaterial(string key)
 	return material;
 }
 
-BaseMaterial* ResourceManager::GetOrCreateMaterial(string key,int type)
+BaseMaterial* ResourceManager::GetOrCreateMaterial(string key,int type, int mode)
 {
 	BaseMaterial* material = this->GetMaterial(key);
 	if(!material)
@@ -592,6 +593,13 @@ BaseMaterial* ResourceManager::GetOrCreateMaterial(string key,int type)
 		material->SetName(key);
 		material->SetResourceManager(this);
 
+		this->AddMaterial(key,material);
+	}
+	else if (mode == 1)
+	{
+		key = key + "_uuid_" + IDCreator::GetUUID();
+		material = material->Clone();
+		material->SetName(key);
 		this->AddMaterial(key,material);
 	}
 
