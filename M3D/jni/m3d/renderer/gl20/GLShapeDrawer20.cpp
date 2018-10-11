@@ -2867,7 +2867,6 @@ namespace M3D
 			}
 			std::sort(transparentsObjects.begin(), transparentsObjects.end(), GreaterSort);
 
-			LOGE("GLShapeDrawer20::DrawTranRenderPassGroup  renderableArray .size = %d",transparentsObjects.size());
 			RenderFaces(action, transparentsObjects);
 #endif
 
