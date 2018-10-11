@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>402E2C8A-4C13-4A18-B771-3358505E9871</string>
+	<key>IDESourceControlProjectName</key>
+	<string>project</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>B45E1EB764C7353C53402978C3398A9C7B095B87</key>
+		<string>http://git.oschina.net/bing2008/M3D.git</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>libs/SOILLib/ios/SOIL/SOIL.xcodeproj/project.xcworkspace</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>B45E1EB764C7353C53402978C3398A9C7B095B87</key>
+		<string>../../../../../..</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>http://git.oschina.net/bing2008/M3D.git</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>111</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>B45E1EB764C7353C53402978C3398A9C7B095B87</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>B45E1EB764C7353C53402978C3398A9C7B095B87</string>
+			<key>IDESourceControlWCCName</key>
+			<string>M3D</string>
+		</dict>
+	</array>
+</dict>
+</plist>

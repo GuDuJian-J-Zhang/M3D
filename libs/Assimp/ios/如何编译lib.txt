@@ -1,0 +1,12 @@
+iOS
+1.获取root权限
+mac上，一开始系统进入创建的用户是具有管理员权限的用户，但是那个密码，却不是进入root的密码，当运行su - 这个命令时，想进入root用户，发现需要输入密码，而输入自己用户密码后报su ：sorry，经验证发现，使用sudo su -命令可以进入root用户，不需要输入密码，或者先输入sudo su命令，进入sh-3.2#，这里注意这个#号，#在linux中就是代表root权限的，这时在sh-3.2#环境下输入su - 命令，也可以进入root。具体原因还没找到。
+2.切换到root用户
+安装mac版本的cmake，设置路径
+重新设置make路径 export PATH=/Applications/CMake.app/Contents/bin:$PATH
+3.编译lib 建议从git上下载最新的code
+参考assume／port／ios/ 文件夹下 README.MD(必须阅读！！！重用¥¥¥¥)。
+切换目录到assimp下，然后根据READMDE.MD 的设置进行编译
+
+
+Android 导入自带的工程文件生成静态库，生成的动态库在链接时还有部分问题。

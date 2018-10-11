@@ -1,0 +1,30 @@
+{
+  "DVTSourceControlWorkspaceBlueprintPrimaryRemoteRepositoryKey" : "B45E1EB764C7353C53402978C3398A9C7B095B87",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyRepositoryLocationsKey" : {
+
+  },
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyStatesKey" : {
+    "B45E1EB764C7353C53402978C3398A9C7B095B87" : 0,
+    "456B324D6A0BEFACB00DB1235D40C0EF38700582" : 0
+  },
+  "DVTSourceControlWorkspaceBlueprintIdentifierKey" : "76C1152C-4B83-468A-ACA4-16E32EA48684",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyPathsKey" : {
+    "B45E1EB764C7353C53402978C3398A9C7B095B87" : "M3D\/",
+    "456B324D6A0BEFACB00DB1235D40C0EF38700582" : "IOSSView\/"
+  },
+  "DVTSourceControlWorkspaceBlueprintNameKey" : "svlLib",
+  "DVTSourceControlWorkspaceBlueprintVersion" : 204,
+  "DVTSourceControlWorkspaceBlueprintRelativePathToProjectKey" : "libs\/SvlLib\/ios\/svlLib\/svlLib.xcodeproj",
+  "DVTSourceControlWorkspaceBlueprintRemoteRepositoriesKey" : [
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "http:\/\/10.0.88.214\/SView_iOS.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "456B324D6A0BEFACB00DB1235D40C0EF38700582"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "http:\/\/git.oschina.net\/bing2008\/M3D.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "B45E1EB764C7353C53402978C3398A9C7B095B87"
+    }
+  ]
+}
