@@ -93,8 +93,10 @@ void Thread::Stop()
 			CloseHandle((HANDLE)m_handle);
 		}
 #else
-		pthread_t* thread = (pthread_t*)m_handle;
-		if (thread)
+		if (thread) {
+#ifdef __ANDROID__
+			pthread_detach(m_threadID);
+#endif
 			pthread_join(*thread, 0);
 		delete thread;
 #endif
