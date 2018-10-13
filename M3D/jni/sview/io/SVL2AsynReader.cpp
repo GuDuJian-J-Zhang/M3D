@@ -182,7 +182,6 @@ SVL2AsynReader::~SVL2AsynReader() {
 		//释放线集-yhp-20180830
 		//(*docPtr)->UnloadLine();
 		delete docPtr;
-		LOGI("AsynReader ok");
 		m_svl2Doc = NULL;
 	}
 }
@@ -194,7 +193,6 @@ Model* SVL2AsynReader::GetModel(int id) {
 		if (m_M3DModel)
 			m_M3DModel->AddRef();
 	}
-
 	return m_M3DModel;
 }
 
@@ -258,6 +256,10 @@ void SVL2AsynReader::FillModelMesh(View* view, Model* model) {
 						static_cast<Model*>(pModel));
 			} else {
 				//TODO Xuli 这里需要添加一个顶点索引最大值判断来适配移动端显示的问题
+				bool checkErrorPoint = SVIEW::Parameters::Instance()->m_IsCheckErrorPoint;
+				if (checkErrorPoint) {
+				   view->ChechErrorPoint(model);
+				 }
 				if (this->m_mergeface) {
 					//FillModelDrawDataMergeFace(static_cast<Model*>(model), &stkModel);
 					FillModelDrawDataMergeFaceWithColor(
@@ -279,7 +281,7 @@ void SVL2AsynReader::FillModelMesh(View* view, Model* model) {
 			//	model->SetInitColor(modelInitColor);
 			//}
 //End:
-			//model->ClearFileInfo();
+			model->ClearFileInfo();
 		}
 	}
 }

@@ -81,7 +81,6 @@ bool ShaderProgram::AddShader(Shader* shader)
 	}
 	if (m_object)
 	{
-		//LOGI("have attach");
 		glAttachShader(m_object, shader->m_id);
 
 		if(GL_VERTEX_SHADER==shader->GetShaderType())

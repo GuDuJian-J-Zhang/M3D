@@ -127,6 +127,26 @@ public:
 	static const char* JewelBackFrag();
 
 	//************************************
+	// Method:    NewJewelFrontVert
+	// FullName:  M3D::ShaderSrcCode::NewJewelFrontVert
+	// Access:    public static
+	// Returns:   const char*
+	// Qualifier: 珠宝front渲染层
+	//************************************
+	static const char* NewJewelFrontVert();
+	static const char* NewJewelFrontFrag();
+
+	//************************************
+	// Method:    NewJewelBackVert
+	// FullName:  M3D::ShaderSrcCode::NewJewelFrontVert
+	// Access:    public static
+	// Returns:   const char*
+	// Qualifier: 珠宝back渲染层
+	//************************************
+	static const char* NewJewelBackVert();
+	static const char* NewJewelBackFrag();
+
+	//************************************
 	// Method:    RingVert
 	// FullName:  M3D::ShaderSrcCode::RingVert
 	// Access:    public static 

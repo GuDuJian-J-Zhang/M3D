@@ -71,6 +71,9 @@ namespace M3D
 	const  string ShaderManager::SaoReconstructCSZ("SaoReconstructCSZ");
 	const  string ShaderManager::SaoMinifyCSZ("SaoMinifyCSZ");
 	const  string ShaderManager::SaoBlur("SaoBlur");
+
+	const string ShaderManager::NewJewelFront("NewJewelFront");
+	const string ShaderManager::NewJewelBack("NewJewelBack");
 	/**
 	 * @brief 获取name名字的效果
 	 * @param name
@@ -389,6 +392,9 @@ namespace M3D
 
 		SET_SHADER_MAP(JewelBack);
 
+		SET_SHADER_MAP(NewJewelBack);
+		SET_SHADER_MAP(NewJewelFront);
+
 		SET_SHADER_MAP(JewelFinalQuad);
 
 		SET_SHADER_MAP(Ring);
@@ -419,12 +425,13 @@ namespace M3D
 		SET_SHADER_MAP(SaoReconstructCSZ);
 		SET_SHADER_MAP(SaoMinifyCSZ);
 		SET_SHADER_MAP(SaoBlur);
+
 		/*-----------------------prefixParameters--------------*/
 		string parameters[] = { "shaderType","precision","emissiveMap","ambientMap","diffuseMap","specularMap","normalMap","displacementMap","envMap","albedoMap",
-			"metallicRoughnessMap","ambientOcclusiontMap","envIrradianceMap","numAllLights","numDirectionalLights","numPointLights","numSpotLights","numHemisphereLights","shadowMapEnabled","shadowMapType"
-			,"doubleSided","outputEncoding","diffuseMapEncoding","envMapEncoding","ssao","matcapMap","useClearCoat"
+			"metallicRoughnessMap","ambientOcclusiontMap","envIrradianceMap","numAllLights","numDirectionalLights","numPointLights","numSpotLights","numHemisphereLights",
+			"shadowMapEnabled","shadowMapType","doubleSided","outputEncoding","diffuseMapEncoding","envMapEncoding","ssao","matcapMap","useClearCoat"
 		};
-		for (int i = 0; i < 27; i++)
+		for (int i = 0; i <  sizeof(parameters)/sizeof(parameters[0]); i++)
 		{
 			m_prefixParameters.push_back(parameters[i]);
 			m_currentParameters[parameters[i]] = "N";
