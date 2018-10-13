@@ -172,124 +172,180 @@ namespace SVIEW
 		if (srcFilePath.size() > 0)
 		{
 			m_pDoc->OpenFile(Platform::StringToWString(srcFilePath, "auto"));
-
+            vector<string> m_allFile;
+            //错误文件解压后是文件夹
+//            string svlx;
+            vector<string> m_vecFileName = m_pDoc->GetFileNames();
+            for (int i = 0; i < m_vecFileName.size(); i++) {
+                string strFileName = m_vecFileName.at(i);
+                string ext = FileHelper::GetExt(strFileName);
+//                if (ext == "svlx/") {
+//                    svlx = strFileName;
+//                    continue;
+//                }
+//                if (svlx.length() > 0) {
+//                    StringHelper::Replace_all(strFileName, svlx, "");
+//                    ext = FileHelper::GetExt(strFileName);
+//                }
+                if (ext == "" &&(strFileName == "images/" || strFileName == "sares/" || strFileName == "manual/" || strFileName == "hotspotres/")) {
+                    StringHelper::Replace_all(strFileName, "/", "");
+                    string strFilePath = strSVLXOutFilePath + strFileName;
+                    FileHelper::make_dir(strFilePath);
+                    m_pDoc->GetSVLXFolderItemToFolder(strFileName, strFilePath);
+                    m_allFile.push_back(strFileName);
+                }else if (ext == "jpg" || ext == "png"){
+                    m_allFile.push_back(strFileName);
+                }else if (ext == "json"){
+                    string strFilePath = strSVLXOutFilePath;
+                    m_pDoc->GetSVLXFileItemToFile(strFileName, strFilePath,false);
+                    m_allFile.push_back(strFileName);
+                }else{
+                    string m_ext = "." + ext;
+                    string m_strFileName = strSaveFileName;
+                    m_strFileName.append(m_ext);
+                    string strFilePath = strSVLXOutFilePath;
+                    m_pDoc->GetSVLXFileItemToFile(m_ext, strFilePath, true, m_strFileName);
+                    //                    m_pDoc->GetSVLXFileItemToFile(strFileName, strFilePath,false);
+                    m_allFile.push_back(m_strFileName);
+                }
+            }
+            
+            string strViewFileName = strSaveFileName;
+            strViewFileName.append(".view");
+            
+            vector<string>::iterator result = find(m_allFile.begin(),
+                 m_allFile.end(), strViewFileName);
+            if (result == m_allFile.end()) { //未找到
+                string strViewFilePath = strSVLXOutFilePath;
+                m_pDoc->GetSVLXFileItemToFile(".view", strViewFilePath, true, strViewFileName);
+            }
+            
+            m_pDoc->ClearSVLXFileItem();
+            if (result == m_allFile.end()) { //未找到
+                m_pDoc->AddSVLXFileItem(strViewFileName);
+            }
+            
+            for (int i = 0; i < m_allFile.size(); i++) {
+                string m_fileName = m_allFile.at(i);
+                m_pDoc->AddSVLXFileItem(m_fileName);
+            }
 			//预览图
-			string strPreViewFileName = strSaveFileName;
-			strPreViewFileName.append(".bmp");
-			string strPreViewFilePath = strSVLXOutFilePath;
-			m_pDoc->GetSVLXFileItemToFile(".bmp", strPreViewFilePath, true, strPreViewFileName);
+//            string strPreViewFileName = strSaveFileName;
+//            strPreViewFileName.append(".bmp");
+//            string strPreViewFilePath = strSVLXOutFilePath;
+//            m_pDoc->GetSVLXFileItemToFile(".bmp", strPreViewFilePath, true, strPreViewFileName);
  
 			//Images文件夹,由于文件会存储多次，暂时屏蔽掉
 			//TODO
-            string strImagesFolderName = "images";
-            string strImagesFolderPath = strSVLXOutFilePath + "images";
-            m_pDoc->GetSVLXFolderItemToFolder(strImagesFolderName, strImagesFolderPath);
-            
-            string strSaresFolderName = "sares";
-            string strSaresFolderPath = strSVLXOutFilePath + "sares";
-            m_pDoc->GetSVLXFolderItemToFolder(strSaresFolderName, strSaresFolderPath);
-            
-            string strManualFolderName = "manual";
-            string strManualFolderPath = strSVLXOutFilePath + "manual";
-            m_pDoc->GetSVLXFolderItemToFolder(strManualFolderName, strManualFolderPath);
-            
-            string strHotsFolderName = "hotspotres";
-            string strHotsFolderPath = strSVLXOutFilePath + "hotspotres";
-            m_pDoc->GetSVLXFolderItemToFolder(strHotsFolderName, strHotsFolderPath);
+//            string strImagesFolderName = "images";
+//            string strImagesFolderPath = strSVLXOutFilePath + "images";
+//            m_pDoc->GetSVLXFolderItemToFolder(strImagesFolderName, strImagesFolderPath);
+//
+//            string strSaresFolderName = "sares";
+//            string strSaresFolderPath = strSVLXOutFilePath + "sares";
+//            m_pDoc->GetSVLXFolderItemToFolder(strSaresFolderName, strSaresFolderPath);
+//
+//            string strManualFolderName = "manual";
+//            string strManualFolderPath = strSVLXOutFilePath + "manual";
+//            m_pDoc->GetSVLXFolderItemToFolder(strManualFolderName, strManualFolderPath);
+//
+//            string strHotsFolderName = "hotspotres";
+//            string strHotsFolderPath = strSVLXOutFilePath + "hotspotres";
+//            m_pDoc->GetSVLXFolderItemToFolder(strHotsFolderName, strHotsFolderPath);
 
 			//PMI
-			string strPMIFileName = strSaveFileName;
-			strPMIFileName.append(".pmi");
-			string strPMIFilePath = strSVLXOutFilePath;
-			m_pDoc->GetSVLXFileItemToFile(".pmi", strPMIFilePath, true, strPMIFileName);
-
-
-			//图层
-			string strLayerFileName = strSaveFileName;
-			strLayerFileName.append(".layer");
-			string strLayerFilePath = strSVLXOutFilePath;
-			m_pDoc->GetSVLXFileItemToFile(".layer", strLayerFilePath, true, strLayerFileName);
-
-
-			//线集
-			string strLineFileName = strSaveFileName;
-			strLineFileName.append(".line");
-			string strLineFilePath = strSVLXOutFilePath;
-			m_pDoc->GetSVLXFileItemToFile(".line", strLineFilePath, true, strLineFileName);
-
-			//箭头
-			string strArrowFileName = strSaveFileName;
-			strArrowFileName.append(".arrow");
-			string strArrowFilePath = strSVLXOutFilePath;
-			m_pDoc->GetSVLXFileItemToFile(".arrow", strArrowFilePath, true, strArrowFileName);
-
-			//用户批注
-//            string strUserNoteFileName = strSaveFileName;
-//            strUserNoteFileName.append(".usernote");
-//            string strUserNoteFilePath = strSVLXOutFilePath;
-//            m_pDoc->GetSVLXFileItemToFile(".usernote", strUserNoteFilePath, true, strUserNoteFileName);
-
-			//移动端的视图文件
-			string strViewFileName = strSaveFileName;
-			strViewFileName.append(".view");
-			string strViewFilePath = strSVLXOutFilePath;
-			m_pDoc->GetSVLXFileItemToFile(".view", strViewFilePath, true, strViewFileName);
-
-			//线缆关联文件
-			string strInfFileName = strSaveFileName;
-			strInfFileName.append(".inf");
-			string strInfFilePath = strSVLXOutFilePath;
-			m_pDoc->GetSVLXFileItemToFile(".inf", strInfFilePath, true, strInfFileName);
-
-            //geo文件
-            string strGeoFileName = strSaveFileName;
-            strGeoFileName.append(".geo");
-            string strGeoFilePath = strSVLXOutFilePath;
-            m_pDoc->GetSVLXFileItemToFile(".geo", strGeoFilePath, true, strGeoFileName);
-            
-            //animation文件
-            string strAniFileName = strSaveFileName;
-            strAniFileName.append(".animation");
-            string strAniFilePath = strSVLXOutFilePath;
-            m_pDoc->GetSVLXFileItemToFile(".animation", strAniFilePath, true, strAniFileName);
-            
-            //hotspot文件
-            string strHotFileName = strSaveFileName;
-            strHotFileName.append(".hotspot");
-            string strHotFilePath = strSVLXOutFilePath;
-            m_pDoc->GetSVLXFileItemToFile(".hotspot", strHotFilePath, true, strHotFileName);
-            
-            //manual文件
-            string strManFileName = strSaveFileName;
-            strManFileName.append(".manual");
-            string strManFilePath = strSVLXOutFilePath;
-            m_pDoc->GetSVLXFileItemToFile(".manual", strManFilePath, true, strManFileName);
-            
-            //task文件
-            string strTaskFileName = strSaveFileName;
-            strTaskFileName.append(".task");
-            string strTaskFilePath = strSVLXOutFilePath;
-            m_pDoc->GetSVLXFileItemToFile(".task", strTaskFilePath, true, strTaskFileName);
-            
-			m_pDoc->ClearSVLXFileItem();
-
-			m_pDoc->AddSVLXFileItem(strPreViewFileName);
-            m_pDoc->AddSVLXFileItem(strImagesFolderName);
-            m_pDoc->AddSVLXFileItem(strSaresFolderName);
-            m_pDoc->AddSVLXFileItem(strManualFolderName);
-            m_pDoc->AddSVLXFileItem(strHotsFolderName);
-			m_pDoc->AddSVLXFileItem(strPMIFileName);
-			m_pDoc->AddSVLXFileItem(strLayerFileName);
-			m_pDoc->AddSVLXFileItem(strLineFileName);
-			m_pDoc->AddSVLXFileItem(strArrowFileName);
-//            m_pDoc->AddSVLXFileItem(strUserNoteFileName);
-			m_pDoc->AddSVLXFileItem(strViewFileName);
-			m_pDoc->AddSVLXFileItem(strInfFileName);
-            m_pDoc->AddSVLXFileItem(strGeoFileName);
-            m_pDoc->AddSVLXFileItem(strAniFileName);
-            m_pDoc->AddSVLXFileItem(strHotFileName);
-            m_pDoc->AddSVLXFileItem(strManFileName);
-            m_pDoc->AddSVLXFileItem(strTaskFileName);
+//            string strPMIFileName = strSaveFileName;
+//            strPMIFileName.append(".pmi");
+//            string strPMIFilePath = strSVLXOutFilePath;
+//            m_pDoc->GetSVLXFileItemToFile(".pmi", strPMIFilePath, true, strPMIFileName);
+//
+//
+//            //图层
+//            string strLayerFileName = strSaveFileName;
+//            strLayerFileName.append(".layer");
+//            string strLayerFilePath = strSVLXOutFilePath;
+//            m_pDoc->GetSVLXFileItemToFile(".layer", strLayerFilePath, true, strLayerFileName);
+//
+//
+//            //线集
+//            string strLineFileName = strSaveFileName;
+//            strLineFileName.append(".line");
+//            string strLineFilePath = strSVLXOutFilePath;
+//            m_pDoc->GetSVLXFileItemToFile(".line", strLineFilePath, true, strLineFileName);
+//
+//            //箭头
+//            string strArrowFileName = strSaveFileName;
+//            strArrowFileName.append(".arrow");
+//            string strArrowFilePath = strSVLXOutFilePath;
+//            m_pDoc->GetSVLXFileItemToFile(".arrow", strArrowFilePath, true, strArrowFileName);
+//
+//            //用户批注
+////            string strUserNoteFileName = strSaveFileName;
+////            strUserNoteFileName.append(".usernote");
+////            string strUserNoteFilePath = strSVLXOutFilePath;
+////            m_pDoc->GetSVLXFileItemToFile(".usernote", strUserNoteFilePath, true, strUserNoteFileName);
+//
+//            //移动端的视图文件
+//            string strViewFileName = strSaveFileName;
+//            strViewFileName.append(".view");
+//            string strViewFilePath = strSVLXOutFilePath;
+//            m_pDoc->GetSVLXFileItemToFile(".view", strViewFilePath, true, strViewFileName);
+//
+//            //线缆关联文件
+//            string strInfFileName = strSaveFileName;
+//            strInfFileName.append(".inf");
+//            string strInfFilePath = strSVLXOutFilePath;
+//            m_pDoc->GetSVLXFileItemToFile(".inf", strInfFilePath, true, strInfFileName);
+//
+//            //geo文件
+//            string strGeoFileName = strSaveFileName;
+//            strGeoFileName.append(".geo");
+//            string strGeoFilePath = strSVLXOutFilePath;
+//            m_pDoc->GetSVLXFileItemToFile(".geo", strGeoFilePath, true, strGeoFileName);
+//
+//            //animation文件
+//            string strAniFileName = strSaveFileName;
+//            strAniFileName.append(".animation");
+//            string strAniFilePath = strSVLXOutFilePath;
+//            m_pDoc->GetSVLXFileItemToFile(".animation", strAniFilePath, true, strAniFileName);
+//
+//            //hotspot文件
+//            string strHotFileName = strSaveFileName;
+//            strHotFileName.append(".hotspot");
+//            string strHotFilePath = strSVLXOutFilePath;
+//            m_pDoc->GetSVLXFileItemToFile(".hotspot", strHotFilePath, true, strHotFileName);
+//
+//            //manual文件
+//            string strManFileName = strSaveFileName;
+//            strManFileName.append(".manual");
+//            string strManFilePath = strSVLXOutFilePath;
+//            m_pDoc->GetSVLXFileItemToFile(".manual", strManFilePath, true, strManFileName);
+//
+//            //task文件
+//            string strTaskFileName = strSaveFileName;
+//            strTaskFileName.append(".task");
+//            string strTaskFilePath = strSVLXOutFilePath;
+//            m_pDoc->GetSVLXFileItemToFile(".task", strTaskFilePath, true, strTaskFileName);
+//
+//            m_pDoc->ClearSVLXFileItem();
+//
+//            m_pDoc->AddSVLXFileItem(strPreViewFileName);
+//            m_pDoc->AddSVLXFileItem(strImagesFolderName);
+//            m_pDoc->AddSVLXFileItem(strSaresFolderName);
+//            m_pDoc->AddSVLXFileItem(strManualFolderName);
+//            m_pDoc->AddSVLXFileItem(strHotsFolderName);
+//            m_pDoc->AddSVLXFileItem(strPMIFileName);
+//            m_pDoc->AddSVLXFileItem(strLayerFileName);
+//            m_pDoc->AddSVLXFileItem(strLineFileName);
+//            m_pDoc->AddSVLXFileItem(strArrowFileName);
+////            m_pDoc->AddSVLXFileItem(strUserNoteFileName);
+//            m_pDoc->AddSVLXFileItem(strViewFileName);
+//            m_pDoc->AddSVLXFileItem(strInfFileName);
+//            m_pDoc->AddSVLXFileItem(strGeoFileName);
+//            m_pDoc->AddSVLXFileItem(strAniFileName);
+//            m_pDoc->AddSVLXFileItem(strHotFileName);
+//            m_pDoc->AddSVLXFileItem(strManFileName);
+//            m_pDoc->AddSVLXFileItem(strTaskFileName);
 		}
 
 		SaveMaterial();
@@ -331,10 +387,11 @@ namespace SVIEW
 
         //批注
         string strNoteName = strSaveFileName;
-         strNoteName.append(".annotation");
-         string strNotePath = strSVLXOutFilePath;
-         SaveAnnotations(strNotePath + strNoteName);
-         m_pDoc->AddSVLXFileItem(strNoteName);
+        strNoteName.append(".annotation");
+        string strNotePath = strSVLXOutFilePath;
+        SaveAnnotations(strNotePath + strNoteName);
+        m_pDoc->AddSVLXFileItem(strNoteName);
+        
         
 		//保存视图
 		SaveView();
