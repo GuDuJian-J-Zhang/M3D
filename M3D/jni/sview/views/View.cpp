@@ -2722,7 +2722,7 @@ bool View::UpdateViewByCurrentScene(ModelView* newView) {
 	if (!newView) {
 		return ret;
 	}
-
+    newView->AddRef();
 	//camera
 	CameraNode* pCurCamera = GetSceneManager()->GetCamera();
 	CameraNode& newViewCamera = (CameraNode&) newView->GetCamera();
