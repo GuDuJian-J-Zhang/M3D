@@ -4224,7 +4224,7 @@ bool SVL2AsynReader::GetViewInfo(vector<Stk_ViewPtr> *pStkViewList,
 		}
 		int viewID = i + 1; //pViewData->GetID();
 		READER_LOGI("ViewId:%d new:%d", oldId, viewID);
-
+        pView->AddRef();
 		pView->SetID(oldId);
 		string nameString = Platform::WStringToString(viewName, "auto");
 		pView->SetName(nameString.c_str());
