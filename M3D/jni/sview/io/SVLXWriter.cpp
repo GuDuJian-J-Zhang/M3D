@@ -210,20 +210,20 @@ namespace SVIEW
                 }
             }
             
-            string strViewFileName = strSaveFileName;
-            strViewFileName.append(".view");
-            
-            vector<string>::iterator result = find(m_allFile.begin(),
-                 m_allFile.end(), strViewFileName);
-            if (result == m_allFile.end()) { //未找到
-                string strViewFilePath = strSVLXOutFilePath;
-                m_pDoc->GetSVLXFileItemToFile(".view", strViewFilePath, true, strViewFileName);
-            }
+//            string strViewFileName = strSaveFileName;
+//            strViewFileName.append(".view");
+//
+//            vector<string>::iterator result = find(m_allFile.begin(),
+//                 m_allFile.end(), strViewFileName);
+//            if (result == m_allFile.end()) { //未找到
+//                string strViewFilePath = strSVLXOutFilePath;
+//                m_pDoc->GetSVLXFileItemToFile(".view", strViewFilePath, true, strViewFileName);
+//            }
             
             m_pDoc->ClearSVLXFileItem();
-            if (result == m_allFile.end()) { //未找到
-                m_pDoc->AddSVLXFileItem(strViewFileName);
-            }
+//            if (result == m_allFile.end()) { //未找到
+//                m_pDoc->AddSVLXFileItem(strViewFileName);
+//            }
             
             for (int i = 0; i < m_allFile.size(); i++) {
                 string m_fileName = m_allFile.at(i);

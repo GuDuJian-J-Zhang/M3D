@@ -38,7 +38,7 @@ using M3D::Color;
 
 #ifdef __MOBILE__
 
-#define INDEX_MAX_COUNT 65535
+#define INDEX_MAX_COUNT 4294967295
 #endif
 
 #ifdef _WIN32
