@@ -330,7 +330,7 @@ namespace M3D
 				texture2d->SetImageParameter(TEXTURE_LOAD_RGBA, TEXTURE_FLAG_MIPMAPS | TEXTURE_FLAG_INVERT_Y);
 				Image* image = new Image();
 				image->SetPath(value);
-				image->ReadFile();
+				//image->ReadFile();
 				AddRefMe(image);
 				texture2d->SetImage(image);
 				ReleaseMe(image);
