@@ -1259,13 +1259,12 @@ private:
 
 	M3D_STATUS ReadFilesSpeedMode(vector<string>& paths);
 
-	void ChechErrorPoint(M3D::Model* model);
-
 	void ShowModelViewAnimation(ModelView *pView);
 
 public:
 	float m_fUnitScale;
 	void SetUnitScale(float scale);
+	void ChechErrorPoint(M3D::Model* model);
 
 public:
 	Reader* m_Reader;

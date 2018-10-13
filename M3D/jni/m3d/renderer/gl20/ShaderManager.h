@@ -93,6 +93,9 @@ public:
 	const static string SaoMinifyCSZ;
 	const static string SaoBlur;
 
+	const static string NewJewelFront;
+	const static string NewJewelBack;
+
 public:
 	virtual ~ShaderManager();
 	ShaderManager();

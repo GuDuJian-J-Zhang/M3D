@@ -96,7 +96,8 @@ namespace M3D
 		RenderAction* action = this->m_action;
 		RenderContext* gl = action->GetGLContext();
 		CameraNode* camera = action->GetCamera();
-		ShaderProgram* shaderEffect = shaderEffect = action->GetShaderMananger()->GetEffect(ShaderManager::JewelFront);
+//		ShaderProgram* shaderEffect = shaderEffect = action->GetShaderMananger()->GetEffect(ShaderManager::JewelFront);
+		ShaderProgram* shaderEffect = shaderEffect = action->GetShaderMananger()->GetEffect(ShaderManager::NewJewelFront);
 		shaderEffect->UseProgram();
 		ShaderParameter* vertex = shaderEffect->GetShaderAttributeParameter(VSP_POSITION);
 		ShaderParameter* normal = shaderEffect->GetShaderAttributeParameter(VSP_NORMAL);
@@ -213,7 +214,8 @@ namespace M3D
 		RenderAction* action = this->m_action;
 		RenderContext* gl = action->GetGLContext();
 		CameraNode* camera = action->GetCamera();
-		ShaderProgram* shaderEffect = shaderEffect = action->GetShaderMananger()->GetEffect(ShaderManager::JewelBack);
+//		ShaderProgram* shaderEffect = shaderEffect = action->GetShaderMananger()->GetEffect(ShaderManager::JewelBack);
+		ShaderProgram* shaderEffect = shaderEffect = action->GetShaderMananger()->GetEffect(ShaderManager::NewJewelBack);
 		shaderEffect->UseProgram();
 		ShaderParameter* vertex = shaderEffect->GetShaderAttributeParameter(VSP_POSITION);
 		ShaderParameter* normal = shaderEffect->GetShaderAttributeParameter(VSP_NORMAL);

@@ -79,30 +79,31 @@ bool Thread::Run()
     return m_handle != 0;
 }
 
-void Thread::Stop(){
-	// Check if already stopped
-	if (!m_handle)
-		return;
-	if (m_threadID != GetCurrentThreadID()) {
+void Thread::Stop()
+{
+    // Check if already stopped
+    if (!m_handle)
+        return;
+
+	if(m_threadID != GetCurrentThreadID())
+	{
 #ifdef WIN32
 		if(WaitForSingleObject((HANDLE)m_handle, INFINITE)!= WAIT_ABANDONED)
 		{
 			CloseHandle((HANDLE)m_handle);
 		}
 #else
-		pthread_t* thread = (pthread_t*) m_handle;
 		if (thread) {
 #ifdef __ANDROID__
 			pthread_detach(m_threadID);
 #endif
 			pthread_join(*thread, 0);
-			delete thread;
-		}
+		delete thread;
 #endif
-		m_shouldRun = false;
-		m_threadID = 0;
-		m_handle = 0;
-	}
+	} 
+	m_shouldRun = false;
+	m_threadID = 0;
+    m_handle = 0;
 }
 
 void Thread::SetPriority(int priority)
