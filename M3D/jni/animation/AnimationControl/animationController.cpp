@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "animationController.h"
 //#include <thread>
 #include <iostream>
@@ -20,7 +19,7 @@ void AnimationController::play(){
 	//std::thread t(&AnimationController::monitorRunningNodes, this);
 	//t.detach();
 	topNode->playAnimation();
-	// ¶¥¼¶½ÚµãÍê½áÓëÑÓÊ±½ÚµãÎÞ¹Ø£¬Òò´ËÐè¿¼ÂÇÊÇ·ñÓÐÑÓÊ±½ÚµãÔÚ²¥·Å
+	// ï¿½ï¿½ï¿½ï¿½ï¿½Úµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½Úµï¿½ï¿½Þ¹Ø£ï¿½ï¿½ï¿½ï¿½ï¿½è¿¼ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½Úµï¿½ï¿½Ú²ï¿½ï¿½ï¿½
 	if (topNode->getCurState() == FINISHED && curPlayingNodes.size() == 0) {
 		myState = FINISHED;
 	}
@@ -67,22 +66,22 @@ void AnimationController::resumeModel(ModelID i_mID){
 }
 
 /*
-	¶¯»­²¥·ÅºóÆô¶¯£¬µ¥¶ÀÏß³Ì
-	±éÀútopNode½á¹¹£¬»ñÈ¡µ±Ç°²¥·ÅµÄ½Úµã£¬Èç¹ûÃ»ÓÐ£¬ÔòÍË³ö
-	Ã¿´Î±éÀúÇ°£¬ÏÈÇå³ýcurPlayingNodes
+	ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Åºï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ß³ï¿½
+	ï¿½ï¿½ï¿½ï¿½topNodeï¿½á¹¹ï¿½ï¿½ï¿½ï¿½È¡ï¿½ï¿½Ç°ï¿½ï¿½ï¿½ÅµÄ½Úµã£¬ï¿½ï¿½ï¿½Ã»ï¿½Ð£ï¿½ï¿½ï¿½ï¿½Ë³ï¿½
+	Ã¿ï¿½Î±ï¿½ï¿½ï¿½Ç°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½curPlayingNodes
 */
 void AnimationController::monitorRunningNodes(){
-	////std::this_thread::sleep_for(std::chrono::milliseconds(100)); // ÍíÓÚ¶¯»­²¥·ÅÒ»µãµã
+	////std::this_thread::sleep_for(std::chrono::milliseconds(100)); // ï¿½ï¿½ï¿½Ú¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½
 	//findRunningNodes(topNode, curPlayingNodes);
-	//while (!curPlayingNodes.empty()){ // ÖÕÖ¹Ìõ¼þ
+	//while (!curPlayingNodes.empty()){ // ï¿½ï¿½Ö¹ï¿½ï¿½ï¿½ï¿½
 	//	curPlayingNodes.clear();
 	//	findRunningNodes(topNode, curPlayingNodes);
 	//	std::this_thread::sleep_for(std::chrono::milliseconds(50));
 	//}
 }
 
-// ±éÀútopNode½á¹¹£¬»ñÈ¡µ±Ç°²¥·ÅµÄ½Úµã, µÝ¹é
-// ÓÉÓÚÃ¿¸ö½Úµã¶¼¿ÉÄÜÓÐÑÓÊ±½Úµã£¬¹ÊÐèÒª±éÀúËùÓÐ½Úµã
+// ï¿½ï¿½ï¿½ï¿½topNodeï¿½á¹¹ï¿½ï¿½ï¿½ï¿½È¡ï¿½ï¿½Ç°ï¿½ï¿½ï¿½ÅµÄ½Úµï¿½, ï¿½Ý¹ï¿½
+// ï¿½ï¿½ï¿½ï¿½Ã¿ï¿½ï¿½ï¿½Úµã¶¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½Úµã£¬ï¿½ï¿½ï¿½ï¿½Òªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð½Úµï¿½
 void AnimationController::findRunningNodes(AnimationNode* i_topNode, vector<StepNode*>& o_nodeList){
 	AnimationNodeType nodeType = i_topNode->getNodeType();
 	AnimationState nodeState = i_topNode->getCurState();
@@ -109,13 +108,13 @@ void AnimationController::findRunningNodes(AnimationNode* i_topNode, vector<Step
 			if (nodeState == RUNNING){
 				o_nodeList.push_back(stepNode);
 				vector<AnimationNode*> attachedNodes = stepNode->getAttachedNodes();
-				// ¸½Êô½Úµã
+				// ï¿½ï¿½ï¿½ï¿½ï¿½Úµï¿½
 				for (int i = 0; i < attachedNodes.size(); ++i){
 					//o_nodeList.push_back(attachedNodes[i]);
 					findRunningNodes(attachedNodes[i], o_nodeList);
 				}
 			}
-			// ÑÓ³Ù½Úµã
+			// ï¿½Ó³Ù½Úµï¿½
 			std::vector<pair<AnimationNode*, TLframe>> delayedNodes = stepNode->getDelayedNodes();
 			for (int i = 0; i < delayedNodes.size(); ++i){
 				findRunningNodes(delayedNodes[i].first, o_nodeList);

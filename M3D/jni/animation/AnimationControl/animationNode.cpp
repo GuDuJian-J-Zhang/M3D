@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "animationNode.h"
 //#include "Threads.h"
 #include <iostream>
@@ -63,13 +62,13 @@ void StepNode::playAnimation(){
 	//lastState = curState;
 	//curState = RUNNING;
 
-	//// ²¥·Å¸½Êô½Úµã,Ã¿¸ö½Úµã¶ÔÓ¦Ò»¸öÏß³Ì£¬×îºójoin
+	//// ï¿½ï¿½ï¿½Å¸ï¿½ï¿½ï¿½ï¿½Úµï¿½,Ã¿ï¿½ï¿½ï¿½Úµï¿½ï¿½Ó¦Ò»ï¿½ï¿½ï¿½ß³Ì£ï¿½ï¿½ï¿½ï¿½join
 	//vector<std::thread> threads;
 	//for (int i = 0; i < attachedNodes.size(); ++i){
 	//	AnimationNode* node = attachedNodes[i];
 	//	//threads.push_back(std::thread(&AnimationNode::playAnimation, node));
 	//}
-	////²¥·ÅÑÓÊ±½Úµã
+	////ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½Úµï¿½
 	//playDelayedNodes();
 
 	//while (leftRepeatTimes > 0){
@@ -86,17 +85,17 @@ void StepNode::playAnimation(){
 	//	//	std::this_thread::sleep_for(std::chrono::milliseconds(30));
 	//	}
 	//	if (curState == PAUSED){
-	//		/* ¼ÇÂ¼µ±Ç°Ö¡curFrame*/
+	//		/* ï¿½ï¿½Â¼ï¿½ï¿½Ç°Ö¡curFrame*/
 	//		curFrame = m_pBehaviorAction->GetCurrentTick();
 	//		break;
 	//	}
 	//	leftRepeatTimes--;
 	//}
-	//// Ä¿Ç°Î´´¦Àí¸½Êô½ÚµãÓë¸Ã½ÚµãÊ±¼ä³¤¶È²»Ò»ÖÂÇé¿ö¡£ÐèµÈ´ý¸½Êô½ÚµãÍê½á£¬¸Ã½Úµã²ÅÍê½á¡£
+	//// Ä¿Ç°Î´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Úµï¿½ï¿½ï¿½Ã½Úµï¿½Ê±ï¿½ä³¤ï¿½È²ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Úµï¿½ï¿½ï¿½á£¬ï¿½Ã½Úµï¿½ï¿½ï¿½ï¿½á¡£
 	//for (auto &t : threads){
 	//	t.join();
 	//}
-	//if (curState == PAUSED){ // ±ØÐëÔÚËùÓÐÏß³ÌjoinÖ®ºóreturn
+	//if (curState == PAUSED){ // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ß³ï¿½joinÖ®ï¿½ï¿½return
 	//	return;
 	//}
 	//curFrame = m_pBehaviorAction->GetCurrentTick();
@@ -110,34 +109,34 @@ void StepNode::pauseAnimation(bool isGlobal){
 		return;
 	}
 	if (isGlobal) {
-		// ÔÝÍ£ÑÓÊ±½Úµã
+		// ï¿½ï¿½Í£ï¿½ï¿½Ê±ï¿½Úµï¿½
 		for (int i = 0; i < delayedNodes.size(); ++i) {
 			delayedNodes[i].first->pauseAnimation(isGlobal);
 		}
 	}
-	//ÏÐÖÃ»òÔËÐÐµÄ½Úµã¿ÉÒÔ±»ÔÝÍ£
+	//ï¿½ï¿½ï¿½Ã»ï¿½ï¿½ï¿½ï¿½ÐµÄ½Úµï¿½ï¿½ï¿½Ô±ï¿½ï¿½ï¿½Í£
 	if (curState == IDLE || curState == RUNNING){
 		lastState = curState;
 		curState = PAUSED;
-		// SVIEW ÔÝÍ£¶¯»­
+		// SVIEW ï¿½ï¿½Í£ï¿½ï¿½ï¿½ï¿½
 		m_pBehaviorAction->Stop();
 		//if (m_pAnimationPlayWnd)
 		//{
 		//	m_pAnimationPlayWnd->PostMessage(WM_ANIMATION_STOP, (WPARAM)m_pBehaviorAction, NULL);
 		//}
 
-		// ÔÝÍ£¸½Êô½Úµã
+		// ï¿½ï¿½Í£ï¿½ï¿½ï¿½ï¿½ï¿½Úµï¿½
 		for (int i = 0; i < attachedNodes.size(); ++i){
 			attachedNodes[i]->pauseAnimation(isGlobal);
 		}
 	}
 }
 
-// ¼ÌÐø²Ù×÷ÊÇ×èÈûµÄ(blocking),Ö±µ½ËùÓÐ¸½Êô¶¯»­join²ÅÍË³ö
-// ´Óµ±Ç°Ö¡curFrame¼ÌÐø²¥·Å, non-blocking; Èç¹ûblocking,µ¥¶À¿ªÆôÏß³Ì
+// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(blocking),Ö±ï¿½ï¿½ï¿½ï¿½ï¿½Ð¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½joinï¿½ï¿½ï¿½Ë³ï¿½
+// ï¿½Óµï¿½Ç°Ö¡curFrameï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½, non-blocking; ï¿½ï¿½ï¿½blocking,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ß³ï¿½
 void StepNode::resumeAnimation(){
-	if (curState != PAUSED || lastState != RUNNING) {// µ±Ç°²»ÔÝÍ£ »ò ÔÝÍ£Ç°×´Ì¬Îª¿ÕÏÐ, Ö±½Ó·µ»Ø
-		// ¼ÌÐøÑÓÊ±½Úµã
+	if (curState != PAUSED || lastState != RUNNING) {// ï¿½ï¿½Ç°ï¿½ï¿½ï¿½ï¿½Í£ ï¿½ï¿½ ï¿½ï¿½Í£Ç°×´Ì¬Îªï¿½ï¿½ï¿½ï¿½, Ö±ï¿½Ó·ï¿½ï¿½ï¿½
+		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½Úµï¿½
 		playDelayedNodes();
 		return;
 	} 
@@ -149,21 +148,21 @@ void StepNode::resumeAnimation(){
 
 	lastState = curState;
 	curState = RUNNING;
-	// ¼ÌÐøÑÓÊ±½Úµã
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½Úµï¿½
 	playDelayedNodes();
-	// ¼ÌÐø¸½Êô½Úµã
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Úµï¿½
 	//vector<std::thread> threads;
 	for (int i = 0; i < attachedNodes.size(); ++i) {
 	//	threads.push_back(std::thread(&AnimationNode::resumeAnimation, attachedNodes[i]));
 	}
 
-	// sview ¼ÌÐø²¥·Å
+	// sview ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	while (leftRepeatTimes > 0) {
 		m_pBehaviorAction->Continue();
 	//	std::this_thread::sleep_for(std::chrono::milliseconds(100));
 		//if (m_pAnimationPlayWnd)
 		//{
-		//	// sendMessageÏûÏ¢×èÈû£¬¸ÄÎªpostMessage
+		//	// sendMessageï¿½ï¿½Ï¢ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÎªpostMessage
 		//	m_pAnimationPlayWnd->PostMessage(WM_ANIMATION_CONTINUE, (WPARAM)m_pBehaviorAction, NULL);
 		//	std::this_thread::sleep_for(std::chrono::milliseconds(100));
 		//}
@@ -172,7 +171,7 @@ void StepNode::resumeAnimation(){
 	//		std::this_thread::sleep_for(std::chrono::milliseconds(30));
 		}
 		if (curState == PAUSED) {
-			/* ¼ÇÂ¼µ±Ç°Ö¡curFrame*/
+			/* ï¿½ï¿½Â¼ï¿½ï¿½Ç°Ö¡curFrame*/
 			curFrame = m_pBehaviorAction->GetCurrentTick();
 			break;
 		}
@@ -197,7 +196,7 @@ void StepNode::resetStates(bool repeatSwitch){
 	if (repeatSwitch) {
 		leftRepeatTimes = repeatTimes;
 	}
-	// SVIEW ¸´Î»¶¯»­
+	// SVIEW ï¿½ï¿½Î»ï¿½ï¿½ï¿½ï¿½
 	if(m_pBehaviorAction)
 	{
 		m_pBehaviorAction->Rewind();
@@ -206,18 +205,18 @@ void StepNode::resetStates(bool repeatSwitch){
 	//{
 	//	m_pAnimationPlayWnd->SendMessage(WM_ANIMATION_REWIND, (WPARAM)m_pBehaviorAction, NULL);
 	//}
-	// ¸½Êô½Úµã¸´Î»
+	// ï¿½ï¿½ï¿½ï¿½ï¿½Úµã¸´Î»
 	for (int i = 0; i < attachedNodes.size(); ++i){
 		attachedNodes[i]->resetStates(repeatSwitch); // ?
 	}
-	// ÑÓÊ±½Úµã¸´Î»
+	// ï¿½ï¿½Ê±ï¿½Úµã¸´Î»
 	for (int i = 0; i < delayedNodes.size(); ++i){
 		delayedNodes[i].first->resetStates(repeatSwitch); // ?
 	}
 }
 
-// ²¥·Ådelay½Úµã, ¶ÀÁ¢Ïß³Ì£¬detach
-// ¿¼ÂÇµ±Ç°Ö¡Êý
+// ï¿½ï¿½ï¿½ï¿½delayï¿½Úµï¿½, ï¿½ï¿½ï¿½ï¿½ï¿½ß³Ì£ï¿½detach
+// ï¿½ï¿½ï¿½Çµï¿½Ç°Ö¡ï¿½ï¿½
 void StepNode::playDelayedNodes(){
 	//for (int i = 0; i < delayedNodes.size(); ++i){
 	//	AnimationNode* iNode = delayedNodes[i].first;
@@ -276,15 +275,15 @@ SerialNode::SerialNode(){
 SerialNode::~SerialNode(){}
 
 /*
-	(1) Èç¹ûÒÑ¾­²¥·Å¹ý£¬ÖØÖÃ¶¯»­×´Ì¬
-	(1) Èç¹ûcurIndex >= ½ÚµãÊýÄ¿£¬ÔòÈ«²¿²¥Íê
-	(2) ¸ù¾ÝcurIndex»ñµÃµ±Ç°¶¯»­½Úµã£¬Èç¹û×´Ì¬Îªidle£¬¿ªÆô¶ÀÁ¢thread,½ô½ÓÉèÖÃt.join()
-	(3) Èç¹û×´Ì¬Îªfinished£¬curIndex++
-	(4) Èç¹û×´Ì¬Îªpaused, Ìø³ö
+	(1) ï¿½ï¿½ï¿½ï¿½Ñ¾ï¿½ï¿½ï¿½ï¿½Å¹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã¶ï¿½ï¿½ï¿½×´Ì¬
+	(1) ï¿½ï¿½ï¿½curIndex >= ï¿½Úµï¿½ï¿½ï¿½Ä¿ï¿½ï¿½ï¿½ï¿½È«ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	(2) ï¿½ï¿½ï¿½ï¿½curIndexï¿½ï¿½Ãµï¿½Ç°ï¿½ï¿½ï¿½ï¿½ï¿½Úµã£¬ï¿½ï¿½ï¿½×´Ì¬Îªidleï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½thread,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½t.join()
+	(3) ï¿½ï¿½ï¿½×´Ì¬Îªfinishedï¿½ï¿½curIndex++
+	(4) ï¿½ï¿½ï¿½×´Ì¬Îªpaused, ï¿½ï¿½ï¿½ï¿½
 	
 */
 void SerialNode::playAnimation(){
-	// Èç¹ûÒÑ¾­²¥·Å¹ý£¬ÖØÖÃ¶¯»­×´Ì¬
+	// ï¿½ï¿½ï¿½ï¿½Ñ¾ï¿½ï¿½ï¿½ï¿½Å¹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã¶ï¿½ï¿½ï¿½×´Ì¬
 	if (curState == FINISHED){
 		resetStates(true);
 		//leftRepeatTimes = repeatTimes;
@@ -294,13 +293,13 @@ void SerialNode::playAnimation(){
 	//curState = RUNNING;
 	while (leftRepeatTimes > 0){
 		resetStates(false);
-		curState = RUNNING; //µ±Ç°×´Ì¬±»Ä¨µô£¬ÖØÖÃ
+		curState = RUNNING; //ï¿½ï¿½Ç°×´Ì¬ï¿½ï¿½Ä¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		//curIndex = 0;
 		
 		//while (curIndex < nodeList.size()){
 		//	AnimationNode* curNode = nodeList[curIndex];
 		//	AnimationState curNodeState = curNode->getCurState();
-		//	if (curNodeState == IDLE){ // µ±Ç°¶¯»­½Úµã¿ÕÏÐ£¬¿ªÊ¼²¥·Å¶¯»­
+		//	if (curNodeState == IDLE){ // ï¿½ï¿½Ç°ï¿½ï¿½ï¿½ï¿½ï¿½Úµï¿½ï¿½ï¿½Ð£ï¿½ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½Å¶ï¿½ï¿½ï¿½
 		//		std::thread t(&AnimationNode::playAnimation, curNode);
 		//		t.join();
 		//	}
@@ -313,7 +312,7 @@ void SerialNode::playAnimation(){
 		//}	
 		leftRepeatTimes--;
 	}
-	//²¥·ÅÍê£¬ÉèÖÃfinished
+	//ï¿½ï¿½ï¿½ï¿½ï¿½ê£¬ï¿½ï¿½ï¿½ï¿½finished
 	if (curIndex >= nodeList.size() && leftRepeatTimes == 0){
 		curState = FINISHED;
 	}
@@ -332,19 +331,19 @@ void SerialNode::resumeAnimation(){
 		return;
 	lastState = curState;
 	curState = RUNNING;
-	// ¼ÌÐøµ±Ç°½Úµã
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç°ï¿½Úµï¿½
 	AnimationNode* curNode = nodeList[curIndex];
 	curNode->resumeAnimation();
 	if (curNode->getCurState() == FINISHED) {
 		curIndex++;
 	}
 	
-	// ¼ÌÐøºóÐø½Úµã
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Úµï¿½
 	while (leftRepeatTimes > 0){	
 		//while (curIndex < nodeList.size()){
 		//	AnimationNode* curNode = nodeList[curIndex];
 		//	AnimationState curNodeState = curNode->getCurState();
-		//	if (curNodeState == IDLE){ // µ±Ç°¶¯»­½Úµã¿ÕÏÐ£¬¿ªÊ¼²¥·Å¶¯»­
+		//	if (curNodeState == IDLE){ // ï¿½ï¿½Ç°ï¿½ï¿½ï¿½ï¿½ï¿½Úµï¿½ï¿½ï¿½Ð£ï¿½ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½Å¶ï¿½ï¿½ï¿½
 		//		std::thread t(&AnimationNode::playAnimation, curNode);
 		//		t.join();
 		//	}
@@ -362,7 +361,7 @@ void SerialNode::resumeAnimation(){
 		}
 	}
 
-	// ¼ì²éÄ©Î²½ÚµãÊÇ·ñÍê½á£¬´Ó¶øÉèÖÃ¸Ã½ÚµãÍê½á
+	// ï¿½ï¿½ï¿½Ä©Î²ï¿½Úµï¿½ï¿½Ç·ï¿½ï¿½ï¿½á£¬ï¿½Ó¶ï¿½ï¿½ï¿½ï¿½Ã¸Ã½Úµï¿½ï¿½ï¿½ï¿½
 	if (nodeList[nodeList.size() - 1]->getCurState() == FINISHED) {
 		lastState = curState;
 		curState = FINISHED;
@@ -389,9 +388,9 @@ ParallelNode::~ParallelNode(){
 
 }
 /*
-	(1) ´´½¨n¸ö²¢ÐÐµÄthread
-	(2) ´´½¨Íêºó£¬È«²¿join
-	(3) ÔÚ²¥·ÅºÍ¼ÌÐøÖÐ£¬²»¿ÉÉèÖÃÔÝÍ£×´Ì¬¡£·ñÔò»áÖØ¸´ÉèÖÃlaststate
+	(1) ï¿½ï¿½ï¿½ï¿½nï¿½ï¿½ï¿½ï¿½ï¿½Ðµï¿½thread
+	(2) ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È«ï¿½ï¿½join
+	(3) ï¿½Ú²ï¿½ï¿½ÅºÍ¼ï¿½ï¿½ï¿½ï¿½Ð£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í£×´Ì¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ø¸ï¿½ï¿½ï¿½ï¿½ï¿½laststate
 */
 void ParallelNode::playAnimation(){
 	if (curState == FINISHED){
@@ -408,12 +407,12 @@ void ParallelNode::playAnimation(){
 	//	for (auto &t : threads){
 	//		t.join();
 	//	}
-	//	// ¼ì²é×Ó½ÚµãÊÇ·ñ¶¼Íê½á£¬Èç¹û´æÔÚÎ´Íê½á×Ó½Úµã£¬Ôò¸Ã½Úµã²»ÉèÖÃleftRepeatTimes--
+	//	// ï¿½ï¿½ï¿½ï¿½Ó½Úµï¿½ï¿½Ç·ï¿½ï¿½ï¿½á£¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î´ï¿½ï¿½ï¿½ï¿½Ó½Úµã£¬ï¿½ï¿½Ã½Úµã²»ï¿½ï¿½ï¿½ï¿½leftRepeatTimes--
 	//	bool isAllFinished = true;
 	//	for (int i = 0; i < nodeList.size(); ++i) {
 	//		if (nodeList[i]->getCurState() != FINISHED) {
 	//			isAllFinished = false;
-	//			// ÔÝÍ££¬·µ»Ø
+	//			// ï¿½ï¿½Í£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	//			return;
 	//		}
 	//	}
@@ -421,7 +420,7 @@ void ParallelNode::playAnimation(){
 	//		leftRepeatTimes--;
 	//}
 	
-	// ¼ì²é×Ó½ÚµãÊÇ·ñ¶¼Íê½á£¬Èç¹û´æÔÚÎ´Íê½á×Ó½Úµã£¬Ôò¸Ã½Úµã±»ÔÝÍ£
+	// ï¿½ï¿½ï¿½ï¿½Ó½Úµï¿½ï¿½Ç·ï¿½ï¿½ï¿½á£¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î´ï¿½ï¿½ï¿½ï¿½Ó½Úµã£¬ï¿½ï¿½Ã½Úµã±»ï¿½ï¿½Í£
 	for (int i = 0; i < nodeList.size(); ++i) {
 		if (nodeList[i]->getCurState() != FINISHED) {
 			return;
@@ -453,19 +452,19 @@ void ParallelNode::resumeAnimation(){
 	//	for (auto &thread : threads){
 	//		thread.join();
 	//	}
-	//	// ¼ì²é×Ó½ÚµãÊÇ·ñ¶¼Íê½á£¬Èç¹û´æÔÚÎ´Íê½á×Ó½Úµã£¬Ôò¸Ã½Úµã²»ÉèÖÃleftRepeatTimes--
+	//	// ï¿½ï¿½ï¿½ï¿½Ó½Úµï¿½ï¿½Ç·ï¿½ï¿½ï¿½á£¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î´ï¿½ï¿½ï¿½ï¿½Ó½Úµã£¬ï¿½ï¿½Ã½Úµã²»ï¿½ï¿½ï¿½ï¿½leftRepeatTimes--
 	//	bool isAllFinished = true;
 	//	for (int i = 0; i < nodeList.size(); ++i) {
 	//		if (nodeList[i]->getCurState() != FINISHED) {
 	//			isAllFinished = false;
-	//			// ÔÝÍ££¬·µ»Ø
+	//			// ï¿½ï¿½Í£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	//			return;
 	//		}
 	//	}
 	//	if (isAllFinished)
 	//		leftRepeatTimes--;
 	//}
-	// ¼ì²é×Ó½ÚµãÊÇ·ñ¶¼Íê½á£¬Èç¹û´æÔÚÎ´Íê½á×Ó½Úµã£¬Ôò¸Ã½Úµã±»ÔÝÍ£
+	// ï¿½ï¿½ï¿½ï¿½Ó½Úµï¿½ï¿½Ç·ï¿½ï¿½ï¿½á£¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î´ï¿½ï¿½ï¿½ï¿½Ó½Úµã£¬ï¿½ï¿½Ã½Úµã±»ï¿½ï¿½Í£
 	for (int i = 0; i < nodeList.size(); ++i) {
 		if (nodeList[i]->getCurState() != FINISHED) {
 			return;
@@ -489,7 +488,7 @@ DummyStepNode::DummyStepNode(TLframe i_duration){
 DummyStepNode::~DummyStepNode(){}
 
 /*
-	timer¼ÆÊ±£¬timer½áÊøºóÉèÖÃ¶¯»­×´Ì¬Îªfinished
+	timerï¿½ï¿½Ê±ï¿½ï¿½timerï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã¶ï¿½ï¿½ï¿½×´Ì¬Îªfinished
 */
 void DummyStepNode::playAnimation(){
 	lastState = curState;

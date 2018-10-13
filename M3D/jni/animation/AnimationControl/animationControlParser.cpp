@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "animationControlParser.h"
 #include "animationNode.h"
 #include <sstream>
@@ -48,7 +47,7 @@ void AnimationControlParser::parseAnimationInstructions(string filePath){
 		getline(infile, curLine);
 		parseInstruction(curLine);
 	}
-	// Èç¹û¶¥¼¶½ÚµãÎª¿Õ£¬È¡×îºóÒ»¸ö±äÁ¿Îª¶¥¼¶½Úµã
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Úµï¿½Îªï¿½Õ£ï¿½È¡ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½Úµï¿½
 	if (topNode == NULL) {
 		topNode = (*varNodes.end()).second;
 	}
@@ -162,9 +161,9 @@ AnimationNode* AnimationControlParser::parseNodeExpression(string i_instruction)
 }
 
 /*
-	(1) ¼ì²é¹Ø¼ü×Ö
-	(2) Èç¹û²»ÊÇÄ©Î²£¬»ñÈ¡À¨ºÅÄÚÏÂÒ»²¿·Ý
-	(3) Èç¹ûÊÇ½Úµã±äÁ¿»òÊ±¼ä±äÁ¿£¬´ÓmapÖÐ»ñÈ¡Ö¸Õë;Èç¹ûÊÇÊý×Ö£¬¹¹½¨dummynode;Èç¹ûÊÇexpr,½âÎö
+	(1) ï¿½ï¿½ï¿½Ø¼ï¿½ï¿½ï¿½
+	(2) ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä©Î²ï¿½ï¿½ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½
+	(3) ï¿½ï¿½ï¿½ï¿½Ç½Úµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½mapï¿½Ð»ï¿½È¡Ö¸ï¿½ï¿½;ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö£ï¿½ï¿½ï¿½ï¿½ï¿½dummynode;ï¿½ï¿½ï¿½ï¿½ï¿½expr,ï¿½ï¿½ï¿½ï¿½
 */
 SerialNode* AnimationControlParser::parseSerial(string i_instruction){
 	SerialNode* result = new SerialNode();
@@ -204,7 +203,7 @@ SerialNode* AnimationControlParser::parseSerial(string i_instruction){
 	return result;
 }
 
-//Óë½âÎöserialÀàËÆ
+//ï¿½ï¿½ï¿½ï¿½ï¿½serialï¿½ï¿½ï¿½ï¿½
 ParallelNode* AnimationControlParser::parseParallel(string i_instruction){
 	ParallelNode* result = new ParallelNode();
 	Keyword k = getInstructionKeyword(i_instruction);
@@ -272,9 +271,9 @@ StepNode* AnimationControlParser::parseModelAnimationBinding(string i_instructio
 
 // attach(s1, s2); attach(s1, {s2,s3,s4});
 /*
-	(1) ¼ì²é¹Ø¼ü×Ö
-	(2) »ñÈ¡±»¸½Êô¶ÔÏó
-	(3) »ñÈ¡¸½Êô¶ÔÏó
+	(1) ï¿½ï¿½ï¿½Ø¼ï¿½ï¿½ï¿½
+	(2) ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	(3) ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 */
 void AnimationControlParser::parseAttachment(string i_instruction){
 	Keyword k = getInstructionKeyword(i_instruction);
@@ -301,7 +300,7 @@ void AnimationControlParser::parseAttachment(string i_instruction){
 	}
 }
 
-// Ä¿Ç°Ö»ÓÐstepnodeºó²Å¿ÉÒÔ¸úÑÓÊ±½Úµã
+// Ä¿Ç°Ö»ï¿½ï¿½stepnodeï¿½ï¿½Å¿ï¿½ï¿½Ô¸ï¿½ï¿½ï¿½Ê±ï¿½Úµï¿½
 void AnimationControlParser::parseDelay(string i_instruction){
 	Keyword k = getInstructionKeyword(i_instruction);
 	if(k != DELAY)
@@ -338,7 +337,7 @@ void AnimationControlParser::parseRepeat(string i_instruction){
 	getNodeFromVar(varStr)->setRepeatTimes(nTimes);
 }
 /*
-	ÉèÖÃduration
+	ï¿½ï¿½ï¿½ï¿½duration
 */
 void AnimationControlParser::parseTimeFrameAdjustment(string i_instruction){
 	Keyword k = getInstructionKeyword(i_instruction);
@@ -361,9 +360,9 @@ void AnimationControlParser::parseConditionalJump(string i_instruction){
 }
 
 /*
-	(1) »ñÈ¡¹Ø¼ü×Ö"PLCID:"²¢¼ì²é
-	(2) »ñÈ¡1\0\1×Ö·û´®
-	(3) ÕÒ"\",·Ö¸î×Ö·û´®£¬Ñ­»·ÒÀ´Î¼ÓÈë£¬Ö±µ½½áÊø
+	(1) ï¿½ï¿½È¡ï¿½Ø¼ï¿½ï¿½ï¿½"PLCID:"ï¿½ï¿½ï¿½ï¿½ï¿½
+	(2) ï¿½ï¿½È¡1\0\1ï¿½Ö·ï¿½ï¿½ï¿½
+	(3) ï¿½ï¿½"\",ï¿½Ö¸ï¿½ï¿½Ö·ï¿½ï¿½ï¿½ï¿½ï¿½Ñ­ï¿½ï¿½ï¿½ï¿½ï¿½Î¼ï¿½ï¿½ë£¬Ö±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 */
 ModelID AnimationControlParser::parseModelID(string i_str){
 	ModelID mID;
@@ -384,7 +383,7 @@ ModelID AnimationControlParser::parseModelID(string i_str){
 		plcStr = plcStr.substr(slash + 1, plcStr.size() - slash - 1);
 		slash = plcStr.find("|");
 	}
-	// ×îºóÒ»¸ö
+	// ï¿½ï¿½ï¿½Ò»ï¿½ï¿½
 	if (!plcStr.empty()){
 		int num = (int)StrToFloat(plcStr);
 		mID.addPathItem(num);
@@ -393,9 +392,9 @@ ModelID AnimationControlParser::parseModelID(string i_str){
 }
 
 /*
-	(1) »ñÈ¡¹Ø¼ü×Ö"AnimID:"²¢¼ì²é
-	(2) »ñÈ¡1\0×Ö·û´®
-	(3) ÕÒ"\",·Ö¸î×Ö·û´®£¬»ñµÃprocID,stepID
+	(1) ï¿½ï¿½È¡ï¿½Ø¼ï¿½ï¿½ï¿½"AnimID:"ï¿½ï¿½ï¿½ï¿½ï¿½
+	(2) ï¿½ï¿½È¡1\0ï¿½Ö·ï¿½ï¿½ï¿½
+	(3) ï¿½ï¿½"\",ï¿½Ö¸ï¿½ï¿½Ö·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½procID,stepID
 */
 AnimationID AnimationControlParser::parseAnimationID(string i_str){
 	AnimationID aID;
@@ -422,15 +421,15 @@ string AnimationControlParser::trimSpace(string io_str){
 	{
 		return io_str;
 	}
-	io_str.erase(0, io_str.find_first_not_of(" ")); // Ïû³ýÇ°¿Õ¸ñ
-	io_str.erase(0, io_str.find_first_not_of("\t")); // Ïû³ýÇ°tab
-	io_str.erase(io_str.find_last_not_of(" ") + 1);  // Ïû³ýºó¿Õ¸ñ
-	io_str.erase(io_str.find_last_not_of("\t") + 1); // Ïû³ýºótab
+	io_str.erase(0, io_str.find_first_not_of(" ")); // ï¿½ï¿½ï¿½ï¿½Ç°ï¿½Õ¸ï¿½
+	io_str.erase(0, io_str.find_first_not_of("\t")); // ï¿½ï¿½ï¿½ï¿½Ç°tab
+	io_str.erase(io_str.find_last_not_of(" ") + 1);  // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Õ¸ï¿½
+	io_str.erase(io_str.find_last_not_of("\t") + 1); // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½tab
 	return io_str;
 }
 
 
-// ±éÀústring, Óöµ½"(" diff++,Óöµ½")" diff--; diff ==0 Ê± break;
+// ï¿½ï¿½ï¿½ï¿½string, ï¿½ï¿½ï¿½ï¿½"(" diff++,ï¿½ï¿½ï¿½ï¿½")" diff--; diff ==0 Ê± break;
 string::size_type AnimationControlParser::getRightBracket(string i_str, string::size_type left){
 	int diff = 1;	
 	int cur = left+1;
@@ -446,10 +445,10 @@ string::size_type AnimationControlParser::getRightBracket(string i_str, string::
 }
 
 /*
-	(1)ÕÒcomma ºÍ leftbracket
-	(2)±È½Ï´óÐ¡£¬ÕÒµ½Ð¡µÄ
-	(3)Èç¹ûcommaÐ¡£¬·Ö¸î×Ö·û´®£»
-	(4)Èç¹ûleftbracketÐ¡£¬ÕÒµ½rightbracket,·Ö¸î
+	(1)ï¿½ï¿½comma ï¿½ï¿½ leftbracket
+	(2)ï¿½È½Ï´ï¿½Ð¡ï¿½ï¿½ï¿½Òµï¿½Ð¡ï¿½ï¿½
+	(3)ï¿½ï¿½ï¿½commaÐ¡ï¿½ï¿½ï¿½Ö¸ï¿½ï¿½Ö·ï¿½ï¿½ï¿½ï¿½ï¿½
+	(4)ï¿½ï¿½ï¿½leftbracketÐ¡ï¿½ï¿½ï¿½Òµï¿½rightbracket,ï¿½Ö¸ï¿½
 */ 
 string AnimationControlParser::getNextPartInsideBracket(string &linepart){
 	linepart = trimSpace(linepart);
@@ -459,7 +458,7 @@ string AnimationControlParser::getNextPartInsideBracket(string &linepart){
 	string::size_type comma = linepart.find(",");
 	string::size_type leftbracket = linepart.find("(");
 	
-	// ´¦ÀíÎ²²¿
+	// ï¿½ï¿½ï¿½ï¿½Î²ï¿½ï¿½
 	if(comma == string::npos && leftbracket == string::npos){
 		string::size_type rightbracket = linepart.find(")");
 		curPart = linepart.substr(0, rightbracket);

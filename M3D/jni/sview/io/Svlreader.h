@@ -21,7 +21,6 @@
 #include "m3d/graphics/CameraNode.h"
 #include "m3d/model/GeoAttribute.h"
 
-#include "prebuilt/svl2/include/Stk_Define.h"
 #include "prebuilt/svl2/include/Stk_MeshEntity.h"
 #include "prebuilt/svl2/include/Stk_CompositeText.h"
 #include "prebuilt/svl2/include/Stk_PMIEntity.h"

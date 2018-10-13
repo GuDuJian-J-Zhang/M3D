@@ -1149,7 +1149,7 @@ public:
     M3D_STATUS CopySVLXFileItemToFileByReOpen(const std::string& i_strFileName, const std::string& i_strOutFilePath, bool bByExt);
 	bool CreateNewReader();
 	void CloseReader();
-	//异步读取完成之后，是否SVLLib管理的内存
+	//异步读取完成之后，释放SVLLib管理的内存
 	bool AsynReadClose();
 
 	//FOR 中广核
@@ -1258,12 +1258,13 @@ private:
 	M3D_STATUS ReadFilesNormalMode(vector<string>& paths);
 
 	M3D_STATUS ReadFilesSpeedMode(vector<string>& paths);
-
+	
 	void ShowModelViewAnimation(ModelView *pView);
 
 public:
 	float m_fUnitScale;
 	void SetUnitScale(float scale);
+
 	void ChechErrorPoint(M3D::Model* model);
 
 public:
