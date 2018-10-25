@@ -74,6 +74,8 @@ using rapidjson::MemoryPoolAllocator;
 #include "m3d/graphics/TextureCube.h"
 #include "m3d/utils/PathHelper.h"
 #include "m3d/graphics/MatCapMaterial.h"
+#include "../views/Parameters.h"
+#include "m3d/utils/IDCreator.h"
 
 using namespace HoteamSoft::SVLLib;
 namespace SVIEW
@@ -2252,12 +2254,30 @@ namespace SVIEW
 				allsubModels.push_back(subModel);
 			}
 		}
-
+		bool bUsePrototypeProperty = Parameters::Instance()->m_usePrototypeProperty;
+		bool bUseInstanceProperty = Parameters::Instance()->m_useInstanceProperty;
+		unsigned int svlIDOffset = IDCreator::Instance()->GetSVLIDOffset().Code();
 		for (int i = 0; i < allsubModels.size(); i++)
 		{
 			Model* subModel = allsubModels.at(i);
 			ShapeProperty* shapeProperty = subModel->GetShapeProperty();
-
+			//记录虚化及原始材质的信息（不对外显示）
+			if (subModel->Selectable() == false)
+			{
+				char cTrans[256] = { 0 };
+				sprintf(cTrans, "%f", subModel->GetOriginTransparency());
+				wstring originTrans = Platform::StringToWString(cTrans, "auto");
+				if (bUseInstanceProperty && subModel->GetSVLId() - svlIDOffset > 0) 
+				{
+					m_svl2Doc->AddInstanceAttribute(subModel->GetInstatnceID(), L"selectable", L"false");
+					m_svl2Doc->AddInstanceAttribute(subModel->GetInstatnceID(), L"origintransparency", originTrans);
+				}
+				else if (bUsePrototypeProperty && subModel->GetProtoTypeId() > 0)
+				{
+					m_svl2Doc->AddModelAttribute(subModel->GetProtoTypeId(), L"selectable", L"false");
+					m_svl2Doc->AddModelAttribute(subModel->GetProtoTypeId(), L"originmaterial", originTrans);
+				}
+			}
 			if (shapeProperty)
 			{
 				vector<ShapePropertyItem>& shapeProperties = shapeProperty->GetProperties();
@@ -2266,8 +2286,13 @@ namespace SVIEW
 					ShapePropertyItem item = shapeProperties[i];
 					wstring attrName = Platform::StringToWString(item.m_strTitle, "auto");
 					wstring attrValue = Platform::StringToWString(item.m_strValue, "auto");
-
-					m_svl2Doc->AddModelAttribute(subModel->GetProtoTypeId(), attrName, attrValue);
+					if (bUseInstanceProperty && subModel->GetSVLId() - svlIDOffset > 0) {
+						m_svl2Doc->AddInstanceAttribute(subModel->GetInstatnceID(), attrName, attrValue);
+					}
+					else if (bUsePrototypeProperty && subModel->GetProtoTypeId() > 0)
+					{
+						m_svl2Doc->AddModelAttribute(subModel->GetProtoTypeId(), attrName, attrValue);
+					}
 				}
 			}
 		}

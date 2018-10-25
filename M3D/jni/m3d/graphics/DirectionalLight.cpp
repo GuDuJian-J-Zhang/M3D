@@ -1,4 +1,4 @@
-﻿
+
 #include "m3d/graphics/DirectionalLight.h"
 #include "m3d/action/RenderAction.h"
 #include "sview/views/Parameters.h"
@@ -6,6 +6,14 @@
 #include "m3d/base/BoundingBox.h"
 #include "m3d/graphics/LightShadow.h"
 #include "m3d/graphics/DirectionalLightShadow.h"
+#include "m3d/utils/MeshHelper.h"
+#include "m3d/scene/ShapeNode.h"
+#include "m3d/graphics/Billboard.h"
+#include "m3d/utils/ShapeHelper.h"
+#include "m3d/Handler/Translate3DDragger.h"
+#include "m3d/graphics/LightDraggerCallback.h"
+#include "m3d/model/Body.h"
+#include "m3d/graphics/Material.h"
 namespace M3D
 {
 
@@ -29,11 +37,15 @@ DirectionalLight::DirectionalLight():BaseLight()
 	SetLightSourceType(LightType_Directional);
 	m_lightShadow = new DirectionalLightShadow;
 	m_castShadow = true;
+	m_arrow = nullptr;
+	m_orgScale = 1.0f;
+	sourceDragger = nullptr;
+	directionDragger = nullptr;
 }
 
 DirectionalLight::~DirectionalLight()
 {
-
+	ReleaseMe(m_arrow);
 }
 
 //void DirectionalLight::ComputeBox()
@@ -48,73 +60,88 @@ DirectionalLight::~DirectionalLight()
 
 void DirectionalLight::FindVisiableObject(RenderAction* renderAction)
 {
-	if (m_needUpdataSign)
-	{		
-		Matrix3x4 worldMatrix = this->GetWorldTransform();
-		m_glworldMatrix = worldMatrix.ToMatrix4().Transpose();
-		Vector3 newPos = Vector3::ZERO;
-		//仅显示图片标识
-		if (this->m_showSimpleSign)
-		{		
-			if (!this->m_simpleSignModel)
-			{
-				this->m_simpleSignModel = new ImageModel();
-				AddRefMe(this->m_simpleSignModel);
-
-				string directLightImage = SVIEW::Parameters::Instance()->m_appWorkPath + "\\data\\pic\\" + string("directional.png");
-				m_simpleSignModel->SetImagePath(directLightImage);
-                Vector2 tempSize(0.5f, 0.5f);
-				m_simpleSignModel->SetImageSize(newPos, tempSize);
-				this->AddSubModel(this->m_simpleSignModel);
-			}
-			//m_simpleSignModel->SetImagePosition(newPos);
-		}
-
-		//显示包括线框的标识
-		if (this->m_ShowAllSign)
-		{
-			if (!this->m_allSignModel)
-			{
-				this->m_allSignModel = new Model();
-
-				AddRefMe(this->m_allSignModel);
-				this->AddSubModel(this->m_allSignModel);
-			}
-			m_allSignModel->ClearLineData();
-			vector<Vector3> lines;
-			
-			//Vector3 target = GetTargetPosition();
-			Vector3 position = newPos;
-			Vector3 direction = m_direction;
-			direction.Normalize();
-			float length = renderAction->GetScene()->GetSceneBox().Length();
-			lines.push_back(position - direction*length*0.5);
-			lines.push_back(position);
-			m_allSignModel->AddLineData(lines);
-			//构造四边形
-			vector<Vector3> square;
-			float size = length*0.02;
-
-			Vector3 p1(-size, size, 0.0),p2(-size,-size,0.0),p3(size,-size,0.0),p4(size,size,0.0);
-			square.push_back(p1); //lines.push_back(p2);
-			square.push_back(p2); //lines.push_back(p3);
-			square.push_back(p3); //lines.push_back(p4);
-			square.push_back(p4); //lines.push_back(p1);
-			square.push_back(p1);
-
-			m_allSignModel->AddLineData(square);
-		}
-
-		m_needUpdataSign = false;
-	}
-
-	//if(this->IsVisible())
+	if(!IsVisible())
 	{
-		this->SetRenderWorldMatrix(&m_glworldMatrix);
-	//	renderAction->AddLight(this);
+		return;
 	}
 
-	Model::FindVisiableObject(renderAction);
+	Matrix3x4 worldMatrix = this->GetWorldTransform();
+	m_glworldMatrix = worldMatrix.ToMatrix4().Transpose();
+
+	this->SetRenderWorldMatrix(&m_glworldMatrix);
+
+	vector<Model*>& children = GetSubModels();
+	for (size_t i = 0; i < GetSubModelCount(); i++)
+	{
+		Model* child = children[i];
+		if (child)
+		{
+			if (child->GetName().compare("Arrow") == 0)
+			{
+				Vector3 position = this->GetWorldTransform()* Vector3::ZERO;
+				float scale = Billboard::GetFitShowScale(renderAction, position) / 0.4f;
+				scale *= m_orgScale;
+				Vector3 scaleVec3(scale, scale, scale);
+				child->SetScale(scaleVec3);
+			}
+			child->FindVisiableObject(renderAction);
+		}
+	}
+}
+
+void DirectionalLight::SetSelected(bool select)
+{
+	m_IsSelect = select;
+	if (m_simpleSignModel) {
+		m_simpleSignModel->SetSelected(select);
+	}
+	if (m_arrow) {
+		m_arrow->SetSelected(select);
+	}
+	if (m_Visible)
+	{
+		if (m_allSignModel)
+		{
+			m_allSignModel->SetVisible(select);
+		}
+
+		if (sourceDragger)
+		{
+			sourceDragger->SetVisible(select);
+			sourceDragger->GetDrawModel()->SetVisible(select);
+		}
+		if (directionDragger)
+		{
+			directionDragger->SetVisible(select);
+			directionDragger->GetDrawModel()->SetVisible(select);
+		}
+	}
+}
+
+void DirectionalLight::SetVisible(bool visible)
+{
+	m_Visible = visible;
+	IsTurnOn(visible);
+	//SetSelected(m_IsSelect);
+	
+	visible = m_IsSelect && m_Visible;
+	//if(m_IsSelect && m_Visible)
+	{
+		if (m_allSignModel)
+		{
+			m_allSignModel->SetVisible(visible);
+		}
+		if (sourceDragger)
+		{
+			sourceDragger->SetVisible(visible);
+			sourceDragger->GetDrawModel()->SetVisible(visible);
+		}
+		if (directionDragger)
+		{
+			directionDragger->SetVisible(visible);
+			directionDragger->GetDrawModel()->SetVisible(visible);
+		}
+	}
 }
 
 void DirectionalLight::InitProperties()
@@ -183,6 +210,173 @@ float & DirectionalLight::GetSpecularIntensity()
 LightShadow* DirectionalLight::GetLightShadow()
 {
 	return m_lightShadow;
+}
+
+void DirectionalLight::CreateSignModel(SceneManager* sceneManager)
+{
+	if (m_needUpdataSign)
+	{
+		Vector3 newPos = Vector3::ZERO;
+		//仅显示图片标识
+		if (this->m_showSimpleSign)
+		{
+			if (!this->m_simpleSignModel)
+			{
+				this->m_simpleSignModel = new ImageModel();
+				AddRefMe(this->m_simpleSignModel);
+
+				string directLightImage = SVIEW::Parameters::Instance()->m_appWorkPath + "\\data\\pic\\" + string("directional.png");
+				m_simpleSignModel->SetImagePath(directLightImage);
+				Vector2 tempSize(0.5f, 0.5f);
+				m_simpleSignModel->SetImageSize(newPos, tempSize);
+				m_simpleSignModel->SetName("LightModel");
+				m_simpleSignModel->SetAllowClip(false);
+				m_simpleSignModel->SetInTopShow(true);
+				this->AddSubModel(this->m_simpleSignModel);
+			}
+
+			if (!m_arrow)
+			{
+				string toolsFilePath = SVIEW::Parameters::Instance()->m_appWorkPath + "\\data\\handler\\" + string("AxisHandler.stl");
+				if (MeshHelper::ReadSingleModel(toolsFilePath, m_arrow))
+				{
+					if (m_arrow) {
+
+						Vector2 size = ShapeHelper::GetCommonSize(sceneManager, Vector2(1.0f, 1.0f));
+						m_orgScale = size.m_x;
+						m_arrow->SetInitHightlight(true);
+						m_arrow->SetUserData(this);
+						m_arrow->SetMaterial(InitBaseMaterial());
+						m_arrow->SetName("Arrow");
+						m_arrow->SetWorldPosition(newPos);
+						m_arrow->SetWorldDirection(m_direction.Nagative());
+						AddSubModel(m_arrow);
+					}
+				}
+			}
+			if (!m_allSignModel)
+			{
+				m_allSignModel = new Model();
+				m_allSignModel->SetName("Lines");
+				AddRefMe(this->m_allSignModel);
+
+				float length = sceneManager->GetSceneBox().Length() * 0.5;
+				Vector3 direction = m_direction.Normalized();
+				Vector3 pnt = newPos - direction*length;
+
+				vector<Vector3> lines;
+				lines.push_back(newPos);
+				lines.push_back(pnt);
+				m_allSignModel->AddLineData(lines, Color::YELLOW, true);
+				m_allSignModel->SetVisible(false);
+				m_allSignModel->SetNeedClip(false);
+				AddSubModel(this->m_allSignModel);
+			}
+		}
+		m_needUpdataSign = false;
+	}
+}
+
+BaseMaterial* DirectionalLight::InitBaseMaterial()
+{
+	Material* material = new Material();
+	material->Opacity(1.0f);
+	material->SetShininess(0.0f);
+	Color diffuse(1.0, 1.0, 0.0);//(0.882352948, 0.5647059, 0.0);
+	Color ambient(0.0, 0.0, 0.0);
+	Color emissive(1.0,1.0,0.0);//(0.882352948, 0.5647059, 0.0);
+	Color specular(0.0, 0.0, 0.0);
+	material->SetDiffuse(diffuse);
+	material->SetAmbient(ambient);
+	material->SetEmissive(emissive);
+	material->setSpecular(specular);
+	Uniform uniform("Int", (int)material->GetMaterialType());
+	material->SetUniformParameter("type", uniform);
+	return material;
+}
+
+void DirectionalLight::BindDragger(SceneManager* sceneManager)
+{
+	sceneManager->Lock();
+	Vector3 position = sceneManager->GetSceneBox().Center();
+	sourceDragger = sceneManager->GetHandlerGroup()->GetTranslate3DHandle();
+	sourceDragger->SetNeedScale(false);
+	sourceDragger->SetVisible(false);
+	sourceDragger->SetWorldPosition(GetWorldPosition());
+	//sourceDragger->SetID(GetID());
+
+	LightDraggerCallback* draggerCallback = new LightDraggerCallback();
+	draggerCallback->AddModel(this);
+	draggerCallback->AddRef();
+	draggerCallback->SetDraggerType(DraggerType::SOURCE_DRAGGER);
+	sourceDragger->addDraggerCallback(draggerCallback);
+	draggerCallback->Release();
+
+
+	directionDragger = sceneManager->GetHandlerGroup()->GetTranslate3DPntHandle();
+	directionDragger->SetNeedScale(false);
+	directionDragger->SetVisible(false);
+
+	
+	Matrix3x4 transformMaxtix;
+	transformMaxtix.MultiTranslate(GetWorldPosition());
+	float length = sceneManager->GetSceneBox().Length() * 0.5;
+	transformMaxtix.MultiTranslate(GetWorldDirection().Nagative()*length);
+	m_DirecPosition = transformMaxtix.Translation();
+	directionDragger->SetWorldPosition(m_DirecPosition);
+
+	LightDraggerCallback* directionCallback = new LightDraggerCallback();
+	directionCallback->AddModel(this);
+	directionCallback->AddRef();
+	directionCallback->SetDraggerType(DraggerType::DIRECTION_DRAGGER);
+	directionDragger->addDraggerCallback(directionCallback);
+	directionCallback->Release();
+
+	sceneManager->UnLock();
+}
+
+void DirectionalLight::UnBindDragger(SceneManager* sceneManager)
+{
+	sceneManager->Lock();
+	sourceDragger->ClearDraggerCallbacks();
+	directionDragger->ClearDraggerCallbacks();
+	sceneManager->UnLock();
+}
+
+Vector3 DirectionalLight::GetDirectionPos()
+{
+	return m_DirecPosition;
+}
+void DirectionalLight::SetDirectionPos(Vector3 pos)
+{
+	m_DirecPosition = pos;
+}
+
+bool DirectionalLight::ChangeLines()
+{
+	if (m_allSignModel)
+	{
+		vector<Body*>* bodies = m_allSignModel->GetBodys();
+		if (bodies != nullptr)
+		{
+			for (vector<Body*>::iterator it = bodies->begin(); it != bodies->end(); it++)
+			{
+				ReleaseMe(*it);
+			}
+			bodies->clear();
+		}
+		
+		Matrix3x4 pareWMat = m_allSignModel->GetWorldTransform();
+		Vector3 start = pareWMat.Inverse()*GetWorldPosition();
+		Vector3 end = pareWMat.Inverse()*m_DirecPosition;
+
+		vector<Vector3> lines;
+		lines.push_back(start);
+		lines.push_back(end);
+		m_allSignModel->AddLineData(lines, Color::YELLOW, true);
+		m_allSignModel->SetNeedClip(false);
+	}
+	return true;
 }
 
 }

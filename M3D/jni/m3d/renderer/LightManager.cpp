@@ -59,6 +59,8 @@ namespace M3D
 				}
 			}
 			AddRefMe(light); 
+			light->CreateSignModel(m_sceneManager);
+			light->BindDragger(m_sceneManager);
 			this->m_sceneManager->AsynUpdateModelCacheInfo(light,true);
 			m_sceneLights.push_back(light);
 			//AddLightToScene(light);
@@ -91,6 +93,7 @@ namespace M3D
 				//m_sceneLights[i] = m_sceneLights[length - 1];	
 				this->m_sceneManager->AsynUpdateModelCacheInfo(light, false); 
 				m_sceneLights.erase(m_sceneLights.begin()+i);
+				light->UnBindDragger(m_sceneManager);
 				ReleaseMe(light);
 				this->m_sceneManager->UnLock();
 				return;

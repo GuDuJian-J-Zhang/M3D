@@ -37,7 +37,10 @@
 #include "m3d/action/RenderAction.h"
 #include "m3d/model/Curve.h"
 #include "m3d/model/Edge.h"
-
+#include "m3d/graphics/ImageBoard.h"
+#include "m3d/SceneManager.h"
+#include "m3d/graphics/MaterialTemplateManager.h"
+#include "m3d/graphics/ShaderMaterial.h"
 namespace M3D
 {
 	SModelFileInfo::SModelFileInfo(M3D::Model* model) {
@@ -96,6 +99,7 @@ Model::Model(void):Object()
 	this->SetFileInfo(NULL);
 
 	this->MarkDirty();
+	m_originTrans = 1.0f;
 }
 
 Model::~Model(void)
@@ -1232,6 +1236,33 @@ void Model::SetMaterial(BaseMaterial* material)
 	//}
 }
 
+void Model::SetMaterialForLastBody(BaseMaterial* material)
+{
+	if (this->m_modelExtInfo)
+	{
+	}
+
+	if (this->GetBodys())
+	{
+		int nCount = this->GetBodys()->size();
+		if (nCount > 0)
+		{
+			Body *body = GetBodys()->at(nCount - 1);
+			if (body) 
+			{
+				for (int j = 0; j < body->GetFaces().size(); j++)
+				{
+					Face *face = body->GetFaces().at(j);
+					if (face)
+					{
+						face->SetMaterial(material);
+					}
+				}
+			}
+		}
+	}
+}
+
 bool	Model::HasMaterial()
 {
 	bool bHasMaterial = true;
@@ -1515,7 +1546,7 @@ void Model::MoveModelView(int viewId, int preViewId)
 	int viewCount = (int)pVecViews->size();
 	ModelView* pModelView = NULL;
 	int nModelViewIndex = -1;
-	int nPreModelViewIndex = 0;
+	int nPreModelViewIndex = viewCount-1;
 	for (int i = 0; i < viewCount; i++)
 	{
 		if ((*pVecViews)[i]->GetID() == viewId)
@@ -1543,7 +1574,7 @@ void Model::MoveModelView(int viewId, int preViewId)
 	{
 		if(nModelViewIndex > nPreModelViewIndex)
 		{
-			int nModelViewNewIndex = nPreModelViewIndex + 1;
+			int nModelViewNewIndex = nPreModelViewIndex;
 			for (int i = nModelViewIndex; i > nModelViewNewIndex; i--)
 			{
 				(*pVecViews)[i] = (*pVecViews)[i - 1];
@@ -1552,7 +1583,7 @@ void Model::MoveModelView(int viewId, int preViewId)
 		}
 		else
 		{
-			int nModelViewNewIndex = nPreModelViewIndex;
+			int nModelViewNewIndex = nPreModelViewIndex-1;
 			for (int i = nModelViewIndex; i < nModelViewNewIndex; i++)
 			{
 				(*pVecViews)[i] = (*pVecViews)[i + 1];
@@ -1804,6 +1835,85 @@ void Model::AddMeshData(vector<Vector3>& points, vector<Vector3>& normals, vecto
 	this->AddBody(body);
 }
 
+void Model::AddBodyByFace(Face* face)
+{
+	Mesh* pMesh = face->GetData();
+	VertexSet* bodyDrawData = pMesh->GetRefMesh();
+	unsigned int uiDataOffset = pMesh->GetDataOffset();
+	unsigned int uiDataLength =  pMesh->GetDataLength();
+	std::vector<M3D_INDEX_TYPE>* indexArray = bodyDrawData->GetIndexArray();
+	std::vector<Vector3>* bodyPnts = bodyDrawData->GetPositionArray();
+	std::vector<Vector3>* bodyNormals = bodyDrawData->GetNormalArray();
+	std::vector<Vector3>* bodyTextures = bodyDrawData->GetTextureCoordArray();
+	vector<Vector3> curFacePnts;
+	vector<Vector3> curFaceNmls;
+	vector<Vector3> curFaceTxts;
+	vector<M3D_INDEX_TYPE> curFaceIndex;
+	for (int i = 0; i < uiDataLength; i ++)
+	{
+		int realIndex = indexArray->at(uiDataOffset++);
+		curFaceIndex.push_back(realIndex);
+
+		if (bodyPnts->size() > 0)
+		{
+			Vector3 curPnt = bodyPnts->at(realIndex);
+			curFacePnts.push_back(curPnt);
+		}
+		if (bodyNormals->size() > 0)
+		{
+			Vector3 curNml = bodyNormals->at(realIndex);
+			curFaceNmls.push_back(curNml);
+		}		
+		if (bodyTextures->size() > 0)
+		{
+			Vector3 curTxt = bodyTextures->at(realIndex);
+			curFaceTxts.push_back(curTxt);
+		}
+	}
+
+	//顶点个数大于0，并且是3的整数倍
+	Body* body = new Body();
+	
+	VertexSet* newBodyDrawData = new VertexSet();
+	newBodyDrawData->SetUseIndex(true);
+	std::vector<Vector3>* newBodyPnts = newBodyDrawData->GetPositionArray();
+	std::vector<Vector3>* newBodyNormals = newBodyDrawData->GetNormalArray();
+	std::vector<M3D_INDEX_TYPE>* newIndexArray = newBodyDrawData->GetIndexArray();
+	std::vector<Vector3>* newTextureCoords = newBodyDrawData->GetTextureCoordArray();
+
+	*newBodyPnts = curFacePnts;
+	*newBodyNormals = curFaceNmls;
+	*newIndexArray = curFaceIndex;
+	if (curFaceTxts.size() > 0)
+	{
+		*newTextureCoords = curFaceTxts;
+	}
+	else
+	{
+		//newTextureCoords->push_back(Vector3(0, 0, 0));
+		//newTextureCoords->push_back(Vector3(0, 1, 0));
+		//newTextureCoords->push_back(Vector3(1, 1, 0));
+		//newTextureCoords->push_back(Vector3(1, 0, 0));
+		//newTextureCoords->push_back(Vector3(0, 0, 0));
+		//newTextureCoords->push_back(Vector3(1, 1, 0));
+	}	
+
+	//构造一个合并面显示
+	Face* pFace = new Face();
+
+	Mesh* facemeshData = new Mesh(bodyDrawData);
+	facemeshData->SetDataOffset(0);
+	facemeshData->SetDataLength(bodyDrawData->GetPositionArray()->size());
+	pFace->SetData(facemeshData);
+
+	//构造一个合并面显示
+	//Face* pFace1 = new Face(*face);
+
+	body->AddFace(pFace);
+
+	this->AddBody(body);
+}
+
 void Model::AddMeshData(vector<Vector3>& points, vector<Vector3>& normals, vector<Vector3>& uvs)
 {
 	//顶点个数大于0，并且是3的整数倍
@@ -1878,7 +1988,7 @@ void Model::AddLineData(vector<Vector3>& points, vector<M3D_INDEX_TYPE>& indexs)
 	this->AddBody(body);
 }
 
-void Model::AddLineData(vector<Vector3>& points)
+void Model::AddLineData(vector<Vector3>& points, Color color, bool dotted)
 {
 	Body* body = new Body();
 	M3D::SPolyLine* bodyPolyLine = body->GetPolyLine();
@@ -1895,6 +2005,8 @@ void Model::AddLineData(vector<Vector3>& points)
 
 		Edge* edge = new Edge();
 		edge->AddData(edgeLine, 0);
+		edge->SetColor(color);
+		edge->SetDotted(dotted);
 		body->AddEdge(edge);
 
 		unsigned int dataLength = points.size();
@@ -2562,6 +2674,19 @@ void ImageModel::SetFixShowInScreen(bool fixShow)
 	}
 }
 
+void ImageModel::SetAllowClip(bool allowClip)
+{
+	if (this->m_modelShape)
+	{
+		ImageModelShape* imageModel = (ImageModelShape*)this->m_modelShape;
+		ImageBoard* imageBoard = imageModel->GetImageBoard();
+		if (imageBoard)
+		{
+			imageBoard->SetAllowClip(allowClip);
+		}
+	}
+}
+
 void ImageModel::CreateModelShape()
 {
 	if (this->m_modelShape == NULL)
@@ -2718,4 +2843,39 @@ void Model::SetNeedClip(bool val)
 	}
 }
 
+void Model::SetOriginTransparency(float fTrans)
+{
+	m_originTrans = fTrans;
+}
+
+float Model::GetOriginTransparency()
+{
+	return m_originTrans;
+}
+void Model::Test(SceneManager* scene, BaseMaterial* material)
+{
+	ResourceManager* resourceManager = scene->GetResourceManager();
+	//MaterialTemplateManager* templateManager = resourceManager->GetMaterialTemplateManager();
+	//string name("adf");
+	//BaseMaterial* repMaterial = templateManager->GetMaterialFromTemplateByName(name, 0);
+	material = GetMaterial();
+	string key = material->GetName();
+	MaterialType matype = material->GetMaterialType();
+	BaseMaterial* repMaterial = resourceManager->GetOrCreateMaterial(key, matype, 1);
+	/*BaseMaterial* repMaterial  = new ShaderMaterial();
+	repMaterial->SetName("hetianyu");
+	repMaterial->SetUniformParameter(resourceManager, "type", "Int", "101");
+	repMaterial->SetUniformParameter(resourceManager, "frontTexture", "Texture2D", "E:\\SView_Designer_latest\\Source\\SViewDesigner\\Bin\\x64_Debug\\data\\pic\\3.jpg");
+	repMaterial->SetUniformParameter(resourceManager, "u_useFrontTexture", "Bool", "true");
+	repMaterial->SetUniformParameter(resourceManager, "u_useFrontCubeTexture", "Bool", "false");
+	repMaterial->SetUniformParameter(resourceManager, "u_diffuse", "Vector4", "1.0,1.0,1.0,1.0");
+	repMaterial->SetUniformParameter(resourceManager, "u_useHighlightTexture", "Bool", "true");
+	repMaterial->SetUniformParameter(resourceManager, "highlightTexture", "Texture2D", "E:\\SView_Designer_latest\\Source\\SViewDesigner\\Bin\\x64_Debug\\data\\pic\\3.jpg");
+	repMaterial->SetUniformParameter(resourceManager, "u_keepDirection", "Bool", "true");*/
+	repMaterial->SetUniformParameter(resourceManager, "normalMap", "Texture2D", "E:\\SView_Designer_latest\\Source\\SViewDesigner\\Bin\\x64_Debug\\data\\pic\\3.jpg");
+	if (repMaterial)
+	{
+		SetMaterial(repMaterial);
+	}
+}
 }

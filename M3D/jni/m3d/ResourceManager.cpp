@@ -1,4 +1,4 @@
-﻿#include "m3d/ResourceManager.h"
+#include "m3d/ResourceManager.h"
 
 #include "m3d/M3D.h"
 

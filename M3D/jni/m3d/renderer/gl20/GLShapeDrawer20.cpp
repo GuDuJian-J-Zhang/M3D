@@ -63,6 +63,7 @@
 #include "m3d/graphics/DepthMaterial.h"
 #include "m3d/graphics/LightShadow.h"
 #include "m3d/graphics/DirectionalLightShadow.h"
+
 //#define FBO
 //#define framebufferDebug
 using namespace SVIEW;
@@ -300,20 +301,19 @@ namespace M3D
 			ShaderParameter* reverseClipPara = program->GetShaderUniformParameter(FSP_REVERSECLIP);
 			program->SetUniformValue(reverseClipPara->m_location, (int)action->m_bReverseClip);
 			m_currentCamera = camera;//相机记录
-					refreshMaterial = true;//刷新材质
-					refreshLights = true;//刷新灯光
+			refreshMaterial = true;//刷新材质
+			refreshLights = true;//刷新灯光
 
-					//加载材质指定的uniforms
-					if (material->GetMaterialType() == MaterialType::MaterialType_Shader ||
-						material->GetMaterialType() == MaterialType::MaterialType_Phong ||
-						material->GetMaterialType() == MaterialType::MaterialType_Pbr ||
-						material->GetMaterialType() == MaterialType::MaterialType_MatCap
-						)
-					{
-						Vector3 cameraPostion = camera->GetPosition();
-						program->SetUniformValue(CAMERA_POSITION, cameraPostion);
-					}
-
+			//加载材质指定的uniforms
+			if (material->GetMaterialType() == MaterialType::MaterialType_Shader ||
+				material->GetMaterialType() == MaterialType::MaterialType_Phong ||
+				material->GetMaterialType() == MaterialType::MaterialType_Pbr ||
+				material->GetMaterialType() == MaterialType::MaterialType_MatCap
+				)
+			{
+				Vector3 cameraPostion = camera->GetPosition();
+				program->SetUniformValue(CAMERA_POSITION, cameraPostion);
+			}
 		}
 #ifdef WIN32
 
@@ -323,17 +323,18 @@ namespace M3D
 
 		if (face && face->GetNeedClip())
 		{
+			int enableClips[3];
 			for (int i = 0; i < 3; i++)
 			{
 				enableClips[i] = action->m_enableClip[i];
 			}
+			program->SetUniformValue(FSP_ENABLECLIPS, 3, enableClips);
 		}
 		else
 		{
-			enableClips[3] = { 0 };
-		}
+			int enableClips[3] = { 0 };
 			program->SetUniformValue(FSP_ENABLECLIPS, 3, enableClips);
-
+		}
 #endif
 		if (refreshMaterial)
 		{
@@ -1213,15 +1214,103 @@ namespace M3D
 					backgroundEffect->DisableAttributeArray(texCoords->m_location);
 					backgroundEffect->ReleaseShaderProgram();
 				}
-
 			}
-
 		}
+		
+		if (backgroundNode->IsUseWaterMark())
+		{
+			backgroundEffect = shaderManager->GetEffect(
+				ShaderManager::Image);
+
+			backgroundEffect->UseProgram();
+
+			Texture* texture = backgroundNode->GetTextureOfWaterMark();
+			if (texture)
+			{
+				//vector<Vector2> uv;
+				//uv.push_back(Vector2(0, 0));
+				//uv.push_back(Vector2(5, 0));
+				//uv.push_back(Vector2(0, 3));
+				//uv.push_back(Vector2(0, 3));
+				//uv.push_back(Vector2(5, 0));
+				//uv.push_back(Vector2(5, 3));
+				//Vector2[] uv = { Vector2(0,5), Vector2(5,5), Vector2(5,0), Vector2(0,0) };
+				//glTexCoordPointer(2, GL_FLOAT, 0, uv.data());
+				
+				//const float* uvd = uv.data()->Data();
+				//Vector3* aa = backgroundNode->GetVertexs();
+				//const float* a = backgroundNode->GetVertexs()->Data();
+				//Vector2* bb = backgroundNode->GetTextureCoords();
+				//const float* b = backgroundNode->GetTextureCoords()->Data();
+
+				unsigned int OGLObj = texture->GetOGLObj();
+				if (OGLObj)
+				{
+					Color VoiceBackColor(1.0f, 1.0f, 1.0f, 1.0f);
+					ShaderParameter * vertex = backgroundEffect->GetShaderAttributeParameter(
+						VSP_POSITION);
+					backgroundEffect->SetVertexAttribPointer(vertex->m_location, 3, GL_FLOAT, 0,
+						(void *)backgroundNode->GetVertexs()->Data());
+					backgroundEffect->EnableAttributeArray(vertex->m_location);
+
+					ShaderParameter * texCoords = backgroundEffect->GetShaderAttributeParameter(
+						VSP_TEXCOORDS);
+					backgroundEffect->SetVertexAttribPointer(texCoords->m_location, 2, GL_FLOAT,
+						0, (void *)backgroundNode->GetTextureCoords()->Data()/*uv.data()->Data()*/);
+					backgroundEffect->EnableAttributeArray(texCoords->m_location);
+					
+					// multi-clip planes
+					Vector4 tc[3];
+					for (int i = 0; i < 3; i++)
+					{
+						tc[i] = (action->m_clipPlane[i]);
+					}
+					backgroundEffect->SetUniformValue(FSP_CLIPPLANES, 3, tc);
+					int enableClips[3] = { 0 };
+					backgroundEffect->SetUniformValue(FSP_ENABLECLIPS, 3, enableClips);
+					ShaderParameter* reverseClipPara = backgroundEffect->GetShaderUniformParameter(FSP_REVERSECLIP);
+					backgroundEffect->SetUniformValue(reverseClipPara->m_location, 0);
+					// LOGI("end use multi-clip planes");
+
+					int sampler0 = 0;
+					backgroundEffect->SetUniformValue(FSP_SAMPLER0, 1, &sampler0);
+					backgroundEffect->SetUniformValue(FSP_DIFFUSE, VoiceBackColor);
+
+					backgroundEffect->SetUniformValue(VSP_MODELMAT, modelMat);
+					backgroundEffect->SetUniformValue(VSP_VIEWMAT, modelViewMatrix);
+					backgroundEffect->SetUniformValue(VSP_PROJECTIONMAT, projectionMatrix);					
+
+					// 启用纹理
+					glActiveTexture(GL_TEXTURE0);
+					glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+					glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+					glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+					//glDisable(GL_DEPTH_TEST);
+					glEnable(GL_TEXTURE_2D);
+					//glEnable(GL_BLEND);
+					//glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+					glEnable(GL_ALPHA_TEST);
+					glAlphaFunc(GL_GREATER, 0.1f);
+
+					glBindTexture(GL_TEXTURE_2D, OGLObj);
+					//		LOGI("Draw Point1111");					
+					glDrawArrays(GL_TRIANGLES, 0, 6);
+					glBindTexture(GL_TEXTURE_2D, 0);
+					glDisable(GL_ALPHA_TEST);
+					//glDisable(GL_BLEND);
+					glDisable(GL_TEXTURE_2D);
+					backgroundEffect->DisableAttributeArray(vertex->m_location);
+					backgroundEffect->DisableAttributeArray(texCoords->m_location);
+					backgroundEffect->ReleaseShaderProgram();
+				}
+			}
+		}
+
 		glDisable(GL_BLEND);
 		glEnable(GL_DEPTH_TEST);
-
-
-		}
+	}
 
 	void GLShapeDrawer20::DrawVRBackGround(RenderAction *action)
 	{
@@ -3402,6 +3491,7 @@ namespace M3D
 
 			Vector4 tc[3];
 			int enableClips[3];
+			int disableClips[3] = { 0 };
 			for (int i = 0; i < 3; i++)
 			{
 				tc[i] = (action->m_clipPlane[i]);
@@ -3415,7 +3505,7 @@ namespace M3D
 			shaderEffect->UseProgram();
 			// multi-clip plane
 			shaderEffect->SetUniformValue(FSP_CLIPPLANES, 3, tc);
-			shaderEffect->SetUniformValue(FSP_ENABLECLIPS, 3, enableClips);
+			//shaderEffect->SetUniformValue(FSP_ENABLECLIPS, 3, enableClips);
 			ShaderParameter* reverseClipPara = shaderEffect->GetShaderUniformParameter(FSP_REVERSECLIP);
 			shaderEffect->SetUniformValue(reverseClipPara->m_location, (int)action->m_bReverseClip);
 
@@ -3424,6 +3514,14 @@ namespace M3D
 			for (int i = 0; i < imageboardArray.size(); i++)
 			{
 				ImageBoard* imageboard = imageboardArray[i];
+				if (imageboard && imageboard->GetAllowClip())
+				{
+					shaderEffect->SetUniformValue(FSP_ENABLECLIPS, 3, enableClips);
+				}
+				else
+				{
+					shaderEffect->SetUniformValue(FSP_ENABLECLIPS, 3, disableClips);
+				}
 				//Matrix4* modelMatrix =  imageboard->GetRenderWorldMatrix();
 				GLShapeDrawer20::DrawImageBoard(imageboard, V, P, imageTransform, shaderEffect, !imageboard->IsFrontShow());
 			}
@@ -4087,7 +4185,7 @@ namespace M3D
 				glLineStipple(1, 0x00FF);
 #else
 
-#endif
+#endif		
 			}
 			int vertexNum = 2;
 			int indexNum = 2;
@@ -4138,7 +4236,7 @@ namespace M3D
 				glDisable(GL_LINE_STIPPLE);
 #else
 
-#endif
+#endif	
 			}
 		}
 		//PolyLine
@@ -4781,6 +4879,7 @@ namespace M3D
 
 	void GLShapeDrawer20::DrawPhongPass(RenderAction* action)
 	{
+		//	LOGI("Begin DrawPhonePass ");
 		RenderEffect* renderType = action->GetRenderEffect();
 		RenderableTypeGroup& dataType = renderType->GetRenderableTypeFilter();
 		RenderQueuePriority& currentEffect = renderType->GetRenderQueuePriority();
@@ -4799,7 +4898,7 @@ namespace M3D
 				if (renderType == RenderableType::RGT_SHADOW)
 				{
 					//			GLShapeDrawer20::DrawSSAOPassGroup(action, &(it->second));
-				//				if (Parameters::Instance()->m_useSSAO)
+				//				if (Parameters::Instance()->m_useSSAO) 
 				//				{
 				////					GLShapeDrawer20::DrawSSAOPassGroup(action, &(it->second));
 				//				}
@@ -5089,7 +5188,7 @@ namespace M3D
 				//}
 				else if (renderType == RenderableType::RGT_EDGELINE)
 				{
-					//GLShapeDrawer20::DrawEdgesRenderPassGroup(action, &it->second);
+					//GLShapeDrawer20::DrawEdgesRenderPassGroup(action, &it->second);	
 					GLShapeDrawer20::DrawDraggerLinePass(action, &(it->second));
 				}
 				//else if (renderType == RenderableType::RGT_EDGELINEINTOP)
@@ -5657,6 +5756,7 @@ namespace M3D
 #endif
 	void GLShapeDrawer20::DrawGroundNode(SceneNode * node, RenderAction * action)
 	{
+		
 		if (Parameters::Instance()->m_useGroundGrid)
 		{
 			if (!action || !node)
@@ -5672,6 +5772,7 @@ namespace M3D
 
 			ShaderProgram * sceneGroundEffect = shaderManager->GetEffect(
 				ShaderManager::SceneGround);
+			
 			if (!sceneGroundEffect)
 			{
 				return;
@@ -5714,10 +5815,106 @@ namespace M3D
 
 
 			glDrawArrays(GL_LINES, 0, ground->GetPointsNumber());
-
 			//glEnable(GL_DEPTH_TEST);
 		}
 	}
+
+//    void GLShapeDrawer20::DrawMirrorGroundNode(SceneNode * node, RenderAction * action, const Matrix4 & mirrorMat, GLuint mirrorTexture, GLuint mirrorBackground)
+//    {
+//        //if (Parameters::Instance()->m_useGroundGrid)
+//        {
+//            if (!action || !node)
+//            {
+//                return;
+//            }
+//
+//            ShaderManager * shaderManager = action->GetShaderMananger();
+//            if (!shaderManager)
+//            {
+//                return;
+//            }
+//
+//            //ShaderProgram * sceneGroundEffect = shaderManager->GetEffect(
+//            //    ShaderManager::SceneGround);
+//            ShaderProgram * mirrorProgram = shaderManager->GetEffect(
+//                ShaderManager::Mirror);
+//            if (!mirrorProgram)
+//            {
+//                return;
+//            }
+//            glEnable(GL_DEPTH_TEST);
+//            glLineWidth(1.0);
+//            //glDisable(GL_DEPTH_TEST);
+//            GroundNode* ground = (GroundNode*)node;
+//
+//            //glViewport(axis->m_iViewX, axis->m_iViewY, axis->m_iW, axis->m_iW);
+//            //设置投影矩阵 模型视图矩阵 一些初始化
+//            /*BoundingBox& sceneBox = action->GetScene()->GetSceneBox();
+//            float length = sceneBox.Length()*1.2;
+//            int size = floor(length);
+//            int divisions = 20;
+//            if (size < 10)
+//            {
+//                size = 100;
+//                divisions = 100;
+//            }
+//            //else if (size<divisions)
+//            //{
+//            //    divisions = size;
+//            //}
+//            ground->SetGroundSize(size, divisions);*/
+//
+//            RenderContext* gl = action->GetGLContext();
+//            mirrorProgram->UseProgram();
+//
+//            mirrorProgram->SetUniformValue("u_mirrorMat", mirrorMat);
+//
+//            mirrorProgram->SetUniformValue(VSP_MODELMAT, ground->GetGLWorldTransform());
+//            mirrorProgram->SetUniformValue(VSP_VIEWMAT, gl->GetViewMatrix());
+//            mirrorProgram->SetUniformValue(VSP_PROJECTIONMAT, gl->GetProjectMatrix());
+//            string name1 = string("mirrorTexture");
+//            string name2 = string("mirrorFrontTexture");
+//
+//            GLuint mirrorTextureLocation = mirrorProgram->GetUniformLocation(name1);
+//            glActiveTexture(GL_TEXTURE0);
+//            glBindTexture(GL_TEXTURE_2D, mirrorTexture);
+//            mirrorProgram->SetUniformValue(mirrorTextureLocation, 0);
+//
+//            GLuint mirrorFrontTextureLocation = mirrorProgram->GetUniformLocation(name2);
+//            glActiveTexture(GL_TEXTURE1);
+//            glBindTexture(GL_TEXTURE_2D, mirrorBackground);
+//            mirrorProgram->SetUniformValue(mirrorFrontTextureLocation, 1);
+//
+//            ShaderParameter * position = mirrorProgram->GetShaderAttributeParameter(VSP_POSITION);
+//            ShaderParameter * colors = mirrorProgram->GetShaderAttributeParameter(VSP_COLOR);
+//            ShaderParameter * coords = mirrorProgram->GetShaderAttributeParameter(VSP_TEXCOORDS);
+//
+//            mirrorProgram->SetVertexAttribPointer(position->m_location, 3, GL_FLOAT, 0, ground->GetVertexs());
+//            mirrorProgram->EnableAttributeArray(position->m_location);
+//
+//            mirrorProgram->SetVertexAttribPointer(colors->m_location, 4, GL_FLOAT, 0, ground->GetColors());
+//            mirrorProgram->EnableAttributeArray(colors->m_location);
+//
+//
+//            mirrorProgram->SetVertexAttribPointer(coords->m_location, 2, GL_FLOAT, 0, ground->GetCoords());
+//            mirrorProgram->EnableAttributeArray(coords->m_location);
+//
+//            //glDrawArrays(GL_LINES, 0, ground->GetPointsNumber());
+//
+////            glDrawArrays(GL_POLYGON, 0, ground->GetPointsNumber());
+//            //glEnable(GL_DEPTH_TEST);
+//        }
+//    }
+
+
+	/*
+		void GLShapeDrawer20::DrawMirrorGroundNode(SceneNode * node, RenderAction * action, const Matrix4 & mirrorMat, GLuint mirrorTexture, GLuint backgroundTexture)
+	{
+
+		
+	}
+	*/
+
 	void GLShapeDrawer20::DrawBrdfPassGroup(RenderAction* action, RenderQueue* RenderStateArray)
 	{
 		if (RenderStateArray->GetRenderableArray().size() == 0)

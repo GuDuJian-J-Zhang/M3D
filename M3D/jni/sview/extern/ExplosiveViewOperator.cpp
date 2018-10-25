@@ -27,6 +27,7 @@
 #include "m3d/extras/measure/Measure.h"
 #include "m3d/extras/measure/MeasureGroup.h"
 #include "math.h"
+#include "m3d/extras/modelmanager/ModelAssemblyHelper.h"
 using namespace SVIEW;
 
 namespace M3D
@@ -50,7 +51,7 @@ void ExplosiveViewOperator::Reset()
 	m_explosivePercent = 0;
 	m_isUseAnimation = false;
 	m_isFirstOpen = true;
-
+	this->m_explosivePercent = 0;
 	m_allNodeMatrixsCache.clear();
 }
 
@@ -63,7 +64,22 @@ View* ExplosiveViewOperator::GetView()
 {
 	return this->m_view;
 }
+void ExplosiveViewOperator::startExplosion(vector<Model*> models) {
 
+	if (models.size() == 0)
+	{
+		this->CacheMatrixState();
+	}
+	else
+	{
+		this->CacheSelectMatrixState(models);
+	}
+	
+}
+
+void ExplosiveViewOperator::endExplosion() {
+	this->Reset();
+}
 bool ExplosiveViewOperator::setPercentWithDirection(View* view, vector<Model*> arrayModels, int style, float percent,
 	Vector3 direction) {
 	bool setExplosiveState = false;
@@ -401,7 +417,7 @@ void ExplosiveViewOperator::AwayFromCenterCallback(void* data, Model* node)
 				tModelMatrix = nodestate.matrixCache;
 				BoundingBox& shapeNodeBox = nodestate.boxCache;
 				Vector3 disPos = shapeNodeBox.Center();
-
+				//Vector3 disPos = node->GetWorldBoundingBox().Center();
 				Vector3 mov;
 
 				Vector3 tDisPos = disPos;
@@ -578,12 +594,25 @@ void ExplosiveViewOperator::AwayFromCenterCallback(void* data, Model* node)
 				{
 					//直接设置更新装配矩阵的值
 					{
-						Matrix3x4 origMatrix ;
-						(origMatrix).MultiTranslate(mov);
-                        shapeNode->SetWorldMatrix(origMatrix);
-//                        node->SetPlaceMatrix(origMatrix);
-					}
+						//Matrix3x4 origMatrix ;
+						//(origMatrix).MultiTranslate(mov);
+						//shapeNode->SetWorldMatrix(origMatrix);
+     					//node->SetWorldTransform(origMatrix);
+						//node->SetPlaceMatrix(origMatrix);
+						//ModelAssemblyHelper::TranslateAssemblyModel(node, mov);
 
+						//Model对象相对于某一位置移动到的绝对位置
+						Model* parent = node->GetParent();
+						Matrix3x4 modelWMat;
+						modelWMat = tModelMatrix;//node->GetWorldTransform();
+						Matrix3x4 pareWMat; //父节点世界转换矩阵
+						pareWMat = parent ? parent->GetWorldTransform() : pareWMat;
+						Matrix3x4 tempmat;
+						tempmat.MultiTranslate(mov);
+						Matrix3x4 plcMat = pareWMat.Inverse() * (tempmat * modelWMat);
+						node->SetPlaceMatrix(plcMat);
+
+					}
 				}
 				else
 				{
@@ -818,7 +847,7 @@ bool ExplosiveViewOperator::GetMatrix(Model* nodeAddr, NodeState& nodeState)
 }
 void ExplosiveViewOperator::AddMatrix(Model* nodeAddr, const NodeState& nodeState)
 {
-	this->m_allNodeMatrixsCache.insert(pair<ModelShape*, NodeState>(nodeAddr->GetModelShape(), nodeState));
+    this->m_allNodeMatrixsCache.insert(pair<ModelShape*, NodeState>(nodeAddr->GetModelShape(), nodeState));
 }
 
 bool ExplosiveViewOperator::FlatModel(View* view,vector<Model *>& shapeList,int row , int column )

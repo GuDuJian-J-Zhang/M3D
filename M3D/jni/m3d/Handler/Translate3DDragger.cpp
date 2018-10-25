@@ -1,6 +1,6 @@
 
-#include "m3d/handler/Translate3DDragger.h"
-#include "m3d/handler/Command.h"
+#include "m3d/Handler/Translate3DDragger.h"
+#include "m3d/Handler/Command.h"
 #include "sview/views/Parameters.h"
 #include "m3d/utils/MeshHelper.h"
 #include "m3d/scene/ShapeNode.h"
@@ -239,6 +239,56 @@ void Translate3DDragger::setupDefaultGeometry()
 	}
     
     //addChild(xform);
+}
+
+void Translate3DDragger::setupDefaultImageGeometry()
+{
+	string signImagePath = SVIEW::Parameters::Instance()->m_appWorkPath + "\\data\\pic\\" + string("Dragger.png");
+	_drawModel = NULL;
+
+	ImageModel* imageBoard = new ImageModel();
+	imageBoard->SetImagePath(signImagePath);
+	imageBoard->SetAllowClip(false);
+	imageBoard->SetAllowRotate(true);
+	imageBoard->SetAllowScall(true);
+	imageBoard->SetAllowTran(true);
+	imageBoard->SetInTopShow(false);
+    Vector3 position = Vector3(0, 0, 0);
+    Vector2 size = Vector2(0.5f, 0.5f);
+	imageBoard->SetImageSize(position, size);
+	_drawModel = imageBoard;
+	if (_drawModel) {
+		ShapeNode* shapeNode = new ShapeNode();
+		this->AddChild(shapeNode);
+		_drawModel->SetInitHightlight(true);
+		shapeNode->SetShape(_drawModel);
+		_drawModel->SetUserData(this);
+	}
+}
+
+void Translate3DDragger::setupDefaultPntImageGeometry()
+{
+	string signImagePath = SVIEW::Parameters::Instance()->m_appWorkPath + "\\data\\pic\\" + string("pointr1.png");
+	_drawModel = NULL;
+
+	ImageModel* imageBoard = new ImageModel();
+	imageBoard->SetImagePath(signImagePath);
+	imageBoard->SetAllowClip(false);
+	imageBoard->SetAllowRotate(true);
+	imageBoard->SetAllowScall(true);
+	imageBoard->SetAllowTran(true);
+	imageBoard->SetInTopShow(false);
+    Vector3 position = Vector3(0, 0, 0);
+    Vector2 size = Vector2(0.2f, 0.2f);
+	imageBoard->SetImageSize(position, size);
+	_drawModel = imageBoard;
+	if (_drawModel) {
+		ShapeNode* shapeNode = new ShapeNode();
+		this->AddChild(shapeNode);
+		_drawModel->SetInitHightlight(true);
+		shapeNode->SetShape(_drawModel);
+		_drawModel->SetUserData(this);
+	}
 }
 
 }

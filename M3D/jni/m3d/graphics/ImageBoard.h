@@ -163,6 +163,9 @@ public:
 	*/
 	void SetFixShowInScreen(bool val);
 	Vector2 GetSize();
+
+	void SetAllowClip(bool value);
+	bool GetAllowClip();
 private:
     Vector3 m_position;//!<位置
     Vector2 size_;//!<大小
@@ -179,6 +182,8 @@ private:
 	bool m_fixShowInScreen;//在屏幕上固定位置显示
 
 	bool m_flipV;
+
+	bool m_bAllowClip;//是否允许剖切
 };
 }
 

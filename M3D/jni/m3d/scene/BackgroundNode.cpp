@@ -66,13 +66,18 @@ void BackgroundNode::Initial()
 	m_BackPnt[17] = 1;
 
 	m_isUseImage = false;
+	m_isUseWaterMark = false;
 	m_isUseSkyBox = false;
 	m_isUseColor = true;
 	m_needRestoreState = false;
 	m_originTexture = nullptr;
 	m_imagePath = "";
 	m_origimagePath = "";
+	m_originTextureOfWaterMark = nullptr;
+	m_waterMarkPath = "";
+	m_origwatermarkePath = "";
 	m_texture = NULL;
+	m_textureOfWaterMark = NULL;
 
 	points.clear();
 	textCoords.clear();
@@ -183,10 +188,19 @@ Vector3* BackgroundNode::GetVertexs()
 
 Vector2* BackgroundNode::GetTextureCoords()
 {
+	textCoords.clear();
+
 	if (textCoords.size() == 0)
 	{
 		MutexLock lock(m_mutex);
-		Rect m_uv  = Rect(Vector2(0,0),Vector2(1,1)) ;
+
+		Image img;
+		img.LoadImage(m_waterMarkPath);
+		float x = (float)m_iWidth / img.m_iWidth;
+		float y = (float)m_iHeight / img.m_iHeight;
+
+		//Rect m_uv  = Rect(Vector2(0,0),Vector2(1,1));
+		Rect m_uv = Rect(Vector2(0, 0), Vector2(x, y));
 		Vector2 min = m_uv.m_min;
 		Vector2 max = m_uv.m_max;
 		//左下角
@@ -266,7 +280,7 @@ void BackgroundNode::SetImage(const string& filePath,int mappingStyle)
 	if(filePath.length() > 0)
 	{
 		m_imagePath = filePath;
-//		LOGI("backgroundImage %s", m_imagePath.c_str());
+		LOGI("backgroundImage %s", m_imagePath.c_str());
 		
 		this->m_isImageDirty = true;
 	}
@@ -288,6 +302,36 @@ void BackgroundNode::SetUseImage(bool useImage)
 bool BackgroundNode::IsUseImage()
 {
 	return m_isUseImage;
+}
+
+void BackgroundNode::SetWaterMark(const string& filePath, int mappingStyle)
+{
+	MutexLock lock(m_mutex);
+	//先从资源管理器中删除原有的图片资源
+	if (filePath.length() > 0)
+	{
+		m_waterMarkPath = filePath;
+		LOGI("backgroundWaterMark %s", m_waterMarkPath.c_str());
+
+		this->m_isWaterMarkDirty = true;
+	}
+}
+
+void BackgroundNode::SetUseWaterMark(bool useWaterMark)
+{
+	MutexLock lock(m_mutex);
+
+	this->m_isUseWaterMark = useWaterMark;
+// 	if (useWaterMark)
+// 	{
+// 		m_isUseColor = false;
+// 		m_isUseSkyBox = false;
+// 	}
+}
+
+bool BackgroundNode::IsUseWaterMark()
+{
+	return m_isUseWaterMark;
 }
 
 void BackgroundNode::SetUseSkyBox(bool useSkyBox)
@@ -349,6 +393,49 @@ void BackgroundNode::SetTexture(Texture * texture)
 	}
 }
 
+Texture* BackgroundNode::GetTextureOfWaterMark()
+{
+	if (this->m_isWaterMarkDirty || this->m_textureOfWaterMark == NULL)
+	{
+		MutexLock lock(m_mutex);
+
+		if (this->m_textureOfWaterMark)
+		{
+			delete this->m_textureOfWaterMark;
+			this->m_textureOfWaterMark = NULL;
+		}
+
+		Rect m_uv = Rect(Vector2(0, 0), Vector2(1, 1));
+
+		this->m_textureOfWaterMark = new Texture2D(m_waterMarkPath, TEXTURE_LOAD_RGBA, TEXTURE_FLAG_MIPMAPS | TEXTURE_FLAG_INVERT_Y);
+		m_textureOfWaterMark->SetResourceManager(this->m_resMgr);
+		m_originTextureOfWaterMark = m_textureOfWaterMark;
+		m_originTextureOfWaterMark->AddRef();
+		LOGI("BackgroundNode create Texture3D");
+		this->m_isWaterMarkDirty = false;
+	}
+
+	return this->m_textureOfWaterMark;
+}
+
+void BackgroundNode::SetTextureOfWaterMark(Texture * texture)
+{
+	if (texture && this->m_textureOfWaterMark != texture)
+	{
+		MutexLock lock(m_mutex);
+
+		if (this->m_textureOfWaterMark)
+		{
+			//			this->m_textureOfWaterMark->Release();
+			//	this->m_textureOfWaterMark = NULL;
+		}
+
+		this->m_textureOfWaterMark = texture;
+		this->m_textureOfWaterMark->AddRef();
+		this->m_isWaterMarkDirty = false;
+	}
+}
+
 Texture * BackgroundNode::GetSkyBoxTexture(string name)
 {
 	Texture * ret = nullptr;
@@ -395,6 +482,7 @@ void BackgroundNode::SetUseColor(bool useColor)
 	if (useColor)
 	{
 		m_isUseImage = false;
+		m_isUseWaterMark = false;
 		m_isUseSkyBox = false;
 	}
 }
@@ -406,6 +494,7 @@ void BackgroundNode::KeepBackgroundState()
 	m_originBottomColor = this->m_bottomColor;
 	m_originUseColor = m_isUseColor;
 	m_originUseImage = m_isUseImage;
+	m_originUseWaterMark = m_isUseWaterMark;
 	m_originUseSkyBox = m_isUseSkyBox;
 	m_origimagePath = m_imagePath;
 	m_needRestoreState = true;
@@ -421,8 +510,10 @@ void BackgroundNode::RestoreBackgroundState()
 	SetTopColor(m_originTopColor);
 	SetBottomColor(m_originBottomColor);
 	m_texture = m_originTexture;
+	m_textureOfWaterMark = m_originTextureOfWaterMark;
 	m_isUseColor = m_originUseColor;
 	m_isUseImage = m_originUseImage;
+	m_isUseWaterMark = m_originUseWaterMark;
 	m_isUseSkyBox = m_originUseSkyBox;
 	m_imagePath = m_origimagePath;
 	m_needRestoreState = false;

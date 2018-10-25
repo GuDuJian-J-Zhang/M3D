@@ -738,6 +738,7 @@ void Parameters::SetColor(string key, Color& value)
 }
 
 void Parameters::SetDefault() {
+	m_isOpenMirror = false;
 	m_isOpenScale = true;
 	m_IsConRotate = false;
 	m_UseBackImage = true;

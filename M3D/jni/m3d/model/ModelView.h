@@ -193,6 +193,7 @@ public:
 	 */
 	void SetUpDataModel(bool state);
 
+	void SetUpCamera(bool state);
 	/**
 	 * 获取是狗更新模型标志
 	 * @return
@@ -236,6 +237,8 @@ public:
 	 */
 	void AddInstanceAttribute(int insID, InstanceAttribute& info)
 	{
+		if (m_InstanceAttributeMap.find(insID) != m_InstanceAttributeMap.end())
+			m_InstanceAttributeMap.erase(insID);
 		m_InstanceAttributeMap.insert(
 				pair<int, InstanceAttribute>(insID, info));
 	}
@@ -389,6 +392,8 @@ private:
 	map<string, string> m_appendInfo; //!<附加信息
 
 	string viewJsonStr; //!<视图的Json字符串
+
+private:
 	static int m_MaxId; //!<
 
 };

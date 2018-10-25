@@ -24,6 +24,8 @@ ImageBoard::ImageBoard():Shape()
 	this->SetInTop(true);
 
 	this->SetFixShowInScreen(false);
+
+	this->SetAllowClip(true);
 }
 
 ImageBoard::ImageBoard(const Vector3& pos, const Vector2& size):Shape()
@@ -42,6 +44,7 @@ ImageBoard::ImageBoard(const Vector3& pos, const Vector2& size):Shape()
 
 	this->SetFlipV(false);
 	m_fixShowInScreen = false;
+	m_bAllowClip = true;
 
 	Set(pos,size);
 }
@@ -376,6 +379,15 @@ void ImageBoard::SetFixShowInScreen(bool val)
 M3D::Vector2 ImageBoard::GetSize()
 {
 	return size_;
+}
+
+void ImageBoard::SetAllowClip(bool value)
+{
+	m_bAllowClip = value;
+}
+bool ImageBoard::GetAllowClip()
+{
+	return m_bAllowClip;
 }
 
 }

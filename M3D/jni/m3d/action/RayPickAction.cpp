@@ -143,6 +143,7 @@ void PickTypeFilter::SetPickShapeType(int shapeType)
 		pickShapeTyeArray[SHAPE_EDGE] = true;
 		pickShapeTyeArray[SHAPE_POINT] = true;
 		pickShapeTyeArray[SHAPE_IMAGE_MODEL] = true;
+		pickShapeTyeArray[SHAPE_LIGHT_DIRECTIONAL] = true;
 //		pickShapeTyeArray[SHAPE_POINT] = true;
 	}
 	else if (shapeType == SHAPE_NOTCONTAIN_IMAGEMODEL)
@@ -460,7 +461,7 @@ IShape* RayPickAction::GetNearPickShape()
 		int zindex = intersects.m_zindex;
 		for (int i = 0; i < pntsize; i++)
 		{
-			if(PointVisiable(vecArray[i]))
+			if(PointVisiable(vecArray[i]) || (shape && shape->GetType() == SHAPETYPE::SHAPE_SECTION))
 			{
 				//根据选择模型的zindex，进行一个偏移分段
 				tempZ = (state->m_cameraRay.m_origin - vecArray[i]).Length() - zindex*1000000;
@@ -587,11 +588,14 @@ bool RayPickAction::PointVisiable(const Vector3& point)
 		list<SectionPlane*>* planeList = tempSection->GetPlaneList();
 		for (list<SectionPlane*>::iterator it = planeList->begin(); it != planeList->end(); it++)
 		{
-			float * equation = (*it)->GetTransformPlaneParam();
-			if ((equation[0] * point.m_x + equation[1] * point.m_y + equation[2] * point.m_z + equation[3]) < 0)
+			if ((*it)->GetEnable())
 			{
-				ret = true;
-				return ret;
+				float * equation = (*it)->GetTransformPlaneParam();
+				if ((equation[0] * point.m_x + equation[1] * point.m_y + equation[2] * point.m_z + equation[3]) < 0)
+				{
+					ret = false;
+					return ret;
+				}
 			}
 		}
 	}

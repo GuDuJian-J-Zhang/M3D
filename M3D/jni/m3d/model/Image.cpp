@@ -74,4 +74,70 @@ Image::Image():Object()
 	m_dataLength = 0; 
 	this->m_Id = OBJID++;
 }
+
+void Image::LoadImage(string name)
+{
+	m_iWidth = m_iHeight = 0;
+	ifstream ffin(name, std::ios::binary);
+	if (!ffin)
+	{
+		std::cout << "Can not open this file." << std::endl;
+		return;
+	}
+	int result = Get_extension(name);
+	char s1[2] = { 0 }, s2[2] = { 0 };
+	switch (result)
+	{
+	case 1://gif
+		ffin.seekg(6);
+		ffin.read(s1, 2);
+		ffin.read(s2, 2);
+		m_iWidth = (unsigned char)(s1[1]) << 8 | (unsigned char)(s1[0]);
+		m_iHeight = (unsigned char)(s2[1]) << 8 | (unsigned char)(s2[0]);
+		break;
+	case 2://jpg
+		ffin.seekg(255);
+		ffin.read(s1, 2);
+		ffin.read(s2, 2);
+		m_iWidth = (unsigned char)(s2[0]) << 8 | (unsigned char)(s2[1]);
+		m_iHeight = (unsigned char)(s1[0]) << 8 | (unsigned char)(s1[1]);
+		break;
+	case 3://png
+		ffin.seekg(18);
+		ffin.read(s1, 2);
+		ffin.seekg(2, std::ios::cur);
+		ffin.read(s2, 2);
+		m_iWidth = (unsigned char)(s1[0]) << 8 | (unsigned char)(s1[1]);
+		m_iHeight = (unsigned char)(s2[0]) << 8 | (unsigned char)(s2[1]);
+		break;
+	case 4://bmp
+		ffin.seekg(18);
+		ffin.read(s1, 2);
+		ffin.seekg(2, std::ios::cur);
+		ffin.read(s2, 2);
+		m_iWidth = (unsigned char)(s1[1]) << 8 | (unsigned char)(s1[0]);
+		m_iHeight = (unsigned char)(s2[1]) << 8 | (unsigned char)(s2[0]);
+		break;
+	default:
+		std::cout << "NO" << std::endl;
+		break;
+	}
+	ffin.close();
+}
+
+int Image::Get_extension(string name)
+{
+	char c = name.at(name.length() - 1);
+	char c2 = name.at(name.length() - 3);
+	if ((c == 'f') && (c2 == 'g'))
+		return 1;//gif
+	else if ((c == 'g') && (c2 == 'j'))
+		return 2;//jpg
+	else if ((c == 'g') && (c2 == 'p'))
+		return 3;//png
+	else if ((c == 'p') && (c2 == 'b'))
+		return 4;//bmp
+	return 0;
+}
+
 }

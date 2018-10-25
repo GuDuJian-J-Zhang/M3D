@@ -26,6 +26,10 @@ class M3D_API Translate3DDragger : public Dragger
         /** Setup default geometry for dragger. */
         void setupDefaultGeometry();
  
+		void setupDefaultImageGeometry();
+
+		void setupDefaultPntImageGeometry();
+
 		virtual void FindVisiableObject(RenderAction* renderAction);
 
     protected:

@@ -20,6 +20,7 @@ namespace M3D
 {
 class RenderAction;
 class DirectionalLightShadow;
+class Translate3DDragger;
 /**
  * @class
  * @brief 灯光类，管理灯光及参数
@@ -41,6 +42,9 @@ public:
 	 */
 	//virtual void RayPick(RayPickAction* action);
 	virtual void FindVisiableObject(RenderAction* renderAction);
+
+	virtual void SetSelected(bool select);
+	virtual void SetVisible(bool visible);
 	/**
 	 * 获取集合信息
 	 * @return
@@ -399,6 +403,16 @@ public:
 
 	virtual LightShadow* GetLightShadow();
 
+	virtual void CreateSignModel(SceneManager* sceneManager);
+	virtual void BindDragger(SceneManager* sceneManager);
+	virtual void UnBindDragger(SceneManager* sceneManager);
+
+	Vector3 GetDirectionPos();
+	void SetDirectionPos(Vector3 pos);
+
+	bool ChangeLines();
+private:
+	BaseMaterial* InitBaseMaterial();
 private:
 	float m_specularIntensity;//!<Specular intensity.
 
@@ -416,6 +430,8 @@ private:
 	Vector4 m_position_old;//兼容以前代码
 
 	Vector3 m_spotDirection;//!<聚光灯朝向
+
+	Vector3 m_DirecPosition;//!< 光源方向指示位置
 
 	float m_spotExponent;//!<聚光灯
 	float m_spotCutoff;//!<cut off
@@ -437,6 +453,11 @@ private:
 	//int m_lightType;//!< 1 平行光 2 点光源 3 聚光灯
 
 	DirectionalLightShadow* m_lightShadow;
+	Model* m_arrow;
+	float m_orgScale;
+
+	Translate3DDragger* sourceDragger;
+	Translate3DDragger* directionDragger;
 };
 }
 #endif /*M3D_LIGHT_H_*/

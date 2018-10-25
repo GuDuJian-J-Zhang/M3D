@@ -93,7 +93,8 @@ public:
 	bool SetPercentWithoutRestore(View* view, int style, float percent = 100.0f,
 		bool useAnimation = true);
 	bool Close(View* view);
-
+	void startExplosion(vector<Model*> models);
+	void endExplosion();
 	/**
 	 * 将模型拆解，并排列
 	 * @param shapeList 模型列表
@@ -140,7 +141,9 @@ public:
 	void SetExplosiveStyle(int style);
 	void SetExplosiveMinus(int minus);
 	void Reset();
+	BoundingBox targetBoundingBox;
 	bool AddNoteToScene(Vector3 start, Vector3 end);
+	
 private:
 	
 

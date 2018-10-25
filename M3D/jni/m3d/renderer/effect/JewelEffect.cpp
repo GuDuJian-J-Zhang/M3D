@@ -96,8 +96,7 @@ namespace M3D
 		RenderAction* action = this->m_action;
 		RenderContext* gl = action->GetGLContext();
 		CameraNode* camera = action->GetCamera();
-//		ShaderProgram* shaderEffect = shaderEffect = action->GetShaderMananger()->GetEffect(ShaderManager::JewelFront);
-		ShaderProgram* shaderEffect = shaderEffect = action->GetShaderMananger()->GetEffect(ShaderManager::NewJewelFront);
+		ShaderProgram* shaderEffect = shaderEffect = action->GetShaderMananger()->GetEffect(ShaderManager::JewelFront);
 		shaderEffect->UseProgram();
 		ShaderParameter* vertex = shaderEffect->GetShaderAttributeParameter(VSP_POSITION);
 		ShaderParameter* normal = shaderEffect->GetShaderAttributeParameter(VSP_NORMAL);
@@ -151,11 +150,11 @@ namespace M3D
 
 			//设置uniform值
 			SPHashMap& shaderUniformMap = shaderEffect->GetShaderUniformMap();
-			if(type == 104){ // 金属材质
+			if(type == 104){
 				continue;
 			}
 			this->SetUniform(shaderEffect, shaderUniformMap, tempUnifomValueList);
-#pragma region Draw //折叠代码
+#pragma region Draw
 			if (type != 104)
 			{
 				int dataLength = faceRenderData->GetDataLength();
@@ -214,8 +213,7 @@ namespace M3D
 		RenderAction* action = this->m_action;
 		RenderContext* gl = action->GetGLContext();
 		CameraNode* camera = action->GetCamera();
-//		ShaderProgram* shaderEffect = shaderEffect = action->GetShaderMananger()->GetEffect(ShaderManager::JewelBack);
-		ShaderProgram* shaderEffect = shaderEffect = action->GetShaderMananger()->GetEffect(ShaderManager::NewJewelBack);
+		ShaderProgram* shaderEffect = shaderEffect = action->GetShaderMananger()->GetEffect(ShaderManager::JewelBack);
 		shaderEffect->UseProgram();
 		ShaderParameter* vertex = shaderEffect->GetShaderAttributeParameter(VSP_POSITION);
 		ShaderParameter* normal = shaderEffect->GetShaderAttributeParameter(VSP_NORMAL);
@@ -788,14 +786,17 @@ namespace M3D
 		tempUnifomValueList[VSP_VIEWMAT] = Uniform("Matrix4", (&gl->GetViewMatrix()));
 		tempUnifomValueList[VSP_PROJECTIONMAT] = Uniform("Matrix4", (&gl->GetProjectMatrix()));
 
+
+
 		tempUnifomValueList[FSP_SAMPLER0] = Uniform("GeometryBuffer", (GeometryBuffer*)(GetHardWareFrameBuffer("jewelBlendFBO").GetColorTarget(0)));
 		tempUnifomValueList[FSP_SAMPLER1] = Uniform("GeometryBuffer", (GeometryBuffer*)(GetHardWareFrameBuffer("diamondFrontFBO").GetDepthTarget()));
 		tempUnifomValueList[FSP_SAMPLER2] = Uniform("GeometryBuffer", (GeometryBuffer*)(GetHardWareFrameBuffer("ringtFBO").GetColorTarget(0)));
 		tempUnifomValueList["u_sampler3"] = Uniform("GeometryBuffer", (GeometryBuffer*)(GetHardWareFrameBuffer("ringtFBO").GetDepthTarget()));
-        tempUnifomValueList["u_sampler6"] = Uniform("GeometryBuffer", (GeometryBuffer*)(GetHardWareFrameBuffer("jewelNoteFBO").GetColorTarget(0)));
+                tempUnifomValueList["u_sampler6"] = Uniform("GeometryBuffer", (GeometryBuffer*)(GetHardWareFrameBuffer("jewelNoteFBO").GetColorTarget(0)));
 
 		SPHashMap& shaderUniformMap = shaderEffect->GetShaderUniformMap();
 		this->SetUniform(shaderEffect, shaderUniformMap, tempUnifomValueList);
+
 		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 #pragma region 解除texture绑定
 		for (map<int, GLenum>::iterator it = textureBindingTargetMap.begin(); it != textureBindingTargetMap.end(); it++)

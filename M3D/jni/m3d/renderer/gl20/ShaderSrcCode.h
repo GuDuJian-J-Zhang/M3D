@@ -294,6 +294,9 @@ public:
 	static const char * SceneGroundVert();
 	static const char * SceneGroundFrag();
 
+//    static const char * MirrorVert();
+//    static const char * MirrorFrag();
+
 	//************************************
 	// Method:    MatCapMaterialVert
 	// FullName:  M3D::ShaderSrcCode::MatCapMaterialVert

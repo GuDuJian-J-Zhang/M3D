@@ -36,6 +36,8 @@
 #include "m3d/graphics/Material.h"
 #include "m3d/graphics/PbrMaterial.h"
 
+#include "m3d/graphics/Texture2D.h"
+
 #ifdef WIN32
 #include "m3d/UI/GUI.h"
 #endif //WIN32
@@ -154,8 +156,9 @@ bool CullerMode::AllowCullerModel()
 }
 
 RenderAction::RenderAction(RenderManager* renderMgr) :
-		Action()
-{
+		Action(),
+	 m_mirrorWidth(971), 
+	m_mirrorHeight(591){
 	this->m_pCamera = NULL;
 
 	this->m_scene = NULL;
@@ -177,6 +180,9 @@ RenderAction::RenderAction(RenderManager* renderMgr) :
 	this->InitRenderEffects();
 
 	this->Reset();
+
+	
+	//this->m_mirrorFBO.Create();
 }
 RenderAction::~RenderAction()
 {
@@ -184,6 +190,11 @@ RenderAction::~RenderAction()
 	{
 		delete m_shaderManager;
 		m_shaderManager = NULL;
+	}
+	if (this->m_mirrorPixels != nullptr) {
+
+		delete[] m_mirrorPixels;
+		m_mirrorPixels = nullptr;
 	}
 	this->ReleaseRenderEffects();
 }
@@ -209,6 +220,9 @@ void RenderAction::Reset()
 	m_depthMapFBO.SetResourceManager(resourceMgr);//!< Maincamera出的相机深度图，用来处理边框线
 
 	m_edgeDetectionFBO.SetResourceManager(resourceMgr);//!< 边缘检测帧缓存对象
+
+	m_mirrorFBO.SetResourceManager(resourceMgr);
+
 	m_clearDelayDrawFlag = true;
 }
 
@@ -312,39 +326,85 @@ void RenderAction::Execute()
 //		glGetIntegerv(GL_STEREO, &nStereoSupport);
 //		LOGI("execute es2");
 		//this->BeginDelayDraw();
-		GLDrawer20::InitialGL();
-		if (Parameters::Instance()->m_useStereo) //是否为VR模式
-		{
-			GLShapeDrawer20::SetFocalLength(this);
-			//float distance = (this->GetScene()->GetCamera()->GetWorldPosition() - this->GetScene()->GetSceneBox().Center()).Length()*0.03;
-			//this->GetScene()->GetCamera()->SetPupilDistance(distance);
-			////		this->GetScene()->GetCamera()->UpdatePupilCamera(distance);
-			this->GetScene()->GetCamera()->SetCameraMode(1);
-            if (Parameters::Instance()->m_BackTransparent == false){
-                GLShapeDrawer20::DrawBackGround(this->GetBackGroundNode(), this);
-            }
-			GLShapeDrawer20::DrawRenderPassGroup(this);
-			this->GetScene()->GetCamera()->SetCameraMode(2);
-            if (Parameters::Instance()->m_BackTransparent == false){
-                GLShapeDrawer20::DrawBackGround(this->GetBackGroundNode(), this);
-            }
-			GLShapeDrawer20::DrawRenderPassGroup(this);
-		}
-		else
-		{
-            if (Parameters::Instance()->m_BackTransparent == false){
-                GLShapeDrawer20::DrawBackGround(this->GetBackGroundNode(), this);
-            }
 
-			GLShapeDrawer20::DrawRenderPassGroup(this);
-		}
-		GLShapeDrawer20::DrawGroundNode(this->GetGroundNode(), this);
+		GLDrawer20::InitialGL();
+		CameraNode * camera = this->GetCamera();
+		GroundNode * groundNode = this->GetGroundNode();
+		CameraNode * mirrorCamera = groundNode->GetMirrorCamera();
+		if (Parameters::Instance()->m_isOpenMirror){
+			m_mirrorFBO.Create();
+			m_mirrorFBO.Bind();
+			m_mirrorTexture = m_mirrorFBO.AttachTextureToColor();
+		    const IntRect& rect = camera->GetViewPort().GetRect();			
+			mirrorCamera->SetViewPort(rect.m_left, rect.m_top, rect.Width(), rect.Height());
+			this->SetCamera(mirrorCamera);
+		    m_mirrorFBO.RenderToMe();
+			
+		}	
+        ExecuteObjects();
+		
+		if (Parameters::Instance()->m_isOpenMirror){
+		//	m_mirrorPixels = new GLubyte[m_mirrorWidth * m_mirrorHeight];
+			glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+			glReadPixels(0, 0, m_mirrorWidth, m_mirrorHeight,
+				GL_RGBA, GL_UNSIGNED_BYTE, m_mirrorPixels);			
+		//	GLubyte pixels[1000];
+			//for (int i = 0; i < 1000; ++i)
+		//	{
+		//		pixels[i] = m_mirrorPixels[i+2000];
+		//	}
+			
+			RenderContext * gl = GetGLContext();
+			Matrix4	mirrorMat = mirrorCamera->GetProjection() *	mirrorCamera->GetView().ToMatrix4();
+		//	Matrix4	mirrorMat = gl->GetProjectMatrix() * gl->GetViewMatrix();
+			m_mirrorFBO.UnBind();
+			this->SetCamera(camera);
+	        ExecuteObjects();
+	    	GLuint mirrorTexture = Texture2D::CreateRGBATexture(m_mirrorPixels, m_mirrorWidth, m_mirrorHeight); 	
+//            GLShapeDrawer20::DrawMirrorGroundNode(groundNode, this, mirrorMat, mirrorTexture, m_mirrorBackgroundTexture);
+			glBindTexture(GL_TEXTURE_2D, 0);
+			glDeleteTextures(1, &m_mirrorTexture);
+		
+		//	this->SetCamera(camera);
+			
+		}else {
+			GLShapeDrawer20::DrawGroundNode(groundNode, this);
+		}		
+		
 		//绘制拖拽器
-		GLShapeDrawer20::DrawDraggerPass(this);
+		GLShapeDrawer20::DrawDraggerPass(this);	
 		GLShapeDrawer20::DrawAxis(this->GetAxisNode(), this);		
 		GLShapeDrawer20::DrawFPS(this->GetFPSNode(), this);
 		this->GetScene()->GetCamera()->SetCameraMode(0);
 		//this->EndDelayDraw();
+	}
+}
+
+void RenderAction::ExecuteObjects(){
+
+	if (Parameters::Instance()->m_useStereo)
+	{
+		GLShapeDrawer20::SetFocalLength(this);
+		//float distance = (this->GetScene()->GetCamera()->GetWorldPosition() - this->GetScene()->GetSceneBox().Center()).Length()*0.03;
+		//this->GetScene()->GetCamera()->SetPupilDistance(distance);
+		////		this->GetScene()->GetCamera()->UpdatePupilCamera(distance);
+		this->GetScene()->GetCamera()->SetCameraMode(1);
+		if (Parameters::Instance()->m_BackTransparent == false) {
+			GLShapeDrawer20::DrawBackGround(this->GetBackGroundNode(), this);
+		}
+		GLShapeDrawer20::DrawRenderPassGroup(this);
+		this->GetScene()->GetCamera()->SetCameraMode(2);
+		if (Parameters::Instance()->m_BackTransparent == false) {
+			GLShapeDrawer20::DrawBackGround(this->GetBackGroundNode(), this);
+		}
+		GLShapeDrawer20::DrawRenderPassGroup(this);
+	}
+	else
+	{
+		if (Parameters::Instance()->m_BackTransparent == false) {
+			GLShapeDrawer20::DrawBackGround(this->GetBackGroundNode(), this);
+		}
+		GLShapeDrawer20::DrawRenderPassGroup(this);
 	}
 }
 
@@ -1148,6 +1208,7 @@ void RenderAction::PrepareFaceMesh(Face* face)
 	}
 }
 
+
 void RenderAction::FacePrepareLineMesh(Face* face)
 {
 	this->PushRenderable(face, RenderableType::RGT_TRILINE);
@@ -1478,11 +1539,26 @@ void RenderAction::ClearGLResource()
 void RenderAction::ResizeFBOs(int width,int height)
 {
 	LOGI("Resize FBO Size");
+
 	m_frameBffer.SetSize(width,height);
 	m_teethFBO.SetSize(width,height);
 	m_delayDrawFBO.SetSize(width,height);
 	m_depthMapFBO.SetSize(width,height);
 	m_edgeDetectionFBO.SetSize(width,height);
+
+	m_mirrorFBO.SetSize(width, height);
+
+	m_mirrorTexture = m_mirrorFBO.AttachTextureToColor();
+
+	m_mirrorWidth = width;
+    m_mirrorHeight = height;
+
+	m_mirrorPixels = new GLubyte[m_mirrorWidth * m_mirrorHeight * 4];
+	Texture2D texture;
+	string mirrorBackgroundPath = SVIEW::Parameters::Instance()->m_appWorkPath + "\\data\\textures\\mirror\\" + string("mirrorBackground.jpg");
+	m_mirrorBackgroundTexture = texture.LoadOGLTexture(mirrorBackgroundPath, 4, 0, 1);
+	
+	//m_mirrorPixels = new GLubyte[m_mirrorWidth * m_mirrorHeight * 4];
 
 	//UI端视口大小改变了
 	//m_frameBffer.DeatchFromPriFBO();

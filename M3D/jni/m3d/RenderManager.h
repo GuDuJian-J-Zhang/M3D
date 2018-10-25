@@ -33,6 +33,8 @@ class Action;
 class RayPickAction;
 class Octree;
 class EffectManager;
+
+class HardWareFrameBuffer;
  
 typedef map<int, RenderEffect*> RenderEffectsMap;
 
@@ -114,6 +116,8 @@ public:
 	 * 执行渲染
 	 */
 	void Render();
+
+	void Render(CameraNode* camera);
 
 	/**
 	 * 设置渲染效果
@@ -330,6 +334,7 @@ private:
 	EffectManager * m_effectManager;
 	string m_globalEffect;
 	bool m_isForceNormalEffect;
+
 };
 }
 #endif/*M3D_RENDER_H_*/

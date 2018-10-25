@@ -373,10 +373,19 @@ void HardWareFrameBuffer::SetSize(int width, int height)
 	MakeDirty();
 }
 
-void HardWareFrameBuffer::MakeDirty()
-{
-	m_dirty = true;
-}
+	void HardWareFrameBuffer::RenderToMe(){
+
+		glBindTexture(GL_TEXTURE_2D, 0);
+		//this->Bind();
+		glViewport(0, 0, m_width, m_height);
+		glClearColor(1.0f, 0.0f, 1.0f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	}
+
+	void HardWareFrameBuffer::MakeDirty()
+	{
+		m_dirty = true;
+	}
 
 bool HardWareFrameBuffer::HasValue()
 {

@@ -55,6 +55,7 @@ static const int M_MAX_INT = 0x7fffffff;
 static const unsigned M_MIN_UNSIGNED = 0x00000000;
 static const unsigned M_MAX_UNSIGNED = 0xffffffff;
 
+static const float M_FEPSILON = 1.0e-4f;
 static const float M_EPSILON =1.0e-35f;
 static const float M_LARGE_EPSILON = 0.00005f;
 static const float M_MIN_NEARCLIP = 0.01f;
@@ -78,7 +79,7 @@ enum Intersection
  */
 inline bool Equals(float lhs, float rhs)
 {
-	return lhs + M_EPSILON >= rhs && lhs - M_EPSILON <= rhs;
+	return lhs + M_FEPSILON >= rhs && lhs - M_FEPSILON <= rhs;
 }
 /** 
  * @brief Check whether a floating point value is NaN. 
