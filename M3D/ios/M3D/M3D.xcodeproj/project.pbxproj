@@ -162,6 +162,7 @@
 		901AE1C41CD8377B001F921A /* SceneGroundNode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 901AE1C21CD8377B001F921A /* SceneGroundNode.cpp */; };
 		901AE1D81CD83A3C001F921A /* GLRenderTarget.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 901AE1D31CD83A3C001F921A /* GLRenderTarget.cpp */; };
 		901AE1D91CD83A3C001F921A /* GLShapeDrawerHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 901AE1D51CD83A3C001F921A /* GLShapeDrawerHelper.cpp */; };
+		901DBC2221814B9E00B80EE9 /* LightDraggerCallback.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 901DBC1E21814B9D00B80EE9 /* LightDraggerCallback.cpp */; };
 		901E179F1D3F4BF400908B1D /* PMIESymbol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 901E179D1D3F4BF400908B1D /* PMIESymbol.cpp */; };
 		901E17A81D3F56ED00908B1D /* FileCacheManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 901E17A61D3F56ED00908B1D /* FileCacheManager.cpp */; };
 		901E17B81D3F570A00908B1D /* shapes.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 901E17AB1D3F570A00908B1D /* shapes.cpp */; };
@@ -735,6 +736,8 @@
 		901AE1D41CD83A3C001F921A /* GLRenderTarget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GLRenderTarget.h; sourceTree = "<group>"; };
 		901AE1D51CD83A3C001F921A /* GLShapeDrawerHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GLShapeDrawerHelper.cpp; sourceTree = "<group>"; };
 		901AE1D61CD83A3C001F921A /* GLShapeDrawerHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GLShapeDrawerHelper.h; sourceTree = "<group>"; };
+		901DBC1E21814B9D00B80EE9 /* LightDraggerCallback.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LightDraggerCallback.cpp; sourceTree = "<group>"; };
+		901DBC2021814B9D00B80EE9 /* LightDraggerCallback.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LightDraggerCallback.h; sourceTree = "<group>"; };
 		901E179D1D3F4BF400908B1D /* PMIESymbol.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PMIESymbol.cpp; sourceTree = "<group>"; };
 		901E179E1D3F4BF400908B1D /* PMIESymbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PMIESymbol.h; sourceTree = "<group>"; };
 		901E17A61D3F56ED00908B1D /* FileCacheManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FileCacheManager.cpp; sourceTree = "<group>"; };
@@ -1805,6 +1808,8 @@
 		65F723D81B464EDB002AE45C /* graphics */ = {
 			isa = PBXGroup;
 			children = (
+				901DBC1E21814B9D00B80EE9 /* LightDraggerCallback.cpp */,
+				901DBC2021814B9D00B80EE9 /* LightDraggerCallback.h */,
 				CF0591A921106F9B006F9F25 /* DepthMaterial.cpp */,
 				CF0591AD21106F9B006F9F25 /* DepthMaterial.h */,
 				CF0591AB21106F9B006F9F25 /* InnerMaterial.cpp */,
@@ -3213,6 +3218,7 @@
 				901E180C1D3F588600908B1D /* PMIData.cpp in Sources */,
 				90944CCF20AA707000769916 /* AnnotationFactory.cpp in Sources */,
 				907D45EB20B2A6C200679DE4 /* AnimationCallBack.cpp in Sources */,
+				901DBC2221814B9E00B80EE9 /* LightDraggerCallback.cpp in Sources */,
 				908AF3CA1F71180D00714948 /* SVLVersionConvertIF.cpp in Sources */,
 				901E17B91D3F570A00908B1D /* advancing_front.cpp in Sources */,
 				65CBC1251C8D48A700946FFF /* ShaderManager.cpp in Sources */,

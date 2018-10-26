@@ -18,6 +18,8 @@
 #include "../handler/RotateCylinderAxisDragger.h"
 #include "m3d/base/Vector3.h"
 #include "../handler/TranslateMinusAxisDragger.h"
+#include "m3d/graphics/SectionLineHelper.h"
+
 using namespace M3D;
 using namespace SVIEW;
 namespace M3D
@@ -94,10 +96,13 @@ namespace M3D
 		}
 
 		float D = -(normalVector.DotProduct(point));
+		outPlane->SetScene(m_view->GetSceneManager());
 		outPlane->SetPlaneParam(normalVector.m_x, normalVector.m_y, normalVector.m_z, D);
 		outPlane->SetEnable(true);
-
+		outPlane->SetShowClipPlane(true);
+		outPlane->SetShowCappingPlane(true);
 		pSection->AddNewPlane(outPlane);
+
 		BindOneSectionDragger(normalVector, outPlane);
 		//outPlane->Release();
 

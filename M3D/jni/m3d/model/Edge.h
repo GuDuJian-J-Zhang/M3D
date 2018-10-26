@@ -115,11 +115,15 @@ public:
 
 	void SetNeedClip(bool val);
 	bool GetNeedClip();
+
+	void SetDotted(bool val);
+	bool GetDotted();
 private:
 	///1级TriMeshData	
 	bool m_visible;	
 	bool m_IsHighlight;
 	bool m_selectable;
+	bool m_IsDotted; //是否是虚线
 	RefPolyLine * m_lineSet;
 	mutable Color m_Color; ///颜色
 	bool m_IsSelect; ///是否选中

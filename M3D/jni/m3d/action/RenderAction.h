@@ -546,6 +546,8 @@ public:
 	 */
 	void Execute();
 
+	void ExecuteObjects();
+
 	/**
 	 * @brief 结束动作
 	 */
@@ -1018,7 +1020,6 @@ public:
 	* @return
 	*/
 	GroundNode* GetGroundNode();
-
 	/**
 	* @brief 将Face中的数据，加入以线着色模式的渲染队列
 	* @param face
@@ -1100,12 +1101,24 @@ public:
 
 	HardWareFrameBuffer m_edgeDetectionFBO;//!< 边缘检测帧缓存对象
 
+
+	HardWareFrameBuffer m_mirrorFBO;//!< FBO
+
+
 	SectionData m_sectionData;//!< 纪录剖切对象
 
 	static ShaderProgram* m_currentSP;//!<TODO
 	static DirectionalLight m_light;//!<TODO 默认灯光
 
 private:
+	GLuint m_mirrorTexture;
+
+	GLuint m_mirrorBackgroundTexture;
+
+    int m_mirrorWidth , m_mirrorHeight;
+
+	GLubyte * m_mirrorPixels;
+
 	CameraNode* m_pCamera; //!< 摄像机
 	RenderManager* m_renderMgr; //!<渲染管理
 	Matrix4* m_glworldMatrix;//!< 世界坐标系缓存
@@ -1119,6 +1132,8 @@ private:
 	SceneGroundNode* m_sceneGroundNode;//!<地面节点
 	MeasureGroup* m_measureGroupCache; //!<交互节点绘制 TODO
 	HandlerGroup* m_handlerGroupNode; //!<拖拽器相关节点
+
+
 
 	Section* m_section; //!<缓存盖面操作信息
 	int m_CurretSpecifyLod; //!<当前使用的LOD，如果直接使用m_iSpecifyLod，会导致在面合并的过程中使用不同的LOD面数据，导致崩溃
@@ -1165,7 +1180,6 @@ private:
 	bool m_clearDelayDrawFlag;
 
 	GroundNode* m_groundNode;
-
 	int m_currentRenderImageQueueIndex;//当前场景使用绘制图片的组的索引
 };
 }

@@ -22,9 +22,10 @@ namespace M3D
 	{
 		if (command.getStage() == MotionCommand::START)
 		{
-			//dragTranslationAll =  Vector3(0,0,0);
-		} else
-		if (command.getStage() == MotionCommand::MOVE)
+			dragTranslation = Vector3(0, 0, 0);
+			m_view->GetExplosiveView()->startExplosion(arrayModels);
+		} 
+		else if (command.getStage() == MotionCommand::MOVE)
 		{
 			//this->receive(command);
 
@@ -37,6 +38,10 @@ namespace M3D
 				this->receive((TranslateInPlaneCommand&)command);
 			}
 			
+		}
+		else if (command.getStage() == MotionCommand::FINISH)
+		{
+			m_view->GetExplosiveView()->endExplosion();
 		}
 
 		return false;
@@ -74,17 +79,17 @@ namespace M3D
 			//±ê×¼ÖáµÄÍÏ×§±¬Õ¨
 			if (dragger->GetDraggerName() == L"XAxis")
 			{
-				percent = translation.m_x / boundingBox.GetXLength() * 100;
+				percent = dragTranslation.m_x / boundingBox.GetXLength() * 100;
 				direction = 1;
 			}
 			else if (dragger->GetDraggerName() == L"YAxis")
 			{
-				percent = translation.m_y / boundingBox.GetYLength() * 100;
+				percent = dragTranslation.m_y / boundingBox.GetYLength() * 100;
 				direction = 2;
 			}
 			else if (dragger->GetDraggerName() == L"ZAxis")
 			{
-				percent = translation.m_z / boundingBox.GetZLength() * 100;
+				percent = dragTranslation.m_z / boundingBox.GetZLength() * 100;
 				direction = 3;
 
 			}

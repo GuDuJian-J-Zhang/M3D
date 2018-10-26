@@ -35,6 +35,8 @@ extern M3D_API const string VSP_MODELVIEWMAT;
 extern M3D_API const string VSP_MVPMAT;
 extern M3D_API const string VSP_TEXTUREMAT;
 
+extern M3D_API const string VSP_MIRRORMAT;
+
 extern M3D_API const string VSP_LIGHTPOSITION;
 extern M3D_API const string VSP_EYEPOSITION;
 
@@ -109,6 +111,10 @@ extern M3D_API const string VSP_LIGHT_NORMALMAT;
 extern M3D_API const string FSP_EDGEDETEC;
 
 ////ubershader---------------------------------
+
+extern M3D_API const string MIRROR_TEXTURE;
+extern M3D_API const string MIRRORBACKGROUND_TEXTURE;
+
 extern M3D_API const string MODEL_MATRXI;
 extern M3D_API const string VIEW_MATRXI;
 extern M3D_API const string NORMAL_MATRXI;

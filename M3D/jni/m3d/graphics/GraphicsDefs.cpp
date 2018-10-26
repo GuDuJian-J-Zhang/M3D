@@ -24,6 +24,8 @@ extern M3D_API const string VSP_MODELVIEWMAT("u_modelViewMat");
 extern M3D_API const string VSP_MVPMAT("u_MVPMat");
 extern M3D_API const string VSP_TEXTUREMAT("u_textureMat");
 
+extern M3D_API const string VSP_MIRRORMAT("u_mirrorMat");
+
 extern M3D_API const string VSP_LIGHTPOSITION("u_lightPosition");
 extern M3D_API const string VSP_EYEPOSITION("u_eyePosition");
 
@@ -96,6 +98,10 @@ extern M3D_API const string VSP_LIGHT_NORMALMAT("u_lightNormalMat");
 extern M3D_API const string FSP_EDGEDETEC("u_edgeDetecColor");
 
 ////ubershader---------------------------------
+
+extern M3D_API const string MIRROR_TEXTURE("mirrorTexture");
+extern M3D_API const string MIRRORBACKGROUND_TEXTURE("mirrorBackgroundTexture");
+
 extern M3D_API const string MODEL_MATRXI("modelMatrix");
 extern M3D_API const string VIEW_MATRXI("viewMatrix");
 extern M3D_API const string NORMAL_MATRXI("normalMatrix");

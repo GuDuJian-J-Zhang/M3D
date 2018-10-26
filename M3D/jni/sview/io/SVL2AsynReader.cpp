@@ -272,19 +272,20 @@ void SVL2AsynReader::FillModelMesh(View* view, Model* model) {
 				this->AddProtoTypeToCache(stkModel->GetID(), model);
 			}
 
-			model->SetOrigVisible(model->IsVisible(), false);
-
-			//if (fileInfo->GetInstanceMaterialId() > 0)
-			//{
-			//	Color modelInitColor;
-			//	this->GetMatrialColor(fileInfo->GetInstanceMaterialId(), modelInitColor);
-			//	model->SetInitColor(modelInitColor);
-			//}
+					model->SetOrigVisible(model->IsVisible(), false);
+					if (model->Selectable() == false)
+						model->Selectable(false);
+					//if (fileInfo->GetInstanceMaterialId() > 0)
+					//{
+					//	Color modelInitColor;
+					//	this->GetMatrialColor(fileInfo->GetInstanceMaterialId(), modelInitColor);
+					//	model->SetInitColor(modelInitColor);
+					//}
 //End:
-			model->ClearFileInfo();
+					//model->ClearFileInfo();
+			}
 		}
 	}
-}
 
 void SVL2AsynReader::FillModelMesh(View* view, vector<Model*>& models) {
 	for (int i = 0; i < models.size(); i++) {
@@ -1337,41 +1338,51 @@ bool SVL2AsynReader::FillEdges(void* stk_edge, vector<float>* outVertices,
 	}
 }
 
-void SVL2AsynReader::FillShapeProperty(
-		const map<wstring, wstring>& protoTypeProperties,
-		ShapeProperty* shapeProperty) {
-	vector<ShapePropertyItem>& shapeProperties = shapeProperty->GetProperties();
-	shapeProperties.clear();
+	void SVL2AsynReader::FillShapeProperty(const map<wstring, wstring>& protoTypeProperties, ShapeProperty* shapeProperty, Model* model)
+	{
+		vector<ShapePropertyItem>& shapeProperties = shapeProperty->GetProperties();
+		shapeProperties.clear();
 
 	map<wstring, wstring>::const_iterator protoTypePropertiesIt =
 			protoTypeProperties.begin();
 
-	for (; protoTypePropertiesIt != protoTypeProperties.end();
-			++protoTypePropertiesIt) {
-		//Stk_MetaData* metaData = protoTypePropertiesIt;
-		//if (metaData)
+		for (; protoTypePropertiesIt != protoTypeProperties.end(); ++ protoTypePropertiesIt)
 		{
-			ShapePropertyItem propertyItem;
-			propertyItem.m_strTitle = Platform::WStringToString(
-					protoTypePropertiesIt->first, "auto");
-			propertyItem.m_eValueType = SHAPE_PROPERTY_TypeValueUnknown;
-			//(ShapePropertyValueTypeEnum)metaData->GetType();
-			propertyItem.m_strValue = Platform::WStringToString(
-					protoTypePropertiesIt->second, "auto");
-			//propertyItem.m_strUnits = Platform::WStringToString(metaData->GetUnits(), "auto");
-
-			shapeProperties.push_back(propertyItem);
+			//Stk_MetaData* metaData = protoTypePropertiesIt;
+			//if (metaData)
+			{
+				string strPropName = Platform::WStringToString(protoTypePropertiesIt->first, "auto");
+				string strPropValue = Platform::WStringToString(protoTypePropertiesIt->second, "auto");
+				if (strPropName.compare("selectable") == 0)
+				{
+					model->Selectable(false);
+					continue;
+				}
+				if (strPropName.compare("origintransparency") == 0)
+				{
+					model->SetOriginTransparency(atof(strPropValue.c_str()));
+					continue;
+				}
+				ShapePropertyItem propertyItem;
+				propertyItem.m_strTitle = strPropName;
+				propertyItem.m_eValueType = SHAPE_PROPERTY_TypeValueUnknown;
+				//(ShapePropertyValueTypeEnum)metaData->GetType();
+				propertyItem.m_strValue = strPropValue;
+				//propertyItem.m_strUnits = Platform::WStringToString(metaData->GetUnits(), "auto");
+				shapeProperties.push_back(propertyItem);
+			}
 		}
 	}
-}
-void SVL2AsynReader::FillAssembly(Model* model, void* instancePtr) {
-	this->updateReadInstancePercent();
-	Stk_InstancePtr instance = *(Stk_InstancePtr*) instancePtr;
-	if (model) {
-		Matrix4 plcMatrix;
-		float* matrixData = &plcMatrix.m_m00;
-		instance->GetMatrix(matrixData, 16);
-		model->SetPlaceMatrix(plcMatrix);
+	void SVL2AsynReader::FillAssembly(Model* model, void* instancePtr)
+	{
+		this->updateReadInstancePercent();
+		Stk_InstancePtr instance =*(Stk_InstancePtr*)instancePtr;
+		if (model)
+		{
+			Matrix4 plcMatrix;
+			float* matrixData = &plcMatrix.m_m00;
+			instance->GetMatrix(matrixData, 16);
+			model->SetPlaceMatrix(plcMatrix);
 
 		//赋值model name
 		model->SetSVLId(instance->GetID() + m_SVLIDOffset);
@@ -1888,7 +1899,7 @@ bool SVL2AsynReader::GetMatrial(int materialId, Color& difuseColor,
 			//将材质加入全局资源管理器中，进行资源管理
 			material =
 					this->m_view->GetSceneManager()->GetResourceManager()->GetOrCreateMaterial(
-							name, MaterialType_Shader);
+							materialIDStr, MaterialType_Shader);
 			if (!material->GetNeedsUpdateUniformParamerers()) {
 				return false;
 			}
@@ -2339,7 +2350,7 @@ bool SVL2AsynReader::GetMatrialColor(int materialId, Color& difuseColor,
 			//将材质加入全局资源管理器中，进行资源管理
 			material =
 					this->m_view->GetSceneManager()->GetResourceManager()->GetOrCreateMaterial(
-							name, MaterialType_Shader);
+							materialIDStr, MaterialType_Shader);
 			if (!material->GetNeedsUpdateUniformParamerers()) {
 				return false;
 			}
@@ -4054,7 +4065,7 @@ void SVL2AsynReader::ReadModelAttribute(Model* model) {
 				}
 				shapeProperty->AddRef();
 
-				FillShapeProperty(properties, shapeProperty);
+					FillShapeProperty(properties, shapeProperty, subModel);
 
 				shapeProperty->Release();
 			}

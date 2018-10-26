@@ -27,6 +27,7 @@ class BaseLight;
 class CameraNode;
 class TranslateMinusAxisDragger;
 class TranslateBoxDragger;
+class Translate3DDragger;
 class M3D_API HandlerGroup: public GroupNode
 {
 public:
@@ -144,6 +145,8 @@ public:
 	RotateCylinderAxisDragger* GetRotateCylinderAxisDragger();
 	ScaleAxisDragger* GetScaleAxisDragger();
 
+	Translate3DDragger* GetTranslate3DHandle();
+	Translate3DDragger* GetTranslate3DPntHandle();
 	/**
 	 *
 	 */
@@ -166,6 +169,8 @@ private:
 
 	void RemoveAllTools();
 
+	void RemoveLightHandle();
+
 	static void CacheNodeToMap(void* data, Model* node);
 
 private:
@@ -186,7 +191,7 @@ private:
 	float m_rotateCenterSize; //!<
 	Vector3 m_rotateCenterPos; //!<
 	list<TranslateMinusAxisDragger*> miusMinusAxisDraggerList;
-
+	vector<Translate3DDragger*> m_TransLightHandleNodes;//光源拖拽器
 };
 }
 #endif /*M3D_HANDLERGROUP_H_*/

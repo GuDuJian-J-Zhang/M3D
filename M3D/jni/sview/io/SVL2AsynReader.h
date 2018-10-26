@@ -153,7 +153,7 @@ private:
 		vector<float>* points, SPolyLine* bodyPolyLine,
 		RefPolyLine * edgeLine);
 
-	void FillShapeProperty(const map<wstring, wstring>& protoTypeProperties, ShapeProperty * shapeProperty);
+	void FillShapeProperty(const map<wstring, wstring>& protoTypeProperties, ShapeProperty * shapeProperty, Model* model);
 
 	void SimplyFillAssembly(Model* model, void* pstk_NodePtr);
 	void FillAssembly(Model* model, void* binInstance);

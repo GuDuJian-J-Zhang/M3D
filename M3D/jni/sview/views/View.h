@@ -432,6 +432,10 @@ public:
      */
     virtual bool CloseExplisiveView();
 
+
+	void StartExplosition(vector<Model*> models);
+	void endExplosition();
+
 	///获得和设置实例的矩阵
 	/**
 	 * @brief 设置名称为plcPath节点，对应的配置矩阵为matrix
@@ -973,6 +977,26 @@ public:
      * @return  true 使用背景图片 false不使用
      */
     virtual bool GetBackgroundUseImage();
+
+	/**
+	* 设置水印
+	* @param path 水印路径
+	* @param mappingStyle 水印映射方式
+	* @return true设置成功，false设置失败
+	*/
+	virtual bool SetBackgroundWaterMark(const string& path, int mappingStyle);
+
+	/**
+	* 设置是否使用水印
+	* @param useWaterMark true 使用水印 false不使用
+	*/
+	virtual void SetBackgroundUseWaterMark(bool useWaterMark);
+
+	/**
+	* 获取当前是否使用水印
+	* @return  true 使用水印 false不使用
+	*/
+	virtual bool GetBackgroundUseWaterMark();
 
 	bool SetBackgroundTexture(Texture * texture);
 

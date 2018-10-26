@@ -10,6 +10,7 @@
 #include "m3d/action/CallBackAction.h"
 #include "m3d/handler/dragger.h"
 #include "m3d/handler/Translate1DDragger.h"
+#include "m3d/handler/Translate3DDragger.h"
 #include "m3d/handler/TranslateAxisDragger.h"
 #include "m3d/handler/TranslateMinusAxisDragger.h"
 #include "RotateCylinderAxisDragger.h"
@@ -62,6 +63,7 @@ void HandlerGroup::Clear()
 	ReleaseMe(m_ScaleAxisDragger);
 	ReleaseMe(m_TransMinusformHandlerNode);
 	ReleaseMe(m_translateBoxDragger);
+	this->RemoveLightHandle();
 	this->RemoveAllTools();
     this->RemoveRotateCenter();
     this->DeleteAllChildren();
@@ -232,6 +234,16 @@ void HandlerGroup::HandleDragger(TouchEvent& touchEvent)
 		}
 	}
 
+	for (size_t i = 0; i < m_TransLightHandleNodes.size(); i++)
+	{
+		Translate3DDragger* lightDragger = m_TransLightHandleNodes[i];
+		if (lightDragger && !touchEvent.getHandled())
+		{
+			Dragger* dragger = lightDragger;
+			dragger->handle(touchEvent);
+		}
+	}
+
 	if (!touchEvent.getHandled()&&this->m_RotateCylinderAxisDragger && m_RotateCylinderAxisDragger->IsVisible())
 	{
 		Dragger* dragger = m_RotateCylinderAxisDragger;
@@ -290,6 +302,26 @@ void HandlerGroup::FindVisiableObject(RenderAction* renderAction)
 			if (renderAction->GetSceneBoxChanged() || dragger->GetNeedScale())
 			{
 				Vector2 size = ShapeHelper::GetCommonSize(renderAction->GetScene(), Vector2(scaleFactor, scaleFactor));
+				dragger->SetOrigScale(Vector3(size.m_x, size.m_x, size.m_x));
+				dragger->SetNeedScale(false);
+			}
+			Vector3 position = dragger->GetWorldTransform()* Vector3(0, 0, 0);
+			float scale = Billboard::GetFitShowScale(renderAction, position) / 0.4f;
+			Vector3 scaleVec3(scale, scale, scale);
+			Vector3 OldscaleVec3 = dragger->GetOrigScale();
+			OldscaleVec3 *= scaleVec3;
+			dragger->SetScale(OldscaleVec3);
+		}
+	}
+	for (size_t i = 0; i < m_TransLightHandleNodes.size(); i++)
+	{
+		Translate3DDragger* dragger = m_TransLightHandleNodes[i];
+		if (dragger && dragger->IsVisible())
+		{
+			if (renderAction->GetSceneBoxChanged() || dragger->GetNeedScale())
+			{
+				Vector2 size = ShapeHelper::GetCommonSize(renderAction->GetScene(), Vector2(scaleFactor, scaleFactor));
+				size.m_x /= 2;
 				dragger->SetOrigScale(Vector3(size.m_x, size.m_x, size.m_x));
 				dragger->SetNeedScale(false);
 			}
@@ -651,6 +683,28 @@ M3D::ScaleAxisDragger* HandlerGroup::GetScaleAxisDragger()
 	return m_ScaleAxisDragger;
 }
 
+Translate3DDragger* HandlerGroup::GetTranslate3DHandle()
+{
+	Translate3DDragger* translate3DDragger = new Translate3DDragger();
+	translate3DDragger->setupDefaultImageGeometry();
+	translate3DDragger->AddRef();
+	translate3DDragger->SetScene(m_scene);
+	this->AddChild(translate3DDragger);
+	m_TransLightHandleNodes.push_back(translate3DDragger);
+	return translate3DDragger;
+}
+
+Translate3DDragger* HandlerGroup::GetTranslate3DPntHandle()
+{
+	Translate3DDragger* translate3DDragger = new Translate3DDragger();
+	translate3DDragger->setupDefaultPntImageGeometry();
+	translate3DDragger->AddRef();
+	translate3DDragger->SetScene(m_scene);
+	this->AddChild(translate3DDragger);
+	m_TransLightHandleNodes.push_back(translate3DDragger);
+	return translate3DDragger;
+}
+
 //TransformHandlerNode* HandlerGroup::GetTransformHandler()
 //{
 //	if(this->m_TransformHandlerNode == NULL)
@@ -671,6 +725,16 @@ M3D::ScaleAxisDragger* HandlerGroup::GetScaleAxisDragger()
 //		this->m_TransformHandlerNode->SetHide(!visible);
 //	}
 //}
+
+void HandlerGroup::RemoveLightHandle()
+{
+	for (vector<Translate3DDragger*>::iterator it = m_TransLightHandleNodes.begin(); it != m_TransLightHandleNodes.end(); it++)
+	{
+		DeleteChild(*it);
+		ReleaseMe(*it);
+	}
+	m_TransLightHandleNodes.clear();
+}
 
 void HandlerGroup::RemoveRotateCenter()
 {

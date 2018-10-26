@@ -87,14 +87,15 @@ void Thread::Stop()
 
 	if(m_threadID != GetCurrentThreadID())
 	{
-		pthread_t* thread = (pthread_t*) m_handle;
 		#ifdef WIN32
 				if(WaitForSingleObject((HANDLE)m_handle, INFINITE)!= WAIT_ABANDONED)
 				{
 					CloseHandle((HANDLE)m_handle);
 				}
+#elif  __ANDROID__
 #endif
 #ifdef  __ANDROID__
+        pthread_t* thread = (pthread_t*) m_handle;
 					if (thread) {
 					pthread_detach(m_threadID);
 					pthread_join(*thread, 0);
@@ -102,16 +103,16 @@ void Thread::Stop()
 					}
 #endif
 #ifdef __IOS__
+		pthread_t* thread = (pthread_t*)m_handle;
 					if (thread)
 					pthread_join(*thread, 0);
 					delete thread;
 		#endif
-
+	} 
 			m_shouldRun = false;
 			m_threadID = 0;
 			m_handle = 0;
 	}
-}
 void Thread::SetPriority(int priority)
 {
     #ifdef WIN32

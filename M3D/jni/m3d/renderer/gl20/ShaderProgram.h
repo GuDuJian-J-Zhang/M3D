@@ -82,6 +82,8 @@ enum ShaderMaterialType
 	SMT_SaoReconstructCSZ,
 	SMT_SaoMinifyCSZ,
 	SMT_SaoBlur,
+
+	SMT_Mirror,
 };
 
 #ifdef __MOBILE__

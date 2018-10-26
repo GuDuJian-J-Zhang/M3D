@@ -148,6 +148,9 @@ namespace M3D
 		//************************************
 		void IsTurnOn(bool value);
 		bool IsTurnOn();
+		virtual void CreateSignModel(SceneManager* sceneManager) {};
+		virtual void BindDragger(SceneManager* sceneManager) {};
+		virtual void UnBindDragger(SceneManager* sceneManager) {};
 	protected:
 		virtual void SetUpHelperData();
 	protected:

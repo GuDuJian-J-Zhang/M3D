@@ -89,11 +89,33 @@ public:
      */
     bool IsUseImage();
 
+	/**
+	* 设置水印路径
+	* @param filePath
+	* @param mappingStyle
+	*/
+	void SetWaterMark(const string& filePath, int mappingStyle);
+
+	/**
+	* 设置是否使用水印
+	* @param useWaterMark true 使用水印 false不使用
+	*/
+	void SetUseWaterMark(bool useWaterMark);
+
+	/**
+	* 获取当前是否使用水印
+	* @return  true 使用水印 false不使用
+	*/
+	bool IsUseWaterMark();
+
 	void SetUseSkyBox(bool useSkyBox);
 	bool IsUseSkyBox();
 
 	Texture* GetTexture();
 	void SetTexture(Texture* texture);
+
+	Texture* GetTextureOfWaterMark();
+	void SetTextureOfWaterMark(Texture* texture);
 
 	Texture* GetSkyBoxTexture(string name);
 	Texture* GetSkyBoxTexture();
@@ -135,12 +157,16 @@ public:
 
 private:
 	bool m_isImageDirty; //!<图片脏标记 当图片脏时 需要重构构纹理
+	bool m_isWaterMarkDirty; //!<图片脏标记 当图片脏时 需要重构构纹理
 
 	bool m_isUseImage;  //!<是否使用背景图片标志
+	bool m_isUseWaterMark;  //!<是否使用水印标志
 
 	string m_imagePath;  //!<图片路径
+	string m_waterMarkPath;  //!<水印路径
 
 	Texture* m_texture;  //!<背景纹理
+	Texture* m_textureOfWaterMark;  //!<水印纹理
 
 	map<string, Texture*> m_skyBoxTexture;
 
@@ -153,10 +179,13 @@ private:
 	Color m_originTopColor;
 	Color m_originBottomColor;
 	Texture * m_originTexture;
+	Texture * m_originTextureOfWaterMark;
 	bool m_originUseColor;
 	bool m_originUseImage;
+	bool m_originUseWaterMark;
 	bool m_originUseSkyBox;
 	string m_origimagePath;  //!<图片路径
+	string m_origwatermarkePath;  //!<图片路径
 
     ResourceManager* m_resMgr;
 

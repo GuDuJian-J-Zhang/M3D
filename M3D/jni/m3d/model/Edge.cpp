@@ -19,6 +19,7 @@ Edge::Edge() :Object()
 	m_IsHighlight = false;
 	m_lineSet = NULL;
 	m_IsSelect= false; ///是否选中
+	m_IsDotted = false; 
 
 	face = NULL; //!< 上级面
 	body = NULL; //!<上级Body
@@ -35,6 +36,7 @@ Edge::Edge() :Object()
 Edge::Edge(const Edge& orig)
 {
 	this->m_selectable = true;
+	m_bNeedClip = true;
 	*this = orig;
 }
 
@@ -73,6 +75,8 @@ Edge& Edge::operator=(const Edge& orig)
 		this->m_visible = orig.m_visible;
 		this->m_IsHighlight = orig.m_IsHighlight;
 		this->m_selectable = orig.m_selectable;
+		this->m_bNeedClip = orig.m_bNeedClip;
+		this->m_IsDotted = orig.m_IsDotted;
 	}
 	return *this;
 }
@@ -533,5 +537,14 @@ void Edge::SetNeedClip(bool val)
 bool Edge::GetNeedClip()
 {
 	return m_bNeedClip;
+}
+
+void Edge::SetDotted(bool val)
+{
+	m_IsDotted = val;
+}
+bool Edge::GetDotted()
+{
+	return m_IsDotted;
 }
 }

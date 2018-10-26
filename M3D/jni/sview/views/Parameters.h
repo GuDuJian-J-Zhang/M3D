@@ -210,6 +210,7 @@ public:
 	Color m_annotationDisplayColor;
 	//----设计器参数结束
 
+	bool 	m_isOpenMirror;		//!<是否开启镜面
     bool 	m_isOpenScale;		//!<是否开启缩放
 	bool 	m_IsConRotate;		//!<持续旋转
 	bool 	m_UseBackImage;		//!<是否使用背景图片

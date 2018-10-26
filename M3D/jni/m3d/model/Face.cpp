@@ -1,4 +1,4 @@
-﻿#include "m3d/model/Body.h"
+#include "m3d/model/Body.h"
 #include "m3d/model/Face.h"
 #include "m3d/model/Edge.h"
 #include "m3d/model/MeshData.h"

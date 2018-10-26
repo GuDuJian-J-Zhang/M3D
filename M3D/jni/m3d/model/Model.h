@@ -249,6 +249,7 @@ public:
 	virtual void SetSceneNode(SceneNode* node);
 	virtual SceneNode* GetSceneNode();
 	virtual void SetMaterial(BaseMaterial* material);
+	virtual void SetMaterialForLastBody(BaseMaterial* material);
 	virtual BaseMaterial* GetMaterial();
 	virtual bool	HasMaterial();
 	virtual bool AllowExculding();
@@ -497,8 +498,8 @@ public:
 	//通过索引的方式设置数据
 	void AddLineData(vector<Vector3>& points, vector<M3D_INDEX_TYPE>& indexs);
 	//使用非索引的方式设置数据
-	void AddLineData(vector<Vector3>& points);
-
+	//void AddLineData(vector<Vector3>& points);
+	void AddLineData(vector<Vector3>& points, Color color = Color::BLACK, bool dotted = false);
 	/**
 	* 设置配置id
 	* @param plcId
@@ -624,6 +625,11 @@ public:
 	int GetBodyCount();
 
 	void SetNeedClip(bool val);
+	void SetOriginTransparency(float fTrans);
+	float GetOriginTransparency();
+
+	void AddBodyByFace(Face* face);
+	void Test(SceneManager* scene, BaseMaterial* material);
 protected:
 	ModelShape* m_modelShape;
 	mutable bool m_dirty; //!< @see SceneNode
@@ -650,6 +656,7 @@ private:
 		int m_svlId;
 		int m_ProtoTypeID; //纪律原型的id
 		void* m_userData;
+		float m_originTrans;
 };
 
 
@@ -684,6 +691,8 @@ public:
 	void SetAllowTran(bool allowTran);
 
 	void SetFixShowInScreen(bool fixShow);
+
+	void SetAllowClip(bool allowClip);
 
 	ImageModelShape* GetImageModelShape();
 private:

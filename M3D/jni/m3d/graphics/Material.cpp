@@ -10,16 +10,14 @@ Material::Material():InnerMaterial()
 {
 	this->Init();
 }
+Material::Material(Material& org):InnerMaterial(org)
+{
+	this->SetAmbient(org.m_ambient);
+	this->SetDiffuse(org.m_Diffuse);
+	this->setSpecular(org.m_Specular);
 
-Material::Material(Material& org) :
-		InnerMaterial(org) {
-
-	m_ambient = org.m_ambient;
-	m_Diffuse = org.m_Diffuse;
-	m_Specular = org.m_Specular;
-	m_emissive = org.m_emissive;
-
-	m_texture =  new Texture();
+	this->SetEmissive(org.m_emissive);
+	this->m_texture = new Texture();
 	*m_texture = *(org.m_texture);
 	m_texture->AddRef();
 
@@ -37,19 +35,21 @@ Material::Material(Material& org) :
 
 	m_matcapMap = new Texture();
 	*m_matcapMap = *(org.m_matcapMap);
+	m_matcapMap->AddRef();
 
 	m_displacementScale = org.m_displacementScale;
 	m_displacementBias = org.m_displacementBias;
 	m_normalMapScale = org.m_normalMapScale;
-
+	
 	m_bumpmap = new Texture();
 	*m_bumpmap = *(org.m_bumpmap);
 	m_bumpmap->AddRef();
 
-	this->m_textureTransform =  new Matrix4();
+	
+	this->m_textureTransform = new Matrix4();
 	*m_textureTransform = *(org.m_textureTransform);
-
-	m_ambientTexture = new Texture();
+	
+	this->m_ambientTexture = new Texture();
 	*m_ambientTexture = *(org.m_ambientTexture);
 	m_ambientTexture->AddRef();
 
@@ -62,17 +62,18 @@ Material::Material(Material& org) :
 	m_materialType = org.m_materialType;
 	m_opacity = org.m_opacity;
 	m_isGammaOutpute = org.m_isGammaOutpute;
-	m_emissiveMap =new Texture();
-	*m_emissiveMap = *(org.m_emissiveMap);
+	m_emissiveMap = new Texture();
+	*(m_emissiveMap) = *(org.m_emissiveMap);
 	m_emissiveMap->AddRef();
 }
-
-BaseMaterial* Material::Clone() {
+BaseMaterial* Material::Clone()
+{
 	return new Material(*this);
 }
-
-Material::~Material() {
-	if (this->m_resourceMgr) {
+Material::~Material()
+{
+	if(this->m_resourceMgr)
+	{
 		//在析构时，将material从资源管理器中移除。此对象真正点不存在了
 		//this->m_resourceMgr->RemoveMaterial(m_name);
 

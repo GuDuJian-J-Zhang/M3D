@@ -6471,7 +6471,8 @@ namespace M3D
 				measure = NULL;
 			}
 		}
-		else if (firstShape && secondShape && firstShape->GetType() == SHAPE_EDGE
+		else if (firstShape && secondShape && firstLineId != secondLineId 
+			&& firstShape->GetType() == SHAPE_EDGE
 			&& secondShape->GetType() == SHAPE_EDGE)
 		{
 			measure = new MeasureDistance;
@@ -6660,6 +6661,11 @@ namespace M3D
 					ImageBoard * imageBroad = MeasureDisplayHelper::createNoteTextsImageN(scene, temptext, pntInPlane);
 					measure->AddImage(imageBroad);
 				}
+				else
+				{
+					delete measure;
+					measure = NULL;
+				}
 			}
 			else
 			{
@@ -6706,7 +6712,7 @@ namespace M3D
 			{
 				secondFinished = false;
 			}
-			if (!secondFinished)
+			if (!secondFinished || firstLineId == secondLineId)
 			{
 				delete measure;
 				measure = NULL;
@@ -6840,7 +6846,7 @@ namespace M3D
 				return measure;
 			}
 			secondFinished = CreateCircularArc(measure, secondShape, secondVector, secondCenter, secondRadius);
-			if (!secondFinished)
+			if (!secondFinished || firstLineId == secondLineId)
 			{
 				delete measure;
 				measure = NULL;
@@ -7593,7 +7599,7 @@ namespace M3D
 			{
 				delete measure;
 				measure = NULL;
-				return NULL;
+                return NULL;
 			}
 
 			Vector3 lineStart = secondLineAttribute.GetStartPoint();
@@ -7786,7 +7792,8 @@ namespace M3D
 			HandlerPoint * forthPnt = (HandlerPoint *)forthShape;
 			forthCoordinate = forthPnt->GetPosition();
 
-			if (secondGeo && secondGeo->GetGeoAttrType() == M3D_GEOATTR_TYPE_PLANEFACE)
+			if (firstFaceId != secondFaceId && secondGeo 
+				&& secondGeo->GetGeoAttrType() == M3D_GEOATTR_TYPE_PLANEFACE)
 			{
 				secondPlaneFaceAttribute =
 					*((PlaneFaceAttribute *)secondGeo);
@@ -8748,13 +8755,25 @@ namespace M3D
 				Vector3 end1 = firstEllipseAttribute.GetEndPoint();
 				Vector3 startDirection = (start1 - center1).Normalized();
 				Vector3 endDirection = (end1 - center1).Normalized();
-				Vector3 normalDirection = startDirection.CrossProduct(endDirection);
 				float radius = firstEllipseAttribute.GetMajorRadius(); 
 	
 				SPolyLine * xPolyLine = firstLineSet->GetRefLine();
 				vector<Vector3> & pntPoints = xPolyLine->GetPoints();
 				unsigned int offset = firstLineSet->GetDataOffset();
 				unsigned int dataLength = firstLineSet->GetDataLength();
+
+				Vector3 normalDirection;
+				float angle = startDirection.Angle(endDirection);
+				if (abs(angle - 180) < 0.1)
+				{
+					dataLength = dataLength / 2;
+					Vector3 tmpPnt = worldMatrix1 * pntPoints[offset + dataLength];
+					normalDirection = startDirection.CrossProduct(tmpPnt - center1);
+				}
+				else
+				{
+					normalDirection = startDirection.CrossProduct(endDirection);
+				}
 
 				Plane proPlane(normalDirection, start1);
 				Ray cameraRay = scene->GetCamera()->GetViewPort().GetScreenRay(screenPnt.m_x, screenPnt.m_y);
@@ -8768,7 +8787,6 @@ namespace M3D
 
 				vector<Vector3> linesTemp;
 				float arcLength = 0.0f;
-				float angle = startDirection.Angle(endDirection);
 				if (abs(angle - 180) < 0.1)
 				{
 					arcLength = M_PI * radius;
@@ -10859,21 +10877,6 @@ namespace M3D
 				Vector3 endDirection = (end - center).Normalized();
 				verticVector = startDirection.CrossProduct(endDirection).Normalized();
 
-				Vector3 pnt1 = center + startDirection * majorRadius / 3;
-				Vector3 pnt2 = center - startDirection * majorRadius / 3;
-				Vector3 otherDirection = startDirection.CrossProduct(verticVector).Normalized();
-				Vector3 pnt3 = center + otherDirection * majorRadius / 3;
-				Vector3 pnt4 = center - otherDirection * majorRadius / 3;
-
-				Color lineColor = Color::RED;
-				Line3D * line1 = new Line3D(pnt1, pnt2);
-				line1->SetColor(lineColor);
-				Line3D * line2 = new Line3D(pnt3, pnt4);
-				line2->SetColor(lineColor);
-
-				measure->AddLine(line1);
-				measure->AddLine(line2);
-
 				Point * centerPoint1 = new Point(center);
 				centerPoint1->SetDrawType(1);
 				centerPoint1->SetSize(0.8f);
@@ -10893,6 +10896,7 @@ namespace M3D
 					Vector3 tmpPnt = worldMatrix1 * pntPoints[offset + dataLength];
 					Vector3 direction = (center - tmpPnt).Normalized();
 					Vector3 oppositePnt = tmpPnt + direction * majorRadius * 2;
+					verticVector = startDirection.CrossProduct(direction).Normalized();
 					angle = (start - center).Angle(tmpPnt - center);
 					MeasureDisplayHelper::CreateDesignerAngleMark(center, start, center, tmpPnt,
 						center, majorRadius, angle, linesTemp);
@@ -10906,6 +10910,7 @@ namespace M3D
 				}
 				else if (abs(angle) < 0.001)
 				{
+					return state;
 					MeasureDisplayHelper::CreateDesignerAngleMark(center, start, center, end,
 						center, majorRadius, 360, linesTemp);
 				}
@@ -10941,6 +10946,7 @@ namespace M3D
 					}
 				}
 
+				Color lineColor = Color::RED;
 				if (linesTemp.size() > 0)
 				{
 					for (int i = 0; i < linesTemp.size() - 1; i++)
@@ -10962,6 +10968,20 @@ namespace M3D
 						measure->AddLine(lineTemp);
 					}
 				}
+
+				Vector3 pnt1 = center + startDirection * majorRadius / 3;
+				Vector3 pnt2 = center - startDirection * majorRadius / 3;
+				Vector3 otherDirection = startDirection.CrossProduct(verticVector).Normalized();
+				Vector3 pnt3 = center + otherDirection * majorRadius / 3;
+				Vector3 pnt4 = center - otherDirection * majorRadius / 3;
+
+				Line3D * line1 = new Line3D(pnt1, pnt2);
+				line1->SetColor(lineColor);
+				Line3D * line2 = new Line3D(pnt3, pnt4);
+				line2->SetColor(lineColor);
+
+				measure->AddLine(line1);
+				measure->AddLine(line2);
 				state = true;
 			}
 		}
@@ -11020,7 +11040,26 @@ namespace M3D
 				Vector3 center = lineAttribute.GetCenterPoint();
 				Vector3 start = lineAttribute.GetStartPoint();
 				Vector3 end = lineAttribute.GetEndPoint();
-				Vector3 normal = (start - center).CrossProduct(end - center);
+				Vector3 startDirection = start - center;
+				Vector3 endDirection = end - center;
+
+				Vector3 normal;
+				float angle = startDirection.Angle(endDirection);
+				if (abs(angle - 180) < 0.1)
+				{
+					SPolyLine * xPolyLine = lineSet->GetRefLine();
+					vector<Vector3> & pntPoints = xPolyLine->GetPoints();
+					unsigned int offset = lineSet->GetDataOffset();
+					unsigned int dataLength = lineSet->GetDataLength();
+
+					dataLength = dataLength / 2;
+					Vector3 tmpPnt = worldMatrix1 * pntPoints[offset + dataLength];
+					normal = startDirection.CrossProduct(tmpPnt - center);
+				}
+				else
+				{
+					normal = startDirection.CrossProduct(endDirection);
+				}
 				Plane proPlane(normal, start);
 				Ray cameraRay = scene->GetCamera()->GetViewPort().GetScreenRay(
 					screenPnt.m_x, screenPnt.m_y);
@@ -11120,7 +11159,27 @@ namespace M3D
 				Vector3 center = lineAttribute.GetCenterPoint();
 				Vector3 start = lineAttribute.GetStartPoint();
 				Vector3 end = lineAttribute.GetEndPoint();
-				Vector3 normal = (start - center).CrossProduct(end - center);
+				Vector3 startDirection = start - center;
+				Vector3 endDirection = end - center;
+
+				Vector3 normal;
+				float angle = startDirection.Angle(endDirection);
+				if (abs(angle - 180) < 0.1)
+				{
+					SPolyLine * xPolyLine = lineSet->GetRefLine();
+					vector<Vector3> & pntPoints = xPolyLine->GetPoints();
+					unsigned int offset = lineSet->GetDataOffset();
+					unsigned int dataLength = lineSet->GetDataLength();
+
+					dataLength = dataLength / 2;
+					Vector3 tmpPnt = worldMatrix1 * pntPoints[offset + dataLength];
+					normal = startDirection.CrossProduct(tmpPnt - center);
+				}
+				else
+				{
+					normal = startDirection.CrossProduct(endDirection);
+				}
+
 				Plane proPlane(normal, start);
 				Ray cameraRay = scene->GetCamera()->GetViewPort().GetScreenRay(
 					screenPnt.m_x, screenPnt.m_y);

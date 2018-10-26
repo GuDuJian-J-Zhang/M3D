@@ -9,6 +9,7 @@
 #ifndef M3D_MIMAGE_H
 #define M3D_MIMAGE_H
 #include "m3d/M3D.h"
+#include <iostream>
 
 namespace M3D
 {
@@ -57,6 +58,12 @@ public:
 	unsigned char* m_pPixelData;//!< 数据地址
 	IDTYPE  m_Id; //!<编号
 	string m_imagePath;
+
+public:
+	void LoadImage(string name);
+
+private:
+	int Get_extension(string name);
 };
 }
 

@@ -680,8 +680,7 @@ M3D_STATUS View::ReadFile(string & path) {
 
 		//缓存动画文件
 		this->SetAnimationXMLData(m_Reader->GetXMLAnimationData());
-		LOGI(
-				"ReadFile -- read animationXML %s sfs", this->m_AnimationXMLData.c_str());
+//        LOGI(                "ReadFile -- read animationXML %s sfs", this->m_AnimationXMLData.c_str());
 		//	LOGI("SetModel start");
 		m_SceneManager->SetModel(m_Model);
 		LOGI("View::ReadFile m_SceneManager->SetModel ok.");
@@ -869,7 +868,7 @@ M3D_STATUS View::ReadFile(char * fileBuffer, int length) {
 
 		//缓存动画文件
 		this->SetAnimationXMLData(m_Reader->GetXMLAnimationData());
-		LOGI("read animationXML %s sfs", this->m_AnimationXMLData.c_str());
+//        LOGI("read animationXML %s sfs", this->m_AnimationXMLData.c_str());
 		//	LOGI("SetModel start");
 		m_SceneManager->SetModel(m_Model);
 		//	LOGI("View::ReadFile m_SceneManager->SetModel ok.");
@@ -2008,6 +2007,7 @@ void View::ShowModelView(int viewId, bool isAnni) {
 			//如果是平行投影，进行显示矫正
 			if (camera.IsOrthographic()) {
 				BoundingBox& sceneBox = this->m_SceneManager->GetSceneBox();
+					Vector3 center = sceneBox.Center();
 				Vector3 cameraPos = currentCamera->GetPosition();
 				//如果摄像机在模型内部，则进行调整
 				if (sceneBox.IsInside(cameraPos) == INSIDE) {
@@ -2018,8 +2018,27 @@ void View::ShowModelView(int viewId, bool isAnni) {
 					Vector3 newPos = cameraPos + direction * sceneBox.Length();
 					currentCamera->SetWorldPosition(newPos);
 				}
+					else
+					{
+						//如果超出视景体，进行调整
+						Matrix3 viewMat = currentCamera->GetView().ToMatrix3();
+						Vector3 direction(viewMat.m_m20, viewMat.m_m21, viewMat.m_m22);
+						Plane centerPlane(direction, center);
+						Vector3 targetPnt = centerPlane.Project(cameraNewPos);
+
+						float fHalfViewSize = currentCamera->GetHalfViewSize();
+						Vector3 viewMin(center.m_x - fHalfViewSize, center.m_y - fHalfViewSize, center.m_z - fHalfViewSize);
+						Vector3 viewMax(center.m_x + fHalfViewSize, center.m_y + fHalfViewSize, center.m_z + fHalfViewSize);
+						BoundingBox viewBox(viewMin, viewMax);
+						if (viewBox.IsInside(targetPnt) != INSIDE)
+						{
+							cameraNewPos = sceneBox.Center() + direction * sceneBox.Length()* 0.8f;
+							currentCamera->SetWorldPosition(cameraNewPos);
+						}
+						
+					}
+				}
 			}
-		}
 
 		if (pView->GetUpDataModelState()) {
 
@@ -2356,37 +2375,75 @@ void View::ShowModelViewAnimation(ModelView *pView) {
 		Quaternion newCamRotaion = camera.GetRotation();
 		Matrix4 newCamMatrix(newCamPos, newCamRotaion, 1.0f);
 
-		Vector3 direction(-newCamMatrix.m_m02, -newCamMatrix.m_m12,
-				-newCamMatrix.m_m22);
-		newCamPos = newCamPos.Add(
-				direction.Multiply(sceneBox.Size().Length() * 0.8f));
-		//newCamMatrix.SetTranslation(newCamPos);
-		newCamMatrix = newCamMatrix.Transpose();
-		float fNewMatrix[4][4];
-		float fNewScale = 1.0f;
-		float fNewInitWind[2];
-		fNewMatrix[0][0] = newCamMatrix.m_m00;
-		fNewMatrix[0][1] = newCamMatrix.m_m01;
-		fNewMatrix[0][2] = newCamMatrix.m_m02;
-		fNewMatrix[0][3] = newCamMatrix.m_m03;
-		fNewMatrix[1][0] = newCamMatrix.m_m10;
-		fNewMatrix[1][1] = newCamMatrix.m_m11;
-		fNewMatrix[1][2] = newCamMatrix.m_m12;
-		fNewMatrix[1][3] = newCamMatrix.m_m13;
-		fNewMatrix[2][0] = newCamMatrix.m_m20;
-		fNewMatrix[2][1] = newCamMatrix.m_m21;
-		fNewMatrix[2][2] = newCamMatrix.m_m22;
-		fNewMatrix[2][3] = newCamMatrix.m_m23;
-		fNewMatrix[3][3] = newCamMatrix.m_m33;
-		fNewMatrix[3][0] = newCamPos.m_x;
-		fNewMatrix[3][1] = newCamPos.m_y;
-		fNewMatrix[3][2] = newCamPos.m_z;
+			//如果是平行投影，进行显示矫正
+			if (camera.IsOrthographic())
+			{
+				//如果摄像机在模型内部，则进行调整
+				if (sceneBox.IsInside(newCamPos) == INSIDE)
+				{
+					Matrix3 viewMat = camera.GetView().ToMatrix3();
+					//Vector3 direction(viewMat.m_m20, viewMat.m_m21, viewMat.m_m22);
+					Vector3 direction(viewMat.m_m20, viewMat.m_m21, viewMat.m_m22);
+					newCamPos = newCamPos + direction * sceneBox.Length()* 0.8f;
+				}
+				else
+				{
+					//如果超出视景体，进行调整
+					Matrix3 viewMat = camera.GetView().ToMatrix3();
+					Vector3 direction(viewMat.m_m20, viewMat.m_m21, viewMat.m_m22);
+					Plane centerPlane(direction, center);
+					Vector3 targetPnt = centerPlane.Project(newCamPos);
+					
+					float fHalfViewSize = currentCamera->GetHalfViewSize();
+					Vector3 viewMin(center.m_x- fHalfViewSize, center.m_y - fHalfViewSize, center.m_z - fHalfViewSize);
+					Vector3 viewMax(center.m_x + fHalfViewSize, center.m_y + fHalfViewSize, center.m_z + fHalfViewSize);
+					BoundingBox viewBox(viewMin, viewMax);
+					if (viewBox.IsInside(targetPnt) != INSIDE)
+					{
+						newCamPos = center + direction * sceneBox.Length()* 0.8f;
+					}
+				}
+			}
 
-		float fNewOrthoSize = camera.GetOrthoSize();
-		if (currentCamera->IsOrthographic()) {
-			fNewScale = camera.GetZoom();
-			fNewInitWind[0] = fNewOrthoSize * camera.GetAspectRatio();
-			fNewInitWind[1] = fNewOrthoSize;
+			Vector3 direction(-newCamMatrix.m_m02, -newCamMatrix.m_m12, -newCamMatrix.m_m22);
+			newCamPos = newCamPos.Add(direction.Multiply(sceneBox.Size().Length()* 0.8f));
+			//newCamMatrix.SetTranslation(newCamPos);
+			newCamMatrix = newCamMatrix.Transpose();
+			float fNewMatrix[4][4];
+			float fNewScale = 1.0f;
+			float fNewInitWind[2];
+			fNewMatrix[0][0] = newCamMatrix.m_m00;
+			fNewMatrix[0][1] = newCamMatrix.m_m01;
+			fNewMatrix[0][2] = newCamMatrix.m_m02;
+			fNewMatrix[0][3] = newCamMatrix.m_m03;
+			fNewMatrix[1][0] = newCamMatrix.m_m10;
+			fNewMatrix[1][1] = newCamMatrix.m_m11;
+			fNewMatrix[1][2] = newCamMatrix.m_m12;
+			fNewMatrix[1][3] = newCamMatrix.m_m13;
+			fNewMatrix[2][0] = newCamMatrix.m_m20;
+			fNewMatrix[2][1] = newCamMatrix.m_m21;
+			fNewMatrix[2][2] = newCamMatrix.m_m22;
+			fNewMatrix[2][3] = newCamMatrix.m_m23;
+			fNewMatrix[3][3] = newCamMatrix.m_m33;
+			fNewMatrix[3][0] = newCamPos.m_x;
+			fNewMatrix[3][1] = newCamPos.m_y;
+			fNewMatrix[3][2] = newCamPos.m_z;
+
+			float fNewOrthoSize = camera.GetOrthoSize();
+			if (fNewOrthoSize <= 0)
+			{
+				fNewOrthoSize = fCurInitWind[1];
+			}
+			if (currentCamera->IsOrthographic())
+			{
+				fNewScale = camera.GetZoom();
+				float fAspectRatio = camera.GetAspectRatio();
+				if (fAspectRatio <= 0)
+				{
+					fAspectRatio = 1.0f;
+				}
+				fNewInitWind[0] = fNewOrthoSize*fAspectRatio;
+				fNewInitWind[1] = fNewOrthoSize;
 
 			//调整缩放
 			float dx = fNewInitWind[0] / fCurInitWind[0];
@@ -4250,7 +4307,7 @@ string& View::GetAnimationXMLData() {
 }
 
 void View::SetAnimationXMLData(const string& xmlData) {
-	LOGI("SetAnimationXMLData %s ----", xmlData.c_str());
+//    LOGI("SetAnimationXMLData %s ----", xmlData.c_str());
 	m_AnimationXMLData = xmlData;
 }
 
@@ -4344,9 +4401,52 @@ bool View::GetBackgroundUseImage() {
 			(BackgroundNode*) this->GetSceneManager()->GetSceneRoot()->Search(
 					M3D::BACKGROUNDCOLOR);
 
-	if (backgroundNode != NULL) {
-		state = backgroundNode->IsUseImage();
+		if (backgroundNode != NULL)
+		{
+			state = backgroundNode->IsUseImage();
+		}
+
+
+		return state;
+}
+
+	bool View::SetBackgroundWaterMark(const string& path, int mappingStyle)
+	{
+		bool setState = false;
+		BackgroundNode* backgroundNode = (BackgroundNode*)this->GetSceneManager()->GetSceneRoot()->Search(M3D::BACKGROUNDCOLOR);
+
+		if (backgroundNode != NULL)
+		{
+			backgroundNode->SetWaterMark(path, mappingStyle);
+
+			setState = true;
+		}
+
+
+		return setState;
 	}
+
+	void View::SetBackgroundUseWaterMark(bool useWaterMark)
+	{
+		BackgroundNode* backgroundNode = (BackgroundNode*)this->GetSceneManager()->GetSceneRoot()->Search(M3D::BACKGROUNDCOLOR);
+
+		if (backgroundNode != NULL)
+		{
+			backgroundNode->SetUseWaterMark(useWaterMark);
+		}
+
+	}
+
+	bool View::GetBackgroundUseWaterMark()
+	{
+		bool state = false;
+		BackgroundNode* backgroundNode = (BackgroundNode*)this->GetSceneManager()->GetSceneRoot()->Search(M3D::BACKGROUNDCOLOR);
+
+		if (backgroundNode != NULL)
+		{
+			state = backgroundNode->IsUseWaterMark();
+		}
+
 
 	return state;
 }
@@ -5070,15 +5170,23 @@ void View::UpdateDrawLimit() {
 	//	Trackball::DrawLimit = m_DrawLimit;
 	//	}
 
-}
-bool View::SetExplosiveViewWithDirection(vector<Model*> arrayModels, int stype,
-		int pos, Vector3 direction) {
-	this->GetExplosiveView()->setPercentWithDirection(this, arrayModels, stype,
-			pos, direction);
-	return false;
-}
-bool View::SetExplosiveView(int stype, int pos, bool useAnimation) {
-	this->GetExplosiveView()->SetPercent(this, stype, pos, useAnimation);
+	}
+	void View::StartExplosition(vector<Model*> models)
+	{
+		this->GetExplosiveView()->startExplosion(models);
+	}
+	void View::endExplosition()
+	{
+		this->GetExplosiveView()->endExplosion();
+	}
+	bool View::SetExplosiveViewWithDirection(vector<Model*> arrayModels,int stype, int pos, Vector3 direction)
+	{
+		this->GetExplosiveView()->setPercentWithDirection(this, arrayModels,stype, pos, direction);
+		return false;
+	}
+	bool View::SetExplosiveView(int stype, int pos, bool useAnimation)
+	{
+		this->GetExplosiveView()->SetPercent(this, stype, pos, useAnimation);
 //        if (this->GetCurrentModelView()) {
 //            this->GetCurrentModelView()->setExplosivePercent(pos);
 //        }

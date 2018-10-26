@@ -322,6 +322,8 @@ private:
 
 	Color m_faceColor;//!<
 
+	Color m_selectColor;
+
 	//TODO:中心点？ 交点？四个点？
 	//TODO:索引
 	//TODO:透明度

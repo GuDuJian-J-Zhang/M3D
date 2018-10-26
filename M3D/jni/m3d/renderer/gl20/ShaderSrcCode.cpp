@@ -3923,6 +3923,7 @@ namespace M3D
 			"}\n";
 	}
 
+
 	const char *ShaderSrcCode::SceneGroundFrag()
 	{
 		return "//precision mediump  float;\n"
@@ -3931,6 +3932,91 @@ namespace M3D
 			"gl_FragColor = v_color;\n"
 			"}\n";
 	}
+
+	/*
+	const char * ShaderSrcCode::MirrorVert() {
+		return "//precision highp  float;\n"
+			"attribute vec3 a_position;\n"
+			"attribute vec4 a_color;\n"
+			"uniform mat4 u_modelMat;\n"
+			"uniform mat4 u_viewMat;\n"
+			"uniform mat4 u_projectionMat;\n"
+			"//uniform mat4 u_MVPMat;\n"
+			"varying vec4 v_color;\n"
+			"void main() { \n"
+			"gl_Position =  u_projectionMat * u_viewMat * u_modelMat * vec4(a_position,1.0);\n"
+			"v_color = a_color;\n"
+			"}\n";
+	}
+	const char * ShaderSrcCode::MirrorFrag() {
+
+		return "//precision mediump  float;\n"
+			"varying vec4 v_color;\n"
+			"void main() { \n"
+			"gl_FragColor = vec4(0.0,1.0,1.0,1.0) * 0.8 + v_color * 0.2"
+			"}\n";
+	}
+	*/
+	
+
+	const char * ShaderSrcCode::MirrorVert() {
+		return "//precision highp  float;\n"
+			"attribute vec3 a_position;\n"
+			"attribute vec4 a_color;\n"
+			"attribute vec2 a_texCoords;\n"			
+			"uniform mat4 u_modelMat;\n"
+			"uniform mat4 u_viewMat;\n"
+			"uniform mat4 u_projectionMat;\n"
+			"//uniform mat4 u_MVPMat;\n"
+			"uniform mat4 u_mirrorMat;\n"
+			"varying vec4 v_color;\n"
+			"varying vec2 v_mirrorCoord;\n"
+			"varying vec2 v_texCoords;\n"
+			"void main() { \n"
+			"vec4 worldPosition = u_modelMat * vec4(a_position,1.0);\n"
+			"vec4 projection = u_mirrorMat * worldPosition;\n"
+			"v_mirrorCoord = vec2(projection.x * 0.5 + 0.5, projection.y * 0.5 + 0.5);\n"
+			//"v_mirrorCoord = vec2(projection.x * 0.5 + 0.7, projection.y * 0.5 + 0.7);\n"
+		    "v_color = a_color;\n"
+			"v_texCoords = a_texCoords;\n"			
+		    "gl_Position =  u_projectionMat * u_viewMat * worldPosition;\n"			
+			"}\n";
+	}
+	const char * ShaderSrcCode::MirrorFrag() {
+
+		return "//precision mediump  float;\n"
+			"uniform sampler2D mirrorTexture;\n"
+			"uniform sampler2D mirrorFrontTexture;\n"
+			"varying vec4 v_color;\n"
+			"varying vec2 v_mirrorCoord;\n"
+			"varying vec2 v_texCoords;\n"
+			"const float step = 0.005f;\n"
+			"const float gaussians[9] = {0.0947416, 0.1183180, 0.0947416, 0.1183180, 0.1477610, 0.1183180, 0.0947416, 0.1183180, 0.0947416}; \n"
+			"vec4 vague(float u,float v){\n"
+			"vec4 result = vec4(0.0, 0.0, 0.0, 0.0);\n"
+			"int index = 0;\n"
+			"for(int i=-1;i<=1;++i){\n"
+			"for(int j=-1;j<=1;++j){\n"
+			"result += texture2D(mirrorTexture, vec2(u + i * step, v + j * step)) * gaussians[index];\n"
+			"++index;\n"
+			//"vec4 color1 = texture2D(s_mirror, vec2(u - step, v - step));\n"
+			//"vec4 color2 = texture2D(s_mirror, vec2(u + step, v - step));\n"
+			//"vec4 color3 = texture2D(s_mirror, vec2(u + step, v + step));\n"
+			//"vec4 color4 = texture2D(s_mirror, vec2(u - step, v + step));\n"
+			//"return (color1 + color2 + color3 + color4) * 0.25;\n"
+			"}\n"
+			"}\n"
+			"return result;\n"
+			"}\n"
+			"void main(){\n"
+			//"float u = v_texCoords.x,v = v_texCoords.y;\n"
+			"float u = v_mirrorCoord.x,v = v_mirrorCoord.y;\n"
+			"gl_FragColor = v_color * 0.05 + texture2D(mirrorFrontTexture,v_texCoords) * 0.1 + vague(u,v) * 0.85;\n"
+			//"gl_FragColor = v_color * 0.05 + texture2D(s_background,v_texCoords) * 0.6 + vague(u,v) * 0.35;\n"
+			"}\n";
+	}
+
+	
 
 	const char* ShaderSrcCode::MatCapMaterialVert()
 	{
@@ -6999,6 +7085,7 @@ namespace M3D
 			"            * fNDotL;\n"
 			"    totalDiffuse =  diffuseReflection;\n"
 			"    diffuseColor = min(totalDiffuse,vec3(1.0));\n"
+
 
 			"	if(u_useFrontCubeTexture||u_useFrontTexture)"
 			"	 {"
