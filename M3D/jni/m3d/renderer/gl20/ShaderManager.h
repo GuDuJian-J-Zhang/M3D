@@ -95,6 +95,7 @@ public:
 
 	const static string NewJewelFront;
 	const static string NewJewelBack;
+	const static string JewelFrontInfo;
 
 public:
 	virtual ~ShaderManager();

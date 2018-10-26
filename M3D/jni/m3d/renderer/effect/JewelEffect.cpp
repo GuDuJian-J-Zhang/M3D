@@ -12,10 +12,12 @@ namespace M3D
 {
 	JewelEffect::JewelEffect(RenderAction* action) :Effect(action)
 	{
-		HardWareFrameBuffer& diamondFrontFBO = GetHardWareFrameBuffer("diamondFrontFBO");
-		diamondFrontFBO.SetParameters();
+		HardWareFrameBuffer& diamondFrontInfoFBO = GetHardWareFrameBuffer("diamondFrontInfoFBO");
+		diamondFrontInfoFBO.SetParameters();
 		HardWareFrameBuffer& diamondBackFBO = GetHardWareFrameBuffer("diamondBackFBO");
 		diamondBackFBO.SetParameters();
+		HardWareFrameBuffer& diamondFrontFBO = GetHardWareFrameBuffer("diamondFrontFBO");
+		diamondFrontFBO.SetParameters();
 		HardWareFrameBuffer& ringtFBO = GetHardWareFrameBuffer("ringtFBO");
 		ringtFBO.SetParameters();
 		HardWareFrameBuffer& jewelTypeFBO = GetHardWareFrameBuffer("jewelTypeFBO");
@@ -80,7 +82,7 @@ namespace M3D
 	//************************************
 	// Method:    RenderJewelFront
 	// FullName:  M3D::JewelEffect::RenderJewelFront
-	// Access:    private 
+	// Access:    private
 	// Returns:   void
 	// Qualifier: 玉石、珍珠和晶石正面用此流程渲染，玉石Jade type 101 ;珍珠peral type 102 ;晶石crystal type 103 ;金属mental type 104
 	// Parameter: RenderAction * action
@@ -96,8 +98,7 @@ namespace M3D
 		RenderAction* action = this->m_action;
 		RenderContext* gl = action->GetGLContext();
 		CameraNode* camera = action->GetCamera();
-//		ShaderProgram* shaderEffect = shaderEffect = action->GetShaderMananger()->GetEffect(ShaderManager::JewelFront);
-		ShaderProgram* shaderEffect = shaderEffect = action->GetShaderMananger()->GetEffect(ShaderManager::NewJewelFront);
+		ShaderProgram* shaderEffect = shaderEffect = action->GetShaderMananger()->GetEffect(ShaderManager::JewelFront);
 		shaderEffect->UseProgram();
 		ShaderParameter* vertex = shaderEffect->GetShaderAttributeParameter(VSP_POSITION);
 		ShaderParameter* normal = shaderEffect->GetShaderAttributeParameter(VSP_NORMAL);
@@ -105,8 +106,9 @@ namespace M3D
 		shaderEffect->EnableAttributeArray(vertex->m_location);
 		shaderEffect->EnableAttributeArray(normal->m_location);
 
-//		if (texCoords)
+//		if (texCoords){
 //			shaderEffect->EnableAttributeArray(texCoords->m_location);
+//		}
 		RenderabelArray::iterator it = RenderStateArray->GetRenderableArray().begin();
 		for (; it != RenderStateArray->GetRenderableArray().end(); it++)
 		{
@@ -124,9 +126,11 @@ namespace M3D
 			tempUnifomValueList[VSP_MODELMAT] = Uniform("Matrix4", &M);
 			tempUnifomValueList[VSP_NORMALMAT] = Uniform("Matrix4", &normalMat);
 			tempUnifomValueList[("u_worldNormalMat")] = Uniform("Matrix4", &worldNormalMat);
+
 			const Color &color = faceRenderData->GetRenderColor();
 			Color selectColor(1.0f, 1.0f, 1.0f, 1.0f);
 			if (&color == Color::SelectColor)
+
 			{
 				selectColor = color;
 			}
@@ -141,8 +145,8 @@ namespace M3D
 				continue;
 			}
 			map<string, Uniform>& materialUnifoms = material->GetUnifomParameters();
-			//shaderEffect->SetUniformValue(shaderEffect->GetShaderUniformParameter(FSP_USEAMBIENTTEX)->m_location, 0);
-			
+//			shaderEffect->SetUniformValue(shaderEffect->GetShaderUniformParameter(FSP_USEAMBIENTTEX)->m_location, 0);
+
 			int vec = anyCast<int>(material->GetUniformParameter("type")->value);
 			int type = vec;
 
@@ -214,8 +218,7 @@ namespace M3D
 		RenderAction* action = this->m_action;
 		RenderContext* gl = action->GetGLContext();
 		CameraNode* camera = action->GetCamera();
-//		ShaderProgram* shaderEffect = shaderEffect = action->GetShaderMananger()->GetEffect(ShaderManager::JewelBack);
-		ShaderProgram* shaderEffect = shaderEffect = action->GetShaderMananger()->GetEffect(ShaderManager::NewJewelBack);
+		ShaderProgram* shaderEffect = shaderEffect = action->GetShaderMananger()->GetEffect(ShaderManager::JewelBack);
 		shaderEffect->UseProgram();
 		ShaderParameter* vertex = shaderEffect->GetShaderAttributeParameter(VSP_POSITION);
 		ShaderParameter* normal = shaderEffect->GetShaderAttributeParameter(VSP_NORMAL);
@@ -223,14 +226,16 @@ namespace M3D
 		shaderEffect->EnableAttributeArray(vertex->m_location);
 		shaderEffect->EnableAttributeArray(normal->m_location);
 
-//		if (texCoords)
+//		if (texCoords){
 //			shaderEffect->EnableAttributeArray(texCoords->m_location);
+//		}
 		RenderabelArray::iterator it = RenderStateArray->GetRenderableArray().begin();
 		for (; it != RenderStateArray->GetRenderableArray().end(); it++)
 		{
 			map<string, Uniform> tempUnifomValueList;
 			tempUnifomValueList[VSP_VIEWMAT] = Uniform("Matrix4", (&gl->GetViewMatrix()));
 			tempUnifomValueList[VSP_PROJECTIONMAT] = Uniform("Matrix4", (&gl->GetProjectMatrix()));
+			tempUnifomValueList["frontInfoMap"] = Uniform("GeometryBuffer", (GeometryBuffer*)(GetHardWareFrameBuffer("diamondFrontInfoFBO").GetColorTarget(0)));//
 			GLShapeDrawer20::_usedTextureUnits = 0;
 
 			Renderable* faceRenderData = *it;
@@ -323,6 +328,125 @@ namespace M3D
 #pragma endregion 关闭顶点属性
 	}
 
+	void JewelEffect:: RenderJewelFrontInfo( RenderQueue * RenderStateArray)
+		{
+			if (RenderStateArray->GetRenderableArray().size() == 0)
+			{
+				return;
+			}
+			//初始化
+			RenderAction* action = this->m_action;
+			RenderContext* gl = action->GetGLContext();
+			CameraNode* camera = action->GetCamera();
+			ShaderProgram* shaderEffect = shaderEffect = action->GetShaderMananger()->GetEffect(ShaderManager::JewelFrontInfo);
+			shaderEffect->UseProgram();
+			ShaderParameter* vertex = shaderEffect->GetShaderAttributeParameter(VSP_POSITION);
+			ShaderParameter* normal = shaderEffect->GetShaderAttributeParameter(VSP_NORMAL);
+			ShaderParameter * texCoords = shaderEffect->GetShaderAttributeParameter(VSP_TEXCOORDS);
+			shaderEffect->EnableAttributeArray(vertex->m_location);
+			shaderEffect->EnableAttributeArray(normal->m_location);
+
+	//		if (texCoords){
+	//			shaderEffect->EnableAttributeArray(texCoords->m_location);
+	//		}
+			RenderabelArray::iterator it = RenderStateArray->GetRenderableArray().begin();
+			for (; it != RenderStateArray->GetRenderableArray().end(); it++)
+			{
+				map<string, Uniform> tempUnifomValueList;
+				tempUnifomValueList[VSP_VIEWMAT] = Uniform("Matrix4", (&gl->GetViewMatrix()));
+				tempUnifomValueList[VSP_PROJECTIONMAT] = Uniform("Matrix4", (&gl->GetProjectMatrix()));
+				GLShapeDrawer20::_usedTextureUnits = 0;
+
+				Renderable* faceRenderData = *it;
+
+				//变换矩阵
+				Matrix4 M = *(faceRenderData->GetRenderWorldMatrix());
+				Matrix4 normalMat = (M * gl->GetViewMatrix()).Inverse().Transpose();
+				Matrix4 worldNormalMat = M.Inverse().Transpose();
+				tempUnifomValueList[VSP_MODELMAT] = Uniform("Matrix4", &M);
+				tempUnifomValueList[VSP_NORMALMAT] = Uniform("Matrix4", &normalMat);
+				tempUnifomValueList[string("u_worldNormalMat")] = Uniform("Matrix4", &worldNormalMat);
+				const Color &color = faceRenderData->GetRenderColor();
+				Color selectColor(1.0f, 1.0f, 1.0f, 1.0f);
+				if (&color == Color::SelectColor)
+				{
+					selectColor = color;
+				}
+				tempUnifomValueList[FSP_SELECTCOLOR] = Uniform("Color", &selectColor);
+				Vector3 cameraPosition = camera->GetWorldPosition();
+				tempUnifomValueList[VSP_LIGHTPOSITION] = Uniform("Vector3", &cameraPosition);
+				tempUnifomValueList[VSP_EYEPOSITION] = Uniform("Vector3", &cameraPosition);
+				//材质
+				BaseMaterial* material = faceRenderData->GetRenderMaterial();
+				if (!material)
+				{
+					continue;
+				}
+				map<string, Uniform>& materialUnifoms = material->GetUnifomParameters();
+
+
+				int vec = anyCast<int>(material->GetUniformParameter("type")->value);
+				int type =  vec ;
+
+				//将uniform中的值合并到tempUniformList中
+				this->MergeUnifom(materialUnifoms, tempUnifomValueList);
+
+				//设置uniform值
+				SPHashMap& shaderUniformMap = shaderEffect->GetShaderUniformMap();
+				if(type == 104){
+					continue;
+				}
+				this->SetUniform(shaderEffect, shaderUniformMap, tempUnifomValueList);
+	#pragma region Draw
+				if (type != 104)
+				{
+					int dataLength = faceRenderData->GetDataLength();
+					bool isUseIndex = faceRenderData->IsUseIndex();
+					HardWareVertexBuffer* vertexBuffer = faceRenderData->GetHardWareVertexBuffer();
+					HardWareIndexBuffer* indexBuffer = faceRenderData->GetHardWareIndexBuffer();
+					char* vertexAddress = (char*)vertexBuffer->Bind();
+					M3D_OFFSET_TYPE veroffset = faceRenderData->GetVertexOffset();
+					M3D_OFFSET_TYPE normaloffset = faceRenderData->GetNormalOffset();
+					M3D_OFFSET_TYPE texoffset = faceRenderData->GetTextureCoordsOffset();
+					shaderEffect->SetVertexAttribPointer(vertex->m_location, 3, GL_FLOAT, 0, (GLvoid *)(vertexAddress + veroffset));
+					shaderEffect->SetVertexAttribPointer(normal->m_location, 3, GL_FLOAT, 0, (GLvoid *)(vertexAddress + normaloffset));
+	//				if (texCoords)
+	//				{
+	//					shaderEffect->EnableAttributeArray(texCoords->m_location);
+	//					shaderEffect->SetVertexAttribPointer(texCoords->m_location, 3, GL_FLOAT, 0,
+	//						(GLvoid *)texoffset);
+	//				}
+					if (isUseIndex)
+					{
+						M3D_OFFSET_TYPE indexArray = faceRenderData->GetIndexOffset();
+						GLShapeDrawer20::DrawTriWithIndex(vertexBuffer, indexBuffer, dataLength, indexArray);
+					}
+					else
+					{
+						GLShapeDrawer20::DrawTriNoIndex(vertexBuffer, dataLength);
+					}
+					vertexBuffer->UnBind();
+				}
+	#pragma endregion Draw
+
+	#pragma region 解除texture绑定
+				for (map<int, GLenum>::iterator it = textureBindingTargetMap.begin(); it != textureBindingTargetMap.end(); it++)
+				{
+					glActiveTexture(GL_TEXTURE0 + it->first);
+					glBindTexture(it->second, 0);
+				}
+	#pragma endregion
+			}
+
+	#pragma region 关闭顶点属性
+			shaderEffect->DisableAttributeArray(vertex->m_location);
+			shaderEffect->DisableAttributeArray(normal->m_location);
+			if (texCoords)
+				shaderEffect->DisableAttributeArray(texCoords->m_location);
+			shaderEffect->ReleaseShaderProgram();
+	#pragma endregion 关闭顶点属性
+		}
+
 	void JewelEffect::RenderRing( RenderQueue * RenderStateArray)
 	{
 		if (RenderStateArray->GetRenderableArray().size() == 0)
@@ -385,7 +509,7 @@ namespace M3D
 			{
 				tempUnifomValueList["u_useBumpMap"] = Uniform("Bool", 0);
 			}
-			
+
 
 			int vec = anyCast<int>(material->GetUniformParameter("type")->value);
 			int type =  vec ;
@@ -393,7 +517,6 @@ namespace M3D
 			{
 				continue;
 			}
-	
 
 			//将uniform中的值合并到tempUniformList中
 			this->MergeUnifom(materialUnifoms, tempUnifomValueList);
@@ -483,7 +606,7 @@ namespace M3D
 
 			//变换矩阵
 			Matrix4 M = *(faceRenderData->GetRenderWorldMatrix());
-			
+
 			tempUnifomValueList[VSP_MODELMAT] = Uniform("Matrix4", &M);
 
 
@@ -521,7 +644,7 @@ namespace M3D
 				M3D_OFFSET_TYPE normaloffset = faceRenderData->GetNormalOffset();
 				M3D_OFFSET_TYPE texoffset = faceRenderData->GetTextureCoordsOffset();
 				shaderEffect->SetVertexAttribPointer(vertex->m_location, 3, GL_FLOAT, 0, (GLvoid *)(vertexAddress + veroffset));
-				
+
 
 				if (isUseIndex)
 				{
@@ -590,7 +713,7 @@ namespace M3D
 			Matrix4 normalMat = (M * gl->GetViewMatrix()).Inverse().Transpose();
 			Matrix4 worldNormalMat = M.Inverse().Transpose();
 			tempUnifomValueList[VSP_MODELMAT] = Uniform("Matrix4", &M);
-			tempUnifomValueList[VSP_NORMALMAT] = Uniform("Matrix4", &normalMat);			
+			tempUnifomValueList[VSP_NORMALMAT] = Uniform("Matrix4", &normalMat);
 			const Color &color = faceRenderData->GetRenderColor();
 			Color selectColor(1.0f, 1.0f, 1.0f, 1.0f);
 			if (&color == Color::SelectColor)
@@ -723,7 +846,7 @@ namespace M3D
 			tempUnifomValueList[FSP_SAMPLER1] = Uniform("GeometryBuffer", (GeometryBuffer*)(GetHardWareFrameBuffer("diamondBackFBO").GetColorTarget(0)));
 			tempUnifomValueList[FSP_SAMPLER2] = Uniform("GeometryBuffer", (GeometryBuffer*)(GetHardWareFrameBuffer("jewelTypeFBO").GetColorTarget(0)));
 			tempUnifomValueList[string("u_sampler3")] = Uniform("GeometryBuffer", (GeometryBuffer*)(GetHardWareFrameBuffer("jewelSpecularFBO").GetColorTarget(0)));
-			
+
 			SPHashMap& shaderUniformMap = shaderEffect->GetShaderUniformMap();
 			this->SetUniform(shaderEffect, shaderUniformMap, tempUnifomValueList);
 
@@ -765,6 +888,7 @@ namespace M3D
 		};
 
 		const IntRect& intRect = camera->GetViewPort().GetRect();
+		//设置视口
 		glViewport(intRect.m_left, intRect.m_top, intRect.m_right, intRect.m_bottom);
 		float xpo = (float)(1.0f / intRect.m_right);
 		float ypo = (float)(1.0f / intRect.m_bottom);
@@ -787,16 +911,15 @@ namespace M3D
 		tempUnifomValueList[VSP_MODELMAT] = Uniform("Matrix4", &M);
 		tempUnifomValueList[VSP_VIEWMAT] = Uniform("Matrix4", (&gl->GetViewMatrix()));
 		tempUnifomValueList[VSP_PROJECTIONMAT] = Uniform("Matrix4", (&gl->GetProjectMatrix()));
-
 		tempUnifomValueList[FSP_SAMPLER0] = Uniform("GeometryBuffer", (GeometryBuffer*)(GetHardWareFrameBuffer("jewelBlendFBO").GetColorTarget(0)));
 		tempUnifomValueList[FSP_SAMPLER1] = Uniform("GeometryBuffer", (GeometryBuffer*)(GetHardWareFrameBuffer("diamondFrontFBO").GetDepthTarget()));
-		tempUnifomValueList[FSP_SAMPLER2] = Uniform("GeometryBuffer", (GeometryBuffer*)(GetHardWareFrameBuffer("ringtFBO").GetColorTarget(0)));
+		tempUnifomValueList[FSP_SAMPLER2] = Uniform("GeometryBuffer", (GeometryBuffer*)(GetHardWareFrameBuffer("ringtFBO").GetColorTarget(0)));//
 		tempUnifomValueList["u_sampler3"] = Uniform("GeometryBuffer", (GeometryBuffer*)(GetHardWareFrameBuffer("ringtFBO").GetDepthTarget()));
         tempUnifomValueList["u_sampler6"] = Uniform("GeometryBuffer", (GeometryBuffer*)(GetHardWareFrameBuffer("jewelNoteFBO").GetColorTarget(0)));
 
 		SPHashMap& shaderUniformMap = shaderEffect->GetShaderUniformMap();
 		this->SetUniform(shaderEffect, shaderUniformMap, tempUnifomValueList);
-		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4); // 渲染到纹理上
 #pragma region 解除texture绑定
 		for (map<int, GLenum>::iterator it = textureBindingTargetMap.begin(); it != textureBindingTargetMap.end(); it++)
 		{
@@ -816,9 +939,11 @@ namespace M3D
 		{
 			return;
 		}
-		HardWareFrameBuffer& diamondFrontFBO = GetHardWareFrameBuffer("diamondFrontFBO");
-
 		HardWareFrameBuffer& diamondBackFBO = GetHardWareFrameBuffer("diamondBackFBO");
+
+		HardWareFrameBuffer& diamondFrontInfoFBO = GetHardWareFrameBuffer("diamondFrontInfoFBO");
+
+		HardWareFrameBuffer& diamondFrontFBO = GetHardWareFrameBuffer("diamondFrontFBO");
 
 		HardWareFrameBuffer& ringtFBO = GetHardWareFrameBuffer("ringtFBO");
 
@@ -827,36 +952,38 @@ namespace M3D
 		HardWareFrameBuffer& jewelSpecularFBO = GetHardWareFrameBuffer("jewelSpecularFBO");
 
 		HardWareFrameBuffer& jewelBlendFBO = GetHardWareFrameBuffer("jewelBlendFBO");
-        
+
         HardWareFrameBuffer& jewelNoteFBO = GetHardWareFrameBuffer("jewelNoteFBO");
 
 		RenderAction* action = this->m_action;
 		CameraNode * camera = action->GetCamera();
 		const IntRect& intRect = camera->GetViewPort().GetRect();
-		
-		diamondFrontFBO.ReShape();
-		diamondFrontFBO.Bind();
-		glEnable(GL_DEPTH_TEST);
-		glDepthFunc(GL_LEQUAL);
-		glClearColor(0.0, 0.0, 0.0, 0.0);
-		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-        if(!SVIEW::Parameters::Instance()->m_BackTransparent)
-        {
-            GLShapeDrawer20::DrawBackGround((SceneNode*)action->GetBackGroundNode(), action);
-        }
-		
-		glViewport(intRect.m_left, intRect.m_top, intRect.m_right, intRect.m_bottom);
-		glEnable(GL_CULL_FACE);
-		glCullFace(GL_BACK);
-		glFrontFace(GL_CCW);
-		for (int i = 0; i < RenderStateArray.size(); i++)
-		{
-			if ((RenderStateArray.at(i))->GetType().GetType() == RenderableType::RGT_SOLID || (RenderStateArray.at(i))->GetType().GetType() == RenderableType::RGT_TRANSPARENT)
-			{
-				RenderJewelFront( RenderStateArray.at(i));
-			}
-		}
-		diamondFrontFBO.UnBind();
+
+
+        diamondFrontInfoFBO.ReShape();
+        diamondFrontInfoFBO.Bind();
+		  glEnable(GL_DEPTH_TEST);
+		  glDepthFunc(GL_LEQUAL);
+		  glClearColor(0.0, 0.0, 0.0, 0);
+		  glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+
+		  if(!SVIEW::Parameters::Instance()->m_BackTransparent)
+		  {
+			  GLShapeDrawer20::DrawBackGround((SceneNode*)action->GetBackGroundNode(), action);
+		  }
+		  glViewport(intRect.m_left, intRect.m_top, intRect.m_right, intRect.m_bottom);
+		  glEnable(GL_CULL_FACE);
+			glCullFace(GL_BACK); //禁止背面的光照，阴影和颜色计算及操作，消除不必要的渲染计算
+			glFrontFace(GL_CCW);
+		  for (int i = 0; i < RenderStateArray.size(); i++)
+		  {
+			  if ((RenderStateArray.at(i))->GetType().GetType() == RenderableType::RGT_SOLID || (RenderStateArray.at(i))->GetType().GetType() == RenderableType::RGT_TRANSPARENT)
+			  {
+				  RenderJewelFrontInfo( RenderStateArray.at(i));
+			  }
+		  }
+		  diamondFrontInfoFBO.UnBind();
+
 
         diamondBackFBO.ReShape();
         diamondBackFBO.Bind();
@@ -884,6 +1011,29 @@ namespace M3D
         glFrontFace(GL_CCW);
         glDisable(GL_CULL_FACE);
 
+		diamondFrontFBO.ReShape();
+		diamondFrontFBO.Bind();
+		glEnable(GL_DEPTH_TEST); //启用深度测试
+		glDepthFunc(GL_LEQUAL); //如果目标像素z值<＝当前像素z值，则绘制目标像素
+		glClearColor(0.0, 0.0, 0.0, 0.0);
+		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+        if(!SVIEW::Parameters::Instance()->m_BackTransparent)
+        {
+            GLShapeDrawer20::DrawBackGround((SceneNode*)action->GetBackGroundNode(), action);
+        }
+
+		glViewport(intRect.m_left, intRect.m_top, intRect.m_right, intRect.m_bottom);
+		glEnable(GL_CULL_FACE); //开启剔除效果
+		glCullFace(GL_BACK); //禁止背面的光照，阴影和颜色计算及操作，消除不必要的渲染计算
+		glFrontFace(GL_CCW); // 控制多边形的正面是如何决定的 .默认 GL_CCW：表示窗口坐标上投影多边形的顶点顺序为逆时针方向的表面为正面。 GL_CW 表示顶点顺序为顺时针方向的表面为正面。
+		for (int i = 0; i < RenderStateArray.size(); i++)
+		{
+			if ((RenderStateArray.at(i))->GetType().GetType() == RenderableType::RGT_SOLID || (RenderStateArray.at(i))->GetType().GetType() == RenderableType::RGT_TRANSPARENT)
+			{
+				RenderJewelFront( RenderStateArray.at(i));
+			}
+		}
+		diamondFrontFBO.UnBind();
 
         ringtFBO.ReShape();
         ringtFBO.Bind();
@@ -969,7 +1119,7 @@ namespace M3D
 		//DrawFrameBufferDebug();
 		glViewport(intRect.m_left, intRect.m_top, intRect.m_right, intRect.m_bottom);
 	}
-	
+
 
 	void JewelEffect::DrawFrameBufferDebug()
 	{

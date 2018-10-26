@@ -481,7 +481,7 @@ protected:
 	Texture* m_specularMap;//镜面反射贴图
 
 
-    Texture* m_reflectiveTexture;
+    Texture* m_reflectiveTexture; //反射纹理
     
 	Matrix4* m_textureTransform;//!<Texture2D的变换矩阵，如果存在的话
 

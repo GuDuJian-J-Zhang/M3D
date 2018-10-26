@@ -20,7 +20,7 @@ using std::string;
 using std::wstring;
 using std::vector;
 
-#define  SHOW_LOG true
+#define  SHOW_LOG false
 #define  LOG_TAG    "M3D"
 #ifdef __ANDROID__
 #define  LOGI(...)  if(SHOW_LOG) __android_log_print(ANDROID_LOG_INFO,LOG_TAG,__VA_ARGS__)

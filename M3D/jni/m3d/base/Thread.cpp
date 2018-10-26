@@ -93,14 +93,15 @@ void Thread::Stop()
 				{
 					CloseHandle((HANDLE)m_handle);
 				}
-
-		#elif  __ANDROID__
+#endif
+#ifdef  __ANDROID__
 					if (thread) {
 					pthread_detach(m_threadID);
 					pthread_join(*thread, 0);
 						delete thread;
 					}
-		#elif __IOS__
+#endif
+#ifdef __IOS__
 					if (thread)
 					pthread_join(*thread, 0);
 					delete thread;

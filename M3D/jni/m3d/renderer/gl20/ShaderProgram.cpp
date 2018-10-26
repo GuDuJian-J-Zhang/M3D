@@ -664,7 +664,7 @@ void ShaderProgram::DisableAttributeArray(GLint location)
 /**
  * @brief	解释顶点属性数组含义
  * @param location
- * @param tupleSize
+ * @param tupleSize 取几个数据
  * @param type
  * @param stride
  * @param values

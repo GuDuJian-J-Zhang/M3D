@@ -107,6 +107,15 @@ public:
 	static const char * CapPlaneFrag();
 
 	//************************************
+	// Method:    NewJewelBackVert
+	// FullName:  M3D::ShaderSrcCode::NewJewelFrontVert
+	// Access:    public static
+	// Returns:   const char*
+	// Qualifier: 珠宝front Info渲染层 绘制完传递给back
+	//************************************
+	static const char* JewelFrontInfoVert();
+	static const char* JewelFrontInfoFrag();
+	//************************************
 	// Method:    JewelFrontVert
 	// FullName:  M3D::ShaderSrcCode::JewelFrontVert
 	// Access:    public static 
@@ -149,7 +158,7 @@ public:
 	//************************************
 	// Method:    RingVert
 	// FullName:  M3D::ShaderSrcCode::RingVert
-	// Access:    public static 
+	// Access:    public static libASViewBase.solibASViewBase.so
 	// Returns:   const char*
 	// Qualifier: 金属指环渲染层
 	//************************************

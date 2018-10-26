@@ -65,6 +65,7 @@ enum ShaderMaterialType
 	SMT_JewelBack,
 	SMT_NewJewelFront,
 	SMT_NewJewelBack,
+	SMT_JewelFrontInfo,
 	SMT_JewelFinalQuad,
 	SMT_Ring,
 	SMT_JewelType,

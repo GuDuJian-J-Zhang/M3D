@@ -1131,7 +1131,7 @@ void HardWareFrameBuffer::AttachRenderBufferToDepth(bool useStencil)
 }
 void HardWareFrameBuffer::AttachTextureToDepth(bool useStencil)
 {
-	GLenum format;
+	GLenum format; //载入的纹理格式
 	GLenum dataType;
 	switch (m_depthInternalFormat)
 	{
@@ -1143,12 +1143,12 @@ void HardWareFrameBuffer::AttachTextureToDepth(bool useStencil)
 
 	case GL_DEPTH_COMPONENT32:
 		format = GL_DEPTH_COMPONENT;
-		dataType = GL_FLOAT;
+		dataType = GL_FLOAT; //	单精度浮点数
 		break;
 #else
         case GL_DEPTH_COMPONENT:
-            format = GL_DEPTH_COMPONENT;
-            dataType = GL_UNSIGNED_INT;
+            format = GL_DEPTH_COMPONENT; //读到的是“深度”值
+            dataType = GL_UNSIGNED_INT; //无符号32位整数
             break;
 #endif
 	//case GL_DEPTH_COMPONENT24:
@@ -1188,7 +1188,7 @@ void HardWareFrameBuffer::AttachTextureToDepth(bool useStencil)
 #ifdef _WIN32
 		glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, obj, 0);
 #else
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, obj, 0);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, obj, 0); //把2D纹理图像关联到FBO
 #endif
 
 		glBindTexture(GL_TEXTURE_2D, 0);

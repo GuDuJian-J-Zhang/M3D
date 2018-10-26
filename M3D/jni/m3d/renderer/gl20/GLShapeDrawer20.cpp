@@ -140,6 +140,7 @@ namespace M3D
 
 	void GLShapeDrawer20::RenderFace(RenderAction* action, Renderable*renderable, CameraNode*camera /*= nullptr*/, BaseMaterial* overrideMaterial /*= nullptr*/)
 	{
+		LOGI("material->RenderFace ");
 		//if (!overrideMaterial)
 		//{
 		//	return;
@@ -199,6 +200,7 @@ namespace M3D
 		}
 		else
 		{
+			LOGI("material->!isUseIndex ");
 			GLShapeDrawer20::DrawTriNoIndex(vertexBuffer, dataLength);
 		}
 		//解绑VBO，ios必须做
@@ -1578,7 +1580,7 @@ namespace M3D
 
 			indexBuffer->Bind();
 			vertexBuffer->Bind();
-			//LOGI("sphereMapObj end DrawTexture2DWithIndex");
+			LOGI("sphereMapObj end DrawTexture2DWithIndex");
 			glDrawElements(GL_TRIANGLES, dataLength, M3D_GL_INDEX_TYPE, (GLvoid *)(indexOffset));
 			indexBuffer->UnBind();
 			vertexBuffer->UnBind();
@@ -5305,10 +5307,10 @@ namespace M3D
 					//根据材质属性，设置显示状态
 					if (material->GetDiffuseMap())
 					{
-						//		LOGI("material->GetTexture() ");
 						unsigned int OGLObj = material->GetDiffuseMap()->GetOGLObj();
 						if (OGLObj) //纹理存在
 						{
+							LOGE("纹理存在");
 							shaderEffect->EnableAttributeArray(texCoords->m_location);
 							shaderEffect->SetVertexAttribPointer(texCoords->m_location, 3, GL_FLOAT, 0,
 								(GLvoid *)texoffset);

@@ -209,7 +209,10 @@ UCNVConvert(const char* tarEncode, //目标编码
 	int verNo = atoi(ver);
 	//LOGE("sys ver:%s",ver);
 	char* convertFunName;
-	if (verNo >= 26) //android 8.0 N =26;
+	if (verNo >= 28) //android 8.0 N =26;
+	{
+		convertFunName = "ucnv_convert_60";
+	} else if (verNo >= 26) //android 8.0 N =26;
 			{
 		convertFunName = "ucnv_convert_58";
 	} else if (verNo >= 24) //android 6.0 M =23;

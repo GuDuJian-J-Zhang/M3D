@@ -1,5 +1,5 @@
 ﻿/**@file
- *@brief	Face类头文件
+ *@brief	边类头文件
  *@author
  *@date		2013-7-10
  *@version	1.0

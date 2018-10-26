@@ -5,7 +5,7 @@
 namespace M3D
 {	
 	/************************************************************************/
-	/* 珠宝特效。珠宝通过多层叠加的方式最后实现效果。1是玉石、钻石、珍珠的front层，2是back层 
+	/* 珠宝特效。珠宝通过多层叠加的方式最后实现效果。1是玉石、钻石、珍珠的front层，2是back层
 	3是金属指环层 4是高光层 5是note层，最后将各层按一定方法叠加，详见shader*/
 	/************************************************************************/
 	class M3D_API JewelEffect :public Effect
@@ -58,6 +58,15 @@ namespace M3D
 		// Parameter: RenderQueue * RenderStateArray
 		//************************************
 		void RenderJewelBack( RenderQueue * RenderStateArray);
+		//************************************
+		// Method:    RenderJewelBack
+		// FullName:  M3D::JewelEffect::RenderJewelBack
+		// Access:    private
+		// Returns:   void
+		// Qualifier: FrontInfo层
+		// Parameter: RenderQueue * RenderStateArray
+		//************************************
+		void RenderJewelFrontInfo( RenderQueue * RenderStateArray);
 		//************************************
 		// Method:    RenderRing
 		// FullName:  M3D::JewelEffect::RenderRing
