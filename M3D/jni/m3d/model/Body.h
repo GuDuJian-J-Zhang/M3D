@@ -1,4 +1,4 @@
-﻿/**@file
+/**@file
  *@brief	Body类头文件
  *@author	xuli
  *@date		2013-6-7
@@ -187,6 +187,7 @@ public:
 private:
 	vector<Face*> m_FaceArray;//!<body的所有face列表
 	vector<Edge*> m_EdgeArray;//!<body中所有的边界线
+    vector<Point*> m_PointArray;//!<body中所有的特征点集（暂时只有定点）
 	SPolyLine* m_polyLine;//!<Body下所有的边界线数据以顺序追加的方式存储在此变量中
 	Model* model;//!<上级model
 	//ExtendInfoManager* m_ExtInfoMgr;

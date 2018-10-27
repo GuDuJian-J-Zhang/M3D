@@ -1,4 +1,4 @@
-﻿#include "m3d/renderer/LightManager.h"
+#include "m3d/renderer/LightManager.h"
 #include "m3d/SceneManager.h"
 #include "m3d/scene/GroupNode.h"
 #include "m3d/scene/SceneNode.h"
@@ -93,7 +93,7 @@ namespace M3D
 				//m_sceneLights[i] = m_sceneLights[length - 1];	
 				this->m_sceneManager->AsynUpdateModelCacheInfo(light, false); 
 				m_sceneLights.erase(m_sceneLights.begin()+i);
-				light->UnBindDragger(m_sceneManager);
+//                light->UnBindDragger(m_sceneManager);
 				ReleaseMe(light);
 				this->m_sceneManager->UnLock();
 				return;

@@ -1,4 +1,4 @@
-﻿#include "m3d/model/Point.h"
+#include "m3d/model/Point.h"
 #include "m3d/action/RayPickAction.h"
 #include "sview/views/Parameters.h"
 #include "m3d/graphics/ImageBoard.h"
@@ -121,7 +121,15 @@ Point::~Point()
 		this->m_meshboard = NULL;
 	}
 }
-
+void Point::AddRef(void)
+{
+    Object::AddRef();
+}
+    
+void Point::Release(void)
+{
+    Object::Release();
+}
 void Point::Init(const Vector3& coord)
 {
 	this->SetType(SHAPE_POINT);

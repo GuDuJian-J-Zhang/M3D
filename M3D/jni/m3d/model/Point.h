@@ -1,4 +1,4 @@
-﻿/**@file
+/**@file
  *@brief	Point类头文件
  *@author	xuli
  *@date		2015-7-13
@@ -43,7 +43,8 @@ public:
 	Point(const Point& orig);
 	Point& operator =(const Point& orig);
 	virtual ~Point();
-
+    virtual void AddRef(void);
+    virtual void Release(void);
 	/**
 	 * 设置显示位置
 	 * @param coordinate

@@ -161,7 +161,7 @@ namespace M3D
 
 		if (measure)
 		{
-			measure->SetFrontShow(true);
+			measure->SetFrontShow(false);
 		}
 
 		return measure;

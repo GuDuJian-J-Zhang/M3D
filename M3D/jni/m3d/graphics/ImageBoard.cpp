@@ -1,4 +1,4 @@
-﻿#include "m3d/graphics/ImageBoard.h"
+#include "m3d/graphics/ImageBoard.h"
 #include "m3d/action/RayPickAction.h"
 #include "m3d/graphics/Texture.h"
 #include "m3d/action/RenderAction.h"
