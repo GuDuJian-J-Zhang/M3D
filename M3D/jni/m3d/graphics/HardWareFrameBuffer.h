@@ -223,8 +223,8 @@ private:
 	map<int, GLRenderTarget*> m_colorTargets;
 	GLRenderTarget* m_depthTarget;
 
-	GLenum m_colorInternalFormat;
-	GLenum m_depthInternalFormat;
+	GLenum m_colorInternalFormat; // 指定OpenGL是如何管理颜色纹理单元中数据格式
+	GLenum m_depthInternalFormat; //指定OpenGL是如何管理深度纹理单元中数据格式
 
 	GeometryBuffer* m_outColorTexture;
 	GLenum m_useOutColorTexture;	

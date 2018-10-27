@@ -63,6 +63,7 @@
 #include "m3d/graphics/DepthMaterial.h"
 #include "m3d/graphics/LightShadow.h"
 #include "m3d/graphics/DirectionalLightShadow.h"
+
 //#define FBO
 //#define framebufferDebug
 using namespace SVIEW;
@@ -140,6 +141,7 @@ namespace M3D
 
 	void GLShapeDrawer20::RenderFace(RenderAction* action, Renderable*renderable, CameraNode*camera /*= nullptr*/, BaseMaterial* overrideMaterial /*= nullptr*/)
 	{
+		LOGI("material->RenderFace ");
 		//if (!overrideMaterial)
 		//{
 		//	return;
@@ -199,9 +201,10 @@ namespace M3D
 		}
 		else
 		{
+			LOGI("material->!isUseIndex ");
 			GLShapeDrawer20::DrawTriNoIndex(vertexBuffer, dataLength);
 		}
-		//解绑VBO，ios必须做
+		//解绑VBO，ios必须�?
 		vertexBuffer->UnBind();
 		//解绑纹理
 		if (material != m_currentMaterial)
@@ -232,7 +235,7 @@ namespace M3D
 			{
 				material->NeedUpdate(true);
 			}
-			else if (material->AcceptLight() && material->LightHash() != lightManager->GetState().hash)//TODO，可能某些材质不需要灯光
+			else if (material->AcceptLight() && material->LightHash() != lightManager->GetState().hash)//TODO，可能某些材质不需要灯�?
 			{
 				material->NeedUpdate(true);
 			}
@@ -260,7 +263,7 @@ namespace M3D
 		program = material->Program();
 		program->UseProgram();
 
-		UniformMap* tempUnifomValueList = UniformHelper::GetUniformMap(program->GetName());//material删除时，与其相关联的uniform列表也应该清理掉。
+		UniformMap* tempUnifomValueList = UniformHelper::GetUniformMap(program->GetName());//material删除时，与其相关联的uniform列表也应该清理掉�?
 
 		if (m_currentProgram != program)
 		{
@@ -300,20 +303,19 @@ namespace M3D
 			ShaderParameter* reverseClipPara = program->GetShaderUniformParameter(FSP_REVERSECLIP);
 			program->SetUniformValue(reverseClipPara->m_location, (int)action->m_bReverseClip);
 			m_currentCamera = camera;//相机记录
-					refreshMaterial = true;//刷新材质
-					refreshLights = true;//刷新灯光
+			refreshMaterial = true;//刷新材质
+			refreshLights = true;//刷新灯光
 
-					//加载材质指定的uniforms
-					if (material->GetMaterialType() == MaterialType::MaterialType_Shader ||
-						material->GetMaterialType() == MaterialType::MaterialType_Phong ||
-						material->GetMaterialType() == MaterialType::MaterialType_Pbr ||
-						material->GetMaterialType() == MaterialType::MaterialType_MatCap
-						)
-					{
-						Vector3 cameraPostion = camera->GetPosition();
-						program->SetUniformValue(CAMERA_POSITION, cameraPostion);
-					}
-
+			//加载材质指定的uniforms
+			if (material->GetMaterialType() == MaterialType::MaterialType_Shader ||
+				material->GetMaterialType() == MaterialType::MaterialType_Phong ||
+				material->GetMaterialType() == MaterialType::MaterialType_Pbr ||
+				material->GetMaterialType() == MaterialType::MaterialType_MatCap
+				)
+			{
+				Vector3 cameraPostion = camera->GetPosition();
+				program->SetUniformValue(CAMERA_POSITION, cameraPostion);
+			}
 		}
 #ifdef WIN32
 
@@ -349,7 +351,7 @@ namespace M3D
 				int hemisphereLightNumber = 0;
 
 
-				//环境光
+				//环境�?
 				program->SetUniformValue(AMBIENT_LIGHT_COLOR, state.ambient);
 				if (Parameters::Instance()->m_shadowMapEnabled)
 				{
@@ -565,7 +567,7 @@ namespace M3D
 		else if (program->GetName() != code)
 		{
 			material->Program(NULL);
-			//TODO是否要释放不用的shader？不释放，可能会积累比较多，释放下次相同code可能需要重建
+			//TODO是否要释放不用的shader？不释放，可能会积累比较多，释放下次相同code可能需要重�?
 		}
 		else
 		{
@@ -709,7 +711,7 @@ namespace M3D
 
 		CameraNode* mainCamera = action->GetScene()->GetCamera();
 		const IntRect& intRect = mainCamera->GetViewPort().GetRect();
-#if 0 //测试深度图
+#if 0 //测试深度�?
 		glViewport(0, 50, 300, 300);
 		DrawFrameBufferDebug(action);
 #endif
@@ -1214,14 +1216,12 @@ namespace M3D
 					backgroundEffect->ReleaseShaderProgram();
 				}
 
-			}
+					}
 
-		}
+			}
 		glDisable(GL_BLEND);
 		glEnable(GL_DEPTH_TEST);
-
-
-		}
+	}
 
 	void GLShapeDrawer20::DrawVRBackGround(RenderAction *action)
 	{
@@ -1578,7 +1578,7 @@ namespace M3D
 
 			indexBuffer->Bind();
 			vertexBuffer->Bind();
-			//LOGI("sphereMapObj end DrawTexture2DWithIndex");
+			LOGI("sphereMapObj end DrawTexture2DWithIndex");
 			glDrawElements(GL_TRIANGLES, dataLength, M3D_GL_INDEX_TYPE, (GLvoid *)(indexOffset));
 			indexBuffer->UnBind();
 			vertexBuffer->UnBind();
@@ -1675,7 +1675,7 @@ namespace M3D
 
 			//for (iter = planeList->begin(); iter != planeList->end(); ++iter, ++i)
 			//{
-			//	enableClip[i] = 0; //表示关闭剪裁面
+			//	enableClip[i] = 0; //表示关闭剪裁�?
 			//}
 			//if (Parameters::Instance()->m_showSection)
 			{
@@ -1732,7 +1732,7 @@ namespace M3D
 	}
 
 	/**
-	 * 绘制盖面多边形
+	 * 绘制盖面多边�?
 	 */
 	void GLShapeDrawer20::DrawCapPolygon(RenderAction* action)
 	{
@@ -1817,7 +1817,7 @@ namespace M3D
 	}
 
 	/**
-	* 绘制指定盖面多边形
+	* 绘制指定盖面多边�?
 	*/
 	void GLShapeDrawer20::DrawCapPolygon(RenderAction* action, int index)
 	{
@@ -2023,7 +2023,7 @@ namespace M3D
 		{
 			return;
 		}
-		//初始化
+		//初始�?
 
 		EffectManager* effectManager = action->GetRenderManager()->GetEffectManager();
 		OutlineEffect* outlineEffect = (OutlineEffect*)effectManager->GetEffect("OUTLINEEFFECT");
@@ -2099,7 +2099,7 @@ namespace M3D
 		{
 			return;
 		}
-		//初始化
+		//初始�?
 
 		EffectManager* effectManager = action->GetRenderManager()->GetEffectManager();
 		SAOEffect* ssaoEffect = (SAOEffect*)effectManager->GetEffect("SAOEFFECT");
@@ -2347,7 +2347,7 @@ namespace M3D
 				if (enableState[i] == 0)
 					continue;
 				enableClip.assign(enableState.size(), 0);
-				enableClip[i] = 1; //开启当前剖面
+				enableClip[i] = 1; //开启当前剖�?
 				glClear(GL_STENCIL_BUFFER_BIT);
 				glStencilFunc(GL_ALWAYS, 0, 0x1);
 				glStencilOp(GL_KEEP, GL_INVERT, GL_INVERT);
@@ -2357,7 +2357,7 @@ namespace M3D
 				glDepthMask(GL_FALSE);
 				DrawSampleModelPassGroug(action);
 
-				enableClip.assign(enableState.begin(), enableState.end()); //开启所有剖面
+				enableClip.assign(enableState.begin(), enableState.end()); //开启所有剖�?
 				enableClip[i] = 0; //关闭当前剖面
 				glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 				glEnable(GL_DEPTH_TEST);
@@ -2368,7 +2368,7 @@ namespace M3D
 			}
 			enableClip.assign(enableState.begin(), enableState.end());
 
-			//绘制结束///置
+			//绘制结束///�?
 			glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 			glStencilFunc(GL_EQUAL, 0, 0xffff);
 			glDisable(GL_STENCIL_TEST);
@@ -2389,8 +2389,8 @@ namespace M3D
 		}
 		else
 		{
-			//		DrawDepthMapPass(action);//TODO 这里是为实现背面线剔除做的
-	//				PrepareDepthMap(action);//这里是在光源位置做的深度图
+			//		DrawDepthMapPass(action);//TODO 这里是为实现背面线剔除做�?
+	//				PrepareDepthMap(action);//这里是在光源位置做的深度�?
 			if (!(Parameters::Instance()->m_clipPlaneMode == 2))
 			{
 
@@ -2403,7 +2403,7 @@ namespace M3D
 				}
 				else
 				{
-					//普通模型
+					//普通模�?
 					DrawPhongPass(action);
 				}
 
@@ -2412,7 +2412,7 @@ namespace M3D
 			//		DrawSkyShadow(action);//绘制天光效果，只在地面有阴影
 		}
 
-		//	DrawFrameBufferDebug(action); //测试FBO挂载的纹理是否生成成功
+		//	DrawFrameBufferDebug(action); //测试FBO挂载的纹理是否生成成�?
 		DoSection(action, false);
 	}
 
@@ -2534,7 +2534,7 @@ namespace M3D
 
 	//	glLineWidth(2);
 
-		//绘制线
+		//绘制�?
 		for (int i = 0; i < pmiData->m_Lines.size(); i++)
 		{
 			PolyLine* line = pmiData->m_Lines[i];
@@ -2557,7 +2557,7 @@ namespace M3D
 				//			glDrawArrays(GL_LINE_STRIP, 0, vertexNum);
 			}
 		}
-		//绘制外框和文字
+		//绘制外框和文�?
 		if (pmiData->m_IsParallelScreen) //&& pmiData->m_Type == 8000)
 		{
 			M = (*pmiData->GetOutFrameMatrix()) * M;
@@ -2685,16 +2685,16 @@ namespace M3D
 		glEnable(GL_POLYGON_OFFSET_FILL);
 		glDepthMask(GL_TRUE);
 		glPolygonOffset(GLShapeDrawer::PolygonOffset, GLShapeDrawer::PolygonOffset);
-		if (Parameters::Instance()->m_LightingMode == 500)//选用牙齿模式时，采用brdf着色
+		if (Parameters::Instance()->m_LightingMode == 500)//选用牙齿模式时，采用brdf着�?
 		{
 			DrawBrdfPassGroup(action, RenderStateArray);
 		}
 		else
 		{
 #ifdef HUAWEI
-			DrawPhongPassSampleGroup(action, RenderStateArray);//没特殊情况就用phong着色
+			DrawPhongPassSampleGroup(action, RenderStateArray);//没特殊情况就用phong着�?
 #else
-			//DrawPhongPassGroup(action,RenderStateArray);//没特殊情况就用phong着色
+			//DrawPhongPassGroup(action,RenderStateArray);//没特殊情况就用phong着�?
 			RenderFaces(action, RenderStateArray->GetRenderableArray());
 #endif
 
@@ -2715,7 +2715,7 @@ namespace M3D
 		glDepthMask(GL_TRUE);
 		glPolygonOffset(GLShapeDrawer::PolygonOffset, GLShapeDrawer::PolygonOffset);
 		{
-			DrawPhongPassGroup(action, RenderStateArray);//没特殊情况就用phong着色
+			DrawPhongPassGroup(action, RenderStateArray);//没特殊情况就用phong着�?
 		}
 		glPolygonOffset(0.0, 0.0);
 		glDisable(GL_POLYGON_OFFSET_FILL);
@@ -2793,7 +2793,7 @@ namespace M3D
 		CameraNode* camera = action->GetCamera();
 		//	glColorMask(GL_FALSE,GL_FALSE,GL_FALSE,GL_FALSE);
 		//	glColorMask(GL_TRUE,GL_TRUE,GL_TRUE,GL_TRUE);
-		//   glClear(GL_DEPTH_BUFFER_BIT);///加上会使边界线消失
+		//   glClear(GL_DEPTH_BUFFER_BIT);///加上会使边界线消�?
 		glEnable(GL_BLEND);
 		glEnable(GL_DEPTH_TEST);
 		glEnable(GL_POLYGON_OFFSET_FILL);
@@ -2805,9 +2805,9 @@ namespace M3D
 		else
 		{
 #ifdef HUAWEI
-			DrawPhongPassSampleGroup(action, RenderStateArray);//没特殊情况就用phong着色
+			DrawPhongPassSampleGroup(action, RenderStateArray);//没特殊情况就用phong着�?
 #else
-			DrawPhongPassGroup(action, RenderStateArray);//没特殊情况就用phong着色
+			DrawPhongPassGroup(action, RenderStateArray);//没特殊情况就用phong着�?
 #endif
 	}
 
@@ -2829,7 +2829,7 @@ namespace M3D
 		CameraNode* camera = action->GetCamera();
 		//	glColorMask(GL_FALSE,GL_FALSE,GL_FALSE,GL_FALSE);
 		//	glColorMask(GL_TRUE,GL_TRUE,GL_TRUE,GL_TRUE);
-			//   glClear(GL_DEPTH_BUFFER_BIT);///加上会使边界线消失
+			//   glClear(GL_DEPTH_BUFFER_BIT);///加上会使边界线消�?
 		glEnable(GL_BLEND);
 		glEnable(GL_DEPTH_TEST);
 		glDepthMask(GL_FALSE);
@@ -2844,9 +2844,9 @@ namespace M3D
 		else
 		{
 #ifdef HUAWEI
-			DrawPhongPassSampleGroup(action, RenderStateArray);//没特殊情况就用phong着色
+			DrawPhongPassSampleGroup(action, RenderStateArray);//没特殊情况就用phong着�?
 #else
-			//DrawPhongPassGroup(action,RenderStateArray);//没特殊情况就用phong着色
+			//DrawPhongPassGroup(action,RenderStateArray);//没特殊情况就用phong着�?
 
 			//TODO sort transparent objects by projective position.
 			const Matrix4& projective = camera->GetProjection();
@@ -3619,7 +3619,7 @@ namespace M3D
 			shaderEffect->SetUniformValue(VSP_MODELMAT, M);
 			glDrawElements(GL_LINES, 24, M3D_GL_INDEX_TYPE, BoundingBox::boxIndexs);
 
-			//绘制max 和min 点
+			//绘制max 和min �?
 			if (drawBoxMinMaxPoint)
 			{
 
@@ -3681,7 +3681,7 @@ namespace M3D
 		{
 			return;
 		}
-		//绘制包围盒
+		//绘制包围�?
 		ShaderProgram * shaderEffect = shaderManager->GetEffect(
 			ShaderManager::NoteEdge); //绘制线时使用
 		shaderEffect->UseProgram();
@@ -3747,7 +3747,7 @@ namespace M3D
 		glEnable(GL_BLEND);
 		//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		// glEnable(GL_DEPTH_TEST);
-		//	//根据材质属性，设置显示状态
+		//	//根据材质属性，设置显示状�?
 		Color* tmpColor = pNote->GetDrawColor();
 
 		glLineWidth(4);
@@ -3845,7 +3845,7 @@ namespace M3D
 		int imageSize = pNote->m_imageBoardList.size();
 		if (imageSize == 0)
 		{
-			//使用公告板技术，来进行显示效果调整
+			//使用公告板技术，来进行显示效果调�?
 			Billboard* billboard = pNote->GetBillBoard();
 
 			Matrix4 modelMatBill = modelMat;
@@ -3999,7 +3999,7 @@ namespace M3D
 	void GLShapeDrawer20::DrawNote(Note* pNote, CameraNode* camera,
 		ShaderManager * shaderManager, Matrix4& modelMat)
 	{
-		//绘制包围盒
+		//绘制包围�?
 		ShaderProgram * shaderEffect = shaderManager->GetEffect(
 			ShaderManager::NoteEdge); //绘制线时使用
 		shaderEffect->UseProgram();
@@ -4065,7 +4065,7 @@ namespace M3D
 		glEnable(GL_BLEND);
 		//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		// glEnable(GL_DEPTH_TEST);
-		//	//根据材质属性，设置显示状态
+		//	//根据材质属性，设置显示状�?
 		Color* tmpColor = pNote->GetDrawColor();
 
 		glLineWidth(4);
@@ -4087,7 +4087,7 @@ namespace M3D
 				glLineStipple(1, 0x00FF);
 #else
 
-#endif
+#endif		
 			}
 			int vertexNum = 2;
 			int indexNum = 2;
@@ -4138,7 +4138,7 @@ namespace M3D
 				glDisable(GL_LINE_STIPPLE);
 #else
 
-#endif
+#endif	
 			}
 		}
 		//PolyLine
@@ -4186,7 +4186,7 @@ namespace M3D
 		int imageSize = pNote->m_imageBoardList.size();
 		if (imageSize == 0)
 		{
-			//使用公告板技术，来进行显示效果调整
+			//使用公告板技术，来进行显示效果调�?
 			Billboard* billboard = pNote->GetBillBoard();
 
 			Matrix4 modelMatBill = modelMat;
@@ -4799,7 +4799,7 @@ namespace M3D
 				if (renderType == RenderableType::RGT_SHADOW)
 				{
 					//			GLShapeDrawer20::DrawSSAOPassGroup(action, &(it->second));
-				//				if (Parameters::Instance()->m_useSSAO)
+				//				if (Parameters::Instance()->m_useSSAO) 
 				//				{
 				////					GLShapeDrawer20::DrawSSAOPassGroup(action, &(it->second));
 				//				}
@@ -5089,7 +5089,7 @@ namespace M3D
 				//}
 				else if (renderType == RenderableType::RGT_EDGELINE)
 				{
-					//GLShapeDrawer20::DrawEdgesRenderPassGroup(action, &it->second);
+					//GLShapeDrawer20::DrawEdgesRenderPassGroup(action, &it->second);	
 					GLShapeDrawer20::DrawDraggerLinePass(action, &(it->second));
 				}
 				//else if (renderType == RenderableType::RGT_EDGELINEINTOP)
@@ -5302,13 +5302,13 @@ namespace M3D
 							shaderEffect->SetUniformValue(useCubeMapTexPra->m_location, useCubeMap);
 						}
 					}
-					//根据材质属性，设置显示状态
+					//根据材质属性，设置显示状�?
 					if (material->GetDiffuseMap())
 					{
-						//		LOGI("material->GetTexture() ");
 						unsigned int OGLObj = material->GetDiffuseMap()->GetOGLObj();
 						if (OGLObj) //纹理存在
 						{
+							LOGE("纹理存在");
 							shaderEffect->EnableAttributeArray(texCoords->m_location);
 							shaderEffect->SetVertexAttribPointer(texCoords->m_location, 3, GL_FLOAT, 0,
 								(GLvoid *)texoffset);
@@ -5534,7 +5534,7 @@ namespace M3D
 						selectColor = color;
 					}
 					shaderEffect->SetUniformValue(FSP_SELECTCOLOR, selectColor);
-					//根据材质属性，设置显示状态
+					//根据材质属性，设置显示状�?
 					if (material->GetTexture())
 					{
 						//		LOGI("material->GetTexture() ");
@@ -5714,7 +5714,6 @@ namespace M3D
 
 
 			glDrawArrays(GL_LINES, 0, ground->GetPointsNumber());
-
 			//glEnable(GL_DEPTH_TEST);
 		}
 	}
@@ -5937,7 +5936,7 @@ namespace M3D
 	}
 
 	/**
-	 * 绘制剖切线
+	 * 绘制剖切�?
 	 */
 	void GLShapeDrawer20::DrawSectionLines(RenderAction* action, vector<Vector3>& data, int id)
 	{
@@ -6075,7 +6074,7 @@ namespace M3D
 		BoundingBox pBoundingBox = scene->GetSceneBox();
 		//pBoundingBox.ScaleBox(1.5f);
 
-		///摄像机距离包围盒的距离
+		///摄像机距离包围盒的距�?
 		float cameraToCenterDis =
 			(camera->GetWorldPosition() - pBoundingBox.Center()).Length();
 
@@ -6088,12 +6087,12 @@ namespace M3D
 
 		Vector3 directionZ(viewMat.m_m20, 0.0f, viewMat.m_m22);
 
-		Vector3 directionX(viewMat.m_m00, 0.0f, viewMat.m_m02); //获取相机坐标系Z轴坐标
+		Vector3 directionX(viewMat.m_m00, 0.0f, viewMat.m_m02); //获取相机坐标系Z轴坐�?
 
-		directionZ = -directionZ; //反方向即为观察方向
+		directionZ = -directionZ; //反方向即为观察方�?
 		directionZ.Normalize();
 
-		directionX = -directionX; //反方向即为观察方向
+		directionX = -directionX; //反方向即为观察方�?
 		directionX.Normalize();
 
 		Vector3 direction = directionZ + directionX;

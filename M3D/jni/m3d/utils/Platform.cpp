@@ -264,6 +264,10 @@ int Platform::UCNVConvert2Android(const char* tarEncode, const char* srcEncode,
 	char ver[50];
 	__system_property_get("ro.build.version.sdk", ver);
 	int verNo = atoi(ver);
+	if (verNo >= 28) //android 9.0 p =28;
+					{
+		convertFunName = "ucnv_convert_60";
+	} else
 	if (verNo >= 26) //android 8.0 N =26;
 			{
 		convertFunName = "ucnv_convert_58";
@@ -349,7 +353,10 @@ int Platform::UCNVConvert(const char* tarEncode, const char* srcEncode,
 		//	LOGE("sys ver:%s",ver);
 		char* convertFunName;
 
-	if (verNo >= 26) //android 8.0 N =26;
+	if (verNo >= 28) //android 9.0 p =28;
+						{
+		convertFunName = "ucnv_convert_60";
+	} else if (verNo >= 26) //android 8.0 N =26;
 	{
 		convertFunName = "ucnv_convert_58";
 	} else if (verNo >= 24) //android 7.0 N =24 ; 7.1 verNo :25;

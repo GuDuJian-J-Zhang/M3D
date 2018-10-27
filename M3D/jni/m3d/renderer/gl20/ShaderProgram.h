@@ -63,8 +63,7 @@ enum ShaderMaterialType
 	SMT_CapPlane,
 	SMT_JewelFront,
 	SMT_JewelBack,
-	SMT_NewJewelFront,
-	SMT_NewJewelBack,
+	SMT_JewelFrontInfo,
 	SMT_JewelFinalQuad,
 	SMT_Ring,
 	SMT_JewelType,
@@ -81,6 +80,8 @@ enum ShaderMaterialType
 	SMT_SaoReconstructCSZ,
 	SMT_SaoMinifyCSZ,
 	SMT_SaoBlur,
+
+	SMT_Mirror,
 };
 
 #ifdef __MOBILE__

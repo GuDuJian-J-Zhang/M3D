@@ -72,8 +72,7 @@ namespace M3D
 	const  string ShaderManager::SaoMinifyCSZ("SaoMinifyCSZ");
 	const  string ShaderManager::SaoBlur("SaoBlur");
 
-	const string ShaderManager::NewJewelFront("NewJewelFront");
-	const string ShaderManager::NewJewelBack("NewJewelBack");
+	const string ShaderManager::JewelFrontInfo("JewelFrontInfo");
 	/**
 	 * @brief 获取name名字的效果
 	 * @param name
@@ -388,12 +387,10 @@ namespace M3D
 		SET_SHADER_MAP(NoteImage);
 		SET_SHADER_MAP(CapPlane);
 
+		SET_SHADER_MAP(JewelFrontInfo);
 		SET_SHADER_MAP(JewelFront);
 
 		SET_SHADER_MAP(JewelBack);
-
-		SET_SHADER_MAP(NewJewelBack);
-		SET_SHADER_MAP(NewJewelFront);
 
 		SET_SHADER_MAP(JewelFinalQuad);
 

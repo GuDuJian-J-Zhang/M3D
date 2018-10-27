@@ -107,6 +107,15 @@ public:
 	static const char * CapPlaneFrag();
 
 	//************************************
+	// Method:    NewJewelBackVert
+	// FullName:  M3D::ShaderSrcCode::NewJewelFrontVert
+	// Access:    public static
+	// Returns:   const char*
+	// Qualifier: 珠宝front Info渲染层 绘制完传递给back
+	//************************************
+	static const char* JewelFrontInfoVert();
+	static const char* JewelFrontInfoFrag();
+	//************************************
 	// Method:    JewelFrontVert
 	// FullName:  M3D::ShaderSrcCode::JewelFrontVert
 	// Access:    public static 
@@ -125,26 +134,6 @@ public:
 	//************************************
 	static const char* JewelBackVert();
 	static const char* JewelBackFrag();
-
-	//************************************
-	// Method:    NewJewelFrontVert
-	// FullName:  M3D::ShaderSrcCode::NewJewelFrontVert
-	// Access:    public static
-	// Returns:   const char*
-	// Qualifier: 珠宝front渲染层
-	//************************************
-	static const char* NewJewelFrontVert();
-	static const char* NewJewelFrontFrag();
-
-	//************************************
-	// Method:    NewJewelBackVert
-	// FullName:  M3D::ShaderSrcCode::NewJewelFrontVert
-	// Access:    public static
-	// Returns:   const char*
-	// Qualifier: 珠宝back渲染层
-	//************************************
-	static const char* NewJewelBackVert();
-	static const char* NewJewelBackFrag();
 
 	//************************************
 	// Method:    RingVert
@@ -293,6 +282,9 @@ public:
 	//************************************
 	static const char * SceneGroundVert();
 	static const char * SceneGroundFrag();
+
+//    static const char * MirrorVert();
+//    static const char * MirrorFrag();
 
 	//************************************
 	// Method:    MatCapMaterialVert

@@ -16,6 +16,7 @@ namespace M3D
 
 	Effect* EffectManager::GetEffect(string name)
 	{
+
 		if (m_effects.find(name) == m_effects.end())
 		{
 			if (name == "JEWELEFFECT")

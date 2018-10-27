@@ -45,6 +45,7 @@ namespace M3D{
 				if (para->m_Type == GL_SAMPLER_2D )
 				{
 					int textureUnit = GLShapeDrawer20::AllocTextureUnit();
+					//设置纹理单元
 					shaderEffect->SetUniformValue(shaderEffect->GetShaderUniformParameter(key)->m_location, textureUnit);
 					textureBindingTargetMap[textureUnit] = GL_TEXTURE_2D;
 					glActiveTexture(GL_TEXTURE0 + textureUnit);
