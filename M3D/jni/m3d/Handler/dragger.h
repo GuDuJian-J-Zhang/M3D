@@ -25,8 +25,10 @@ class Dragger;
 //定义回调函数类型
 #ifdef WIN32
 typedef void(_stdcall M3D_DRAGGERCB)(const int& nCmdType, wstring& strDraggerName);
+typedef void(_stdcall M3D_DRAGGERCB2)(const int& nCmdType, wstring& strDraggerName, Matrix3x4& matrix3x4);
 #else
 typedef void( M3D_DRAGGERCB)(const int& nCmdType, wstring& strDraggerName);
+typedef void(M3D_DRAGGERCB2)(const int& nCmdType, wstring& strDraggerName, Matrix3x4& matrix3x4);
 #endif // WIN32
 
 class M3D_API DraggerCallback :  public Object
@@ -308,8 +310,11 @@ public:
 		void SetPreSelected(bool val) { preSelected = val; }
 		//拖拽器回调
 		M3D_DRAGGERCB* m_draggerCB;
+		M3D_DRAGGERCB2* m_draggerCB2;
 		void SetDraggerCB(M3D_DRAGGERCB* draggerCB) { m_draggerCB = draggerCB; }
 		M3D_DRAGGERCB* GetDraggerCB() { return m_draggerCB; }
+		void SetDraggerCB2(M3D_DRAGGERCB2* draggerCB2) { m_draggerCB2 = draggerCB2; }
+		M3D_DRAGGERCB2* GetDraggerCB2() { return m_draggerCB2; }		
 		//设置拖拽器的名称
 		void SetDraggerName(wstring strName) { m_strName = strName; }
 		wstring GetDraggerName(){return m_strName;}

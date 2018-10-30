@@ -2852,30 +2852,5 @@ float Model::GetOriginTransparency()
 {
 	return m_originTrans;
 }
-void Model::Test(SceneManager* scene, BaseMaterial* material)
-{
-	ResourceManager* resourceManager = scene->GetResourceManager();
-	//MaterialTemplateManager* templateManager = resourceManager->GetMaterialTemplateManager();
-	//string name("adf");
-	//BaseMaterial* repMaterial = templateManager->GetMaterialFromTemplateByName(name, 0);
-	material = GetMaterial();
-	string key = material->GetName();
-	MaterialType matype = material->GetMaterialType();
-	BaseMaterial* repMaterial = resourceManager->GetOrCreateMaterial(key, matype, 1);
-	/*BaseMaterial* repMaterial  = new ShaderMaterial();
-	repMaterial->SetName("hetianyu");
-	repMaterial->SetUniformParameter(resourceManager, "type", "Int", "101");
-	repMaterial->SetUniformParameter(resourceManager, "frontTexture", "Texture2D", "E:\\SView_Designer_latest\\Source\\SViewDesigner\\Bin\\x64_Debug\\data\\pic\\3.jpg");
-	repMaterial->SetUniformParameter(resourceManager, "u_useFrontTexture", "Bool", "true");
-	repMaterial->SetUniformParameter(resourceManager, "u_useFrontCubeTexture", "Bool", "false");
-	repMaterial->SetUniformParameter(resourceManager, "u_diffuse", "Vector4", "1.0,1.0,1.0,1.0");
-	repMaterial->SetUniformParameter(resourceManager, "u_useHighlightTexture", "Bool", "true");
-	repMaterial->SetUniformParameter(resourceManager, "highlightTexture", "Texture2D", "E:\\SView_Designer_latest\\Source\\SViewDesigner\\Bin\\x64_Debug\\data\\pic\\3.jpg");
-	repMaterial->SetUniformParameter(resourceManager, "u_keepDirection", "Bool", "true");*/
-	repMaterial->SetUniformParameter(resourceManager, "normalMap", "Texture2D", "E:\\SView_Designer_latest\\Source\\SViewDesigner\\Bin\\x64_Debug\\data\\pic\\3.jpg");
-	if (repMaterial)
-	{
-		SetMaterial(repMaterial);
-	}
-}
+
 }

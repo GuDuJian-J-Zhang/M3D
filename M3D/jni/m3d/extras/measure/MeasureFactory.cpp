@@ -9848,7 +9848,7 @@ namespace M3D
 				linePnt1 = (linePnt1 + centerPnt) / 2;
 
 				string unit("°");
-				string lengthstr = M3DTOOLS::floatToString(angle) + unit;
+				string lengthstr = M3DTOOLS::floatToString(angle, 0) + unit;
 
 				//解决协同中文本读取
 				ComText* ct = new ComText();
@@ -10080,7 +10080,7 @@ namespace M3D
 				}
 
 				string unit("°");
-				string lengthstr = M3DTOOLS::floatToString(angle) + unit;
+				string lengthstr = M3DTOOLS::floatToString(angle, 0) + unit;
 
 				//解决协同中文本读取
 				ComText* ct = new ComText();
@@ -10363,7 +10363,7 @@ namespace M3D
 
 
 				string unit("°");
-				string lengthstr = M3DTOOLS::floatToString(angleLine) + unit;
+				string lengthstr = M3DTOOLS::floatToString(angleLine, 0) + unit;
 
 				//解决协同中文本读取
 				ComText* ct = new ComText();
@@ -11093,7 +11093,7 @@ namespace M3D
 				string unit;
 				MeasureDisplayHelper::SetMeasureUnit(SVIEW::Parameters::Instance()->m_measureUnitStyle
 					, valuse, unit);
-				string lengthstr = M3DTOOLS::floatToString(valuse.at(0)) + unit;
+				string lengthstr = "φ" + M3DTOOLS::floatToString(valuse.at(0)) + unit;
 
 				//解决协同中文本读取
 				ComText* ct = new ComText();

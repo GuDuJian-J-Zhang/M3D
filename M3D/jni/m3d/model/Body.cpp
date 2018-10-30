@@ -483,7 +483,12 @@ SceneNode* Body::GetSceneNode()
 
 void Body::SetMaterial(BaseMaterial* material)
 {
-
+	for (int j = 0; j < GetFaces().size(); j++) {
+		Face *face = GetFaces().at(j);
+		if (face) {
+			face->SetMaterial(material);
+		}
+	}
 }
 
 BaseMaterial* Body::GetMaterial()

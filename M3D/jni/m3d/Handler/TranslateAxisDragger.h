@@ -33,6 +33,7 @@ class M3D_API TranslateAxisDragger:public CompositeDragger
 
 		void SetScene(M3D::SceneManager* val);
 
+		virtual void RayPick(RayPickAction * action);
     protected:
         virtual ~TranslateAxisDragger();
         Translate1DDragger* _xDragger;

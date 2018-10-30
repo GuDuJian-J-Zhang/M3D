@@ -1,4 +1,4 @@
-﻿/**@file
+/**@file
  *@brief	Point类头文件
  *@author	xuli
  *@date		2015-7-13

@@ -71,7 +71,7 @@ namespace M3D
 	const  string ShaderManager::SaoReconstructCSZ("SaoReconstructCSZ");
 	const  string ShaderManager::SaoMinifyCSZ("SaoMinifyCSZ");
 	const  string ShaderManager::SaoBlur("SaoBlur");
-
+    const  string ShaderManager::Mirror("Mirror");
 	const string ShaderManager::JewelFrontInfo("JewelFrontInfo");
 	/**
 	 * @brief 获取name名字的效果
@@ -392,6 +392,9 @@ namespace M3D
 
 		SET_SHADER_MAP(JewelBack);
 
+		SET_SHADER_MAP(NewJewelBack);
+		SET_SHADER_MAP(NewJewelFront);
+        SET_SHADER_MAP(Mirror);
 		SET_SHADER_MAP(JewelFinalQuad);
 
 		SET_SHADER_MAP(Ring);

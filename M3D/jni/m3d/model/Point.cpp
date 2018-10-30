@@ -1,4 +1,4 @@
-﻿#include "m3d/model/Point.h"
+#include "m3d/model/Point.h"
 #include "m3d/action/RayPickAction.h"
 #include "sview/views/Parameters.h"
 #include "m3d/graphics/ImageBoard.h"

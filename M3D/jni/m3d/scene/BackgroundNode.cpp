@@ -81,6 +81,7 @@ void BackgroundNode::Initial()
 
 	points.clear();
 	textCoords.clear();
+	textCoordsOfWaterMark.clear();
 }
 
 //void BackgroundNode::FinalRelease(void)
@@ -188,19 +189,10 @@ Vector3* BackgroundNode::GetVertexs()
 
 Vector2* BackgroundNode::GetTextureCoords()
 {
-	textCoords.clear();
-
 	if (textCoords.size() == 0)
 	{
 		MutexLock lock(m_mutex);
-
-		Image img;
-		img.LoadImage(m_waterMarkPath);
-		float x = (float)m_iWidth / img.m_iWidth;
-		float y = (float)m_iHeight / img.m_iHeight;
-
-		//Rect m_uv  = Rect(Vector2(0,0),Vector2(1,1));
-		Rect m_uv = Rect(Vector2(0, 0), Vector2(x, y));
+		Rect m_uv  = Rect(Vector2(0,0),Vector2(1,1)) ;
 		Vector2 min = m_uv.m_min;
 		Vector2 max = m_uv.m_max;
 		//左下角
@@ -218,6 +210,39 @@ Vector2* BackgroundNode::GetTextureCoords()
 	}
 
 	return textCoords.data();
+}
+
+Vector2* BackgroundNode::GetWaterMarkTextureCoords()
+{
+	textCoordsOfWaterMark.clear();
+
+	if (textCoordsOfWaterMark.size() == 0)
+	{
+		MutexLock lock(m_mutex);
+
+		Image img;
+		img.LoadImage(m_waterMarkPath);
+		float x = (float)m_iWidth / img.m_iWidth;
+		float y = (float)m_iHeight / img.m_iHeight;
+
+		Rect m_uv = Rect(Vector2(0, 0), Vector2(x, y));
+		Vector2 min = m_uv.m_min;
+		Vector2 max = m_uv.m_max;
+		//左下角
+		textCoordsOfWaterMark.push_back(Vector2(min.m_x, min.m_y));
+		//右下角
+		textCoordsOfWaterMark.push_back(Vector2(max.m_x, min.m_y));
+		//左上角
+		textCoordsOfWaterMark.push_back(Vector2(min.m_x, max.m_y));
+		//左上角
+		textCoordsOfWaterMark.push_back(Vector2(min.m_x, max.m_y));
+		//右下角
+		textCoordsOfWaterMark.push_back(Vector2(max.m_x, min.m_y));
+		//右上角
+		textCoordsOfWaterMark.push_back(Vector2(max.m_x, max.m_y));
+	}
+
+	return textCoordsOfWaterMark.data();
 }
 
 void BackgroundNode::UpdateTopColor(void)

@@ -647,7 +647,7 @@ Note* NoteFactory::CreateCommonNote(CommonNoteInfo& commonNoteInfo,SceneManager 
 		note->AddPoint(point1);
 	}
 
-	note->SetFrontShow(false); //是否前端显示
+	note->SetFrontShow(true); //是否前端显示
 
 	if (note)
 	{
@@ -1101,7 +1101,7 @@ Note* NoteFactory::CreateTextNoteFromXMLElement(SceneManager* scene, const strin
 	//textNote->AddPoint(point2);
 	textNote->AddImage(imageBord);
 
-	textNote->SetFrontShow(false); //设置是否前端显示
+	textNote->SetFrontShow(true); //设置是否前端显示
 	if (textNote)
 	{
 		AddNoteToScene(scene, textNote);
@@ -1188,7 +1188,7 @@ Note* NoteFactory::CreateTextNoteFromJSON(SceneManager* scene, const string& JSO
         note->m_ComTexts.push_back(ct);
     }
 
-        note->SetFrontShow(false); //是否前端显示
+        note->SetFrontShow(true); //是否前端显示
 	if (note)
 	{
 		AddNoteToScene(scene, note);
@@ -1264,7 +1264,7 @@ Note* NoteFactory::CreateSequenceNoteFromJSON(SceneManager* scene, const string&
             ct->AddCText(t);
             note->m_ComTexts.push_back(ct);
             
-            note->SetFrontShow(false); //是否前端显示
+            note->SetFrontShow(true); //是否前端显示
         }
     }
     if (note)
@@ -1869,7 +1869,7 @@ Note* NoteFactory::CreatePntTextNote(int firtShapId, Vector2& screenPnt, const s
 			ct->AddCText(t);
 			note->m_ComTexts.push_back(ct);
 
-			note->SetFrontShow(false); //是否前端显示
+			note->SetFrontShow(true); //是否前端显示
 		}
 	}
 	else
@@ -1954,7 +1954,7 @@ NoteFactory::CreatePntSequenceNumberNote(int notePointShapId, Vector2& screenPnt
 			ct->AddCText(t);
 			note->m_ComTexts.push_back(ct);
 
-			note->SetFrontShow(false); //是否前端显示
+			note->SetFrontShow(true); //是否前端显示
 		}
 	}
 	else
@@ -2151,7 +2151,7 @@ Note* NoteFactory::CreateSequenceNoteFromXMLElement(SceneManager* scene, const s
 	//textNote->AddPoint(point2);
 	seauenceNote->AddImage(imageBord);
 
-	seauenceNote->SetFrontShow(false); //设置是否前端显示
+	seauenceNote->SetFrontShow(true); //设置是否前端显示
 	if (seauenceNote)
 	{
 		AddNoteToScene(scene, seauenceNote);

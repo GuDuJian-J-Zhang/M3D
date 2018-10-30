@@ -1,4 +1,4 @@
-﻿#include "m3d/action/RayPickAction.h"
+#include "m3d/action/RayPickAction.h"
 
 #include "m3d/renderer/RenderContext.h"
 #include "m3d/SceneManager.h"

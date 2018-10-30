@@ -52,6 +52,7 @@ public:
 	 //用于预选的dragger的移动操作
 	 bool MoveIndicatorDragger(Dragger* dragger,Vector3 direction,Vector3 pos);
 	 Dragger* BindDragger(vector<Model*> models, int drggerType, bool bGloal = true);
+	 Dragger* BindDragger(vector<Model*> models, int drggerType, Matrix3x4* ma, bool bMove = true, bool bMulGizm = false, bool bGloal = true);
 	 bool UnBindDragger(Dragger* dragger);
 
 	 Dragger* BindSectionDragger(int drggerType);
@@ -69,10 +70,12 @@ public:
 private:
 	Dragger* BindExplosionAxisDragger(vector<Model*> models,int explosionType, Vector3 vect);
 	Dragger* BindAxisDragger(vector<Model*> models, bool bGloal = true);
+	Dragger* BindAxisDragger(vector<Model*> models, Matrix3x4* ma, bool bMove = true, bool bMulGizm = false, bool bGloal = true);
 	Dragger* BindExplosionStdDragger(vector<Model*> models, int explosionType);
 	Dragger* bindMinusAxisDragger(vector<Model*> models);
 	Dragger* BindScaleDragger(vector<Model*> models);
 	Dragger* BindRotateDragger(vector<Model*> models, bool bGloal = true);
+	Dragger* BindRotateDragger(vector<Model*> models, Matrix3x4* ma, bool bMove = true, bool bMulGizm = false, bool bGloal = true);
 public:
 	Vector3 GetBindCenter(Model* model);
 private:

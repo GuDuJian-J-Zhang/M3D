@@ -7272,7 +7272,7 @@ namespace M3D
 			"  vec4 ringArmDepth = texture2D(u_sampler3,v_texCoords);\n"
 			"  //vec4 jewelStarColor= texture2D(u_sampler4,v_texCoords);\n"
 			" // vec4 jewelStarDepth= texture2D(u_sampler5,v_texCoords);\n"
-			"  vec4 jewelNoteColor = texture2D(u_sampler6,v_texCoords);\n"
+			"vec4 jewelNoteColor = texture2D(u_sampler6,v_texCoords);\n"
 			"   vec4 FragColor = vec4(0.0);"
 			"	if(jewelDepth.r<ringArmDepth.r)\n"
 			"	{\n"
@@ -7282,10 +7282,10 @@ namespace M3D
 			"   {\n"
 			"      FragColor = vec4(ringArmColor.rgba);\n"
 			"   }\n"
-			"    if(jewelNoteColor.a>0.0)\n"
-			"    {\n"
-			"      FragColor = vec4(jewelNoteColor.rgb,1.0);\n "
-		   "   }\n"
+            "    if(jewelNoteColor.a>0.0)\n"
+            "    {\n"
+            "      FragColor = vec4(jewelNoteColor.rgb,1.0);\n "
+			"   }\n"
 			"    gl_FragColor = vec4(FragColor.rgba);\n"
 			"}\n";
 	}
@@ -8556,6 +8556,30 @@ namespace M3D
 			"}\n"
 			;
 	}
+    const char * ShaderSrcCode::MirrorVert() {
+        return "//precision highp  float;\n"
+        "attribute vec3 a_position;\n"
+        "attribute vec4 a_color;\n"
+        "attribute vec2 a_texCoords;\n"
+        "uniform mat4 u_modelMat;\n"
+        "uniform mat4 u_viewMat;\n"
+        "uniform mat4 u_projectionMat;\n"
+        "//uniform mat4 u_MVPMat;\n"
+        "uniform mat4 u_mirrorMat;\n"
+        "varying vec4 v_color;\n"
+        "varying vec2 v_mirrorCoord;\n"
+        "varying vec2 v_texCoords;\n"
+        "void main() { \n"
+        "vec4 worldPosition = u_modelMat * vec4(a_position,1.0);\n"
+        "vec4 projection = u_mirrorMat * worldPosition;\n"
+        "v_mirrorCoord = vec2(projection.x * 0.5 + 0.5, projection.y * 0.5 + 0.5);\n"
+        //"v_mirrorCoord = vec2(projection.x * 0.5 + 0.7, projection.y * 0.5 + 0.7);\n"
+        "v_color = a_color;\n"
+        "v_texCoords = a_texCoords;\n"
+        "gl_Position =  u_projectionMat * u_viewMat * worldPosition;\n"
+        "}\n";
+    }
+    const char * ShaderSrcCode::MirrorFrag() {
 
 	const char * ShaderSrcCode::JewelFrontInfoVert()
 		{

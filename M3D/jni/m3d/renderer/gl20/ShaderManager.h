@@ -92,7 +92,8 @@ public:
 	const static string SaoReconstructCSZ;
 	const static string SaoMinifyCSZ;
 	const static string SaoBlur;
-
+    const static string Mirror;
+    
 	const static string NewJewelFront;
 	const static string NewJewelBack;
 	const static string JewelFrontInfo;

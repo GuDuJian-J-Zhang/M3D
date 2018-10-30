@@ -216,3 +216,18 @@ void M3D::TranslateAxisDragger::SetScene(M3D::SceneManager* val)
 
 	_xyzDragger->SetScene(val);
 }
+void M3D::TranslateAxisDragger::RayPick(RayPickAction * action)
+{
+	_xDragger->RayPick(action);
+	_yDragger->RayPick(action);
+	_zDragger->RayPick(action);
+	
+	if (_xzDragger->IsVisible())
+		_xzDragger->RayPick(action);
+	if (_xyDragger->IsVisible())
+		_xyDragger->RayPick(action);
+	if (_yzDragger->IsVisible())
+		_yzDragger->RayPick(action);
+
+	_xyzDragger->RayPick(action);
+}
