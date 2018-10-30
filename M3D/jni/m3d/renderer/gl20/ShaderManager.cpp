@@ -392,8 +392,6 @@ namespace M3D
 
 		SET_SHADER_MAP(JewelBack);
 
-		SET_SHADER_MAP(NewJewelBack);
-		SET_SHADER_MAP(NewJewelFront);
         SET_SHADER_MAP(Mirror);
 		SET_SHADER_MAP(JewelFinalQuad);
 

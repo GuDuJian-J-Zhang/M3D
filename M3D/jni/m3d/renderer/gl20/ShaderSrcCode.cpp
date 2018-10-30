@@ -7272,7 +7272,7 @@ namespace M3D
 			"  vec4 ringArmDepth = texture2D(u_sampler3,v_texCoords);\n"
 			"  //vec4 jewelStarColor= texture2D(u_sampler4,v_texCoords);\n"
 			" // vec4 jewelStarDepth= texture2D(u_sampler5,v_texCoords);\n"
-			"vec4 jewelNoteColor = texture2D(u_sampler6,v_texCoords);\n"
+			"  vec4 jewelNoteColor = texture2D(u_sampler6,v_texCoords);\n"
 			"   vec4 FragColor = vec4(0.0);"
 			"	if(jewelDepth.r<ringArmDepth.r)\n"
 			"	{\n"
@@ -7282,10 +7282,10 @@ namespace M3D
 			"   {\n"
 			"      FragColor = vec4(ringArmColor.rgba);\n"
 			"   }\n"
-            "    if(jewelNoteColor.a>0.0)\n"
-            "    {\n"
-            "      FragColor = vec4(jewelNoteColor.rgb,1.0);\n "
-			"   }\n"
+			"    if(jewelNoteColor.a>0.0)\n"
+			"    {\n"
+			"      FragColor = vec4(jewelNoteColor.rgb,1.0);\n "
+		   "   }\n"
 			"    gl_FragColor = vec4(FragColor.rgba);\n"
 			"}\n";
 	}
@@ -8556,6 +8556,7 @@ namespace M3D
 			"}\n"
 			;
 	}
+
     const char * ShaderSrcCode::MirrorVert() {
         return "//precision highp  float;\n"
         "attribute vec3 a_position;\n"
@@ -8580,6 +8581,38 @@ namespace M3D
         "}\n";
     }
     const char * ShaderSrcCode::MirrorFrag() {
+
+        return "//precision mediump  float;\n"
+        "uniform sampler2D mirrorTexture;\n"
+        "uniform sampler2D mirrorFrontTexture;\n"
+        "varying vec4 v_color;\n"
+        "varying vec2 v_mirrorCoord;\n"
+        "varying vec2 v_texCoords;\n"
+        "const float step = 0.005f;\n"
+        "const float gaussians[9] = {0.0947416, 0.1183180, 0.0947416, 0.1183180, 0.1477610, 0.1183180, 0.0947416, 0.1183180, 0.0947416}; \n"
+        "vec4 vague(float u,float v){\n"
+        "vec4 result = vec4(0.0, 0.0, 0.0, 0.0);\n"
+        "int index = 0;\n"
+        "for(int i=-1;i<=1;++i){\n"
+        "for(int j=-1;j<=1;++j){\n"
+        "result += texture2D(mirrorTexture, vec2(u + i * step, v + j * step)) * gaussians[index];\n"
+        "++index;\n"
+        //"vec4 color1 = texture2D(s_mirror, vec2(u - step, v - step));\n"
+        //"vec4 color2 = texture2D(s_mirror, vec2(u + step, v - step));\n"
+        //"vec4 color3 = texture2D(s_mirror, vec2(u + step, v + step));\n"
+        //"vec4 color4 = texture2D(s_mirror, vec2(u - step, v + step));\n"
+        //"return (color1 + color2 + color3 + color4) * 0.25;\n"
+        "}\n"
+        "}\n"
+        "return result;\n"
+        "}\n"
+        "void main(){\n"
+        //"float u = v_texCoords.x,v = v_texCoords.y;\n"
+        "float u = v_mirrorCoord.x,v = v_mirrorCoord.y;\n"
+        "gl_FragColor = v_color * 0.05 + texture2D(mirrorFrontTexture,v_texCoords) * 0.1 + vague(u,v) * 0.85;\n"
+        //"gl_FragColor = v_color * 0.05 + texture2D(s_background,v_texCoords) * 0.6 + vague(u,v) * 0.35;\n"
+        "}\n";
+    }
 
 	const char * ShaderSrcCode::JewelFrontInfoVert()
 		{
