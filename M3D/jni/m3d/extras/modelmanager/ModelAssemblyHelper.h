@@ -171,6 +171,14 @@ public:
 	static void RotateAssemblyModel(Model * model,Quaternion & quat);
 
 	/**
+	* @brief 旋转装配模型
+	* @param model 要旋转的模型
+	* @param quat 旋转量
+	* @param pivotCenter 旋转中心点
+	*/
+	static void RotateAssemblyModel(Model* model, Quaternion& quat, Vector3& pivotCenter);
+
+	/**
 	 * @brief 平移装配模型
 	 * @param model 要平移的模型
 	 * @param move  平移量

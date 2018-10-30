@@ -1501,7 +1501,7 @@ namespace M3D
 			string("u_useMinDepth"));
 		if (isAllowDepthTest)
 		{
-			glEnable(GL_DEPTH_TEST);
+			glDisable(GL_DEPTH_TEST);
 			if (useMinDepthPra)
 			{
 				useMinDepth = 1;
@@ -4144,7 +4144,7 @@ namespace M3D
 			string("u_useMinDepth"));
 		if (pNote->IsFrontShow())
 		{
-			glEnable(GL_DEPTH_TEST);
+			glDisable(GL_DEPTH_TEST);
 			useMinDepth = 1;
 			if (useMinDepthPra)
 			{
@@ -5821,92 +5821,91 @@ namespace M3D
 		}
 	}
 
-//    void GLShapeDrawer20::DrawMirrorGroundNode(SceneNode * node, RenderAction * action, const Matrix4 & mirrorMat, GLuint mirrorTexture, GLuint mirrorBackground)
-//    {
-//        //if (Parameters::Instance()->m_useGroundGrid)
-//        {
-//            if (!action || !node)
-//            {
-//                return;
-//            }
-//
-//            ShaderManager * shaderManager = action->GetShaderMananger();
-//            if (!shaderManager)
-//            {
-//                return;
-//            }
-//
-//            //ShaderProgram * sceneGroundEffect = shaderManager->GetEffect(
-//            //    ShaderManager::SceneGround);
-//            ShaderProgram * mirrorProgram = shaderManager->GetEffect(
-//                ShaderManager::Mirror);
-//            if (!mirrorProgram)
-//            {
-//                return;
-//            }
-//            glEnable(GL_DEPTH_TEST);
-//            glLineWidth(1.0);
-//            //glDisable(GL_DEPTH_TEST);
-//            GroundNode* ground = (GroundNode*)node;
-//
-//            //glViewport(axis->m_iViewX, axis->m_iViewY, axis->m_iW, axis->m_iW);
-//            //设置投影矩阵 模型视图矩阵 一些初始化
-//            /*BoundingBox& sceneBox = action->GetScene()->GetSceneBox();
-//            float length = sceneBox.Length()*1.2;
-//            int size = floor(length);
-//            int divisions = 20;
-//            if (size < 10)
-//            {
-//                size = 100;
-//                divisions = 100;
-//            }
-//            //else if (size<divisions)
-//            //{
-//            //    divisions = size;
-//            //}
-//            ground->SetGroundSize(size, divisions);*/
-//
-//            RenderContext* gl = action->GetGLContext();
-//            mirrorProgram->UseProgram();
-//
-//            mirrorProgram->SetUniformValue("u_mirrorMat", mirrorMat);
-//
-//            mirrorProgram->SetUniformValue(VSP_MODELMAT, ground->GetGLWorldTransform());
-//            mirrorProgram->SetUniformValue(VSP_VIEWMAT, gl->GetViewMatrix());
-//            mirrorProgram->SetUniformValue(VSP_PROJECTIONMAT, gl->GetProjectMatrix());
-//            string name1 = string("mirrorTexture");
-//            string name2 = string("mirrorFrontTexture");
-//
-//            GLuint mirrorTextureLocation = mirrorProgram->GetUniformLocation(name1);
-//            glActiveTexture(GL_TEXTURE0);
-//            glBindTexture(GL_TEXTURE_2D, mirrorTexture);
-//            mirrorProgram->SetUniformValue(mirrorTextureLocation, 0);
-//
-//            GLuint mirrorFrontTextureLocation = mirrorProgram->GetUniformLocation(name2);
-//            glActiveTexture(GL_TEXTURE1);
-//            glBindTexture(GL_TEXTURE_2D, mirrorBackground);
-//            mirrorProgram->SetUniformValue(mirrorFrontTextureLocation, 1);
-//
-//            ShaderParameter * position = mirrorProgram->GetShaderAttributeParameter(VSP_POSITION);
-//            ShaderParameter * colors = mirrorProgram->GetShaderAttributeParameter(VSP_COLOR);
-//            ShaderParameter * coords = mirrorProgram->GetShaderAttributeParameter(VSP_TEXCOORDS);
-//
-//            mirrorProgram->SetVertexAttribPointer(position->m_location, 3, GL_FLOAT, 0, ground->GetVertexs());
-//            mirrorProgram->EnableAttributeArray(position->m_location);
-//
-//            mirrorProgram->SetVertexAttribPointer(colors->m_location, 4, GL_FLOAT, 0, ground->GetColors());
-//            mirrorProgram->EnableAttributeArray(colors->m_location);
-//
-//
-//            mirrorProgram->SetVertexAttribPointer(coords->m_location, 2, GL_FLOAT, 0, ground->GetCoords());
-//            mirrorProgram->EnableAttributeArray(coords->m_location);
-//
-//            //glDrawArrays(GL_LINES, 0, ground->GetPointsNumber());
-//
-////            glDrawArrays(GL_POLYGON, 0, ground->GetPointsNumber());
-//            //glEnable(GL_DEPTH_TEST);
-//        }
-//    }
+    void GLShapeDrawer20::DrawMirrorGroundNode(SceneNode * node, RenderAction * action, const Matrix4 & mirrorMat, GLuint mirrorTexture, GLuint mirrorBackground)
+    {
+        //if (Parameters::Instance()->m_useGroundGrid)
+        {
+            if (!action || !node)
+            {
+                return;
+            }
+
+            ShaderManager * shaderManager = action->GetShaderMananger();
+            if (!shaderManager)
+            {
+                return;
+            }
+
+            //ShaderProgram * sceneGroundEffect = shaderManager->GetEffect(
+            //    ShaderManager::SceneGround);
+            ShaderProgram * mirrorProgram = shaderManager->GetEffect(
+                ShaderManager::Mirror);
+            if (!mirrorProgram)
+            {
+                return;
+            }
+            glEnable(GL_DEPTH_TEST);
+            glLineWidth(1.0);
+            //glDisable(GL_DEPTH_TEST);
+            GroundNode* ground = (GroundNode*)node;
+
+            //glViewport(axis->m_iViewX, axis->m_iViewY, axis->m_iW, axis->m_iW);
+            //设置投影矩阵 模型视图矩阵 一些初始化
+            /*BoundingBox& sceneBox = action->GetScene()->GetSceneBox();
+            float length = sceneBox.Length()*1.2;
+            int size = floor(length);
+            int divisions = 20;
+            if (size < 10)
+            {
+                size = 100;
+                divisions = 100;
+            }
+            //else if (size<divisions)
+            //{
+            //    divisions = size;
+            //}
+            ground->SetGroundSize(size, divisions);*/
+
+            RenderContext* gl = action->GetGLContext();
+            mirrorProgram->UseProgram();
+
+            mirrorProgram->SetUniformValue("u_mirrorMat", mirrorMat);
+
+            mirrorProgram->SetUniformValue(VSP_MODELMAT, ground->GetGLWorldTransform());
+            mirrorProgram->SetUniformValue(VSP_VIEWMAT, gl->GetViewMatrix());
+            mirrorProgram->SetUniformValue(VSP_PROJECTIONMAT, gl->GetProjectMatrix());
+            string name1 = string("mirrorTexture");
+            string name2 = string("mirrorFrontTexture");
+
+            GLuint mirrorTextureLocation = mirrorProgram->GetUniformLocation(name1);
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, mirrorTexture);
+            mirrorProgram->SetUniformValue(mirrorTextureLocation, 0);
+
+            GLuint mirrorFrontTextureLocation = mirrorProgram->GetUniformLocation(name2);
+            glActiveTexture(GL_TEXTURE1);
+            glBindTexture(GL_TEXTURE_2D, mirrorBackground);
+            mirrorProgram->SetUniformValue(mirrorFrontTextureLocation, 1);
+
+            ShaderParameter * position = mirrorProgram->GetShaderAttributeParameter(VSP_POSITION);
+            ShaderParameter * colors = mirrorProgram->GetShaderAttributeParameter(VSP_COLOR);
+            ShaderParameter * coords = mirrorProgram->GetShaderAttributeParameter(VSP_TEXCOORDS);
+
+            mirrorProgram->SetVertexAttribPointer(position->m_location, 3, GL_FLOAT, 0, ground->GetVertexs());
+            mirrorProgram->EnableAttributeArray(position->m_location);
+
+            mirrorProgram->SetVertexAttribPointer(colors->m_location, 4, GL_FLOAT, 0, ground->GetColors());
+            mirrorProgram->EnableAttributeArray(colors->m_location);
+
+
+            mirrorProgram->SetVertexAttribPointer(coords->m_location, 2, GL_FLOAT, 0, ground->GetCoords());
+            mirrorProgram->EnableAttributeArray(coords->m_location);
+
+            glDrawArrays(GL_LINES, 0, ground->GetPointsNumber());
+
+			//glEnable(GL_DEPTH_TEST);
+		}
+	}
 
 
 	/*

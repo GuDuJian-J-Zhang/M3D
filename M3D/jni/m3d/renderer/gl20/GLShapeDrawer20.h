@@ -277,6 +277,8 @@ public:
 	static void DrawPhongPassSampleGroup(RenderAction* action,	RenderQueue* RenderStateArray);
 #endif
 	static void DrawGroundNode(SceneNode* node, RenderAction* action);
+
+	static void DrawMirrorGroundNode(SceneNode* node, RenderAction* action, const Matrix4 & mirrorMat, GLuint mirrorTexture, GLuint mirrorBackground);
 public:
 	static void SetFocalLength(RenderAction* action);
 	static GLuint _usedTextureUnits;

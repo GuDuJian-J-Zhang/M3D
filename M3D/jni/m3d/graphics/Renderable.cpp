@@ -1,4 +1,4 @@
-﻿#include "m3d/graphics/Renderable.h"
+#include "m3d/graphics/Renderable.h"
 
 #include "m3d/model/Body.h"
 #include "m3d/model/Face.h"
@@ -248,7 +248,7 @@ void  Renderable::Init()
 
 	m_useIndex = false;
 	m_length = 0;
-	m_frontShow = false;
+	m_frontShow = true;
 
 	m_normalOffset = 0;
 	m_vertexOffset = 0;

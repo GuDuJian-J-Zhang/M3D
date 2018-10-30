@@ -1,11 +1,10 @@
-#include "m3d/model/Body.h"
+﻿#include "m3d/model/Body.h"
 #include "m3d/model/Face.h"
 #include "m3d/model/Model.h"
 #include "m3d/action/Action.h"
 #include "m3d/action/RenderAction.h"
 #include "m3d/action/RayPickAction.h"
 #include "m3d/model/Edge.h"
-#include "m3d/model/Point.h"
 #include "m3d/model/Curve.h"
 #include "m3d/ResourceManager.h"
 #include "sview/views/Parameters.h"
@@ -24,7 +23,6 @@ Body& Body::operator=(const Body& orig)
 		this->m_Id = OBJID++;
 		this->m_FaceArray.resize(0);
 		this->m_EdgeArray.resize(0);
-        this->m_PointArray.resize(0);
 		//拷贝面数据
 		for (int i = 0; i < orig.m_FaceArray.size(); i++)
 		{
@@ -37,12 +35,7 @@ Body& Body::operator=(const Body& orig)
 			Edge* edge = new Edge(*orig.m_EdgeArray[i]);
 			this->AddEdge(edge);
 		}
-        //拷贝点数据
-        for (int i = 0; i < orig.m_PointArray.size(); i++)
-        {
-            Point* point = new Point(*orig.m_PointArray[i]);
-            this->AddPoint(point);
-        }
+
 		this->m_polyLine = orig.m_polyLine;
 		if (this->m_polyLine)
 		{
@@ -74,7 +67,6 @@ Body::Body() :
 
 	this->m_FaceArray.resize(0);
 	this->m_EdgeArray.resize(0);
-    this->m_PointArray.resize(0);
 	m_BodyExtInfo = NULL;
 	m_isDrawDataDirty = true;
 
@@ -91,13 +83,8 @@ Body::~Body()
 	{
 		m_EdgeArray[i]->Release();
 	}
-    for (int i = 0; i < this->m_PointArray.size(); i++)
-    {
-        m_PointArray[i]->Release();
-    }
 	this->m_FaceArray.resize(0);
 	this->m_EdgeArray.resize(0);
-    this->m_PointArray.resize(0);
 	if (this->m_polyLine)
 		this->m_polyLine->Release();
 	this->m_polyLine = NULL;
@@ -153,16 +140,14 @@ void Body::AddPoint(Point* pnt)
 {
 	if (pnt)
 	{
-        pnt->AddRef();
-        pnt->SetBody(this);
-        this->m_PointArray.push_back(pnt);
+
 	}	
 	m_isDrawDataDirty = true;
 }
 
 vector<Point*>* Body::GetPoints()
 {
-	return &this->m_PointArray;
+	return NULL;
 }
 
 void Body::ComputeBox()
@@ -498,7 +483,12 @@ SceneNode* Body::GetSceneNode()
 
 void Body::SetMaterial(BaseMaterial* material)
 {
-
+	for (int j = 0; j < GetFaces().size(); j++) {
+		Face *face = GetFaces().at(j);
+		if (face) {
+			face->SetMaterial(material);
+		}
+	}
 }
 
 BaseMaterial* Body::GetMaterial()

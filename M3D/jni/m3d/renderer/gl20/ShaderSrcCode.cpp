@@ -6672,7 +6672,7 @@ namespace M3D
 		    "	vec3 wNormalize=normalize(vNormal.xyz);\n"
 			"	vec2 vUvR=(wNormalize.xy+vec2(1.0,1.0))*0.5;\n"
 			"	vec3 huanjingFanshe=vec3(texture2D(refoutTexture,vUvR));\n"
-			"	gl_FragColor = vec4(huanjingFanshe*0.62,1.0);\n" //=====77==front
+			"	gl_FragColor = vec4(huanjingFanshe*0.62*vec3(u_selectColor),1.0);\n" //=====77==front
 			"   }\n"
 				//=====================end
 			"    else {\n"
@@ -6881,7 +6881,7 @@ namespace M3D
 			"		back.g=smoothstep(0.0,0.8,back.g);\n"
 			"		back.b=smoothstep(0.0,0.8,back.b);\n"
 
-			"		gl_FragColor = vec4(back,1.0);\n" //=====77
+			"		gl_FragColor = vec4(back*vec3(u_selectColor),1.0);\n" //=====77
 //				"		gl_FragColor = bcol;\n" //=====77
 
 			"	}\n"
@@ -7263,7 +7263,7 @@ namespace M3D
 			"uniform sampler2D u_sampler3;\n"
 			"//uniform sampler2D u_sampler4;\n"
 			"//uniform sampler2D u_sampler5;\n"
-			"//uniform sampler2D u_sampler6;\n"
+			"uniform sampler2D u_sampler6;\n"
 			"varying vec2 v_texCoords;\n"
 			"void main() { \n"
 			"  vec4 blendColor = texture2D(u_sampler0,v_texCoords);\n"
@@ -7272,7 +7272,7 @@ namespace M3D
 			"  vec4 ringArmDepth = texture2D(u_sampler3,v_texCoords);\n"
 			"  //vec4 jewelStarColor= texture2D(u_sampler4,v_texCoords);\n"
 			" // vec4 jewelStarDepth= texture2D(u_sampler5,v_texCoords);\n"
-			" // vec4 jewelNoteColor = texture2D(u_sampler6,v_texCoords);\n"
+			"vec4 jewelNoteColor = texture2D(u_sampler6,v_texCoords);\n"
 			"   vec4 FragColor = vec4(0.0);"
 			"	if(jewelDepth.r<ringArmDepth.r)\n"
 			"	{\n"
@@ -7281,6 +7281,10 @@ namespace M3D
 			"   else\n"
 			"   {\n"
 			"      FragColor = vec4(ringArmColor.rgba);\n"
+            "   }\n"
+            "    if(jewelNoteColor.a>0.0)\n"
+            "    {\n"
+            "      FragColor = vec4(jewelNoteColor.rgb,1.0);\n "
 			"   }\n"
 			"    gl_FragColor = vec4(FragColor.rgba);\n"
 			"}\n";
@@ -8552,7 +8556,62 @@ namespace M3D
 			"}\n"
 			;
 	}
-
+    const char * ShaderSrcCode::MirrorVert() {
+        return "//precision highp  float;\n"
+        "attribute vec3 a_position;\n"
+        "attribute vec4 a_color;\n"
+        "attribute vec2 a_texCoords;\n"
+        "uniform mat4 u_modelMat;\n"
+        "uniform mat4 u_viewMat;\n"
+        "uniform mat4 u_projectionMat;\n"
+        "//uniform mat4 u_MVPMat;\n"
+        "uniform mat4 u_mirrorMat;\n"
+        "varying vec4 v_color;\n"
+        "varying vec2 v_mirrorCoord;\n"
+        "varying vec2 v_texCoords;\n"
+        "void main() { \n"
+        "vec4 worldPosition = u_modelMat * vec4(a_position,1.0);\n"
+        "vec4 projection = u_mirrorMat * worldPosition;\n"
+        "v_mirrorCoord = vec2(projection.x * 0.5 + 0.5, projection.y * 0.5 + 0.5);\n"
+        //"v_mirrorCoord = vec2(projection.x * 0.5 + 0.7, projection.y * 0.5 + 0.7);\n"
+        "v_color = a_color;\n"
+        "v_texCoords = a_texCoords;\n"
+        "gl_Position =  u_projectionMat * u_viewMat * worldPosition;\n"
+        "}\n";
+    }
+    const char * ShaderSrcCode::MirrorFrag() {
+        
+        return "//precision mediump  float;\n"
+        "uniform sampler2D mirrorTexture;\n"
+        "uniform sampler2D mirrorFrontTexture;\n"
+        "varying vec4 v_color;\n"
+        "varying vec2 v_mirrorCoord;\n"
+        "varying vec2 v_texCoords;\n"
+        "const float step = 0.005f;\n"
+        "const float gaussians[9] = {0.0947416, 0.1183180, 0.0947416, 0.1183180, 0.1477610, 0.1183180, 0.0947416, 0.1183180, 0.0947416}; \n"
+        "vec4 vague(float u,float v){\n"
+        "vec4 result = vec4(0.0, 0.0, 0.0, 0.0);\n"
+        "int index = 0;\n"
+        "for(int i=-1;i<=1;++i){\n"
+        "for(int j=-1;j<=1;++j){\n"
+        "result += texture2D(mirrorTexture, vec2(u + i * step, v + j * step)) * gaussians[index];\n"
+        "++index;\n"
+        //"vec4 color1 = texture2D(s_mirror, vec2(u - step, v - step));\n"
+        //"vec4 color2 = texture2D(s_mirror, vec2(u + step, v - step));\n"
+        //"vec4 color3 = texture2D(s_mirror, vec2(u + step, v + step));\n"
+        //"vec4 color4 = texture2D(s_mirror, vec2(u - step, v + step));\n"
+        //"return (color1 + color2 + color3 + color4) * 0.25;\n"
+        "}\n"
+        "}\n"
+        "return result;\n"
+        "}\n"
+        "void main(){\n"
+        //"float u = v_texCoords.x,v = v_texCoords.y;\n"
+        "float u = v_mirrorCoord.x,v = v_mirrorCoord.y;\n"
+        "gl_FragColor = v_color * 0.05 + texture2D(mirrorFrontTexture,v_texCoords) * 0.1 + vague(u,v) * 0.85;\n"
+        //"gl_FragColor = v_color * 0.05 + texture2D(s_background,v_texCoords) * 0.6 + vague(u,v) * 0.35;\n"
+        "}\n";
+    }
 	//zhubao
 //	varying 可变量 是vertex和fragment shader之间做数据传递用的，vertex和fragment shader二者之间的声明必须是一致的
 	const char * ShaderSrcCode::NewJewelFrontVert()

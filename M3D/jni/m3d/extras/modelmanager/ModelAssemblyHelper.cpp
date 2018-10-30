@@ -498,6 +498,30 @@ void ModelAssemblyHelper::RotateAssemblyModel(Model* model, Quaternion& quat)
 }
 
 /**
+* @brief 旋转装配模型
+* @param model 要旋转的模型
+* @param quat 旋转量
+* @param pivotCenter 旋转中心点
+*/
+void ModelAssemblyHelper::RotateAssemblyModel(Model* model, Quaternion& quat, Vector3& pivotCenter)
+{
+
+	Model* parent = model->GetParent();
+	Matrix3x4 modelWMat;
+	modelWMat = model->GetWorldTransform();
+	Matrix3x4 pareWMat; //父节点世界转换矩阵
+	pareWMat = parent ? parent->GetWorldTransform() : pareWMat;
+
+	Matrix3x4 trans1, trans2, rot1;
+	trans1.MultiTranslate(-pivotCenter);
+	rot1.MultiRotatiton(quat);
+	trans2.MultiTranslate(pivotCenter);
+	Matrix3x4 tempmat = trans2 * rot1 * trans1;
+	Matrix3x4 plcMat = pareWMat.Inverse() * tempmat * modelWMat;
+	model->SetPlaceMatrix(plcMat);
+}
+
+/**
  * @brief 平移装配模型
  * @param model 要平移的模型
  * @param move  平移量

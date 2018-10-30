@@ -134,6 +134,7 @@ bool M3D::TranslateMinusAxisDragger::handle(const TouchEvent& ea)
 		case TouchEvent::PUSH:
 		{
 			_pointer.reset();
+			Section* pSection = _scene->GetSectionNode()->GetSection();
 			IShape* selectedShape = _scene->GetPickShape(ea.getX(), ea.getY(), SHAPE_MODEL, 0);
 			SectionPlane* section = dynamic_cast<SectionPlane*>(selectedShape);
 			if (section && section->GetID() == GetID())

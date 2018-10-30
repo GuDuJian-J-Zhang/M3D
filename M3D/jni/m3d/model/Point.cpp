@@ -121,15 +121,7 @@ Point::~Point()
 		this->m_meshboard = NULL;
 	}
 }
-void Point::AddRef(void)
-{
-    Object::AddRef();
-}
-    
-void Point::Release(void)
-{
-    Object::Release();
-}
+
 void Point::Init(const Vector3& coord)
 {
 	this->SetType(SHAPE_POINT);

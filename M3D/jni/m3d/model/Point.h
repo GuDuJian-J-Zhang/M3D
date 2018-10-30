@@ -43,8 +43,7 @@ public:
 	Point(const Point& orig);
 	Point& operator =(const Point& orig);
 	virtual ~Point();
-    virtual void AddRef(void);
-    virtual void Release(void);
+
 	/**
 	 * 设置显示位置
 	 * @param coordinate

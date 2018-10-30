@@ -161,7 +161,9 @@ namespace M3D
 			for (int i = 0; i < this->m_draggerModels.size(); i++)
 			{
 				Model* model = m_draggerModels.at(i);
-				ModelAssemblyHelper::RotateAssemblyModel(model, rotation);
+				//ModelAssemblyHelper::RotateAssemblyModel(model, rotation);
+				Vector3 pivot = command.GetRefDragger()->getParentDragger()->GetTransform().Translation();
+				ModelAssemblyHelper::RotateAssemblyModel(model, rotation, pivot);
 
 				if (this->GetScene())
 				{

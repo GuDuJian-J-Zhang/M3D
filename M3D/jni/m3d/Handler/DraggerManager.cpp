@@ -95,7 +95,30 @@ Dragger* DraggerManager::BindDragger(vector<Model*> models, int draggerType, boo
 	m_dragger = dragger;
 	return dragger;
 }
-
+Dragger* DraggerManager::BindDragger(vector<Model*> models, int draggerType, Matrix3x4* ma, bool bMove, bool bMulGizm, bool bGloal)
+{
+	m_view->GetSceneManager()->Lock();
+	Dragger* dragger = NULL;
+	switch (draggerType)
+	{
+	case 1:
+		dragger = BindAxisDragger(models, ma, bMove, bMulGizm, bGloal);		
+		break;
+	case 2:
+		dragger = BindRotateDragger(models, ma, bMove, bMulGizm, bGloal);
+		break;
+	case 3:
+		dragger = BindScaleDragger(models);
+		break;
+	case 4:
+		dragger = bindMinusAxisDragger(models);
+	default:
+		break;
+	}
+	m_view->GetSceneManager()->UnLock();
+	m_dragger = dragger;
+	return dragger;
+}
 
 /*
 爆炸拖拽器的绑定:标准坐标轴方向
@@ -106,7 +129,6 @@ Dragger* DraggerManager::BindExplosionStdDragger(vector<Model*> models, int expl
 	if (m_view)
 	{
 		//场景包围盒的参数，拖拽器的位置
-
 		BoundingBox boundingBox;
 		if (models.size() == 0)
 		{
@@ -150,34 +172,13 @@ Dragger* DraggerManager::BindExplosionStdDragger(vector<Model*> models, int expl
 
 		draggerCallback->Release();
 	}
-
 	return explosioinAixsDragger;
 }
-
-/*指示器拖拽器*/
-
-Dragger* DraggerManager::BindIndicatorDragger(Vector3 direction, Vector3 pos) 
-{
-	TranslateMinusAxisDragger* minusAxisDragger = NULL;
-	if (m_view)
-	{
-
-		minusAxisDragger = m_view->GetSceneManager()->GetHandlerGroup()->GetTransMinusformHandler();
-		minusAxisDragger->SetName("TranslateMinusAxisDragger");
-		minusAxisDragger->SetVisible(true);
-		minusAxisDragger->SetMinusXAxisVisible(false);
-		minusAxisDragger->SetWorldPosition(pos);
-		minusAxisDragger->SetOrientation(direction);
-		return minusAxisDragger;
-	}
-    return NULL;
-}
-
 /*
 爆炸拖拽器的绑定:指定拖拽器方向
 */
-Dragger* DraggerManager::BindExplosionFreedomDragger(vector<Model*> models, int explosionType, Vector3 direction,Vector3 pos) {
-	
+Dragger* DraggerManager::BindExplosionFreedomDragger(vector<Model*> models, int explosionType, Vector3 direction, Vector3 pos) {
+
 	TranslateMinusAxisDragger* minusAxisDragger = NULL;
 	if (m_view)
 	{
@@ -211,7 +212,7 @@ Dragger* DraggerManager::BindExplosionFreedomDragger(vector<Model*> models, int 
 		{
 			minusAxisDragger->SetWorldPosition(pos);
 		}
-		if (direction !=  Vector3(0, 0, 0))
+		if (direction != Vector3(0, 0, 0))
 		{
 			minusAxisDragger->SetOrientation(direction);
 		}
@@ -224,11 +225,39 @@ Dragger* DraggerManager::BindExplosionFreedomDragger(vector<Model*> models, int 
 		minusAxisDragger->addDraggerCallback(draggerCallback);
 		draggerCallback->Release();
 
-		return minusAxisDragger;
-
+		
 	}
-    return NULL;
+    return minusAxisDragger;
 }
+/*指示器拖拽器*/
+
+Dragger* DraggerManager::BindIndicatorDragger(Vector3 direction, Vector3 pos) 
+{
+	TranslateMinusAxisDragger* minusAxisDragger = NULL;
+	if (m_view)
+	{
+
+		minusAxisDragger = m_view->GetSceneManager()->GetHandlerGroup()->GetTransMinusformHandler();
+		minusAxisDragger->SetName("TranslateMinusAxisDragger");
+		minusAxisDragger->SetVisible(true);
+		minusAxisDragger->SetMinusXAxisVisible(false);
+		minusAxisDragger->SetWorldPosition(pos);
+		minusAxisDragger->SetOrientation(direction);
+		
+	}
+    return minusAxisDragger;
+}
+bool DraggerManager::MoveIndicatorDragger(Dragger* dragger, Vector3 direction, Vector3 pos) {
+
+	if (dragger)
+	{
+		dragger->SetWorldPosition(pos);
+		((TranslateMinusAxisDragger*)dragger)->SetOrientation(direction);
+		return true;
+	}
+	return false;
+}
+
 Dragger* DraggerManager::BindExplosionAxisDragger(vector<Model*> models,int explosionType, Vector3 vect)
 {
 	TranslateAxisDragger* explosioinAixsDragger = NULL;
@@ -320,18 +349,6 @@ Dragger* DraggerManager::BindExplosionAxisDragger(vector<Model*> models,int expl
 	
 }
 
-bool DraggerManager::MoveIndicatorDragger(Dragger* dragger, Vector3 direction, Vector3 pos) {
-
-	if (dragger) 
-	{
-		dragger->SetWorldPosition(pos);
-		((TranslateMinusAxisDragger*)dragger)->SetOrientation(direction);
-		return true;
-	}
-	return false;
-}
-
-
 bool DraggerManager::UnBindDragger(Dragger* dragger)
 {
 	if (dragger)
@@ -358,6 +375,9 @@ Dragger* DraggerManager::BindAxisDragger(vector<Model*> models, bool bGloal/* = 
 	{
 		translateAixsDragger = m_view->GetSceneManager()->GetHandlerGroup()->GetTransformHandler();
 		translateAixsDragger->SetName("TranslateAxisDragger");
+		translateAixsDragger->SetXZPlaneVisible(true);
+		translateAixsDragger->SetYZPlaneVisible(true);
+		translateAixsDragger->SetXYPlaneVisible(true);
 		translateAixsDragger->SetVisible(true);
 		Vector3 position = GetBindCenter(pLastModel);
 		translateAixsDragger->SetWorldPosition(position);
@@ -365,7 +385,57 @@ Dragger* DraggerManager::BindAxisDragger(vector<Model*> models, bool bGloal/* = 
 		{
 			translateAixsDragger->SetRotation(pLastModel->GetWorldRotation());
 		}
-		
+
+		ModelDraggerCallback* draggerCallback = new ModelDraggerCallback();
+		for (int i = 0; i < nModelCount; i++)
+		{
+			if (models[i] == NULL)
+				continue;
+			draggerCallback->AddModel(models[i]);
+		}
+		draggerCallback->AddRef();
+		translateAixsDragger->addDraggerCallback(draggerCallback);
+		draggerCallback->Release();
+	}
+	return translateAixsDragger;
+}
+Dragger* DraggerManager::BindAxisDragger(vector<Model*> models, Matrix3x4* ma, bool bMove/* = true*/, bool bMulGizm/* = false*/, bool bGloal/* = true*/)
+{
+	TranslateAxisDragger* translateAixsDragger = NULL;
+
+	int nModelCount = models.size();
+	if (nModelCount <= 0)
+		return NULL;
+	Model* pLastModel = models[nModelCount - 1];
+	if (pLastModel == NULL)
+		return NULL;
+	if (m_view)
+	{
+		translateAixsDragger = m_view->GetSceneManager()->GetHandlerGroup()->GetTransformHandler();
+		translateAixsDragger->SetName("TranslateAxisDragger");
+		translateAixsDragger->SetVisible(true);
+		translateAixsDragger->SetMoveModelStatus(bMove);
+
+		Vector3 position;
+		if (ma != NULL)
+		{
+			position = ma->Translation();
+			translateAixsDragger->SetWorldPosition(position);
+			if (!bGloal)
+			{
+				translateAixsDragger->SetRotation(ma->Rotation());
+			}
+		}
+		else
+		{
+			position = GetBindCenter(pLastModel);
+			translateAixsDragger->SetWorldPosition(position);
+			if (!bGloal)
+			{
+				translateAixsDragger->SetRotation(pLastModel->GetWorldRotation());
+			}
+		}
+
 		ModelDraggerCallback* draggerCallback = new ModelDraggerCallback();
 		for (int i = 0; i < nModelCount; i++)
 		{
@@ -471,6 +541,57 @@ Dragger* DraggerManager::BindRotateDragger(vector<Model*> models, bool bGloal/* 
 		{
 			rotateAixsDragger->SetRotation(pLastModel->GetWorldRotation());
 		}
+		ModelDraggerCallback* draggerCallback = new ModelDraggerCallback();
+		for (int i = 0; i < nModelCount; i++)
+		{
+			if (models[i] == NULL)
+				continue;
+			draggerCallback->AddModel(models[i]);
+		}
+		draggerCallback->SetScene(m_view->GetSceneManager());
+		draggerCallback->AddRef();
+		rotateAixsDragger->addDraggerCallback(draggerCallback);
+		draggerCallback->Release();
+	}
+	return rotateAixsDragger;
+}
+
+Dragger* DraggerManager::BindRotateDragger(vector<Model*> models, Matrix3x4* ma, bool bMove/* = true*/, bool bMulGizm/* = false*/, bool bGloal/* = true*/)
+{
+	RotateCylinderAxisDragger* rotateAixsDragger = NULL;
+	int nModelCount = models.size();
+	if (nModelCount <= 0)
+		return NULL;
+	Model* pLastModel = models[nModelCount - 1];
+	if (pLastModel == NULL)
+		return NULL;
+	if (m_view)
+	{
+		rotateAixsDragger = m_view->GetSceneManager()->GetHandlerGroup()->GetRotateCylinderAxisDragger();
+		rotateAixsDragger->SetName("RotateCylinderAxisDragger");
+		rotateAixsDragger->SetVisible(true);
+		rotateAixsDragger->SetMoveModelStatus(bMove);
+
+		Vector3 position;
+		if (ma != NULL)
+		{
+			position = ma->Translation();
+			rotateAixsDragger->SetWorldPosition(position);
+			if (!bGloal)
+			{
+				rotateAixsDragger->SetRotation(ma->Rotation());
+			}
+		}
+		else
+		{
+			position = GetBindCenter(pLastModel);
+			rotateAixsDragger->SetWorldPosition(position);
+			if (!bGloal)
+			{
+				rotateAixsDragger->SetRotation(pLastModel->GetWorldRotation());
+			}
+		}
+
 		ModelDraggerCallback* draggerCallback = new ModelDraggerCallback();
 		for (int i = 0; i < nModelCount; i++)
 		{

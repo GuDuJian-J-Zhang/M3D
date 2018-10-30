@@ -62,6 +62,39 @@ void GLShapeDrawerHelper::SetLightUniform(ShaderProgram* shaderEffect,
 	}
 }
 
+void GLShapeDrawerHelper::SetLightUniform(ShaderProgram* shaderEffect, DirectionalLight * light)
+{
+	string name = "";
+	if (light && light->IsVisible())
+	{
+		name = string("diffuse");
+		shaderEffect->SetUniformValue(name, light->GetDiffuse());
+		name = string("specular");
+		shaderEffect->SetUniformValue(name, light->GetSpecular());
+		name = string("position");
+		shaderEffect->SetUniformValue(name, light->GetPositionOld());
+		name = string("spotDirection");
+		shaderEffect->SetUniformValue(name, light->GetSpotDirection());
+		name = string("spotExponent");
+		shaderEffect->SetUniformValue(name, 1, &light->GetSpotExponent());
+		name = string("spotCutoff");
+		shaderEffect->SetUniformValue(name, 1, &light->GetSpotCutoff());
+		name = string("spotCosCutoff");
+		shaderEffect->SetUniformValue(name, 1, &light->GetSpotCosCutoff());
+		name = string("constant");
+		shaderEffect->SetUniformValue(name, 1, &light->GetConstantAttenuation());
+		name = string("linear");
+		shaderEffect->SetUniformValue(name, 1, &light->GetLinearAttenuation());
+		name = string("quadratic");
+		shaderEffect->SetUniformValue(name, 1, &light->GetQuadraticAttenuation());
+		name = string("intensity");
+		Vector3 intensityVec(light->GetSpecularIntensity(), 0.0, 0.0);
+		shaderEffect->SetUniformValue(name, intensityVec);
+		name = string("u_lightModel.ambient");
+		shaderEffect->SetUniformValue(name, light->GetLightModelAmbient());
+	}
+}
+
 ShaderProgram* GLShapeDrawerHelper::GetShaderProgram(RenderAction* action, int ShaderMaterialType)
 {
 	ShaderProgram * shaderEffect = NULL;

@@ -121,7 +121,7 @@ void DirectionalLight::SetSelected(bool select)
 void DirectionalLight::SetVisible(bool visible)
 {
 	m_Visible = visible;
-	IsTurnOn(visible);
+	//IsTurnOn(visible);
 	//SetSelected(m_IsSelect);
 	
 	visible = m_IsSelect && m_Visible;
@@ -234,7 +234,6 @@ void DirectionalLight::CreateSignModel(SceneManager* sceneManager)
 				m_simpleSignModel->SetInTopShow(true);
 				this->AddSubModel(this->m_simpleSignModel);
 			}
-
 			if (!m_arrow)
 			{
 				string toolsFilePath = SVIEW::Parameters::Instance()->m_appWorkPath + "\\data\\handler\\" + string("AxisHandler.stl");
@@ -248,6 +247,7 @@ void DirectionalLight::CreateSignModel(SceneManager* sceneManager)
 						m_arrow->SetUserData(this);
 						m_arrow->SetMaterial(InitBaseMaterial());
 						m_arrow->SetName("Arrow");
+						m_arrow->SetNeedClip(false);
 						m_arrow->SetWorldPosition(newPos);
 						m_arrow->SetWorldDirection(m_direction.Nagative());
 						AddSubModel(m_arrow);
@@ -273,7 +273,17 @@ void DirectionalLight::CreateSignModel(SceneManager* sceneManager)
 				AddSubModel(this->m_allSignModel);
 			}
 		}
+			
 		m_needUpdataSign = false;
+	}
+}
+
+void DirectionalLight::SetShowSimpleSign(bool val)
+{
+	SignModel::SetShowSimpleSign(val);
+	if (this->m_arrow)
+	{
+		this->m_arrow->SetVisible(val);
 	}
 }
 

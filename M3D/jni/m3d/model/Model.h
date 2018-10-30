@@ -629,7 +629,6 @@ public:
 	float GetOriginTransparency();
 
 	void AddBodyByFace(Face* face);
-	void Test(SceneManager* scene, BaseMaterial* material);
 protected:
 	ModelShape* m_modelShape;
 	mutable bool m_dirty; //!< @see SceneNode
@@ -705,7 +704,7 @@ public:
 	virtual ~SignModel(void);
 
 	bool GetShowSimpleSign() const { return m_showSimpleSign; }
-	void SetShowSimpleSign(bool val);
+	virtual void SetShowSimpleSign(bool val);
 	bool GetShowAllSign() const { return m_ShowAllSign; }
 	void SetShowAllSign(bool val);
 

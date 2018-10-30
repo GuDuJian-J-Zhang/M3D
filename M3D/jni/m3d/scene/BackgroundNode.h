@@ -70,6 +70,12 @@ public:
 	 */
 	Vector2* GetTextureCoords();
 
+	/**
+	* 获取绘制水印所需的纹理坐标
+	* @return
+	*/
+	Vector2* GetWaterMarkTextureCoords();
+
     /**
      * 设置背景图片路径
      * @param filePath
@@ -154,6 +160,7 @@ public:
 
 	vector<Vector3> points; //!<
 	vector<Vector2> textCoords; //!<背景绘制所需纹理坐标
+	vector<Vector2> textCoordsOfWaterMark; //!<水印绘制所需纹理坐标
 
 private:
 	bool m_isImageDirty; //!<图片脏标记 当图片脏时 需要重构构纹理

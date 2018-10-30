@@ -404,6 +404,7 @@ public:
 	virtual LightShadow* GetLightShadow();
 
 	virtual void CreateSignModel(SceneManager* sceneManager);
+	virtual void SetShowSimpleSign(bool val);
 	virtual void BindDragger(SceneManager* sceneManager);
 	virtual void UnBindDragger(SceneManager* sceneManager);
 

@@ -166,6 +166,7 @@ namespace M3D {
 		_drawModel = NULL;
 		this->preSelected = false;
 		m_draggerCB = nullptr;
+		m_draggerCB2 = nullptr;
 		m_bMoveModel = true;
 		/* getOrCreateStateSet()->setDataVariance(M3D::Object::DYNAMIC);*/
 	}
@@ -404,6 +405,15 @@ namespace M3D {
 
 		//// move self
 		getParentDragger()->receive(command);
+
+		//回调函数2
+		if (getParentDragger()->m_draggerCB2 != nullptr)
+		{
+			int nStage = command.getStage();
+			Matrix3x4 matrix3x4 = _drawModel->GetWorldTransform();
+			getParentDragger()->m_draggerCB2(nStage, m_strName, matrix3x4);
+		}
+
 		if (!getParentDragger()->m_bMoveModel)
 			return;
 
@@ -413,6 +423,7 @@ namespace M3D {
 		{
 			(*itr)->receive(command);
 		}
+
 		//回调函数
 		if (getParentDragger()->m_draggerCB != nullptr)
 		{
@@ -448,8 +459,8 @@ namespace M3D {
 				Model* model = (Model*)shape;
 				Dragger* dragger = (Dragger*)model->GetUserData();
 				pickDragger = dragger;
-
-				pointerInfo.setIntersection(pickDragger, rayPickAction->GetNearestPickPoint());
+				if(dragger)
+					pointerInfo.setIntersection(pickDragger, rayPickAction->GetNearestPickPoint());
 			}
 		}
 		delete rayPickAction;

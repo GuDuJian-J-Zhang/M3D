@@ -361,8 +361,8 @@ void RenderAction::Execute()
 			this->SetCamera(camera);
 	        ExecuteObjects();
 	    	GLuint mirrorTexture = Texture2D::CreateRGBATexture(m_mirrorPixels, m_mirrorWidth, m_mirrorHeight); 	
-//            GLShapeDrawer20::DrawMirrorGroundNode(groundNode, this, mirrorMat, mirrorTexture, m_mirrorBackgroundTexture);
-			glBindTexture(GL_TEXTURE_2D, 0);
+	        GLShapeDrawer20::DrawMirrorGroundNode(groundNode, this, mirrorMat, mirrorTexture, m_mirrorBackgroundTexture);
+			glBindTexture(GL_TEXTURE_2D, 0);	
 			glDeleteTextures(1, &m_mirrorTexture);
 		
 		//	this->SetCamera(camera);

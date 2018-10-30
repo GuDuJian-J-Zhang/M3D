@@ -34,6 +34,7 @@ public:
 	 * @param index
 	 */
 	static void SetLightUniform(ShaderProgram* shaderEffect,DirectionalLight * light,string index);
+	static void SetLightUniform(ShaderProgram* shaderEffect, DirectionalLight * light);
 	/**
 	 * 获取shader uniform量
 	 * @param action
