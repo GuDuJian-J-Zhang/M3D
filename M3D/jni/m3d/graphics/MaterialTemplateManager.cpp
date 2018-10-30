@@ -39,6 +39,7 @@ namespace M3D
 
 	bool MaterialTemplateManager::Load(string templatePath)
 	{
+		Clear();
 		string srccode = FileHelper::ReadTxt(templatePath);//json源码
 
 		Document infoDoc;

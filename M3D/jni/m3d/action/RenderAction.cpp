@@ -1641,7 +1641,7 @@ void RenderQueuePriority::InitialNormalEffect()
 	RenderTech* effectNote = new RenderTech();
 	effectNote->SetRenderGroupType(RenderableType::RGT_NOTE);
 
-	//批注
+	//注释
 	RenderTech* effectAnnotation = new RenderTech();
 	effectAnnotation->SetRenderGroupType(RenderableType::RGT_ANNOTATION);
 	//测量

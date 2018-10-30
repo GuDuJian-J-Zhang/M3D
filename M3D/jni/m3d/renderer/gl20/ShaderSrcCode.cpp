@@ -6672,7 +6672,7 @@ namespace M3D
 		    "	vec3 wNormalize=normalize(vNormal.xyz);\n"
 			"	vec2 vUvR=(wNormalize.xy+vec2(1.0,1.0))*0.5;\n"
 			"	vec3 huanjingFanshe=vec3(texture2D(refoutTexture,vUvR));\n"
-			"	gl_FragColor = vec4(huanjingFanshe*0.62,1.0);\n" //=====77==front
+			"	gl_FragColor = vec4(huanjingFanshe*0.62*vec3(u_selectColor),1.0);\n" //=====77==front
 			"   }\n"
 				//=====================end
 			"    else {\n"
@@ -6881,8 +6881,7 @@ namespace M3D
 			"		back.g=smoothstep(0.0,0.8,back.g);\n"
 			"		back.b=smoothstep(0.0,0.8,back.b);\n"
 
-			"		gl_FragColor = vec4(back,1.0);\n" //=====77
-//				"		gl_FragColor = bcol;\n" //=====77
+			"		gl_FragColor = vec4(back*vec3(u_selectColor),1.0);\n" //=====77
 
 			"	}\n"
 			"	 else {"
@@ -6929,7 +6928,7 @@ namespace M3D
 			"    v_worldPos = worldPosT;\n"
 			"    eyeWorldDirection =normalize( u_eyePosition -worldPosT);\n "
 			"    lightWorldDirection =normalize( u_lightPosition -worldPosT);\n "
-			" vec3 worldNormal = vec3(u_worldNormalMat*vec4(a_normal,0.0));\n"
+			"    vec3 worldNormal = vec3(u_worldNormalMat*vec4(a_normal,0.0));\n"
 			"	v_worldNormal = worldNormal;\n"
 			//"    v_cubeRefractCoords =reflect(normalize(worldPosT -u_eyePosition), normalize(worldNormal));\n"
 			" }\n";
@@ -7085,8 +7084,6 @@ namespace M3D
 			"            * fNDotL;\n"
 			"    totalDiffuse =  diffuseReflection;\n"
 			"    diffuseColor = min(totalDiffuse,vec3(1.0));\n"
-
-
 			"	if(u_useFrontCubeTexture||u_useFrontTexture)"
 			"	 {"
 			"       if(u_useHighlightTexture == true){"
@@ -7263,7 +7260,7 @@ namespace M3D
 			"uniform sampler2D u_sampler3;\n"
 			"//uniform sampler2D u_sampler4;\n"
 			"//uniform sampler2D u_sampler5;\n"
-			"//uniform sampler2D u_sampler6;\n"
+			"//uniform sampler2D u_sampler6;\n"  //批注的纹理材质
 			"varying vec2 v_texCoords;\n"
 			"void main() { \n"
 			"  vec4 blendColor = texture2D(u_sampler0,v_texCoords);\n"
@@ -7272,7 +7269,7 @@ namespace M3D
 			"  vec4 ringArmDepth = texture2D(u_sampler3,v_texCoords);\n"
 			"  //vec4 jewelStarColor= texture2D(u_sampler4,v_texCoords);\n"
 			" // vec4 jewelStarDepth= texture2D(u_sampler5,v_texCoords);\n"
-			" // vec4 jewelNoteColor = texture2D(u_sampler6,v_texCoords);\n"
+			"  //vec4 jewelNoteColor = texture2D(u_sampler6,v_texCoords);\n"
 			"   vec4 FragColor = vec4(0.0);"
 			"	if(jewelDepth.r<ringArmDepth.r)\n"
 			"	{\n"

@@ -279,6 +279,7 @@ LOCAL_SRC_FILES +=\
      m3d\handler\Translate3DDragger.cpp \
     m3d\handler\TranslateAxisDragger.cpp \
     m3d\handler\TranslatePlaneDragger.cpp \
+    m3d\handler\DraggerManager.cpp \
     m3d\handler\TranslateMinusAxisDragger.cpp \
     m3d\handler\TranslateBoxDragger.cpp \
     m3d\M3DMacros.cpp \
