@@ -1,5 +1,6 @@
 
 #include "m3d/graphics/DirectionalLight.h"
+#include "m3d/graphics/Material.h"
 #include "m3d/action/RenderAction.h"
 #include "sview/views/Parameters.h"
 #include "m3d/SceneManager.h"
@@ -13,7 +14,6 @@
 #include "m3d/Handler/Translate3DDragger.h"
 #include "m3d/graphics/LightDraggerCallback.h"
 #include "m3d/model/Body.h"
-#include "m3d/graphics/Material.h"
 namespace M3D
 {
 
