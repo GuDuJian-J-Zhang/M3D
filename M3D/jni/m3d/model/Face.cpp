@@ -349,7 +349,7 @@ void Face::SetInitColor(const Color &color)
 	m_Color = color;
 	if (m_material)
 	{
-		if (m_material->GetMaterialType() == MaterialType_Base || 
+		if (m_material->GetMaterialType() == MaterialType_Base ||
 			m_material->GetMaterialType() == MaterialType_Phong||
 			m_material->GetMaterialType() == MaterialType_MatCap)
 		{
@@ -362,7 +362,16 @@ void Face::SetInitColor(const Color &color)
 			PbrMaterial* temp = static_cast<PbrMaterial*>(m_material);
 			temp->AlbedoColor(m_Color);
 //			temp->Opacity(m_Color.m_a);
-		}		
+		}
+
+//		else if(m_material->GetMaterialType() == 101 ||
+//				m_material->GetMaterialType() == 102 ||
+//				m_material->GetMaterialType() == 103 ||
+//				m_material->GetMaterialType() == 104 ||
+//				m_material->GetMaterialType() == MaterialType_Shader ){
+//			Material* temp = static_cast<Material*>(m_material);
+//			temp->SetDiffuse(m_Color);
+//		}
 	}
 	if (!m_FaceExtInfo)
 	{

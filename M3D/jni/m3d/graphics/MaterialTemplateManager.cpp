@@ -39,6 +39,7 @@ namespace M3D
 
 	bool MaterialTemplateManager::Load(string templatePath)
 	{
+		Clear();
 		string srccode = FileHelper::ReadTxt(templatePath);//json源码
 
 		Document infoDoc;
@@ -130,7 +131,7 @@ namespace M3D
 											{
 												unsigned int buffersize = 0;
 												char* data;
-												//去除首尾空格 
+												//去除首尾空格
 												if (!pathes[i].empty())
 												{
 													pathes[i].erase(0, pathes[i].find_first_not_of(" "));
@@ -343,6 +344,7 @@ namespace M3D
 
 	BaseMaterial* MaterialTemplateManager::GenerateMaterialFromData(MaterialData* data, int mode /*= 0*/)
 	{
+
 		BaseMaterial* ret = nullptr;
 		if (m_resourceManager && data)
 		{
