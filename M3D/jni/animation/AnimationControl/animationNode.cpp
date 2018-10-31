@@ -62,13 +62,13 @@ void StepNode::playAnimation(){
 	//lastState = curState;
 	//curState = RUNNING;
 
-	//// ���Ÿ����ڵ�,ÿ���ڵ��Ӧһ���̣߳����join
+	//// 播放附属节点,每个节点对应一个线程，最后join
 	//vector<std::thread> threads;
 	//for (int i = 0; i < attachedNodes.size(); ++i){
 	//	AnimationNode* node = attachedNodes[i];
 	//	//threads.push_back(std::thread(&AnimationNode::playAnimation, node));
 	//}
-	////������ʱ�ڵ�
+	////播放延时节点
 	//playDelayedNodes();
 
 	//while (leftRepeatTimes > 0){
@@ -85,17 +85,17 @@ void StepNode::playAnimation(){
 	//	//	std::this_thread::sleep_for(std::chrono::milliseconds(30));
 	//	}
 	//	if (curState == PAUSED){
-	//		/* ��¼��ǰ֡curFrame*/
+	//		/* 记录当前帧curFrame*/
 	//		curFrame = m_pBehaviorAction->GetCurrentTick();
 	//		break;
 	//	}
 	//	leftRepeatTimes--;
 	//}
-	//// Ŀǰδ�������ڵ���ýڵ�ʱ�䳤�Ȳ�һ���������ȴ������ڵ���ᣬ�ýڵ����ᡣ
+	//// 目前未处理附属节点与该节点时间长度不一致情况。需等待附属节点完结，该节点才完结。
 	//for (auto &t : threads){
 	//	t.join();
 	//}
-	//if (curState == PAUSED){ // �����������߳�join֮��return
+	//if (curState == PAUSED){ // 必须在所有线程join之后return
 	//	return;
 	//}
 	//curFrame = m_pBehaviorAction->GetCurrentTick();
@@ -109,34 +109,34 @@ void StepNode::pauseAnimation(bool isGlobal){
 		return;
 	}
 	if (isGlobal) {
-		// ��ͣ��ʱ�ڵ�
+		// 暂停延时节点
 		for (int i = 0; i < delayedNodes.size(); ++i) {
 			delayedNodes[i].first->pauseAnimation(isGlobal);
 		}
 	}
-	//���û����еĽڵ���Ա���ͣ
+	//闲置或运行的节点可以被暂停
 	if (curState == IDLE || curState == RUNNING){
 		lastState = curState;
 		curState = PAUSED;
-		// SVIEW ��ͣ����
+		// SVIEW 暂停动画
 		m_pBehaviorAction->Stop();
 		//if (m_pAnimationPlayWnd)
 		//{
 		//	m_pAnimationPlayWnd->PostMessage(WM_ANIMATION_STOP, (WPARAM)m_pBehaviorAction, NULL);
 		//}
 
-		// ��ͣ�����ڵ�
+		// 暂停附属节点
 		for (int i = 0; i < attachedNodes.size(); ++i){
 			attachedNodes[i]->pauseAnimation(isGlobal);
 		}
 	}
 }
 
-// ����������������(blocking),ֱ�����и�������join���˳�
-// �ӵ�ǰ֡curFrame��������, non-blocking; ���blocking,���������߳�
+// 继续操作是阻塞的(blocking),直到所有附属动画join才退出
+// 从当前帧curFrame继续播放, non-blocking; 如果blocking,单独开启线程
 void StepNode::resumeAnimation(){
-	if (curState != PAUSED || lastState != RUNNING) {// ��ǰ����ͣ �� ��ͣǰ״̬Ϊ����, ֱ�ӷ���
-		// ������ʱ�ڵ�
+	if (curState != PAUSED || lastState != RUNNING) {// 当前不暂停 或 暂停前状态为空闲, 直接返回
+		// 继续延时节点
 		playDelayedNodes();
 		return;
 	} 
@@ -148,21 +148,21 @@ void StepNode::resumeAnimation(){
 
 	lastState = curState;
 	curState = RUNNING;
-	// ������ʱ�ڵ�
+	// 继续延时节点
 	playDelayedNodes();
-	// ���������ڵ�
+	// 继续附属节点
 	//vector<std::thread> threads;
 	for (int i = 0; i < attachedNodes.size(); ++i) {
 	//	threads.push_back(std::thread(&AnimationNode::resumeAnimation, attachedNodes[i]));
 	}
 
-	// sview ��������
+	// sview 继续播放
 	while (leftRepeatTimes > 0) {
 		m_pBehaviorAction->Continue();
 	//	std::this_thread::sleep_for(std::chrono::milliseconds(100));
 		//if (m_pAnimationPlayWnd)
 		//{
-		//	// sendMessage��Ϣ��������ΪpostMessage
+		//	// sendMessage消息阻塞，改为postMessage
 		//	m_pAnimationPlayWnd->PostMessage(WM_ANIMATION_CONTINUE, (WPARAM)m_pBehaviorAction, NULL);
 		//	std::this_thread::sleep_for(std::chrono::milliseconds(100));
 		//}
@@ -171,7 +171,7 @@ void StepNode::resumeAnimation(){
 	//		std::this_thread::sleep_for(std::chrono::milliseconds(30));
 		}
 		if (curState == PAUSED) {
-			/* ��¼��ǰ֡curFrame*/
+			/* 记录当前帧curFrame*/
 			curFrame = m_pBehaviorAction->GetCurrentTick();
 			break;
 		}
@@ -196,7 +196,7 @@ void StepNode::resetStates(bool repeatSwitch){
 	if (repeatSwitch) {
 		leftRepeatTimes = repeatTimes;
 	}
-	// SVIEW ��λ����
+	// SVIEW 复位动画
 	if(m_pBehaviorAction)
 	{
 		m_pBehaviorAction->Rewind();
@@ -205,18 +205,18 @@ void StepNode::resetStates(bool repeatSwitch){
 	//{
 	//	m_pAnimationPlayWnd->SendMessage(WM_ANIMATION_REWIND, (WPARAM)m_pBehaviorAction, NULL);
 	//}
-	// �����ڵ㸴λ
+	// 附属节点复位
 	for (int i = 0; i < attachedNodes.size(); ++i){
 		attachedNodes[i]->resetStates(repeatSwitch); // ?
 	}
-	// ��ʱ�ڵ㸴λ
+	// 延时节点复位
 	for (int i = 0; i < delayedNodes.size(); ++i){
 		delayedNodes[i].first->resetStates(repeatSwitch); // ?
 	}
 }
 
-// ����delay�ڵ�, �����̣߳�detach
-// ���ǵ�ǰ֡��
+// 播放delay节点, 独立线程，detach
+// 考虑当前帧数
 void StepNode::playDelayedNodes(){
 	//for (int i = 0; i < delayedNodes.size(); ++i){
 	//	AnimationNode* iNode = delayedNodes[i].first;
@@ -275,15 +275,15 @@ SerialNode::SerialNode(){
 SerialNode::~SerialNode(){}
 
 /*
-	(1) ����Ѿ����Ź������ö���״̬
-	(1) ���curIndex >= �ڵ���Ŀ����ȫ������
-	(2) ����curIndex��õ�ǰ�����ڵ㣬���״̬Ϊidle����������thread,��������t.join()
-	(3) ���״̬Ϊfinished��curIndex++
-	(4) ���״̬Ϊpaused, ����
+	(1) 如果已经播放过，重置动画状态
+	(1) 如果curIndex >= 节点数目，则全部播完
+	(2) 根据curIndex获得当前动画节点，如果状态为idle，开启独立thread,紧接设置t.join()
+	(3) 如果状态为finished，curIndex++
+	(4) 如果状态为paused, 跳出
 	
 */
 void SerialNode::playAnimation(){
-	// ����Ѿ����Ź������ö���״̬
+	// 如果已经播放过，重置动画状态
 	if (curState == FINISHED){
 		resetStates(true);
 		//leftRepeatTimes = repeatTimes;
@@ -293,13 +293,13 @@ void SerialNode::playAnimation(){
 	//curState = RUNNING;
 	while (leftRepeatTimes > 0){
 		resetStates(false);
-		curState = RUNNING; //��ǰ״̬��Ĩ��������
+		curState = RUNNING; //当前状态被抹掉，重置
 		//curIndex = 0;
 		
 		//while (curIndex < nodeList.size()){
 		//	AnimationNode* curNode = nodeList[curIndex];
 		//	AnimationState curNodeState = curNode->getCurState();
-		//	if (curNodeState == IDLE){ // ��ǰ�����ڵ���У���ʼ���Ŷ���
+		//	if (curNodeState == IDLE){ // 当前动画节点空闲，开始播放动画
 		//		std::thread t(&AnimationNode::playAnimation, curNode);
 		//		t.join();
 		//	}
@@ -312,7 +312,7 @@ void SerialNode::playAnimation(){
 		//}	
 		leftRepeatTimes--;
 	}
-	//�����꣬����finished
+	//播放完，设置finished
 	if (curIndex >= nodeList.size() && leftRepeatTimes == 0){
 		curState = FINISHED;
 	}
@@ -331,19 +331,19 @@ void SerialNode::resumeAnimation(){
 		return;
 	lastState = curState;
 	curState = RUNNING;
-	// ������ǰ�ڵ�
+	// 继续当前节点
 	AnimationNode* curNode = nodeList[curIndex];
 	curNode->resumeAnimation();
 	if (curNode->getCurState() == FINISHED) {
 		curIndex++;
 	}
 	
-	// ���������ڵ�
+	// 继续后续节点
 	while (leftRepeatTimes > 0){	
 		//while (curIndex < nodeList.size()){
 		//	AnimationNode* curNode = nodeList[curIndex];
 		//	AnimationState curNodeState = curNode->getCurState();
-		//	if (curNodeState == IDLE){ // ��ǰ�����ڵ���У���ʼ���Ŷ���
+		//	if (curNodeState == IDLE){ // 当前动画节点空闲，开始播放动画
 		//		std::thread t(&AnimationNode::playAnimation, curNode);
 		//		t.join();
 		//	}
@@ -361,7 +361,7 @@ void SerialNode::resumeAnimation(){
 		}
 	}
 
-	// ���ĩβ�ڵ��Ƿ���ᣬ�Ӷ����øýڵ����
+	// 检查末尾节点是否完结，从而设置该节点完结
 	if (nodeList[nodeList.size() - 1]->getCurState() == FINISHED) {
 		lastState = curState;
 		curState = FINISHED;
@@ -388,9 +388,9 @@ ParallelNode::~ParallelNode(){
 
 }
 /*
-	(1) ����n�����е�thread
-	(2) �������ȫ��join
-	(3) �ڲ��źͼ����У�����������ͣ״̬��������ظ�����laststate
+	(1) 创建n个并行的thread
+	(2) 创建完后，全部join
+	(3) 在播放和继续中，不可设置暂停状态。否则会重复设置laststate
 */
 void ParallelNode::playAnimation(){
 	if (curState == FINISHED){
@@ -407,12 +407,12 @@ void ParallelNode::playAnimation(){
 	//	for (auto &t : threads){
 	//		t.join();
 	//	}
-	//	// ����ӽڵ��Ƿ���ᣬ�������δ����ӽڵ㣬��ýڵ㲻����leftRepeatTimes--
+	//	// 检查子节点是否都完结，如果存在未完结子节点，则该节点不设置leftRepeatTimes--
 	//	bool isAllFinished = true;
 	//	for (int i = 0; i < nodeList.size(); ++i) {
 	//		if (nodeList[i]->getCurState() != FINISHED) {
 	//			isAllFinished = false;
-	//			// ��ͣ������
+	//			// 暂停，返回
 	//			return;
 	//		}
 	//	}
@@ -420,7 +420,7 @@ void ParallelNode::playAnimation(){
 	//		leftRepeatTimes--;
 	//}
 	
-	// ����ӽڵ��Ƿ���ᣬ�������δ����ӽڵ㣬��ýڵ㱻��ͣ
+	// 检查子节点是否都完结，如果存在未完结子节点，则该节点被暂停
 	for (int i = 0; i < nodeList.size(); ++i) {
 		if (nodeList[i]->getCurState() != FINISHED) {
 			return;
@@ -452,19 +452,19 @@ void ParallelNode::resumeAnimation(){
 	//	for (auto &thread : threads){
 	//		thread.join();
 	//	}
-	//	// ����ӽڵ��Ƿ���ᣬ�������δ����ӽڵ㣬��ýڵ㲻����leftRepeatTimes--
+	//	// 检查子节点是否都完结，如果存在未完结子节点，则该节点不设置leftRepeatTimes--
 	//	bool isAllFinished = true;
 	//	for (int i = 0; i < nodeList.size(); ++i) {
 	//		if (nodeList[i]->getCurState() != FINISHED) {
 	//			isAllFinished = false;
-	//			// ��ͣ������
+	//			// 暂停，返回
 	//			return;
 	//		}
 	//	}
 	//	if (isAllFinished)
 	//		leftRepeatTimes--;
 	//}
-	// ����ӽڵ��Ƿ���ᣬ�������δ����ӽڵ㣬��ýڵ㱻��ͣ
+	// 检查子节点是否都完结，如果存在未完结子节点，则该节点被暂停
 	for (int i = 0; i < nodeList.size(); ++i) {
 		if (nodeList[i]->getCurState() != FINISHED) {
 			return;
@@ -488,7 +488,7 @@ DummyStepNode::DummyStepNode(TLframe i_duration){
 DummyStepNode::~DummyStepNode(){}
 
 /*
-	timer��ʱ��timer���������ö���״̬Ϊfinished
+	timer计时，timer结束后设置动画状态为finished
 */
 void DummyStepNode::playAnimation(){
 	lastState = curState;

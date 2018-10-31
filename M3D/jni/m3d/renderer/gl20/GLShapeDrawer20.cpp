@@ -588,8 +588,11 @@ namespace M3D
 			{
 				int materialtype = material->GetMaterialType();
 				//TODO
-				vs = ShaderLib::GetSrcCode(IntToString(materialtype))->first;
-				fs = ShaderLib::GetSrcCode(IntToString(materialtype))->second;
+                pair<const char*, const char*>* ret = ShaderLib::GetSrcCode(IntToString(materialtype));
+                if (ret != NULL) {
+                    vs = ShaderLib::GetSrcCode(IntToString(materialtype))->first;
+                    fs = ShaderLib::GetSrcCode(IntToString(materialtype))->second;
+                }
 			}
 			material->LightHash(lightManager->GetState().hash);
 			program = shaderManager->AcquireProgram(material, vs, fs, code);
@@ -1516,7 +1519,12 @@ namespace M3D
 				shaderEffect->SetUniformValue(useMinDepthPra->m_location, useMinDepth);
 			}
 		}
-
+        //是否前端显示
+        if (imageboard->GetInTop()) {
+            glDisable(GL_DEPTH_TEST);
+        }else{
+            glEnable(GL_DEPTH_TEST);
+        }
 		int textGLObj = image->GetOGLObj();
 		if (textGLObj > 0)
 		{
