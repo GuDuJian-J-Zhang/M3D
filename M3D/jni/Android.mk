@@ -238,6 +238,7 @@ LOCAL_SRC_FILES +=\
     m3d\graphics\HardWareRenderBuffer.cpp \
     m3d\graphics\HardWareVertexBuffer.cpp \
     m3d\graphics\ImageBoard.cpp \
+    m3d\graphics\LightDraggerCallback.cpp\
     m3d\graphics\LightShadow.cpp \
     m3d\graphics\Material.cpp \
     m3d\graphics\MeshBoard.cpp \

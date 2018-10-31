@@ -7272,7 +7272,7 @@ namespace M3D
 			"  vec4 ringArmDepth = texture2D(u_sampler3,v_texCoords);\n"
 			"  //vec4 jewelStarColor= texture2D(u_sampler4,v_texCoords);\n"
 			" // vec4 jewelStarDepth= texture2D(u_sampler5,v_texCoords);\n"
-			"vec4 jewelNoteColor = texture2D(u_sampler6,v_texCoords);\n"
+			"  vec4 jewelNoteColor = texture2D(u_sampler6,v_texCoords);\n"
 			"   vec4 FragColor = vec4(0.0);"
 			"	if(jewelDepth.r<ringArmDepth.r)\n"
 			"	{\n"
@@ -7281,11 +7281,11 @@ namespace M3D
 			"   else\n"
 			"   {\n"
 			"      FragColor = vec4(ringArmColor.rgba);\n"
-            "   }\n"
-            "    if(jewelNoteColor.a>0.0)\n"
-            "    {\n"
-            "      FragColor = vec4(jewelNoteColor.rgb,1.0);\n "
 			"   }\n"
+			"    if(jewelNoteColor.a>0.0)\n"
+			"    {\n"
+			"      FragColor = vec4(jewelNoteColor.rgb,1.0);\n "
+		   "   }\n"
 			"    gl_FragColor = vec4(FragColor.rgba);\n"
 			"}\n";
 	}
@@ -8556,6 +8556,7 @@ namespace M3D
 			"}\n"
 			;
 	}
+
     const char * ShaderSrcCode::MirrorVert() {
         return "//precision highp  float;\n"
         "attribute vec3 a_position;\n"
@@ -8580,7 +8581,7 @@ namespace M3D
         "}\n";
     }
     const char * ShaderSrcCode::MirrorFrag() {
-        
+
         return "//precision mediump  float;\n"
         "uniform sampler2D mirrorTexture;\n"
         "uniform sampler2D mirrorFrontTexture;\n"
@@ -8612,187 +8613,7 @@ namespace M3D
         //"gl_FragColor = v_color * 0.05 + texture2D(s_background,v_texCoords) * 0.6 + vague(u,v) * 0.35;\n"
         "}\n";
     }
-	//zhubao
-//	varying 可变量 是vertex和fragment shader之间做数据传递用的，vertex和fragment shader二者之间的声明必须是一致的
-	const char * ShaderSrcCode::NewJewelFrontVert()
-	{
-		return 	"attribute vec3 a_position;\n"
-			"attribute vec3 a_normal;\n"
-			"attribute vec3 a_texCoords;\n"
-			"uniform mat4 u_modelMat;\n"
-			"uniform mat4 u_viewMat;\n" //视图矩阵
-			"uniform mat4 u_projectionMat;\n"
-			"uniform mat4 u_normalMat;\n"
-			"uniform mat4 u_textureMat;\n"
-			"uniform vec3 u_eyePosition;\n"
-			"uniform vec3 u_lightPosition;\n"
-			"uniform mat4 u_worldNormalMat;\n"
-			"varying vec3 v_position;\n"
-			"varying vec3 pv_position;\n"
-			"varying vec4 v_texCoords;\n"
-			"varying vec3 v_normal;\n"
-			"varying vec3 v_cubeRefractCoords;\n"
-			"varying vec4 fvObjectPosition;\n"
-			"varying vec3 eyeWorldDirection;\n"
-			"varying vec3 lightWorldDirection;\n"
-			"varying vec3 v_worldNormal;\n"
-			"void main(void)\n"
-			"{\n"
-			"    gl_Position = u_projectionMat * u_viewMat*u_modelMat* vec4(a_position,1.0);\n"
-			"    fvObjectPosition = u_viewMat*u_modelMat* vec4(a_position,1.0);\n"
-			"   vec4 tempCoords = u_textureMat*vec4(a_texCoords.xyz,1.0)*0.1;\n"
-			"    v_position = fvObjectPosition.xyz;\n"
-			"    pv_position =gl_Position.xyz*0.5+vec3(0.5);\n"
 
-			"    v_texCoords = tempCoords;\n"
-			"    v_normal= normalize(vec3((u_normalMat * vec4(a_normal,0.0))));\n"
-			"    vec4 worldPos = u_modelMat * vec4(a_position,1.0);\n"
-			"    vec3 worldPosT = worldPos.xyz;\n"
-			"    eyeWorldDirection =normalize( u_eyePosition -worldPosT);\n "
-			"    lightWorldDirection =normalize( u_lightPosition -worldPosT);\n "
-			"    vec3 worldNormal = normalize(vec3(u_worldNormalMat*vec4(a_normal,0.0)));\n"
-			"	 v_worldNormal = worldNormal;\n"
-			"    v_cubeRefractCoords =reflect(normalize(worldPosT -u_eyePosition), normalize(worldNormal));\n"
-			" }\n";
-	}
-	const char * ShaderSrcCode::NewJewelFrontFrag()
-	{
-		return
-			"precision highp  float;"
-			"uniform bool u_useFrontTexture;\n"
-			"uniform bool u_useHighlightTexture;\n"
-			"uniform bool u_useFrontCubeTexture;\n"
-			"uniform sampler2D frontTexture;\n"
-			"uniform sampler2D highlightTexture;\n"
-			"uniform sampler2D 	u_refout;\n"
-			"uniform samplerCube frontCubeTexture;\n"
-			"uniform bool u_keepDirection;\n"
-			"uniform bool u_useTex;\n"
-			"uniform vec4 u_diffuse;\n"
-			"uniform vec4 u_selectColor;\n"
-			"uniform sampler2D frontInfo;\n"
-			"varying vec3 v_position;\n"
-			"varying vec3 pv_position;\n"
-			"varying vec4 v_texCoords;\n"
-			"varying vec3 v_normal;\n"//法向量 可变向量
-			"varying vec3 v_cubeRefractCoords;\n"
-			"varying vec4 fvObjectPosition;\n" //模型位置
-			"varying vec3 eyeWorldDirection;\n" //眼睛的位置
-			"varying vec3 lightWorldDirection;\n" //光源位置
-			"varying vec3 v_worldNormal;\n"
-			"vec4 switchColor = vec4(1.0,1.0,1.0,1.0);\n"
-			"vec4 environment = vec4(1.0,1.0,1.0,1.0);\n"
-			"vec4 environment1 = vec4(1.0,1.0,1.0,1.0);\n"
-			"vec4 environment2 = vec4(1.0,1.0,1.0,1.0);\n"
-			"vec4 highLightColor = vec4(0.0,0.0,0.0,1.0);\n"
-			"vec2 sphereMap(vec3 normal, vec3 ecPosition3)\n" //球面贴图
-			"{\n"
-			"   float m;\n"
-			"   vec3 r;\n"
-			"   vec3 u;\n"
-			"   u = normalize(ecPosition3);\n"
-			"   r = reflect(u, normal);\n"
-			"   m = 2.0 * sqrt(r.x * r.x + r.y * r.y + (r.z + 1.0) * (r.z + 1.0))+0.0001;\n"
-			"   return vec2 (r.x / m + 0.5, r.y / m + 0.5);\n"
-			"}\n"
-			"\n"
-			"void main(void)\n"
-			"{\n"
-			"    vec3 totalAmbient= vec3(0.0,0.0,0.0);\n"
-			"    vec3 totalDiffuse = vec3(0.0,0.0,0.0);\n"
-			"    vec3 totalSpecular = vec3(0.0,0.0,0.0);\n"
-			"    vec3 lightDirection;\n"
-			"    float attenuation=1.0;\n"
-			"	 vec3 diffuseColor;\n"
-			"	 vec3 specularColor;\n"
-			"	 vec3  vNormal ;\n"
-			"  vec4 frontColor = texture2D(frontInfo,pv_position.xy);\n"
-
-			"	if(gl_FrontFacing){\n"
-			"		vNormal = normalize( v_normal );\n" // 由于 v_normal 是可变量，所以经过插值后不再是单位向量，单位化后会成为单位向量
-			"	}\n"
-			"	else {\n"
-			"		vNormal = normalize( -v_normal );\n"
-			"	}\n"
-			"   if(u_useFrontTexture == true)\n"
-			"    {\n"
-			"       vec2 sphereCoords = vec2(1.0,1.0);\n"
-			"       vec2 matCapCoords = vec2(1.0,1.0);\n"
-			"       if(u_keepDirection == true){"
-			"         sphereCoords = sphereMap(normalize(v_worldNormal),v_position);\n"
-			"		 matCapCoords = v_worldNormal.xy;}\n"
-			"      else{"
-			"         sphereCoords = sphereMap(normalize(v_normal),v_position);\n"
-			" matCapCoords = v_normal.xy;}\n"
-			"        matCapCoords = matCapCoords*0.5+0.5;"
-			"        environment1 =texture2D(frontTexture,matCapCoords.xy);\n"
-			"    }\n"
-			"	if(u_useHighlightTexture == true)"
-			"   {"
-			"        vec2 sphereCoords = sphereMap(normalize(v_normal),v_position);\n"
-			"        highLightColor =texture2D(highlightTexture,sphereCoords.xy);\n"
-			"    }"
-			"    if(u_useFrontCubeTexture == true)\n"
-			"    {\n"
-			"        environment2 = textureCube(frontCubeTexture,v_cubeRefractCoords.xyz);\n"
-			"		 environment2.rbg = pow(environment2.rbg,vec3(1.0/1.7));\n"
-			"    }\n"
-//			"if(u_useTex)\n"
-//			"{\n"
-//			"        switchColor = texture2D( frontTexture, v_texCoords.xy );\n"
-//			"    }\n"
-			"    vec4 texColor = switchColor *environment1*environment2;\n"
-			"    lightDirection = lightWorldDirection;\n"
-			"    float fNDotL= clamp(abs(dot( vNormal, lightDirection )),0.3,1.0);\n"
-			"    vec3 diffuseReflection = vec3(1.0,1.0,1.0)* fNDotL;\n"
-			"    totalDiffuse =  diffuseReflection;\n"
-			"    vec3 eyeDirection =eyeWorldDirection;\n"
-			"    vec3 halfVector = normalize(lightDirection+ eyeDirection);\n"
-			"    float fNDotH = max(0.0, abs(dot(vNormal,halfVector)));\n"
-			"    vec3 specularReflection =  vec3(1.0)\n"
-			"               * pow(fNDotH,10.0);\n"
-			"   vec3 lightDirection1 = normalize(vec3(vec4(1.0,0.0,0.0,0.0)) - v_position);\n"//光源的方向
-			"vec3 lightDirection2 = normalize(vec3(vec4(0.0,-1.0,0.0,0.0))-v_position);\n"
-			"vec3 lightDirection3 = normalize(vec3(vec4(0.0,0.0,1.0,0.0)) - v_position);\n"
-			"    vec3 eyeDirection1 =vec3(0.0,0.0,0.0)-v_position;\n" //眼的方向
-			"    vec3 halfVector1 = normalize(lightDirection1+ eyeDirection1);\n"
-			"    float fNDotH1 = max(0.0, (dot(vNormal,halfVector1)));\n"
-			"    vec3 specularReflection1 =  vec3(1.0)\n" //镜面反射
-			"               * pow(fNDotH1,50.0);\n"
-			"    vec3 eyeDirection2 =eyeDirection1;\n"
-			"    vec3 halfVector2 = normalize(lightDirection2+ eyeDirection2);\n"
-			"    float fNDotH2 = max(0.0, (dot(vNormal,halfVector2)));\n"
-			"    vec3 specularReflection2 =  vec3(1.0)\n"
-			"               * pow(fNDotH2,50.0);\n"
-			"    vec3 eyeDirection3 =eyeDirection1;\n"
-			"    vec3 halfVector3 = normalize(lightDirection3+ eyeDirection3);\n"
-			"    float fNDotH3 = max(0.0, (dot(vNormal,halfVector3)));\n"
-			"    vec3 specularReflection3 =  vec3(1.0)\n"
-			"               * pow(fNDotH3,50.0);\n"
-			"    totalSpecular = totalSpecular + (specularReflection+specularReflection1+specularReflection2+specularReflection3);\n"
-			"    diffuseColor = min(totalDiffuse,vec3(1.0));\n"
-			"    specularColor= min(totalSpecular,vec3(1.0));\n"
-			"	if(u_useFrontTexture||u_useFrontCubeTexture)"
-			"	 {"
-			"       if(u_useHighlightTexture == true){"
-			"		gl_FragColor = vec4(vec3(texColor)*u_diffuse.xyz*vec3(u_selectColor)+highLightColor.rgb,u_diffuse.a);\n"
-			"       }"
-			"   else{"
-			"		gl_FragColor = vec4(vec3(texColor)*u_diffuse.xyz*vec3(u_selectColor),u_diffuse.a);"
-			"       }\n"
-			"		 gl_FragColor.rbg = pow(gl_FragColor.rbg,vec3(1.0/1.2));\n"
-				//================================
-				  "vec3 wNormalize=normalize(vNormal.xyz);\n"
-				   "vec2 vUvR=(wNormalize.xy+vec2(1.0,1.0))*0.5;\n"
-				    "vec3 huanjingFanshe=vec3(texture2D(u_refout,vUvR));\n"
-				"gl_FragColor = vec4(huanjingFanshe*0.62,1.0);\n" //=====77==front
-				//================================
-			"	}\n"
-			"    else {"
-			"gl_FragColor = vec4(vec3(texColor)*diffuseColor*vec3(u_selectColor)+vec3(specularColor),u_diffuse.a);"
-			"}\n"
-			"	}\n";
-	}
 	const char * ShaderSrcCode::JewelFrontInfoVert()
 		{
 			return 	"attribute vec3 a_position;\n"
@@ -8965,127 +8786,6 @@ namespace M3D
 
 				"}\n"
 					"gl_FragColor = vec4(normalize(v_worldNormal.xyz)*0.5+vec3(0.5),1.0);\n"
-				"	}\n";
-		}
-
-	const char * ShaderSrcCode::NewJewelBackVert()
-		{
-			return 	"attribute vec3 a_position;\n"
-				"attribute vec3 a_normal;\n"
-				"attribute vec3 a_texCoords;\n"
-				"uniform mat4 u_modelMat;\n"
-				"uniform mat4 u_viewMat;\n"
-				"uniform mat4 u_projectionMat;\n"
-				"uniform mat4 u_normalMat;\n"
-				"uniform mat4 u_textureMat;\n"
-				"uniform vec3 u_eyePosition;\n"
-				"uniform vec3 u_lightPosition;\n"
-				"uniform mat4 u_worldNormalMat;\n"
-				"varying vec3 v_position;\n"
-				"varying vec4 v_texCoords;\n"
-				"varying vec3 v_normal;\n"
-				"varying vec3 v_cubeRefractCoords;\n"
-				"varying vec4 fvObjectPosition;\n"
-				"varying vec3 eyeWorldDirection;\n"
-				"varying vec3 lightWorldDirection;\n"
-
-					//=====
-				"varying vec3 v_worldNormal;\n"
-					"varying vec4 qv_position;\n"
-			         	 "varying vec2 vUv;\n"
-			            "varying vec2 vUv1;\n"
-			            "varying vec2 vUv2;\n"
-			            "varying vec2 vUv3;\n"
-					//===
-				"void main(void)\n"
-				"{\n"
-				"    gl_Position = u_projectionMat * u_viewMat*u_modelMat* vec4(a_position,1.0);\n"
-
-				"    fvObjectPosition = u_viewMat*u_modelMat* vec4(a_position,1.0);\n"
-				"    vec4 tempCoords = u_textureMat*vec4(a_texCoords.xyz,1.0);\n"
-				"    v_position = fvObjectPosition.xyz;\n"
-				"    v_texCoords = tempCoords;\n"
-				"    v_normal= normalize(vec3((u_normalMat * vec4(a_normal,0.0))));\n"
-				"    vec4 worldPos = u_modelMat * vec4(a_position,1.0);\n"
-				"    vec3 worldPosT = worldPos.xyz;\n"
-				"    eyeWorldDirection =normalize( u_eyePosition -worldPosT);\n "
-				"    lightWorldDirection =normalize( u_lightPosition -worldPosT);\n "
-				"    vec3 worldNormal = vec3(u_worldNormalMat*vec4(a_normal,0.0));\n"
-				"	v_worldNormal = worldNormal;\n"
-				"    v_cubeRefractCoords =reflect(normalize(worldPosT -u_eyePosition), normalize(worldNormal));\n"
-
-			            //=============
-			            "qv_position= gl_Position;\n"
-			            "	vUv=v_texCoords.xy;\n"  //===?
-			            "vUv1 =vec2(worldPos.xy*0.08+vec2(worldNormal.x*-0.8,worldNormal.y*-0.8) );\n"// 小 快
-
-			            "vUv2 =vec2(vUv.xy*0.25+3.4*worldNormal.x*vec2(worldNormal.x*-1.5,worldNormal.y*1.2) );\n" // 中 中
-
-			            "vUv3 =vec2(vUv.xy*0.08+vec2(worldNormal.x*0.8,worldNormal.y*-1.42) );\n" // 中 中
-
-
-			            //==============
-				" }\n";
-		}
-		const char * ShaderSrcCode::NewJewelBackFrag()
-		{
-			return
-				"precision highp  float;"
-				"uniform bool u_useBackTexture;\n"
-				"uniform bool u_useHighlightTexture;\n"
-				"uniform bool u_useBackCubeTexture;\n"
-				"uniform sampler2D backTexture;\n" // sampler 取样器
-				"uniform sampler2D highlightTexture;\n"
-				"uniform samplerCube backCubeTexture;\n"
-				"uniform bool u_keepDirection;\n"
-				"uniform bool u_useTex;\n"
-				"uniform vec4 u_diffuse;\n"
-				"uniform vec4 u_selectColor;\n"
-				"varying vec3 v_position;\n"
-				"varying vec4 v_texCoords;\n"
-				"varying vec3 v_normal;\n"
-				"varying vec3 v_cubeRefractCoords;\n"
-				"varying vec4 fvObjectPosition;\n"
-				"varying vec3 eyeWorldDirection;\n"
-				"varying vec3 lightWorldDirection;\n"
-				"varying vec3 v_worldNormal;\n"
-					//===========
-					"varying vec4 qv_position;\n"
-		         	 "varying vec2 vUv;\n"
-					"varying vec2 vUv1;\n"
-					"varying vec2 vUv2;\n"
-					"varying vec2 vUv3;\n"
-
-					"uniform sampler2D triangleTexture;\n"
-					"uniform sampler2D frontInfo;\n"
-					//===========
-				"vec4 switchColor = vec4(1.0,1.0,1.0,1.0);\n"
-				"vec4 environment = vec4(1.0,1.0,1.0,1.0);\n"
-				"vec4 environment1 = vec4(1.0,1.0,1.0,1.0);\n"
-				"vec4 environment2 = vec4(1.0,1.0,1.0,1.0);\n"
-				"vec4 highLightColor = vec4(0.0,0.0,0.0,1.0);\n"
-//
-				"void main(void)\n"
-				"{\n"
-//==========================
-					"vec4 bcol= texture2D(frontInfo,qv_position.xy*0.5+vec2(0.5)) ;\n"
-					"vec3 color1 = vec3(texture2D(triangleTexture,vUv1*1.+bcol.xy,-11.0));\n" //三角形  -11 解决边界锯齿问题
-					"vec3 color2 = vec3(texture2D(triangleTexture,vUv2*1.+bcol.xy,-11.0));\n" // 三角形
-					"vec3 color3 = vec3(texture2D(triangleTexture,vUv3*1.+bcol.xy,-11.0));\n" // 三角形
-
-					 "color1.r*=1.04;\n"
-					 "color2.g*=1.03;\n"
-					 "color3.b*=1.02;\n"
-
-					"vec3 back=(color1*0.6+color2*0.4 +color3*0.0)*u_diffuse.xyz*0.7+u_diffuse.xyz*0.02;\n"
-					"back=back*1.2;\n"
-	                "back.r=smoothstep(0.0,0.8,back.r);\n"
-	                "back.g=smoothstep(0.0,0.8,back.g);\n"
-	                "back.b=smoothstep(0.0,0.8,back.b);\n"
-
-					"gl_FragColor = vec4(back,1.0);\n" //=====77
-//==============================
-
 				"	}\n";
 		}
 
