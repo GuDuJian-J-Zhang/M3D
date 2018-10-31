@@ -286,7 +286,6 @@ bool ModelAssemblyHelper::InsertInLast(View * view,Model* sourceModel, Model* de
 		//LOGI("ModelManager::InsertBefor ASSEMBLYMSG::ASSAMBLY_INS_BEFO_ERR");
 		msg = false;
 	}
-	LOGI(" ModelManager::InsertBefore END %s ",msg);
 	return msg;
 
 }

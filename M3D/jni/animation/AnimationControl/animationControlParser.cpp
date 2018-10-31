@@ -47,7 +47,7 @@ void AnimationControlParser::parseAnimationInstructions(string filePath){
 		getline(infile, curLine);
 		parseInstruction(curLine);
 	}
-	// ��������ڵ�Ϊ�գ�ȡ���һ������Ϊ�����ڵ�
+	// 如果顶级节点为空，取最后一个变量为顶级节点
 	if (topNode == NULL) {
 		topNode = (*varNodes.end()).second;
 	}
@@ -161,9 +161,9 @@ AnimationNode* AnimationControlParser::parseNodeExpression(string i_instruction)
 }
 
 /*
-	(1) ���ؼ���
-	(2) �������ĩβ����ȡ��������һ����
-	(3) ����ǽڵ������ʱ���������map�л�ȡָ��;��������֣�����dummynode;�����expr,����
+	(1) 检查关键字
+	(2) 如果不是末尾，获取括号内下一部份
+	(3) 如果是节点变量或时间变量，从map中获取指针;如果是数字，构建dummynode;如果是expr,解析
 */
 SerialNode* AnimationControlParser::parseSerial(string i_instruction){
 	SerialNode* result = new SerialNode();
@@ -203,7 +203,7 @@ SerialNode* AnimationControlParser::parseSerial(string i_instruction){
 	return result;
 }
 
-//�����serial����
+//与解析serial类似
 ParallelNode* AnimationControlParser::parseParallel(string i_instruction){
 	ParallelNode* result = new ParallelNode();
 	Keyword k = getInstructionKeyword(i_instruction);
@@ -271,9 +271,9 @@ StepNode* AnimationControlParser::parseModelAnimationBinding(string i_instructio
 
 // attach(s1, s2); attach(s1, {s2,s3,s4});
 /*
-	(1) ���ؼ���
-	(2) ��ȡ����������
-	(3) ��ȡ��������
+	(1) 检查关键字
+	(2) 获取被附属对象
+	(3) 获取附属对象
 */
 void AnimationControlParser::parseAttachment(string i_instruction){
 	Keyword k = getInstructionKeyword(i_instruction);
@@ -300,7 +300,7 @@ void AnimationControlParser::parseAttachment(string i_instruction){
 	}
 }
 
-// Ŀǰֻ��stepnode��ſ��Ը���ʱ�ڵ�
+// 目前只有stepnode后才可以跟延时节点
 void AnimationControlParser::parseDelay(string i_instruction){
 	Keyword k = getInstructionKeyword(i_instruction);
 	if(k != DELAY)
@@ -337,7 +337,7 @@ void AnimationControlParser::parseRepeat(string i_instruction){
 	getNodeFromVar(varStr)->setRepeatTimes(nTimes);
 }
 /*
-	����duration
+	设置duration
 */
 void AnimationControlParser::parseTimeFrameAdjustment(string i_instruction){
 	Keyword k = getInstructionKeyword(i_instruction);
@@ -360,9 +360,9 @@ void AnimationControlParser::parseConditionalJump(string i_instruction){
 }
 
 /*
-	(1) ��ȡ�ؼ���"PLCID:"�����
-	(2) ��ȡ1\0\1�ַ���
-	(3) ��"\",�ָ��ַ�����ѭ�����μ��룬ֱ������
+	(1) 获取关键字"PLCID:"并检查
+	(2) 获取1\0\1字符串
+	(3) 找"\",分割字符串，循环依次加入，直到结束
 */
 ModelID AnimationControlParser::parseModelID(string i_str){
 	ModelID mID;
@@ -383,7 +383,7 @@ ModelID AnimationControlParser::parseModelID(string i_str){
 		plcStr = plcStr.substr(slash + 1, plcStr.size() - slash - 1);
 		slash = plcStr.find("|");
 	}
-	// ���һ��
+	// 最后一个
 	if (!plcStr.empty()){
 		int num = (int)StrToFloat(plcStr);
 		mID.addPathItem(num);
@@ -392,9 +392,9 @@ ModelID AnimationControlParser::parseModelID(string i_str){
 }
 
 /*
-	(1) ��ȡ�ؼ���"AnimID:"�����
-	(2) ��ȡ1\0�ַ���
-	(3) ��"\",�ָ��ַ��������procID,stepID
+	(1) 获取关键字"AnimID:"并检查
+	(2) 获取1\0字符串
+	(3) 找"\",分割字符串，获得procID,stepID
 */
 AnimationID AnimationControlParser::parseAnimationID(string i_str){
 	AnimationID aID;
@@ -421,15 +421,15 @@ string AnimationControlParser::trimSpace(string io_str){
 	{
 		return io_str;
 	}
-	io_str.erase(0, io_str.find_first_not_of(" ")); // ����ǰ�ո�
-	io_str.erase(0, io_str.find_first_not_of("\t")); // ����ǰtab
-	io_str.erase(io_str.find_last_not_of(" ") + 1);  // ������ո�
-	io_str.erase(io_str.find_last_not_of("\t") + 1); // ������tab
+	io_str.erase(0, io_str.find_first_not_of(" ")); // 消除前空格
+	io_str.erase(0, io_str.find_first_not_of("\t")); // 消除前tab
+	io_str.erase(io_str.find_last_not_of(" ") + 1);  // 消除后空格
+	io_str.erase(io_str.find_last_not_of("\t") + 1); // 消除后tab
 	return io_str;
 }
 
 
-// ����string, ����"(" diff++,����")" diff--; diff ==0 ʱ break;
+// 遍历string, 遇到"(" diff++,遇到")" diff--; diff ==0 时 break;
 string::size_type AnimationControlParser::getRightBracket(string i_str, string::size_type left){
 	int diff = 1;	
 	int cur = left+1;
@@ -445,10 +445,10 @@ string::size_type AnimationControlParser::getRightBracket(string i_str, string::
 }
 
 /*
-	(1)��comma �� leftbracket
-	(2)�Ƚϴ�С���ҵ�С��
-	(3)���commaС���ָ��ַ�����
-	(4)���leftbracketС���ҵ�rightbracket,�ָ�
+	(1)找comma 和 leftbracket
+	(2)比较大小，找到小的
+	(3)如果comma小，分割字符串；
+	(4)如果leftbracket小，找到rightbracket,分割
 */ 
 string AnimationControlParser::getNextPartInsideBracket(string &linepart){
 	linepart = trimSpace(linepart);
@@ -458,7 +458,7 @@ string AnimationControlParser::getNextPartInsideBracket(string &linepart){
 	string::size_type comma = linepart.find(",");
 	string::size_type leftbracket = linepart.find("(");
 	
-	// ����β��
+	// 处理尾部
 	if(comma == string::npos && leftbracket == string::npos){
 		string::size_type rightbracket = linepart.find(")");
 		curPart = linepart.substr(0, rightbracket);

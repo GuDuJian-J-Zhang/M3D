@@ -145,8 +145,12 @@ namespace M3D
 				continue;
 			}
 			map<string, Uniform>& materialUnifoms = material->GetUnifomParameters();
-//			shaderEffect->SetUniformValue(shaderEffect->GetShaderUniformParameter(FSP_USEAMBIENTTEX)->m_location, 0);
-
+			//shaderEffect->SetUniformValue(shaderEffect->GetShaderUniformParameter(FSP_USEAMBIENTTEX)->m_location, 0);
+			//金正金项目修改-yhp-20181010
+			if (nullptr == material->GetUniformParameter("type"))
+			{
+				continue;
+			}
 			int vec = anyCast<int>(material->GetUniformParameter("type")->value);
 			int type = vec;
 
@@ -264,8 +268,11 @@ namespace M3D
 				continue;
 			}
 			map<string, Uniform>& materialUnifoms = material->GetUnifomParameters();
-
-
+			//金正金项目缺陷修复-yhp-20181010
+			if (nullptr == material->GetUniformParameter("type"))
+			{
+				continue;
+			}
 			int vec = anyCast<int>(material->GetUniformParameter("type")->value);
 			int type =  vec ;
 
@@ -384,7 +391,11 @@ namespace M3D
 				}
 				map<string, Uniform>& materialUnifoms = material->GetUnifomParameters();
 
-
+                //金正金项目修改-yhp-20181010
+                if (nullptr == material->GetUniformParameter("type"))
+                {
+                    continue;
+                }
 				int vec = anyCast<int>(material->GetUniformParameter("type")->value);
 				int type =  vec ;
 
@@ -509,7 +520,11 @@ namespace M3D
 			{
 				tempUnifomValueList["u_useBumpMap"] = Uniform("Bool", 0);
 			}
-
+			//金正金缺陷修复-yhp-20181010
+			if (nullptr == material->GetUniformParameter("type"))
+			{
+				continue;
+			}
 
 			int vec = anyCast<int>(material->GetUniformParameter("type")->value);
 			int type =  vec ;
@@ -618,7 +633,11 @@ namespace M3D
 			}
 			map<string, Uniform>& materialUnifoms = material->GetUnifomParameters();
 
-
+			//金正金缺陷修复-yhp-20181010
+			if (nullptr == material->GetUniformParameter("type"))
+			{
+				continue;
+			}
 			int vec = anyCast<int>(material->GetUniformParameter("type")->value);
 			int type =  vec ;
 			if (type == 104)
@@ -734,6 +753,11 @@ namespace M3D
 
 			Vector3 specular1(1.0, 1.0, 1.0);
 			Vector3 specular2(0.0, 0.0, 0.0);
+			//金正金缺陷修复-yhp-20181010
+			if (nullptr == material->GetUniformParameter("type"))
+			{
+				continue;
+			}
 			int vec = anyCast<int>(material->GetUniformParameter("type")->value);
 			int type =  vec ;
 			if (type == 103)

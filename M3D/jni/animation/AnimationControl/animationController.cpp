@@ -19,7 +19,7 @@ void AnimationController::play(){
 	//std::thread t(&AnimationController::monitorRunningNodes, this);
 	//t.detach();
 	topNode->playAnimation();
-	// �����ڵ��������ʱ�ڵ��޹أ�����迼���Ƿ�����ʱ�ڵ��ڲ���
+	// 顶级节点完结与延时节点无关，因此需考虑是否有延时节点在播放
 	if (topNode->getCurState() == FINISHED && curPlayingNodes.size() == 0) {
 		myState = FINISHED;
 	}
@@ -66,22 +66,22 @@ void AnimationController::resumeModel(ModelID i_mID){
 }
 
 /*
-	�������ź������������߳�
-	����topNode�ṹ����ȡ��ǰ���ŵĽڵ㣬���û�У����˳�
-	ÿ�α���ǰ�������curPlayingNodes
+	动画播放后启动，单独线程
+	遍历topNode结构，获取当前播放的节点，如果没有，则退出
+	每次遍历前，先清除curPlayingNodes
 */
 void AnimationController::monitorRunningNodes(){
-	////std::this_thread::sleep_for(std::chrono::milliseconds(100)); // ���ڶ�������һ���
+	////std::this_thread::sleep_for(std::chrono::milliseconds(100)); // 晚于动画播放一点点
 	//findRunningNodes(topNode, curPlayingNodes);
-	//while (!curPlayingNodes.empty()){ // ��ֹ����
+	//while (!curPlayingNodes.empty()){ // 终止条件
 	//	curPlayingNodes.clear();
 	//	findRunningNodes(topNode, curPlayingNodes);
 	//	std::this_thread::sleep_for(std::chrono::milliseconds(50));
 	//}
 }
 
-// ����topNode�ṹ����ȡ��ǰ���ŵĽڵ�, �ݹ�
-// ����ÿ���ڵ㶼��������ʱ�ڵ㣬����Ҫ�������нڵ�
+// 遍历topNode结构，获取当前播放的节点, 递归
+// 由于每个节点都可能有延时节点，故需要遍历所有节点
 void AnimationController::findRunningNodes(AnimationNode* i_topNode, vector<StepNode*>& o_nodeList){
 	AnimationNodeType nodeType = i_topNode->getNodeType();
 	AnimationState nodeState = i_topNode->getCurState();
@@ -108,13 +108,13 @@ void AnimationController::findRunningNodes(AnimationNode* i_topNode, vector<Step
 			if (nodeState == RUNNING){
 				o_nodeList.push_back(stepNode);
 				vector<AnimationNode*> attachedNodes = stepNode->getAttachedNodes();
-				// �����ڵ�
+				// 附属节点
 				for (int i = 0; i < attachedNodes.size(); ++i){
 					//o_nodeList.push_back(attachedNodes[i]);
 					findRunningNodes(attachedNodes[i], o_nodeList);
 				}
 			}
-			// �ӳٽڵ�
+			// 延迟节点
 			std::vector<pair<AnimationNode*, TLframe>> delayedNodes = stepNode->getDelayedNodes();
 			for (int i = 0; i < delayedNodes.size(); ++i){
 				findRunningNodes(delayedNodes[i].first, o_nodeList);
