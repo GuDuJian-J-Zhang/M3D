@@ -35,6 +35,8 @@ extern M3D_API const string VSP_MODELVIEWMAT;
 extern M3D_API const string VSP_MVPMAT;
 extern M3D_API const string VSP_TEXTUREMAT;
 
+extern M3D_API const string VSP_ISDIAMOND;
+
 extern M3D_API const string VSP_MIRRORMAT;
 
 extern M3D_API const string VSP_LIGHTPOSITION;

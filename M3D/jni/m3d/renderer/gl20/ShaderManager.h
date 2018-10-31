@@ -76,6 +76,8 @@ public:
 	const static string CapPlane;
 	const static string JewelFront;
 	const static string JewelBack;
+	const static string DiamondFront;
+	const static string DiamondBack;
 	const static string JewelFinalQuad;
 	const static string Ring;
 	const static string JewelType;

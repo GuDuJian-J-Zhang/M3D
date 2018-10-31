@@ -45,14 +45,33 @@ namespace M3D
 		// FullName:  M3D::JewelEffect::RenderJewelFront
 		// Access:    private 
 		// Returns:   void
+		// Qualifier: 渲染钻石front层
+		// Parameter: RenderQueue * RenderStateArray
+		//************************************
+		void RenderDiamondFront( RenderQueue * RenderStateArray);
+		//************************************
+		// Method:    RenderJewelBack
+		// FullName:  M3D::JewelEffect::RenderJewelBack
+		// Access:    private 
+		// Returns:   void
+		// Qualifier: 钻石back层
+		// Parameter: RenderQueue * RenderStateArray
+		//************************************
+		void RenderDiamondBack( RenderQueue * RenderStateArray);
+
+		//************************************
+		// Method:    RenderDimodFront
+		// FullName:  M3D::JewelEffect::RenderDimodFront
+		// Access:    private
+		// Returns:   void
 		// Qualifier: 渲染珠宝front层
 		// Parameter: RenderQueue * RenderStateArray
 		//************************************
 		void RenderJewelFront( RenderQueue * RenderStateArray);
 		//************************************
-		// Method:    RenderJewelBack
-		// FullName:  M3D::JewelEffect::RenderJewelBack
-		// Access:    private 
+		// Method:    RenderDimodBack
+		// FullName:  M3D::JewelEffect::RenderDimodBack
+		// Access:    private
 		// Returns:   void
 		// Qualifier: back层
 		// Parameter: RenderQueue * RenderStateArray
@@ -121,6 +140,7 @@ namespace M3D
 		//************************************
 		void DrawFrameBufferDebug();
 	private:
+		bool  isDiamond ;
 
 	};
 }

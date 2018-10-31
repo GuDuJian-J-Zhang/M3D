@@ -55,6 +55,8 @@ namespace M3D
 	const string ShaderManager::CapPlane("CapPlane");
 	const string ShaderManager::JewelFront("JewelFront");
 	const string ShaderManager::JewelBack("JewelBack");
+	const string ShaderManager::DiamondFront("DiamondFront");
+	const string ShaderManager::DiamondBack("DiamondBack");
 	const string ShaderManager::JewelFinalQuad("JewelFinalQuad");
 	const string ShaderManager::Ring("Ring");
 	const string ShaderManager::JewelType("JewelType");
@@ -391,6 +393,9 @@ namespace M3D
 		SET_SHADER_MAP(JewelFront);
 
 		SET_SHADER_MAP(JewelBack);
+
+		SET_SHADER_MAP(DiamondBack);
+		SET_SHADER_MAP(DiamondFront);
 
         SET_SHADER_MAP(Mirror);
 		SET_SHADER_MAP(JewelFinalQuad);

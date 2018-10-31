@@ -2,13 +2,13 @@
 /*****************************************************************************
  *	@file	Stk_ComponentFeature.cpp
  *
- *	@brief	×é¼şÌØÕ÷Àà£¬Çø±ğÓëDTKÖĞÓĞ¹ØNodeÏÂµÄÌØÕ÷£¬¸ÃÌØÕ÷Ä¿Ç°½öÖ¸×é¡¢ÕóÁĞÌØÕ÷¡¢×°ÅäÌØÕ÷
+ *	@brief	ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½à£¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½DTKï¿½ï¿½ï¿½Ğ¹ï¿½Nodeï¿½Âµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¿Ç°ï¿½ï¿½Ö¸ï¿½é¡¢ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
  *
- *	@par	ÀúÊ·:
- *		2014/11/11	´´½¨¡£WangY@HOTEAMSOFT
- *		2016/08/31	¸üĞÂ¡£WangY@HOTEAMSOFT
- *					API·â×°
- *		2016/11/22	ÖØ¹¹¡£MengYaohui@HOTEAMSOFT
+ *	@par	ï¿½ï¿½Ê·:
+ *		2014/11/11	ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½WangY@HOTEAMSOFT
+ *		2016/08/31	ï¿½ï¿½ï¿½Â¡ï¿½WangY@HOTEAMSOFT
+ *					APIï¿½ï¿½×°
+ *		2016/11/22	ï¿½Ø¹ï¿½ï¿½ï¿½MengYaohui@HOTEAMSOFT
 ****************************************************************************/
 #include "Stk_Document.h"
 #include "Stk_DocumentImpl.h"
@@ -47,7 +47,7 @@ Stk_NodePtr Stk_Document::AddTopNode(unsigned int uiID/* = -1*/) {
 	}
 	else {
 		STK_IMPL_CAST(Stk_Document)->AddTopNodeID(topNode->GetID());
-		//°ó¶¨Êı¾İ
+		//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		topNode->BindingNode(STK_IMPL_CAST(Stk_Document)->GetNode(topNode->GetID()));
 	}
 	topNode->Init(this, 0, -1 != uiID ? false : true);
@@ -69,7 +69,7 @@ vector<HoteamSoft::SVLLib::Stk_InstancePtr>& Stk_Document::getTopInstances()
 	return STK_IMPL_CAST(Stk_Document)->getTopInstances();
 }
 
-//Ìí¼Ó¶¥¼¶ÊµÀı
+//ï¿½ï¿½Ó¶ï¿½ï¿½ï¿½Êµï¿½ï¿½
 Stk_InstancePtr Stk_Document::AddTopInstance(unsigned int uiID /*= -1*/)
 {
 	map<int, Stk_InstancePtr>::iterator it;
@@ -84,7 +84,7 @@ Stk_InstancePtr Stk_Document::AddTopInstance(unsigned int uiID /*= -1*/)
 	}
 	//else {
 	//STK_IMPL_CAST(Stk_Document)->AddTopInstanceID(topInstance->GetID());
-	//°ó¶¨Êı¾İ
+	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	//topInstance->BindingNode(&STK_IMPL_CAST(Stk_Document)->m_nodeDoc["bom"]["instances"][STK_IMPL_CAST(Stk_Document)->m_nodeDoc["bom"]["instances"].Size()-1]);
 	//}
 	StkBomBlock tmpBomBlock;
@@ -101,7 +101,7 @@ Stk_InstancePtr Stk_Document::AddTopInstance(unsigned int uiID /*= -1*/)
 	tmpBomBlock.Matrix[0] = tmpBomBlock.Matrix[5] = tmpBomBlock.Matrix[10] = 1;
 	tmpBomBlock.Matrix[15] = 1;
 	topInstance->BindBomBlock(&tmpBomBlock);
-	//´´½¨Ë÷Òı
+	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	STK_IMPL_CAST(Stk_Document)->m_mapIdToInstance.insert(make_pair(topInstance->GetID(), topInstance));
 	topInstance->Init(this, 0, -1 != uiID ? false : true);
 	return topInstance;
@@ -124,7 +124,7 @@ Stk_InstancePtr Stk_Document::GetTopInstance(int iIdx)
 	if (-1 != InstanceID) {
 		topInstance->SetID(InstanceID);
 	}
-	//´´½¨Ë÷Òı
+	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	STK_IMPL_CAST(Stk_Document)->m_mapIdToInstance.insert(make_pair(topInstance->GetID(), topInstance));
 	topInstance->Init(this, 0, -1 != InstanceID ? false : true);
 	return topInstance;
@@ -218,10 +218,10 @@ bool Stk_Document::IsOpen(){
 STK_STATUS Stk_Document::OpenLocal(const std::wstring& fileFullPath)
 {
 	STK_STATUS ststus = STK_IMPL_CAST(Stk_Document)->OpenLocal(fileFullPath);
-	printf("Íê³É×°ÅäÎÄ¼ş½âÎö\r\n");
+	printf("ï¿½ï¿½ï¿½×°ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½\r\n");
 	if (STK_SUCCESS == ststus) 
 	{
-		printf("API½á¹¹½âÎöÍê±Ï\r\n");
+		printf("APIï¿½á¹¹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½\r\n");
 	}
 	return ststus;
 }
@@ -233,7 +233,7 @@ STK_STATUS  Stk_Document::OpenSVLX(const std::wstring& fileFullPath)
 		return STK_ERROR;
 	std::string strFileName;
 	strFileName = ChineseCode::WStringToString(fileFullPath);
-	//½«SVLXÊı¾İ¶ÁÈ¡µ½ÄÚ´æÖĞ
+	//ï¿½ï¿½SVLXï¿½ï¿½ï¿½İ¶ï¿½È¡ï¿½ï¿½ï¿½Ú´ï¿½ï¿½ï¿½
 	STK_UINT32 mBlockByteSize;
 	STK_CHAR* mBlockMemory = NULL;
 	Stk_FilePtr filePtr = Stk_FilePtr::CreateObject();
@@ -242,7 +242,7 @@ STK_STATUS  Stk_Document::OpenSVLX(const std::wstring& fileFullPath)
 	mBlockByteSize = filePtr->FileSize();
 	mBlockMemory = (STK_CHAR*)malloc(mBlockByteSize);
 	filePtr->ReadBuffer(mBlockMemory, mBlockByteSize, 0);
-	//´ò¿ªÎÄ¼ş
+	//ï¿½ï¿½ï¿½Ä¼ï¿½
 	OpenFile(mBlockByteSize, mBlockMemory);
 	LoadBom();
 	LoadModel();
@@ -272,10 +272,10 @@ HoteamSoft::SVLLib::STK_STATUS Stk_Document::LoadBom(const std::wstring& bomFull
 {
 
 	STK_STATUS status = STK_IMPL_CAST(Stk_Document)->LoadBom(bomFullPath);
-	printf("Íê³É×°ÅäÎÄ¼ş½âÎö\r\n");
+	printf("ï¿½ï¿½ï¿½×°ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½\r\n");
 	if (STK_SUCCESS == status) 
 	{
-		printf("API½á¹¹½âÎöÍê±Ï\r\n");
+		printf("APIï¿½á¹¹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½\r\n");
 	}
 	return status;
 }
@@ -447,7 +447,7 @@ STK_STATUS Stk_Document::LoadMaterial()
 		status = STK_IMPL_CAST(Stk_Document)->LoadMaterialFromBuf();
 		break;
 	}
-	//¶ÔËùÓĞ²ÄÖÊ¶ÔÏó½øĞĞ³õÊ¼»¯²Ù×÷
+	//ï¿½ï¿½ï¿½ï¿½ï¿½Ğ²ï¿½ï¿½Ê¶ï¿½ï¿½ï¿½ï¿½ï¿½Ğ³ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	map<int, Stk_MaterialPtr>::iterator it;
 	for(  it=STK_IMPL_CAST(Stk_Document)->m_mapIdToStkMaterial.begin(); it!=STK_IMPL_CAST(Stk_Document)->m_mapIdToStkMaterial.end(); it++)
 	{
@@ -526,7 +526,7 @@ unsigned int Stk_Document::GetNbModel()
 Stk_MaterialPtr Stk_Document::AddMaterial(bool& bHasSet, unsigned int uiID/* = -1*/)
 {
 	bHasSet = false;
-	//ÅĞ¶Ï²ÄÖÊ¶ÔÏóÊÇ·ñÒÑ±»Ìí¼Ó
+	//ï¿½Ğ¶Ï²ï¿½ï¿½Ê¶ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ï¿½Ñ±ï¿½ï¿½ï¿½ï¿½
 	map<int, Stk_MaterialPtr>::iterator it;
 	it = STK_IMPL_CAST(Stk_Document)->m_mapIdToStkMaterial.find(uiID);
 	if (it != STK_IMPL_CAST(Stk_Document)->m_mapIdToStkMaterial.end())

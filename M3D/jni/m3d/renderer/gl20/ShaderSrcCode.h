@@ -120,7 +120,28 @@ public:
 	// FullName:  M3D::ShaderSrcCode::JewelFrontVert
 	// Access:    public static 
 	// Returns:   const char*
-	// Qualifier: 珠宝front渲染层
+	// Qualifier: 钻石front渲染层
+	//************************************
+	static const char* DiamondFrontVert();
+	static const char* DiamondFrontFrag();
+
+	//************************************
+	// Method:    JewelBackVert
+	// FullName:  M3D::ShaderSrcCode::JewelBackVert
+	// Access:    public static
+	// Returns:   const char*
+	// Qualifier: 钻石back渲染层
+	//************************************
+	static const char* DiamondBackVert();
+	static const char* DiamondBackFrag();
+
+
+	//************************************
+	// Method:    JewelFrontVert
+	// FullName:  M3D::ShaderSrcCode::JewelFrontVert
+	// Access:    public static
+	// Returns:   const char*
+	// Qualifier: 除钻石外其他珠宝front渲染层
 	//************************************
 	static const char* JewelFrontVert();
 	static const char* JewelFrontFrag();
@@ -130,7 +151,7 @@ public:
 	// FullName:  M3D::ShaderSrcCode::JewelBackVert
 	// Access:    public static 
 	// Returns:   const char*
-	// Qualifier: 珠宝back渲染层
+	// Qualifier: 除钻石外其他珠宝back渲染层
 	//************************************
 	static const char* JewelBackVert();
 	static const char* JewelBackFrag();

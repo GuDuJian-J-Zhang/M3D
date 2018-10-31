@@ -40,6 +40,7 @@ namespace M3D{
 			//string ss = key.Tostring();
 			string name = it->second.m_name;
 			ShaderParameter* para = &it->second;
+
 			if (uniformValues.find(key) == uniformValues.end())
 			{
 				if (para->m_Type == GL_SAMPLER_2D )
