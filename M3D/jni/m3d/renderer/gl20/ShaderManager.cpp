@@ -61,6 +61,7 @@ namespace M3D
 	const string ShaderManager::Ring("Ring");
 	const string ShaderManager::JewelType("JewelType");
 	const string ShaderManager::JewelHighLight("JewelHighLight");
+	const string ShaderManager::DiamondBlendQuad("DiamondBlendQuad");
 	const string ShaderManager::JewelBlendQuad("JewelBlendQuad");
 	const  string ShaderManager::Outline("Outline");
 	const  string ShaderManager::GaussianBlur("GaussianBlur");
@@ -411,6 +412,8 @@ namespace M3D
 		SET_SHADER_MAP(JewelHighLight);
 
 		SET_SHADER_MAP(JewelBlendQuad);
+
+		SET_SHADER_MAP(DiamondBlendQuad);
 
 		SET_SHADER_MAP(Outline);
 

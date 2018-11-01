@@ -7520,7 +7520,7 @@ namespace M3D
 			;
 	}
 
-	const char * ShaderSrcCode::JewelBlendQuadVert()
+	const char * ShaderSrcCode::DiamondBlendQuadVert()
 	{
 		return
 
@@ -7536,7 +7536,7 @@ namespace M3D
 			"\n";
 	}
 
-	const char * ShaderSrcCode::JewelBlendQuadFrag()
+	const char * ShaderSrcCode::DiamondBlendQuadFrag()
 	{
 		return
 			"precision highp  float;"
@@ -7544,24 +7544,53 @@ namespace M3D
 			"uniform sampler2D u_sampler1;\n"
 			"uniform sampler2D u_sampler2;\n"
 			"uniform sampler2D u_sampler3;\n"
-			"uniform bool u_isDiamond;\n"
 			"varying vec2 v_texCoords;\n"
 			"void main() { \n"
 			"  vec4 frontColor = texture2D(u_sampler0,v_texCoords);\n"
 			"  vec4 backColor = texture2D(u_sampler1,v_texCoords);\n"
 			"  vec4 jewelType = texture2D(u_sampler2,v_texCoords);\n"
 			"  vec4 highlight = texture2D(u_sampler3,v_texCoords);\n"
-			" 	if(u_isDiamond){"
-				"  gl_FragColor = vec4(frontColor.xyz+backColor.xyz,1.0);\n"
-				"  gl_FragColor = vec4(1.0,0.0,0.0,1.0);\n"
-				"}\n"
-				"else{"
 			"  vec4 FragColor = vec4(0.0);"
-			"  FragColor = vec4( mix(frontColor.rgb,backColor.rgb,jewelType.a)+highlight.rgb*0.40,frontColor.a);\n "
-				"  gl_FragColor = FragColor;\n"
-				"}\n"
+				"  FragColor = vec4(frontColor.xyz+backColor.xyz,1.0);\n "
+			"  gl_FragColor = FragColor;\n"
 			"}\n";
 	}
+
+	const char * ShaderSrcCode::JewelBlendQuadVert()
+		{
+			return
+
+				"attribute  vec3 a_position;\n"
+				"attribute  vec2 a_texCoords;\n"
+				"varying  vec2 v_texCoords;\n"
+				"\n"
+				"void main(void)\n"
+				"{\n"
+				"    gl_Position = vec4(a_position,1.0);\n"
+				"    v_texCoords = a_texCoords;\n"
+				"}\n"
+				"\n";
+		}
+
+		const char * ShaderSrcCode::JewelBlendQuadFrag()
+		{
+			return
+				"precision highp  float;"
+				"uniform sampler2D u_sampler0;\n"
+				"uniform sampler2D u_sampler1;\n"
+				"uniform sampler2D u_sampler2;\n"
+				"uniform sampler2D u_sampler3;\n"
+				"varying vec2 v_texCoords;\n"
+				"void main() { \n"
+				"  vec4 frontColor = texture2D(u_sampler0,v_texCoords);\n"
+				"  vec4 backColor = texture2D(u_sampler1,v_texCoords);\n"
+				"  vec4 jewelType = texture2D(u_sampler2,v_texCoords);\n"
+				"  vec4 highlight = texture2D(u_sampler3,v_texCoords);\n"
+				"  vec4 FragColor = vec4(0.0);"
+				"  FragColor = vec4( mix(frontColor.rgb,backColor.rgb,jewelType.a)+highlight.rgb*0.40,frontColor.a);\n "
+				"  gl_FragColor = FragColor;\n"
+				"}\n";
+		}
 
 	const char * ShaderSrcCode::JewelFinalQuadVert()
 	{

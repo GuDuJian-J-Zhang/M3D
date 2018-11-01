@@ -83,6 +83,7 @@ public:
 	const static string JewelType;
 	const static string JewelHighLight;
 	const static string JewelBlendQuad;
+	const static string DiamondBlendQuad ;
 	const static string Outline;
 	const static string GaussianBlur;
 	const static string GaussianBlurOutline;

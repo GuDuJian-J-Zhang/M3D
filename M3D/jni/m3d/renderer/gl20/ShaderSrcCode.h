@@ -197,6 +197,16 @@ public:
 	static const char * JewelBlendQuadFrag();
 
 	//************************************
+	// Method:    JewelBlendQuadVert
+	// FullName:  M3D::ShaderSrcCode::JewelBlendQuadVert
+	// Access:    public static
+	// Returns:   const char *
+	// Qualifier: 钻石混合层
+	//************************************
+	static const char * DiamondBlendQuadVert();
+	static const char * DiamondBlendQuadFrag();
+
+	//************************************
 	// Method:    JewelFinalQuadVert
 	// FullName:  M3D::ShaderSrcCode::JewelFinalQuadVert
 	// Access:    public static 

@@ -33,6 +33,8 @@ namespace M3D
 		jewelSpecularFBO.SetParameters();
 		HardWareFrameBuffer& jewelBlendFBO = GetHardWareFrameBuffer("jewelBlendFBO");
 		jewelBlendFBO.SetParameters();
+		HardWareFrameBuffer& diamondBlendFBO = GetHardWareFrameBuffer("diamondBlendFBO");
+		diamondBlendFBO.SetParameters();
         HardWareFrameBuffer& jewelNoteFBO = GetHardWareFrameBuffer("jewelNoteFBO");
         jewelNoteFBO.SetParameters();
 
@@ -1082,6 +1084,75 @@ namespace M3D
 #pragma endregion 关闭顶点属性
 	}
 
+	void JewelEffect::DrawDiamondBlendQuad()
+	{
+		RenderAction* action = this->m_action;
+				RenderContext* gl = action->GetGLContext();
+				CameraNode* camera = action->GetCamera();
+				{
+					float debugvertices[] =
+					{ // Vertices for the square
+						-1.0f, 1.0f, -1.0f,// 0. left-bottom
+						-1.0f, -1.0f, -1.0f,// 1. right-bottom
+						1.0f, 1.0f, -1.0f,// 2. left-top
+						1.0f, -1.0f, -1.0f// 3. right-top
+					};
+
+					float debugcoord[] =
+					{ // Vertices for the square
+						0, 1,// 0. left-bottom
+						0, 0,// 1. right-bottom
+						1, 1,// 2. left-top
+						1, 0// 3. right-top
+					};
+
+					const IntRect& intRect = camera->GetViewPort().GetRect();
+					glViewport(intRect.m_left, intRect.m_top, intRect.m_right, intRect.m_bottom);
+					float xpo = (float)(1.0f / intRect.m_right);
+					float ypo = (float)(1.0f / intRect.m_bottom);
+					ShaderProgram *shaderEffect = action->GetShaderMananger()->GetEffect(ShaderManager::DiamondBlendQuad);
+					shaderEffect->UseProgram();
+
+
+					map<string, Uniform> tempUnifomValueList;
+
+					GLShapeDrawer20::_usedTextureUnits = 0;
+
+
+					ShaderParameter * vertex = shaderEffect->GetShaderAttributeParameter(VSP_POSITION);
+					shaderEffect->SetVertexAttribPointer(vertex->m_location, 3, GL_FLOAT, 0, debugvertices);
+					shaderEffect->EnableAttributeArray(vertex->m_location);
+
+					ShaderParameter * texCoords = shaderEffect->GetShaderAttributeParameter(VSP_TEXCOORDS);
+					shaderEffect->SetVertexAttribPointer(texCoords->m_location, 2, GL_FLOAT, 0, debugcoord);
+					shaderEffect->EnableAttributeArray(texCoords->m_location);
+					Matrix4 V, P, M, MVP;
+
+					tempUnifomValueList[VSP_MODELMAT] = Uniform("Matrix4", &M);
+					tempUnifomValueList[VSP_VIEWMAT] = Uniform("Matrix4", (&V));
+					tempUnifomValueList[VSP_PROJECTIONMAT] = Uniform("Matrix4", (&P));
+					tempUnifomValueList[FSP_SAMPLER0] = Uniform("GeometryBuffer", (GeometryBuffer*)(GetHardWareFrameBuffer("diamondFrontFBO").GetColorTarget(0)));
+					tempUnifomValueList[FSP_SAMPLER1] = Uniform("GeometryBuffer", (GeometryBuffer*)(GetHardWareFrameBuffer("diamondBackFBO").GetColorTarget(0)));
+					tempUnifomValueList[FSP_SAMPLER2] = Uniform("GeometryBuffer", (GeometryBuffer*)(GetHardWareFrameBuffer("jewelTypeFBO").GetColorTarget(0)));
+					tempUnifomValueList[string("u_sampler3")] = Uniform("GeometryBuffer", (GeometryBuffer*)(GetHardWareFrameBuffer("jewelSpecularFBO").GetColorTarget(0)));
+
+					SPHashMap& shaderUniformMap = shaderEffect->GetShaderUniformMap();
+					this->SetUniform(shaderEffect, shaderUniformMap, tempUnifomValueList);
+
+					glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+		#pragma region 解除texture绑定
+					for (map<int, GLenum>::iterator it = textureBindingTargetMap.begin(); it != textureBindingTargetMap.end(); it++)
+					{
+						glActiveTexture(GL_TEXTURE0 + it->first);
+						glBindTexture(it->second, 0);
+					}
+		#pragma endregion
+
+					shaderEffect->DisableAttributeArray(vertex->m_location);
+					shaderEffect->DisableAttributeArray(texCoords->m_location);
+					shaderEffect->ReleaseShaderProgram();
+		}
+	}
 	void JewelEffect::DrawJadeBlendQuad()
 	{
 		RenderAction* action = this->m_action;
@@ -1129,13 +1200,8 @@ namespace M3D
 			tempUnifomValueList[VSP_MODELMAT] = Uniform("Matrix4", &M);
 			tempUnifomValueList[VSP_VIEWMAT] = Uniform("Matrix4", (&V));
 			tempUnifomValueList[VSP_PROJECTIONMAT] = Uniform("Matrix4", (&P));
-			if(isDiamond){
-			tempUnifomValueList[FSP_SAMPLER0] = Uniform("GeometryBuffer", (GeometryBuffer*)(GetHardWareFrameBuffer("diamondFrontFBO").GetColorTarget(0)));
-			tempUnifomValueList[FSP_SAMPLER1] = Uniform("GeometryBuffer", (GeometryBuffer*)(GetHardWareFrameBuffer("diamondBackFBO").GetColorTarget(0)));
-			}else{
 			tempUnifomValueList[FSP_SAMPLER0] = Uniform("GeometryBuffer", (GeometryBuffer*)(GetHardWareFrameBuffer("jewelFrontFBO").GetColorTarget(0)));
 			tempUnifomValueList[FSP_SAMPLER1] = Uniform("GeometryBuffer", (GeometryBuffer*)(GetHardWareFrameBuffer("jewelBackFBO").GetColorTarget(0)));
-			}
 			tempUnifomValueList[FSP_SAMPLER2] = Uniform("GeometryBuffer", (GeometryBuffer*)(GetHardWareFrameBuffer("jewelTypeFBO").GetColorTarget(0)));
 			tempUnifomValueList[string("u_sampler3")] = Uniform("GeometryBuffer", (GeometryBuffer*)(GetHardWareFrameBuffer("jewelSpecularFBO").GetColorTarget(0)));
 
@@ -1204,9 +1270,13 @@ namespace M3D
 		tempUnifomValueList[VSP_VIEWMAT] = Uniform("Matrix4", (&gl->GetViewMatrix()));
 		tempUnifomValueList[VSP_PROJECTIONMAT] = Uniform("Matrix4", (&gl->GetProjectMatrix()));
 
-
-		tempUnifomValueList[FSP_SAMPLER0] = Uniform("GeometryBuffer", (GeometryBuffer*)(GetHardWareFrameBuffer("jewelBlendFBO").GetColorTarget(0)));
-		tempUnifomValueList[FSP_SAMPLER1] = Uniform("GeometryBuffer", (GeometryBuffer*)(GetHardWareFrameBuffer("jewelFrontFBO").GetDepthTarget()));
+		if(isDiamond){
+			tempUnifomValueList[FSP_SAMPLER0] = Uniform("GeometryBuffer", (GeometryBuffer*)(GetHardWareFrameBuffer("diamondBlendFBO").GetColorTarget(0)));
+			tempUnifomValueList[FSP_SAMPLER1] = Uniform("GeometryBuffer", (GeometryBuffer*)(GetHardWareFrameBuffer("diamondFrontFBO").GetDepthTarget()));
+		}else{
+			tempUnifomValueList[FSP_SAMPLER0] = Uniform("GeometryBuffer", (GeometryBuffer*)(GetHardWareFrameBuffer("jewelBlendFBO").GetColorTarget(0)));
+			tempUnifomValueList[FSP_SAMPLER1] = Uniform("GeometryBuffer", (GeometryBuffer*)(GetHardWareFrameBuffer("jewelFrontFBO").GetDepthTarget()));
+		}
 		tempUnifomValueList[FSP_SAMPLER2] = Uniform("GeometryBuffer", (GeometryBuffer*)(GetHardWareFrameBuffer("ringtFBO").GetColorTarget(0)));//
 		tempUnifomValueList["u_sampler3"] = Uniform("GeometryBuffer", (GeometryBuffer*)(GetHardWareFrameBuffer("ringtFBO").GetDepthTarget()));
         tempUnifomValueList["u_sampler6"] = Uniform("GeometryBuffer", (GeometryBuffer*)(GetHardWareFrameBuffer("jewelNoteFBO").GetColorTarget(0)));
@@ -1248,6 +1318,8 @@ namespace M3D
 		HardWareFrameBuffer& jewelTypeFBO = GetHardWareFrameBuffer("jewelTypeFBO");
 
 		HardWareFrameBuffer& jewelSpecularFBO = GetHardWareFrameBuffer("jewelSpecularFBO");
+
+		HardWareFrameBuffer& diamondBlendFBO = GetHardWareFrameBuffer("diamondBlendFBO");
 
 		HardWareFrameBuffer& jewelBlendFBO = GetHardWareFrameBuffer("jewelBlendFBO");
 
@@ -1438,15 +1510,28 @@ namespace M3D
         }
         jewelSpecularFBO.UnBind();
 
-        jewelBlendFBO.ReShape();
-        jewelBlendFBO.Bind();
-        glEnable(GL_DEPTH_TEST);
-        glDepthFunc(GL_LEQUAL);
-        glClearColor(0.0, 0.0, 0.0, 0);
-        glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-        glViewport(intRect.m_left, intRect.m_top, intRect.m_right, intRect.m_bottom);
-        DrawJadeBlendQuad();
-        jewelBlendFBO.UnBind();
+        if(isDiamond){
+        	diamondBlendFBO.ReShape();
+        	diamondBlendFBO.Bind();
+			glEnable(GL_DEPTH_TEST);
+			glDepthFunc(GL_LEQUAL);
+			glClearColor(0.0, 0.0, 0.0, 0);
+			glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+			glViewport(intRect.m_left, intRect.m_top, intRect.m_right, intRect.m_bottom);
+			DrawDiamondBlendQuad();
+			diamondBlendFBO.UnBind();
+        }else{
+        	jewelBlendFBO.ReShape();
+			jewelBlendFBO.Bind();
+			glEnable(GL_DEPTH_TEST);
+			glDepthFunc(GL_LEQUAL);
+			glClearColor(0.0, 0.0, 0.0, 0);
+			glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+			glViewport(intRect.m_left, intRect.m_top, intRect.m_right, intRect.m_bottom);
+			DrawJadeBlendQuad();
+			jewelBlendFBO.UnBind();
+        }
+
 
         jewelNoteFBO.ReShape();
         jewelNoteFBO.Bind();

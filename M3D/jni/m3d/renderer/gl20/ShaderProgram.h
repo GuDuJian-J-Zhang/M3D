@@ -71,6 +71,7 @@ enum ShaderMaterialType
 	SMT_JewelType,
 	SMT_JewelHighLight,
 	SMT_JewelBlendQuad,
+	SMT_DiamondBlendQuad,
 	SMT_Outline,
 	SMT_GaussianBlur,
 	SMT_GaussianBlurOutline,

@@ -122,6 +122,14 @@ namespace M3D
 		//************************************
 		void DrawJadeBlendQuad();
 		//************************************
+			// Method:    DrawJadeBlendQuad
+			// FullName:  M3D::JewelEffect::DrawJadeBlendQuad
+			// Access:    private
+			// Returns:   void
+			// Qualifier: 钻石混合层
+			//************************************
+		void DrawDiamondBlendQuad();
+		//************************************
 		// Method:    DrawJewelQuad
 		// FullName:  M3D::JewelEffect::DrawJewelQuad
 		// Access:    private 
