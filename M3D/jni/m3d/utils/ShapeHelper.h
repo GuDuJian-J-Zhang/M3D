@@ -1,4 +1,4 @@
-﻿/**@file
+/**@file
  *@brief	Point类头文件
  *@author	xuli
  *@date		2015-7-13
@@ -41,7 +41,13 @@ public:
 	 * @return
 	 */
 	static HandlerPoint* AddPointHandler(const Vector3& coordinate,float size,SceneManager* scene);
-
+    /**
+     * 选择特征点对象
+     * @param screenPnt
+     * @param scene
+     * @return
+     */
+    static IShape* SelectFeaturePnt(Vector2& screenPnt,SceneManager* scene);
 	/**
 	 * 选择shape对象
 	 * @param screenPnt

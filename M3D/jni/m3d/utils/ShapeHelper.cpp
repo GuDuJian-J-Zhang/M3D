@@ -1,4 +1,4 @@
-﻿#include "m3d/utils/ShapeHelper.h"
+#include "m3d/utils/ShapeHelper.h"
 #include "m3d/action/RayPickAction.h"
 
 
@@ -42,7 +42,20 @@ HandlerPoint* ShapeHelper::AddPointHandler(const Vector3& coordinate,float size,
 
 	return handlerPoint;
 }
-
+IShape* ShapeHelper::SelectFeaturePnt(Vector2& screenPnt,SceneManager* scene)
+{
+    IShape* shape = NULL;
+        
+    Vector3 featureCoordinate;
+    if(RayPickAction::PickFeaturePnt(screenPnt,scene,featureCoordinate) == 2)
+    {
+        //创建临时点对象
+        shape = AddPointHandler(featureCoordinate,1.0f,scene);
+        ((HandlerPoint*)shape)->GetPoint()->SetSize(5.0);
+    }
+    
+    return shape;
+}
 IShape* ShapeHelper::SelectShape(Vector2& screenPnt,int shapeType,
 		int geoType,SceneManager* scene)
 {
@@ -65,7 +78,7 @@ IShape* ShapeHelper::SelectShape(Vector2& screenPnt,int shapeType,
 	}else if(shapeType == SHAPE_FEATURE_COORDINATE){
 		Vector3 featureCoordinate;
 		if(RayPickAction::PickFeaturePnt(screenPnt,scene,
-				 featureCoordinate))
+				 featureCoordinate) != 0)
 		{
 			//创建临时点对象
 			shape = AddPointHandler(featureCoordinate,1.0f,scene);

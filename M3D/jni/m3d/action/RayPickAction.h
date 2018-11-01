@@ -1,4 +1,4 @@
-﻿/**
+/**
  *@file
  *@brief	射线拾取动作
  *@author	XL
@@ -226,9 +226,9 @@ public:
 	 * @param screenPnt 屏幕坐标
 	 * @param scene 场景
 	 * @param featureCoordinate 空间特征点坐标
-	 * @return true相交 false不相交
+     * @return 0 不相交 1 相交 2 顶点相交
 	 */
-	static bool PickFeaturePnt(Vector2& screenPnt,SceneManager* scene,Vector3& featureCoordinate);
+	static int PickFeaturePnt(Vector2& screenPnt,SceneManager* scene,Vector3& featureCoordinate);
 
 	M3D::Vector3 GetNearestPickPoint() const { return m_nearShapePoint; }
 	void SetNearestPickPoint(M3D::Vector3 val) { m_nearShapePoint = val; }
