@@ -24,6 +24,9 @@ extern M3D_API const string VSP_MODELVIEWMAT("u_modelViewMat");
 extern M3D_API const string VSP_MVPMAT("u_MVPMat");
 extern M3D_API const string VSP_TEXTUREMAT("u_textureMat");
 
+extern M3D_API const string VSP_ISDIAMOND("u_isDiamond");
+
+
 extern M3D_API const string VSP_MIRRORMAT("u_mirrorMat");
 
 extern M3D_API const string VSP_LIGHTPOSITION("u_lightPosition");

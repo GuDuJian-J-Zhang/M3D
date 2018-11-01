@@ -76,11 +76,14 @@ public:
 	const static string CapPlane;
 	const static string JewelFront;
 	const static string JewelBack;
+	const static string DiamondFront;
+	const static string DiamondBack;
 	const static string JewelFinalQuad;
 	const static string Ring;
 	const static string JewelType;
 	const static string JewelHighLight;
 	const static string JewelBlendQuad;
+	const static string DiamondBlendQuad ;
 	const static string Outline;
 	const static string GaussianBlur;
 	const static string GaussianBlurOutline;

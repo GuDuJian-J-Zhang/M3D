@@ -200,7 +200,6 @@ bool ShaderProgram::LinkProgram()
  */
 void ShaderProgram::UseProgram()
 {
-
 	if(!IsDirty())
 	{
 		glUseProgram(m_object);

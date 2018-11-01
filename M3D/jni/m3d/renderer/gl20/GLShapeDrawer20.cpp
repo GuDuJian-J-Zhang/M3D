@@ -141,7 +141,6 @@ namespace M3D
 
 	void GLShapeDrawer20::RenderFace(RenderAction* action, Renderable*renderable, CameraNode*camera /*= nullptr*/, BaseMaterial* overrideMaterial /*= nullptr*/)
 	{
-		LOGI("material->RenderFace ");
 		//if (!overrideMaterial)
 		//{
 		//	return;
