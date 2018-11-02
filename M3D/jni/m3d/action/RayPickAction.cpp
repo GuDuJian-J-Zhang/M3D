@@ -30,12 +30,12 @@ namespace M3D
 
 float RayPickAction::MINVALUE = FLT_MIN / 3;
 
-bool RayPickAction::PickFeaturePnt(Vector2& screenPnt,SceneManager* scene,Vector3& featureCoordinate)
+int RayPickAction::PickFeaturePnt(Vector2& screenPnt,SceneManager* scene,Vector3& featureCoordinate)
 {
 	float pickRadius = 5.0f;
-	float featureRadius = 10.0f;
+	float featureRadius = 20.0f;
 	bool picked = false;
-
+    int feature = 0;
 	RayPickAction* rayPickAction = new RayPickAction(scene);
 
 	rayPickAction->SetRadius(pickRadius);
@@ -54,27 +54,30 @@ bool RayPickAction::PickFeaturePnt(Vector2& screenPnt,SceneManager* scene,Vector
 		{
 			picked = rayPickAction->GetNearPickPoint(featureCoordinate);
 			Edge* edge = (Edge*) pickedShape;
-
+            if (picked) {
+                feature = 1;
+            }
 			RefPolyLine* polyLine = edge->GetLineData();
 
 			Matrix3x4 worldMatrix = ShapeHelper::GetShapeWorldMatrix(edge);
 
-			if(polyLine->GetDataLength()>2)
+			if(polyLine->GetDataLength()>=2)
 			{
 				Vector3 startPnt = worldMatrix*polyLine->GetStartPnt();
 				Vector3 endPnt = worldMatrix*polyLine->GetEndPnt();
 
 				float stratPntDis = RayPickAction::GetScreenDis(featureCoordinate,startPnt,scene->GetCamera());
 				float endPntDis = RayPickAction::GetScreenDis(featureCoordinate,endPnt, scene->GetCamera()) ;
-
-				if(stratPntDis>0 && stratPntDis < featureRadius)
+				if(stratPntDis>=0 && stratPntDis < featureRadius)
 				{
 					featureCoordinate = startPnt;
+                    feature = 2;
 				}
 
-				if(endPntDis>0 && endPntDis < featureRadius && stratPntDis > endPntDis)
+				if(endPntDis>=0 && endPntDis < featureRadius && stratPntDis > endPntDis)
 				{
 					featureCoordinate = endPnt;
+                    feature = 2;
 				}
 			}
 		}
@@ -82,7 +85,7 @@ bool RayPickAction::PickFeaturePnt(Vector2& screenPnt,SceneManager* scene,Vector
 
 	delete rayPickAction;
 
-	return picked;
+	return feature;
 }
 
 const Ray&  RayPickActionData::GetCameraRay()const

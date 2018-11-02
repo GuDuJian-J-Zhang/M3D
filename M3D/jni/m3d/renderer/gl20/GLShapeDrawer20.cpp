@@ -689,7 +689,6 @@ namespace M3D
 				m_currentCamera = 0;
 				m_currentMaterial = 0;
 				RenderabelArray& renderableArray = RenderStateArray->GetRenderableArray();
-				LOGI("GLShapeDrawer20::ShadowRender  renderableArray .size = %d",renderableArray.size());
 				for (int i = 0; i < renderableArray.size(); i++)
 				{
 					Face* renderable = static_cast<Face*>(renderableArray[i]);
