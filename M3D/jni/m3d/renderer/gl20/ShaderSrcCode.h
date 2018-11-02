@@ -191,7 +191,7 @@ public:
 	// FullName:  M3D::ShaderSrcCode::JewelBlendQuadVert
 	// Access:    public static 
 	// Returns:   const char *
-	// Qualifier: 钻石、玉石、珍珠等混合层
+	// Qualifier: 玉石、珍珠等混合层
 	//************************************
 	static const char * JewelBlendQuadVert();
 	static const char * JewelBlendQuadFrag();
