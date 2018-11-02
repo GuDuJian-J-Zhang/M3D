@@ -51,7 +51,7 @@ IShape* ShapeHelper::SelectFeaturePnt(Vector2& screenPnt,SceneManager* scene)
     {
         //创建临时点对象
         shape = AddPointHandler(featureCoordinate,1.0f,scene);
-        ((HandlerPoint*)shape)->GetPoint()->SetSize(5.0);
+        ((HandlerPoint*)shape)->GetPoint()->SetSize(2.0);
     }
     
     return shape;

@@ -33,7 +33,7 @@ float RayPickAction::MINVALUE = FLT_MIN / 3;
 int RayPickAction::PickFeaturePnt(Vector2& screenPnt,SceneManager* scene,Vector3& featureCoordinate)
 {
 	float pickRadius = 5.0f;
-	float featureRadius = 50.0f;
+	float featureRadius = 20.0f;
 	bool picked = false;
     int feature = 0;
 	RayPickAction* rayPickAction = new RayPickAction(scene);
@@ -68,14 +68,13 @@ int RayPickAction::PickFeaturePnt(Vector2& screenPnt,SceneManager* scene,Vector3
 
 				float stratPntDis = RayPickAction::GetScreenDis(featureCoordinate,startPnt,scene->GetCamera());
 				float endPntDis = RayPickAction::GetScreenDis(featureCoordinate,endPnt, scene->GetCamera()) ;
-
-				if(stratPntDis>0 && stratPntDis < featureRadius)
+				if(stratPntDis>=0 && stratPntDis < featureRadius)
 				{
 					featureCoordinate = startPnt;
                     feature = 2;
 				}
 
-				if(endPntDis>0 && endPntDis < featureRadius && stratPntDis > endPntDis)
+				if(endPntDis>=0 && endPntDis < featureRadius && stratPntDis > endPntDis)
 				{
 					featureCoordinate = endPnt;
                     feature = 2;
