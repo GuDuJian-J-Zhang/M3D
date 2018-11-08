@@ -9,38 +9,6 @@
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "../../jni/sview/views/View.cpp"
-            timestampString = "558666893.867193"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "2247"
-            endingLineNumber = "2247"
-            landmarkName = "View::ShowModelView(int viewId, bool isAnni)"
-            landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "../../jni/sview/io/SVL2AsynReader.cpp"
-            timestampString = "559104953.3616281"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "4447"
-            endingLineNumber = "4447"
-            landmarkName = "SVL2AsynReader::GetViewInfo(vector&lt;Stk_ViewPtr&gt; *pStkViewList, Model* inModel, int *outViewNum, vector&lt;ModelView*&gt;&amp; outViewData)"
-            landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
             filePath = "../../jni/m3d/graphics/Section.cpp"
             timestampString = "559615061.609031"
             startingColumnNumber = "9223372036854775807"
