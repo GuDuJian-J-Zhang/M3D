@@ -83,6 +83,13 @@
 #include "m3d/extras/note/TextNote.h"
 #include "m3d/extras/note/VoiceNote.h"
 #include "m3d/extras/note/NoteFactory.h"
+#include "m3d/extras/measure/Measure.h"
+#include "m3d/extras/measure/MeasureAngle.h"
+#include "m3d/extras/measure/MeasureDistance.h"
+#include "m3d/extras/measure/MeasureFactory.h"
+#include "m3d/extras/measure/MeasureGroup.h"
+#include "m3d/extras/measure/MeasureProperty.h"
+#include "m3d/extras/measure/MeasureDiametre.h"
 #include "m3d/extras/modelmanager/ModelAssemblyHelper.h"
 #include "m3d/model/ModelView.h"
 #include "m3d/Handler/HandlerPoint.h"
@@ -5630,6 +5637,12 @@ void View::ParseAnnotation(const string& value) {
 		}
 	}
 }
+//测量数据解析
+void View::ParseMeasure(const string& value) {
+    SceneManager *scene = GetSceneManager();
+    MeasureFactory::CreateMeasure(value, scene);
+
+}
 const string& View::GetGestureJsonData(const string& key) {
 	map<string, string>::iterator findKey = m_allGeasureNoteJsonData.find(key);
 	if (findKey != m_allGeasureNoteJsonData.end()) {
@@ -5658,6 +5671,7 @@ void View::AddTextJsonData(const string& key, const string& value) {
 		m_allTextNoteJsonData[key] = value;
 	}
 }
+
 const string& View::GetSequenceJsonData(const string& key) {
 	map<string, string>::iterator findKey = m_allSequeNoteJsonData.find(key);
 	if (findKey != m_allSequeNoteJsonData.end()) {

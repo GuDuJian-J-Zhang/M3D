@@ -53,8 +53,11 @@ using rapidjson::MemoryPoolAllocator;
 #include "m3d/model/MeshData.h"
 #include "m3d/model/Face.h"
 #include "m3d/model/Edge.h"
+#include "m3d/model/Point.h"
 #include "m3d/model/GeoAttribute.h"
 #include "m3d/model/ShapeProperty.h"
+#include "m3d/extras/measure/MeasureGroup.h"
+#include "../../m3d/extras/measure/Measure.h"
 #include "m3d/extras/note/NoteGroup.h"
 #include "m3d/extras/annotation/AnnotationGroup.h"
 #include "m3d/scene/ShapeNode.h"
@@ -394,6 +397,12 @@ namespace SVIEW
         SaveAnnotations(strNotePath + strNoteName);
         m_pDoc->AddSVLXFileItem(strNoteName);
         
+        //测量
+        string strMeasureName = strSaveFileName;
+        strMeasureName.append(".measure");
+        string strMeasurePath = strSVLXOutFilePath;
+        SaveMeasures(strMeasurePath + strMeasureName);
+        m_pDoc->AddSVLXFileItem(strMeasureName);
         
 		//保存视图
 		SaveView();
@@ -1295,12 +1304,90 @@ namespace SVIEW
         
         Json::Value root;
         Json::FastWriter writer;
-        Json::Value jsonLights;
+        Json::Value jsonMeasures;
         SceneManager* scene = this->m_View->GetSceneManager();
+        MeasureGroup* measureGroup = scene->GetMeasureGroup();
+        if (measureGroup->Size() > 0)
+        {
+            int mCount = measureGroup->Size();
+            
+            for (int i = 0; i < mCount; i++)
+            {
+                SceneNode* node = measureGroup->GetChild(i);
+                if (node && node->GetType() == SHAPE_NODE)
+                {
+                    ShapeNode* shapeNode = (ShapeNode*)node;
+                    IShape* shape = shapeNode->GetShape();
+                    if(!shape)
+                        continue;
+                    Measure* pMeasure = (Measure *)shape;
+                    
+                    {
+                        Json::Value mjson;
+                        mjson["type"] = pMeasure->GetMeasureType();
+                        mjson["text"] = pMeasure->GetTextValue();
+                        
+                        Json::Value positionJson;
+                        positionJson.append(pMeasure->GetImageBoardPosition().m_x);
+                        positionJson.append(pMeasure->GetImageBoardPosition().m_y);
+                        positionJson.append(pMeasure->GetImageBoardPosition().m_z);
+                        mjson["position"] = positionJson;
+                        
+                        Json::Value linesJson;
+                        for (int i = 0; i < pMeasure->m_LineList.size(); i++) {
+                            Line3D *line3D = pMeasure->m_LineList.at(i);
+                            Json::Value lineJson;
+                            lineJson["name"] = line3D->GetName();
+                            
+                            Json::Value startPoint;
+                            startPoint.append(line3D->GetPosition().m_x);
+                            startPoint.append(line3D->GetPosition().m_y);
+                            startPoint.append(line3D->GetPosition().m_z);
+                            lineJson["startPoint"] = startPoint;
+                            
+                            Json::Value endPoint;
+                            endPoint.append(line3D->GetEndPoint().m_x);
+                            endPoint.append(line3D->GetEndPoint().m_y);
+                            endPoint.append(line3D->GetEndPoint().m_z);
+                            lineJson["endPoint"] = endPoint;
+                            
+                            Json::Value colorJson;
+                            colorJson.append(line3D->GetColor()->m_r);
+                            colorJson.append(line3D->GetColor()->m_g);
+                            colorJson.append(line3D->GetColor()->m_b);
+                            colorJson.append(line3D->GetColor()->m_a);
+                            lineJson["color"] = colorJson;
+                            
+                            linesJson.append(lineJson);
+                        }
+                        mjson["lines"] = linesJson;
+                        
+                        Json::Value pointsJson;
+                        for (int i = 0; i < pMeasure->m_PointList.size(); i++) {
+                            Point *point = pMeasure->m_PointList.at(i);
+                            Json::Value pointJson;
+                            pointJson["type"] = point->GetDrawType();
+                            pointJson["size"] = point->GetSize();
+                            
+                            Json::Value pJson;
+                            pJson.append(point->GetCoordinate().m_x);
+                            pJson.append(point->GetCoordinate().m_y);
+                            pJson.append(point->GetCoordinate().m_z);
+                            pointJson["point"] = pJson;
+                            
+                            pointsJson.append(pointJson);
+                        }
+                        mjson["points"] = pointsJson;
+                        
+                        jsonMeasures.append(mjson);
+                    }
+                }
+            }
+        }
+        root["measures"] = jsonMeasures;
+        string outJsonMeasures = writer.write(root);
         
-        string outJsonLights = writer.write(jsonLights);
-        
-        writeSate = FileHelper::SaveFileAssAscii(outJsonLights,destFilePath);
+        writeSate = FileHelper::SaveFileAssAscii(outJsonMeasures,destFilePath);
         
         return writeSate;
     }
