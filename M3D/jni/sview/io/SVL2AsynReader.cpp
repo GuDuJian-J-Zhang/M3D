@@ -140,6 +140,7 @@ SVL2AsynReader::SVL2AsynReader() :
 	m_fileBufferLength = 0;
 	m_mergeface = false;
 	m_annoJsonData = "";
+    m_MeasureJsonData = "";
 	readInstanceIndex = 0;
 
 	m_usePrototypeProperty = Parameters::Instance()->m_usePrototypeProperty;
@@ -239,9 +240,6 @@ void SVL2AsynReader::FillModelColor(Model* model) {
 }
 
 void SVL2AsynReader::FillModelMesh(View* view, Model* model) {
-	if (m_view && m_annoJsonData.length() > 0) {
-		m_view->ParseAnnotation(m_annoJsonData);
-	}
 	SModelFileInfo* fileInfo = model->GetFileInfo();
 	if (fileInfo) {
 		Stk_DocumentPtr* m_svl2Doc = (Stk_DocumentPtr*) this->m_svl2Doc;
@@ -1485,6 +1483,15 @@ Model* SVL2AsynReader::ReadFile(const char* thePath) {
 		if (_dataBuffer != NULL) {
 			SetAnnotationJsonData(_dataBuffer);
 		}
+        
+        //测量
+        STK_CHAR* m_dataBuffer = NULL;
+        unsigned int m_bufSize = 0;
+        string strMeasureName = ".measure";
+        (*m_svl2Doc)->GetSVLXFileItem(strMeasureName, m_bufSize, &m_dataBuffer);
+        if (m_dataBuffer != NULL) {
+            SetMeasureJsonData(m_dataBuffer);
+        }
 	}
 
 	string strSourceFormat = (*m_svl2Doc)->GetLoadInf()->getSourceFormat();
@@ -1556,6 +1563,12 @@ Model* SVL2AsynReader::ReadFile(const char* thePath) {
 	if (SVIEW::Parameters::Instance()->m_IsUseModelViewData) {
 		(*m_svl2Doc)->LoadView();
 		GetViewsData(topModel);
+        if (m_view && m_annoJsonData.length() > 0) {
+            m_view->ParseAnnotation(m_annoJsonData);
+        }
+        if (m_view && m_MeasureJsonData.length() > 0) {
+            m_view->ParseMeasure(m_MeasureJsonData);
+        }
 	}
 
 	FillAssemblyBBox(topModel);
@@ -4447,6 +4460,9 @@ bool SVL2AsynReader::GetViewInfo(vector<Stk_ViewPtr> *pStkViewList,
 }
 void SVL2AsynReader::SetAnnotationJsonData(const string& value) {
 	m_annoJsonData = value;
+}
+void SVL2AsynReader::SetMeasureJsonData(const string& value) {
+    m_MeasureJsonData = value;
 }
 void SVL2AsynReader::FillModelVisible(Model* model) {
 	model->SetOrigVisible(model->IsVisible(), false);

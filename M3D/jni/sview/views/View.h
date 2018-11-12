@@ -707,6 +707,7 @@ public:
 	 */
 	void AddText(int parentId, int parentType, float posBuf[], string text,
 			float fontSize);
+    
 	/**
 	 * @brief view状态切换
 	 * @param viewId View对应的ID
@@ -1227,14 +1228,13 @@ public:
     
     //批注数据解析
     void ParseAnnotation(const string& value);
+    //测量数据解析
+    void ParseMeasure(const string& value);
     const string& GetGestureJsonData(const string& key);
     void AddGestureJsonData(const string& key, const string& value);
     const string& GetTextJsonData(const string& key);
-    
     void AddTextJsonData(const string& key, const string& value);
-    
     const string& GetSequenceJsonData(const string& key);
-    
     void AddSequenceJsonData(const string& key, const string& value);
     
 private:
@@ -1290,7 +1290,6 @@ public:
 	void SetUnitScale(float scale);
 
 	void ChechErrorPoint(M3D::Model* model);
-
 public:
 	Reader* m_Reader;
 private:
@@ -1303,6 +1302,7 @@ private:
     map<string,string> m_allTextNoteJsonData;//所有文本批注json数据
     map<string,string> m_allSequeNoteJsonData;//所有序号批注json数据
     map<string,string> m_allGeasureNoteJsonData;//所有手势批注json数据
+
     set<string> m_srcFiles;
 //    map<string,Model*> m_AllModelMap;
     //

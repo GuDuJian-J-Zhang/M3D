@@ -1,4 +1,4 @@
-﻿/**@file
+/**@file
  *@brief
  *@author	XL
  *@date		2015-7-7
@@ -92,6 +92,11 @@ public:
 	* @return 返回属性测量对象
 	*/
 	static Measure* CreateTmpDiametreMeasure(int shapeID, int type, SceneManager* scene);
+    /**
+     *@return 返回测量对象
+     */
+    static void CreateMeasure(const string& value, SceneManager* scene);
+    
 	static bool CompleteDiametreMeasure(Measure* measure, int shapeID, Vector2 screenPnt, SceneManager* scene);
 	/**
 	 * @brief 创建面之间的距离测量对象

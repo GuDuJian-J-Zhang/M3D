@@ -187,6 +187,12 @@ private:
      */
     virtual void SetAnnotationJsonData(const string& value);
     
+    /**
+     * 设置测量数据
+     * @param xmlData
+     */
+    virtual void SetMeasureJsonData(const string& value);
+    
 	string GetAnimationName(const char* path);
 	void GetInstanceData(Model* model, void* instancePtr);
 	void GetPMIsData(Model* model);
@@ -268,6 +274,7 @@ private:
 	string m_xmlAnimatinData;//!<存储svl内部读取的动画文件
     string m_annoJsonData;//!<存储批注文件数据
  
+    string m_MeasureJsonData;//!<存储测量文件数据
 	map<int,BaseMaterial*> m_protoTypeMaterialCache;
 	map<int, Color> m_protoTypeColorCache;	
 	map<STK_UINT32, std::wstring> i_mapInstanceIDtoName;

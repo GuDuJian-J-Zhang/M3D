@@ -44,6 +44,8 @@
 #include <algorithm>
 #include "m3d/model/Face.h"
 #include "m3d/model/PolyLine.h"
+#include "m3d/base/json/json.h"
+#include "m3d/utils/StringHelper.h"
 #include  <sstream>
 
 using namespace SVIEW;
@@ -11348,6 +11350,130 @@ namespace M3D
 		measure->AddImage(imageBroad);
 		return true;
 	}
+    void MeasureFactory::CreateMeasure(const string& value, SceneManager* scene){
+        
+        //判断场景是否为空
+        if (scene == NULL)
+        {
+            return;
+        }
+        Json::Reader reader;
+        Json::FastWriter writer;
+        Json::Value json;
+        Json::Value retJson;
+        //清空
+        scene->GetMeasureGroup()->DeleteAllChildren();
+//        m_allShotspotJsonData.clear();
+        if (reader.parse(value.c_str(), json)) {
+            retJson = json["measures"];
+            if (retJson.isArray()) {
+                int iSize = retJson.size();
+                for (int i = 0; i < iSize; i++) {
+                    Measure* measure = NULL;
+                    Json::Value measuresValue = retJson[i];
+                    int type = measuresValue["type"].asInt();
+                    if (type == Measure::MEASURE_TYPE_PNT_PNT_DISTANCE ||
+                        type == Measure::MEASURE_TYPE_PNT_LINE_DISTANCE ||
+                        type == Measure::MEASURE_TYPE_PNT_FACE_DISTANCE ||
+                        type == Measure::MEASURE_TYPE_LINE_LINE_DISTANCE ||
+                        type == Measure::MEASURE_TYPE_LINE_FACE_DISTANCE ||
+                        type == Measure::MEASURE_TYPE_FACE_FACE_DISTANCE ||
+                        type == Measure::MEASURE_TYPE_SHAFT_SHAFT_DISTANCE ||
+                        type == Measure::MEASURE_TYPE_CENTER_CENTER_DISTANCE)
+                    {
+                        measure = new MeasureDistance();
+                    }
+                    else if (type == Measure::MEASURE_TYPE_LINE_LINE_ANGLE ||
+                             type == Measure::MEASURE_TYPE_FACE_FACE_ANGLE ||
+                             type == Measure::MEASURE_TYPE_LINE_FACE_ANGLE)
+                    {
+                        measure = new MeasureAngle();
+                    }
+                    else if (type == Measure::MEASURE_TYPE_CRICLE_DIAMETRE ||
+                             type == Measure::MEASURE_TYPE_CRICLE_RADIUS)
+                    {
+                        measure = new MeasureDiameter();
+                    }
+                    
+                    measure->SetMeasureType(type);
+                    
+                    string text = measuresValue["text"].asString();
+                    Vector3 position;
+                    position.m_x = measuresValue["position"][0].asFloat();
+                    position.m_y = measuresValue["position"][1].asFloat();
+                    position.m_z = measuresValue["position"][2].asFloat();
+                    
+                    vector<Texts2D*> temptext;
+                    Texts2D *title = new Texts2D;
+                    title->m_size = 12.0f;
+                    title->m_texts = "内容";
+                    temptext.push_back(title);
+                    
+                    Texts2D *content = new Texts2D;
+                    content->m_size = 12.0f;
+                    content->m_texts = text;
+                    temptext.push_back(content);
+                    
+                    ImageBoard * imageBroad = NULL;
+                    imageBroad = MeasureDisplayHelper::createNoteTextsImageN(scene, temptext, position);
+                    measure->AddImage(imageBroad);
+                    
+                    Json::Value linesJson;
+                    linesJson = measuresValue["lines"];
+                    if (linesJson.isArray()) {
+                        int linesSize = linesJson.size();
+                        for (int j = 0; j<linesSize; j++) {
+                            Json::Value lineJson = linesJson[j];
+                            string name = "";
+                            if (lineJson["name"].isNull() == false) {
+                                name = lineJson["name"].asString();
+                            }
+                            Vector3 startPnt;
+                            startPnt.m_x = lineJson["startPoint"][0].asFloat();
+                            startPnt.m_y = lineJson["startPoint"][1].asFloat();
+                            startPnt.m_z = lineJson["startPoint"][2].asFloat();
+                            Vector3 endPnt;
+                            endPnt.m_x = lineJson["endPoint"][0].asFloat();
+                            endPnt.m_y = lineJson["endPoint"][1].asFloat();
+                            endPnt.m_z = lineJson["endPoint"][2].asFloat();
+                            Color color;
+                            color.m_r = lineJson["color"][0].asFloat();
+                            color.m_g = lineJson["color"][1].asFloat();
+                            color.m_b = lineJson["color"][2].asFloat();
+                            color.m_a = lineJson["color"][3].asFloat();
+                            Line3D* line = new Line3D(startPnt, endPnt);//文本引线
+                            line->SetColor(color);
+                            measure->AddLine(line);
+                        }
+                    }
+                    
+                    Json::Value pointsJson;
+                    pointsJson = measuresValue["points"];
+                    if (pointsJson.isArray()) {
+                        int pointsJsonSize = pointsJson.size();
+                        for (int j = 0; j<pointsJsonSize; j++) {
+                            Json::Value pointJson = pointsJson[j];
+                            int pntType = pointJson["type"].asInt();
+                            float size = pointJson["size"].asFloat();
+                            Vector3 pnt;
+                            pnt.m_x = pointJson["point"][0].asFloat();
+                            pnt.m_y = pointJson["point"][1].asFloat();
+                            pnt.m_z = pointJson["point"][2].asFloat();
+                            Point * point = new Point(pnt);
+                            point->SetDrawType(pntType);
+                            point->SetSize(size);
+                            measure->AddPoint(point);
+                        }
+                    }
+                    if (measure)
+                    {
+                        AddMeasureToScene(scene, measure);
+                        measure->SetFrontShow(true);
+                    }
+                }
+            }
+        }
+    }
 }
 
 
