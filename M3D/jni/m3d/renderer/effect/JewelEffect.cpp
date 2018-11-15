@@ -68,7 +68,7 @@ namespace M3D
 				it->second.SetRenderTech(effect);
 				int renderType = it->second.GetType().GetType();
 				if (renderType == RenderableType::RGT_SOLID || renderType == RenderableType::RGT_TRANSPARENT || renderType == RenderableType::RGT_POINT
-					|| renderType == RenderableType::RGT_NOTE)
+					|| renderType == RenderableType::RGT_NOTE || renderType == RenderableType::RGT_PMI)
 				{
 					RenderStateArray.push_back(&it->second);
 				}
@@ -1551,6 +1551,10 @@ namespace M3D
             if ((RenderStateArray.at(i))->GetType().GetType() == RenderableType::RGT_NOTE )
             {
                 GLShapeDrawer20::DrawNoteRenderPassGroup(action, RenderStateArray.at(i) );
+            }
+            if ((RenderStateArray.at(i))->GetType().GetType() == RenderableType::RGT_PMI )
+            {
+                GLShapeDrawer20::DrawPMISRenderPassGroup(action, RenderStateArray.at(i) );
             }
         }
         jewelNoteFBO.UnBind();

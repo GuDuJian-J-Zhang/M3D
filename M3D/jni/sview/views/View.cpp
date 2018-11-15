@@ -5640,7 +5640,8 @@ void View::ParseAnnotation(const string& value) {
 //测量数据解析
 void View::ParseMeasure(const string& value) {
     SceneManager *scene = GetSceneManager();
-    MeasureFactory::CreateMeasure(value, scene);
+    //TODO 文件格式存在差异  移动端测量对象没办法适配-zhanglei
+//    MeasureFactory::CreateMeasure(value, scene);
 
 }
 const string& View::GetGestureJsonData(const string& key) {

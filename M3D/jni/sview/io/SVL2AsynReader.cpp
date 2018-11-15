@@ -3182,7 +3182,7 @@ bool SVL2AsynReader::GetPMIInfo(vector<Stk_PMIPtr>* pStkPMIList, int *outPMINum,
 				HoteamSoft::SVLLib::TERM_PATSMNONE;
 		//Error = pPMICreator->CreateEndSymbol(pmi, pnt, Indices, nEndSymbol);
 		vecPolylinePnts.clear();
-		Error = pPMICreator->CreateEndSymbol(pmi, vecPolylinePnts, nEndSymbol);
+//        Error = pPMICreator->CreateEndSymbol(pmi, vecPolylinePnts, nEndSymbol);
 		//		if (Error != TRUE) {
 		//			continue;
 		//		}
