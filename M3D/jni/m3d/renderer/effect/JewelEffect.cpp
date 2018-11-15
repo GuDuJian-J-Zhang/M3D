@@ -22,6 +22,10 @@ namespace M3D
 		HardWareFrameBuffer& diamondBackFBO = GetHardWareFrameBuffer("diamondBackFBO");
 		diamondBackFBO.SetParameters();
 
+
+		HardWareFrameBuffer& diamondStarFBO = GetHardWareFrameBuffer("diamondStarFBO");
+		diamondStarFBO.SetParameters();
+
 		HardWareFrameBuffer& jewelFrontFBO = GetHardWareFrameBuffer("jewelFrontFBO");
 		jewelFrontFBO.SetParameters();
 
@@ -46,6 +50,11 @@ namespace M3D
         HardWareFrameBuffer& jewelNoteFBO = GetHardWareFrameBuffer("jewelNoteFBO");
         jewelNoteFBO.SetParameters();
 
+        HardWareFrameBuffer& jewelPMIFBO = GetHardWareFrameBuffer("jewelPMIFBO");
+        jewelPMIFBO.SetParameters();
+
+
+
 	}
 	void JewelEffect::Render()
 	{
@@ -68,7 +77,7 @@ namespace M3D
 				it->second.SetRenderTech(effect);
 				int renderType = it->second.GetType().GetType();
 				if (renderType == RenderableType::RGT_SOLID || renderType == RenderableType::RGT_TRANSPARENT || renderType == RenderableType::RGT_POINT
-					|| renderType == RenderableType::RGT_NOTE || renderType == RenderableType::RGT_PMI)
+					|| renderType == RenderableType::RGT_NOTE|| renderType == RenderableType::RGT_PMI)
 				{
 					RenderStateArray.push_back(&it->second);
 				}
@@ -352,7 +361,6 @@ namespace M3D
 		shaderEffect->ReleaseShaderProgram();
 #pragma endregion 关闭顶点属性
 	}
-
 
 	//************************************
 		// Method:    RenderJewelFront
@@ -1140,9 +1148,7 @@ namespace M3D
 					tempUnifomValueList[VSP_PROJECTIONMAT] = Uniform("Matrix4", (&P));
 					tempUnifomValueList[FSP_SAMPLER0] = Uniform("GeometryBuffer", (GeometryBuffer*)(GetHardWareFrameBuffer("diamondFrontFBO").GetColorTarget(0)));
 					tempUnifomValueList[FSP_SAMPLER1] = Uniform("GeometryBuffer", (GeometryBuffer*)(GetHardWareFrameBuffer("diamondBackFBO").GetColorTarget(0)));
-					tempUnifomValueList[FSP_SAMPLER2] = Uniform("GeometryBuffer", (GeometryBuffer*)(GetHardWareFrameBuffer("jewelTypeFBO").GetColorTarget(0)));
-					tempUnifomValueList[string("u_sampler3")] = Uniform("GeometryBuffer", (GeometryBuffer*)(GetHardWareFrameBuffer("jewelSpecularFBO").GetColorTarget(0)));
-
+					tempUnifomValueList[string("u_sampler3")] = Uniform("GeometryBuffer", (GeometryBuffer*)(GetHardWareFrameBuffer("diamondStarFBO").GetColorTarget(0)));
 					SPHashMap& shaderUniformMap = shaderEffect->GetShaderUniformMap();
 					this->SetUniform(shaderEffect, shaderUniformMap, tempUnifomValueList);
 
@@ -1283,7 +1289,7 @@ namespace M3D
         tempUnifomValueList["u_sampler6"] = Uniform("GeometryBuffer", (GeometryBuffer*)(GetHardWareFrameBuffer("jewelNoteFBO").GetColorTarget(0)));
         tempUnifomValueList["u_sampler7"] = Uniform("GeometryBuffer", (GeometryBuffer*)(GetHardWareFrameBuffer("diamondBlendFBO").GetColorTarget(0)));
         tempUnifomValueList["u_sampler8"] = Uniform("GeometryBuffer", (GeometryBuffer*)(GetHardWareFrameBuffer("diamondFrontFBO").GetDepthTarget()));
-
+        tempUnifomValueList["u_sampler9"] = Uniform("GeometryBuffer", (GeometryBuffer*)(GetHardWareFrameBuffer("jewelPMIFBO").GetColorTarget(0)));
 		SPHashMap& shaderUniformMap = shaderEffect->GetShaderUniformMap();
 		this->SetUniform(shaderEffect, shaderUniformMap, tempUnifomValueList);
 		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4); // 渲染到纹理上
@@ -1313,6 +1319,8 @@ namespace M3D
 
 		HardWareFrameBuffer& diamondBackFBO = GetHardWareFrameBuffer("diamondBackFBO");
 
+		HardWareFrameBuffer& diamondStarFBO = GetHardWareFrameBuffer("diamondStarFBO");
+
 		HardWareFrameBuffer& jewelBackFBO = GetHardWareFrameBuffer("jewelBackFBO");
 
 		HardWareFrameBuffer& jewelFrontFBO = GetHardWareFrameBuffer("jewelFrontFBO");
@@ -1328,6 +1336,8 @@ namespace M3D
 		HardWareFrameBuffer& jewelBlendFBO = GetHardWareFrameBuffer("jewelBlendFBO");
 
         HardWareFrameBuffer& jewelNoteFBO = GetHardWareFrameBuffer("jewelNoteFBO");
+
+        HardWareFrameBuffer& jewelPMIFBO = GetHardWareFrameBuffer("jewelPMIFBO");
 
 		RenderAction* action = this->m_action;
 		CameraNode * camera = action->GetCamera();
@@ -1358,6 +1368,30 @@ namespace M3D
 		  diamondFrontInfoFBO.UnBind();
 		  glFrontFace(GL_CCW);
 		  glDisable(GL_CULL_FACE);
+
+	        diamondStarFBO.ReShape();
+	        diamondStarFBO.Bind();
+	             glEnable(GL_DEPTH_TEST);
+	             glDepthFunc(GL_LEQUAL);
+	             glClearColor(0.0, 0.0, 0.0, 0);
+	             glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+
+	             if(!SVIEW::Parameters::Instance()->m_BackTransparent)
+	             {
+	                 GLShapeDrawer20::DrawBackGround((SceneNode*)action->GetBackGroundNode(), action);
+	             }
+	             glViewport(intRect.m_left, intRect.m_top, intRect.m_right, intRect.m_bottom);
+	             glEnable(GL_CULL_FACE);
+	             glCullFace(GL_BACK);
+	             glFrontFace(GL_CW);
+	             for (int i = 0; i < RenderStateArray.size(); i++)
+	             {
+	                 if ((RenderStateArray.at(i))->GetType().GetType() == RenderableType::RGT_SOLID || (RenderStateArray.at(i))->GetType().GetType() == RenderableType::RGT_TRANSPARENT)
+	                 {
+	                	 DrawJewelHighLight( RenderStateArray.at(i));
+	                 }
+	             }
+	             diamondStarFBO.UnBind();
 
         diamondBackFBO.ReShape();
         diamondBackFBO.Bind();
@@ -1552,12 +1586,24 @@ namespace M3D
             {
                 GLShapeDrawer20::DrawNoteRenderPassGroup(action, RenderStateArray.at(i) );
             }
-            if ((RenderStateArray.at(i))->GetType().GetType() == RenderableType::RGT_PMI )
-            {
-                GLShapeDrawer20::DrawPMISRenderPassGroup(action, RenderStateArray.at(i) );
-            }
         }
         jewelNoteFBO.UnBind();
+
+        jewelPMIFBO.ReShape();
+        jewelPMIFBO.Bind();
+              glEnable(GL_DEPTH_TEST);
+              glDepthFunc(GL_LEQUAL);
+              glClearColor(0.0, 0.0, 0.0, 0);
+              glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+              glViewport(intRect.m_left, intRect.m_top, intRect.m_right, intRect.m_bottom);
+              for (int i = 0; i < RenderStateArray.size(); i++)
+              {
+                  if ((RenderStateArray.at(i))->GetType().GetType() == RenderableType::RGT_PMI )
+                  {
+                      GLShapeDrawer20::DrawPMISRenderPassGroup(action, RenderStateArray.at(i) );
+                  }
+              }
+              jewelPMIFBO.UnBind();
 
         DrawJewelQuad();
 		//DrawFrameBufferDebug();
