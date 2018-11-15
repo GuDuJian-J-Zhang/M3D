@@ -398,11 +398,11 @@ namespace SVIEW
         m_pDoc->AddSVLXFileItem(strNoteName);
         
         //测量
-        string strMeasureName = strSaveFileName;
-        strMeasureName.append(".measure");
-        string strMeasurePath = strSVLXOutFilePath;
-        SaveMeasures(strMeasurePath + strMeasureName);
-        m_pDoc->AddSVLXFileItem(strMeasureName);
+//        string strMeasureName = strSaveFileName;
+//        strMeasureName.append(".measure");
+//        string strMeasurePath = strSVLXOutFilePath;
+//        SaveMeasures(strMeasurePath + strMeasureName);
+//        m_pDoc->AddSVLXFileItem(strMeasureName);
         
 		//保存视图
 		SaveView();
