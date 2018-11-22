@@ -2998,6 +2998,13 @@ void SVL2AsynReader::GetPMIsData(Model* model) {
 	if (!model) {
 		return;
 	}
+    bool m_Effect = false;
+    if (m_view) {
+        string effect = m_view->GetSceneManager()->GetRenderManager()->GetGlobalEffect();
+        if (effect.size() > 0) {
+            m_Effect = true;
+        }
+    }
 	SModelFileInfo* fileInfo = model->GetFileInfo();
 	if (fileInfo) {
 		Stk_DocumentPtr* m_svl2Doc = (Stk_DocumentPtr*) this->m_svl2Doc;
@@ -3005,7 +3012,35 @@ void SVL2AsynReader::GetPMIsData(Model* model) {
 		vector<Stk_PMIPtr> stk_PMIList;
 		Stk_ModelPtr stkModel = (*m_svl2Doc)->GetModelByID(stk_nodeId);
 		if (stkModel != NULL) {
-			stkModel->GetAllPMI(stk_PMIList);
+            //TODO zhubao-zhanglei
+            if (m_Effect) {
+                string stk_nodeName = model->GetName();
+                vector<string::size_type> indexs = StringHelper::GetIndexList(stk_nodeName, "MAJORJEWEL");
+                if (indexs.size() > 0) {
+                    stkModel->GetAllPMI(stk_PMIList, 0);
+                }
+                indexs = StringHelper::GetIndexList(stk_nodeName, "MINORJEWEL");
+                if (indexs.size() > 0) {
+                    stkModel->GetAllPMI(stk_PMIList, 1);
+                }
+                indexs = StringHelper::GetIndexList(stk_nodeName, "INLAYPOS");
+                if (indexs.size() > 0) {
+                    stkModel->GetAllPMI(stk_PMIList, 2);
+                }
+                indexs = StringHelper::GetIndexList(stk_nodeName, "FLOWERSTAND");
+                if (indexs.size() > 0) {
+                    stkModel->GetAllPMI(stk_PMIList, 3);
+                }
+                indexs = StringHelper::GetIndexList(stk_nodeName, "RINGARM");
+                if (indexs.size() > 0) {
+                    stkModel->GetAllPMI(stk_PMIList, 4);
+                }
+                if (stk_PMIList.size() == 0) {
+                    stkModel->GetAllPMI(stk_PMIList, 2);
+                }
+            }else{
+                stkModel->GetAllPMI(stk_PMIList);
+            }
 		}
 
 		int pmiCount = 0;
@@ -3029,6 +3064,26 @@ void SVL2AsynReader::GetPMIsData(Model* model) {
 	for (int i = 0; i < SubModelList.size(); i++) {
 		Model* subModel = SubModelList.at(i);
 		GetPMIsData(subModel);
+        // TODO zhanglei
+//        if (m_Effect) {
+//            map<int, PMIData*> *pmis = subModel->GetPMIs();
+//            map<int, PMIData*> *p_pmis = subModel->GetParent()->GetPMIs();
+//            if (pmis && pmis->size() > 0)
+//            {
+//                if (p_pmis == NULL) {
+//                    p_pmis = pmis;
+//                }else{
+//                    map<int, PMIData*>::iterator it = pmis->begin();
+//                    while (it != pmis->end())
+//                    {
+//                        p_pmis->insert(*it);
+//                        it++;
+//                    }
+//                }
+//                subModel->GetParent()->SetModelExtInfo(m_view->GetSceneManager()->GetExtendInfoManager());
+//                subModel->GetParent()->SetPMIs(*p_pmis);
+//            }
+//        }
 	}
 
 }
@@ -3182,7 +3237,13 @@ bool SVL2AsynReader::GetPMIInfo(vector<Stk_PMIPtr>* pStkPMIList, int *outPMINum,
 				HoteamSoft::SVLLib::TERM_PATSMNONE;
 		//Error = pPMICreator->CreateEndSymbol(pmi, pnt, Indices, nEndSymbol);
 		vecPolylinePnts.clear();
-//        Error = pPMICreator->CreateEndSymbol(pmi, vecPolylinePnts, nEndSymbol);
+        //TODO 珠宝渲染-没有箭头
+        if (m_view) {
+            string effect = m_view->GetSceneManager()->GetRenderManager()->GetGlobalEffect();
+            if (effect.size() == 0) {
+                Error = pPMICreator->CreateEndSymbol(pmi, vecPolylinePnts, nEndSymbol);
+            }
+        }
 		//		if (Error != TRUE) {
 		//			continue;
 		//		}
@@ -3501,7 +3562,7 @@ bool SVL2AsynReader::GetPMIInfo(vector<Stk_PMIPtr>* pStkPMIList, int *outPMINum,
 					//引用的是SVL中的数据，不用释放
 				}
 
-				Stk_ComTextPtr comTextPtr = Stk_ComTextPtr::CreateObject();
+				Stk_ComTextPtr comTextPtr = stkComText;
 				comTextPtr->SetTexts(texts);
 
 				ComText* myText = ConvertStkComTextToComText(comTextPtr);

@@ -228,6 +228,13 @@ void ExtendInfoManager::FindVisiableObject(RenderAction* renderAction)
 
 					map<int, PMIData*>* mapPMI = this->GetModelPMIs(topModelId);
 					renderAction->PrepareRenderPMIS(mapPMI);
+                    //zhanglei-装配中的PMI
+                    for (int i = 0; i < renderAction->GetScene()->GetModel()->GetSubModelCount(); i++) {
+                        IDTYPE modelId = renderAction->GetScene()->GetModel()->GetSubModels().at(i)->GetID();
+                        
+                        map<int, PMIData*>* mPMI = this->GetModelPMIs(modelId);
+                        renderAction->PrepareRenderPMIS(mPMI);
+                    }
 				}
 			}
 

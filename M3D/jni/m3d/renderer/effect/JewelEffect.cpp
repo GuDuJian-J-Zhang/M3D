@@ -1591,19 +1591,19 @@ namespace M3D
 
         jewelPMIFBO.ReShape();
         jewelPMIFBO.Bind();
-              glEnable(GL_DEPTH_TEST);
-              glDepthFunc(GL_LEQUAL);
-              glClearColor(0.0, 0.0, 0.0, 0);
-              glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-              glViewport(intRect.m_left, intRect.m_top, intRect.m_right, intRect.m_bottom);
-              for (int i = 0; i < RenderStateArray.size(); i++)
-              {
-                  if ((RenderStateArray.at(i))->GetType().GetType() == RenderableType::RGT_PMI )
-                  {
-                      GLShapeDrawer20::DrawPMISRenderPassGroup(action, RenderStateArray.at(i) );
-                  }
-              }
-              jewelPMIFBO.UnBind();
+        glEnable(GL_DEPTH_TEST);
+        glDepthFunc(GL_LEQUAL);
+        glClearColor(0.0, 0.0, 0.0, 0);
+        glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+        glViewport(intRect.m_left, intRect.m_top, intRect.m_right, intRect.m_bottom);
+        for (int i = 0; i < RenderStateArray.size(); i++)
+        {
+            if ((RenderStateArray.at(i))->GetType().GetType() == RenderableType::RGT_PMI )
+            {
+                GLShapeDrawer20::DrawPMISRenderPassGroup(action, RenderStateArray.at(i) );
+            }
+        }
+        jewelPMIFBO.UnBind();
 
         DrawJewelQuad();
 		//DrawFrameBufferDebug();

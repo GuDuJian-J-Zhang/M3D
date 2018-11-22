@@ -1,4 +1,4 @@
-﻿/*
+/*
  * PMIData.cpp
  *
  *  Created on: 2013-9-29
@@ -177,7 +177,7 @@ void PMIData::FindVisiableObject(RenderAction* renderAction)
 			controlMatrix = (camera->GetView()*m_WorldMatrix).Inverse();
 			Vector3 newCenter = (m_WorldMatrix)*this->m_outramLocation;
 			controlMatrix = GetWorldMatrix(controlMatrix, renderAction, newCenter,
-				true, false, false);
+				true, false, true);
 			MutexLock lock(m_mutex);
 			this->m_outFrameMatrix = controlMatrix.ToMatrix4().Transpose();
 		}

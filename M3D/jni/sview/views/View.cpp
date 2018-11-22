@@ -1743,19 +1743,39 @@ void View::SetDrawMode(int drawMode) {
 //设置PMI可见性
 bool View::SetPMIVisible(int pmiID, bool visible) {
 	//LOGI("View::SetPMIVisible cnt:%d pmiID:%d",this->GetModel()->m_AllPMIMap.size(),pmiID);
-	bool ret = true;
-	map<int, PMIData*>* pmis = this->GetModel()->GetPMIs();
-	map<int, PMIData*>::iterator it = pmis->find(pmiID);
-	if (it != pmis->end()) {
-		PMIData* pmi = (*it).second;
-		//LOGE("View::SetPMIVisible %s %d: visiable %d",pmi->GetName(),pmiID , visable);
-		pmi->SetVisible(visible);
-	} else {
-		ret = false;
-	}
+	bool ret = SetPMIVisible(this->GetModel(), pmiID, visible);
+//    map<int, PMIData*>* pmis = this->GetModel()->GetPMIs();
+//    map<int, PMIData*>::iterator it = pmis->find(pmiID);
+//    if (it != pmis->end()) {
+//        PMIData* pmi = (*it).second;
+//        //LOGE("View::SetPMIVisible %s %d: visiable %d",pmi->GetName(),pmiID , visable);
+//        pmi->SetVisible(visible);
+//    } else {
+//        ret = false;
+//    }
 
 	//LOGI("View::SetPMIVisible cnt:%d  ret:%d",this->GetModel()->m_AllPMIMap.size(),ret);
 	return ret;
+}
+bool View::SetPMIVisible(Model *model, int pmiID, bool visible) {
+    //LOGI("View::SetPMIVisible cnt:%d pmiID:%d",this->GetModel()->m_AllPMIMap.size(),pmiID);
+    bool ret = true;
+    map<int, PMIData*>* pmis = model->GetPMIs();
+    map<int, PMIData*>::iterator it = pmis->find(pmiID);
+    if (it != pmis->end()) {
+        PMIData* pmi = (*it).second;
+        //LOGE("View::SetPMIVisible %s %d: visiable %d",pmi->GetName(),pmiID , visable);
+        pmi->SetVisible(visible);
+        return ret;
+    } else {
+        for (int i = 0; i < model->GetSubModelCount(); i++) {
+            SetPMIVisible(model->GetSubModels().at(i),pmiID, visible);
+        }
+        ret = false;
+    }
+        
+        //LOGI("View::SetPMIVisible cnt:%d  ret:%d",this->GetModel()->m_AllPMIMap.size(),ret);
+    return ret;
 }
 void View::SaveSettingXML() {
 	Parameters::Instance()->SaveToXML();
@@ -5095,19 +5115,41 @@ void View::SetAllPMISVisible(bool isVisible) {
 	//LOGI("View::SetPMIVisible cnt:%d pmiID:%d",this->GetModel()->m_AllPMIMap.size(),pmiID);
 	bool ret = true;
 	if (this->GetModel()) {
-		map<int, PMIData*>* pmis = this->GetModel()->GetPMIs();
-		if (pmis) {
-			map<int, PMIData*>::iterator it = pmis->begin();
-			map<int, PMIData*>::iterator end = pmis->end();
-			while (it != end) {
-				PMIData* pmi = (*it).second;
-				pmi->SetVisible(isVisible);
-				it++;
-			}
-		}
+        SetPMISVisible(isVisible, this->GetModel() , true);
+//        map<int, PMIData*>* pmis = this->GetModel()->GetPMIs();
+//        if (pmis) {
+//            map<int, PMIData*>::iterator it = pmis->begin();
+//            map<int, PMIData*>::iterator end = pmis->end();
+//            while (it != end) {
+//                PMIData* pmi = (*it).second;
+//                pmi->SetVisible(isVisible);
+//                it++;
+//            }
+//        }
+        
 	}
 }
-
+void View::SetPMISVisible(bool isVisible, Model *model, bool mSub) {
+    //LOGI("View::SetPMIVisible cnt:%d pmiID:%d",this->GetModel()->m_AllPMIMap.size(),pmiID);
+    if (model) {
+        map<int, PMIData*>* pmis = model->GetPMIs();
+        if (pmis) {
+            map<int, PMIData*>::iterator it = pmis->begin();
+            map<int, PMIData*>::iterator end = pmis->end();
+            while (it != end) {
+                PMIData* pmi = (*it).second;
+                pmi->SetVisible(isVisible);
+                it++;
+            }
+        }
+        if (mSub) {
+            for (int i = 0; i < model->GetSubModelCount(); i++) {
+                SetPMISVisible(isVisible, model->GetSubModels().at(i));
+            }
+        }
+        
+    }
+}
 void View::UpDateAnimationLimit() {
 	Trackball::DrawLimit = m_DrawLimit;
 }

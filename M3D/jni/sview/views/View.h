@@ -555,6 +555,13 @@ public:
 	* @param isVisible
 	*/
 	void SetAllPMISVisible(bool isVisible);
+    /**
+     * 设置所有PMI的显隐状态
+     * @param isVisible
+     * @param model 模型
+     * @param mSub 是否设置子装配
+     */
+    void SetPMISVisible(bool isVisible, Model *model, bool mSub = false);
 	/**
 	 * @brief 复位ID为id的shape到最初加载位置
 	 * @param id
@@ -1285,6 +1292,7 @@ private:
 	
 	void ShowModelViewAnimation(ModelView *pView);
 
+    bool SetPMIVisible(Model *model, int pmiID, bool visible);
 public:
 	float m_fUnitScale;
 	void SetUnitScale(float scale);
