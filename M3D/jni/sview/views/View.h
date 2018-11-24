@@ -480,7 +480,7 @@ public:
 	void SetDrawMode(int drawMode);
 
 	//设置PMI可见性
-	bool SetPMIVisible(int pmiID,bool visable);
+	void SetPMIVisible(int pmiID,bool visable);
 
 	/**
 	 * @brief 重置场景到最初加载状态
@@ -1292,7 +1292,7 @@ private:
 	
 	void ShowModelViewAnimation(ModelView *pView);
 
-    bool SetPMIVisible(Model *model, int pmiID, bool visible);
+    void SetPMIVisible(Model *model, int pmiID, bool visible);
 public:
 	float m_fUnitScale;
 	void SetUnitScale(float scale);
