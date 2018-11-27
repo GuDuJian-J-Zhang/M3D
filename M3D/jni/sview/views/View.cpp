@@ -5149,6 +5149,33 @@ void View::SetPMISVisible(bool isVisible, Model *model, bool mSub) {
         
     }
 }
+    void View::SetAllPMIColor(Color color) {
+        //LOGI("View::SetPMIVisible cnt:%d pmiID:%d",this->GetModel()->m_AllPMIMap.size(),pmiID);
+        bool ret = true;
+        if (this->GetModel()) {
+            SetPMIColor(color, this->GetModel());
+            
+        }
+    }
+    void View::SetPMIColor(Color color, Model *model) {
+        //LOGI("View::SetPMIVisible cnt:%d pmiID:%d",this->GetModel()->m_AllPMIMap.size(),pmiID);
+        if (model) {
+            map<int, PMIData*>* pmis = model->GetPMIs();
+            if (pmis) {
+                map<int, PMIData*>::iterator it = pmis->begin();
+                map<int, PMIData*>::iterator end = pmis->end();
+                while (it != end) {
+                    PMIData* pmi = (*it).second;
+                    pmi->SetColor(color);
+                    it++;
+                }
+            }
+            for (int i = 0; i < model->GetSubModelCount(); i++) {
+                SetPMIColor(color, model->GetSubModels().at(i));
+            }
+            
+        }
+    }
 void View::UpDateAnimationLimit() {
 	Trackball::DrawLimit = m_DrawLimit;
 }

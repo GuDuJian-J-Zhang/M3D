@@ -555,6 +555,7 @@ public:
 	* @param isVisible
 	*/
 	void SetAllPMISVisible(bool isVisible);
+    void SetAllPMIColor(Color color);
     /**
      * 设置所有PMI的显隐状态
      * @param isVisible
@@ -1293,6 +1294,7 @@ private:
 	void ShowModelViewAnimation(ModelView *pView);
 
     void SetPMIVisible(Model *model, int pmiID, bool visible);
+    void SetPMIColor(Color color, Model *model);
 public:
 	float m_fUnitScale;
 	void SetUnitScale(float scale);
