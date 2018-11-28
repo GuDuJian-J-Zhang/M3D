@@ -3069,9 +3069,9 @@ void SVL2AsynReader::GetPMIsData(Model* model) {
                 if (indexs.size() > 0) {
                     stkModel->GetAllPMI(stk_PMIList, 4);
                 }
-                if (stk_PMIList.size() == 0) {
-                    stkModel->GetAllPMI(stk_PMIList, 2);
-                }
+//                if (stk_PMIList.size() == 0) {
+//                    stkModel->GetAllPMI(stk_PMIList, 2);
+//                }
             }else{
                 stkModel->GetAllPMI(stk_PMIList);
             }
@@ -3098,26 +3098,6 @@ void SVL2AsynReader::GetPMIsData(Model* model) {
 	for (int i = 0; i < SubModelList.size(); i++) {
 		Model* subModel = SubModelList.at(i);
 		GetPMIsData(subModel);
-        // TODO zhanglei
-//        if (m_Effect) {
-//            map<int, PMIData*> *pmis = subModel->GetPMIs();
-//            map<int, PMIData*> *p_pmis = subModel->GetParent()->GetPMIs();
-//            if (pmis && pmis->size() > 0)
-//            {
-//                if (p_pmis == NULL) {
-//                    p_pmis = pmis;
-//                }else{
-//                    map<int, PMIData*>::iterator it = pmis->begin();
-//                    while (it != pmis->end())
-//                    {
-//                        p_pmis->insert(*it);
-//                        it++;
-//                    }
-//                }
-//                subModel->GetParent()->SetModelExtInfo(m_view->GetSceneManager()->GetExtendInfoManager());
-//                subModel->GetParent()->SetPMIs(*p_pmis);
-//            }
-//        }
 	}
 
 }
@@ -3143,7 +3123,13 @@ bool SVL2AsynReader::GetPMIInfo(vector<Stk_PMIPtr>* pStkPMIList, int *outPMINum,
 	if (pStkPMIList->size() <= 0) {
 		return true;
 	}
-
+    bool m_Effect = false;
+    if (m_view) {
+        string effect = m_view->GetSceneManager()->GetRenderManager()->GetGlobalEffect();
+        if (effect.size() > 0) {
+            m_Effect = true;
+        }
+    }
 	outPMIData = vector<PMIData*>();
 	SVLXPMICreator *pPMICreator = new SVLXPMICreator;
 
@@ -3272,11 +3258,8 @@ bool SVL2AsynReader::GetPMIInfo(vector<Stk_PMIPtr>* pStkPMIList, int *outPMINum,
 		//Error = pPMICreator->CreateEndSymbol(pmi, pnt, Indices, nEndSymbol);
 		vecPolylinePnts.clear();
         //TODO 珠宝渲染-没有箭头
-        if (m_view) {
-            string effect = m_view->GetSceneManager()->GetRenderManager()->GetGlobalEffect();
-            if (effect.size() == 0) {
-                Error = pPMICreator->CreateEndSymbol(pmi, vecPolylinePnts, nEndSymbol);
-            }
+        if (m_Effect == false) {
+            Error = pPMICreator->CreateEndSymbol(pmi, vecPolylinePnts, nEndSymbol);
         }
 		//		if (Error != TRUE) {
 		//			continue;

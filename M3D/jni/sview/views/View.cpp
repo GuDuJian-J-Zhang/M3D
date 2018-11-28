@@ -1741,9 +1741,9 @@ void View::SetDrawMode(int drawMode) {
 	this->m_SceneManager->GetRenderManager()->RequestRedraw();
 }
 //设置PMI可见性
-bool View::SetPMIVisible(int pmiID, bool visible) {
+void View::SetPMIVisible(int pmiID, bool visible) {
 	//LOGI("View::SetPMIVisible cnt:%d pmiID:%d",this->GetModel()->m_AllPMIMap.size(),pmiID);
-	bool ret = SetPMIVisible(this->GetModel(), pmiID, visible);
+	SetPMIVisible(this->GetModel(), pmiID, visible);
 //    map<int, PMIData*>* pmis = this->GetModel()->GetPMIs();
 //    map<int, PMIData*>::iterator it = pmis->find(pmiID);
 //    if (it != pmis->end()) {
@@ -1755,27 +1755,26 @@ bool View::SetPMIVisible(int pmiID, bool visible) {
 //    }
 
 	//LOGI("View::SetPMIVisible cnt:%d  ret:%d",this->GetModel()->m_AllPMIMap.size(),ret);
-	return ret;
+//    return ret;
 }
-bool View::SetPMIVisible(Model *model, int pmiID, bool visible) {
+void View::SetPMIVisible(Model *model, int pmiID, bool visible) {
     //LOGI("View::SetPMIVisible cnt:%d pmiID:%d",this->GetModel()->m_AllPMIMap.size(),pmiID);
     bool ret = true;
     map<int, PMIData*>* pmis = model->GetPMIs();
-    map<int, PMIData*>::iterator it = pmis->find(pmiID);
-    if (it != pmis->end()) {
-        PMIData* pmi = (*it).second;
-        //LOGE("View::SetPMIVisible %s %d: visiable %d",pmi->GetName(),pmiID , visable);
-        pmi->SetVisible(visible);
-        return ret;
-    } else {
-        for (int i = 0; i < model->GetSubModelCount(); i++) {
-            SetPMIVisible(model->GetSubModels().at(i),pmiID, visible);
+    if (pmis) {
+        map<int, PMIData*>::iterator it = pmis->find(pmiID);
+        if (it != pmis->end()) {
+            PMIData* pmi = (*it).second;
+            //LOGE("View::SetPMIVisible %s %d: visiable %d",pmi->GetName(),pmiID , visable);
+            pmi->SetVisible(visible);
+            //        return ret;
         }
-        ret = false;
     }
-        
+    for (int i = 0; i < model->GetSubModelCount(); i++) {
+        SetPMIVisible(model->GetSubModels().at(i),pmiID, visible);
+    }
         //LOGI("View::SetPMIVisible cnt:%d  ret:%d",this->GetModel()->m_AllPMIMap.size(),ret);
-    return ret;
+//    return ret;
 }
 void View::SaveSettingXML() {
 	Parameters::Instance()->SaveToXML();
@@ -5150,6 +5149,33 @@ void View::SetPMISVisible(bool isVisible, Model *model, bool mSub) {
         
     }
 }
+    void View::SetAllPMIColor(Color color) {
+        //LOGI("View::SetPMIVisible cnt:%d pmiID:%d",this->GetModel()->m_AllPMIMap.size(),pmiID);
+        bool ret = true;
+        if (this->GetModel()) {
+            SetPMIColor(color, this->GetModel());
+            
+        }
+    }
+    void View::SetPMIColor(Color color, Model *model) {
+        //LOGI("View::SetPMIVisible cnt:%d pmiID:%d",this->GetModel()->m_AllPMIMap.size(),pmiID);
+        if (model) {
+            map<int, PMIData*>* pmis = model->GetPMIs();
+            if (pmis) {
+                map<int, PMIData*>::iterator it = pmis->begin();
+                map<int, PMIData*>::iterator end = pmis->end();
+                while (it != end) {
+                    PMIData* pmi = (*it).second;
+                    pmi->SetColor(color);
+                    it++;
+                }
+            }
+            for (int i = 0; i < model->GetSubModelCount(); i++) {
+                SetPMIColor(color, model->GetSubModels().at(i));
+            }
+            
+        }
+    }
 void View::UpDateAnimationLimit() {
 	Trackball::DrawLimit = m_DrawLimit;
 }
