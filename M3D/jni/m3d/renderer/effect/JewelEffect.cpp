@@ -1369,29 +1369,29 @@ namespace M3D
 		  glFrontFace(GL_CCW);
 		  glDisable(GL_CULL_FACE);
 
-	        diamondStarFBO.ReShape();
-	        diamondStarFBO.Bind();
-	             glEnable(GL_DEPTH_TEST);
-	             glDepthFunc(GL_LEQUAL);
-	             glClearColor(0.0, 0.0, 0.0, 0);
-	             glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+	     diamondStarFBO.ReShape();
+	     diamondStarFBO.Bind();
+		 glEnable(GL_DEPTH_TEST);
+		 glDepthFunc(GL_LEQUAL);
+		 glClearColor(0.0, 0.0, 0.0, 0);
+		 glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
-	             if(!SVIEW::Parameters::Instance()->m_BackTransparent)
-	             {
-	                 GLShapeDrawer20::DrawBackGround((SceneNode*)action->GetBackGroundNode(), action);
-	             }
-	             glViewport(intRect.m_left, intRect.m_top, intRect.m_right, intRect.m_bottom);
-	             glEnable(GL_CULL_FACE);
-	             glCullFace(GL_BACK);
-	             glFrontFace(GL_CW);
-	             for (int i = 0; i < RenderStateArray.size(); i++)
-	             {
-	                 if ((RenderStateArray.at(i))->GetType().GetType() == RenderableType::RGT_SOLID || (RenderStateArray.at(i))->GetType().GetType() == RenderableType::RGT_TRANSPARENT)
-	                 {
-	                	 DrawJewelHighLight( RenderStateArray.at(i));
-	                 }
-	             }
-	             diamondStarFBO.UnBind();
+		 if(!SVIEW::Parameters::Instance()->m_BackTransparent)
+		 {
+			 GLShapeDrawer20::DrawBackGround((SceneNode*)action->GetBackGroundNode(), action);
+		 }
+		 glViewport(intRect.m_left, intRect.m_top, intRect.m_right, intRect.m_bottom);
+		 glEnable(GL_CULL_FACE);
+		 glCullFace(GL_BACK);
+		 glFrontFace(GL_CW);
+		 for (int i = 0; i < RenderStateArray.size(); i++)
+		 {
+			 if ((RenderStateArray.at(i))->GetType().GetType() == RenderableType::RGT_SOLID || (RenderStateArray.at(i))->GetType().GetType() == RenderableType::RGT_TRANSPARENT)
+			 {
+				 DrawJewelHighLight( RenderStateArray.at(i));
+			 }
+		 }
+		 diamondStarFBO.UnBind();
 
         diamondBackFBO.ReShape();
         diamondBackFBO.Bind();
