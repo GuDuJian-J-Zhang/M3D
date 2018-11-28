@@ -107,8 +107,8 @@ public:
 	static const char * CapPlaneFrag();
 
 	//************************************
-	// Method:    NewJewelBackVert
-	// FullName:  M3D::ShaderSrcCode::NewJewelFrontVert
+	// Method:    JewelFrontInfoVert
+	// FullName:  M3D::ShaderSrcCode::JewelFrontInfoVert
 	// Access:    public static
 	// Returns:   const char*
 	// Qualifier: 珠宝front Info渲染层 绘制完传递给back
@@ -116,8 +116,8 @@ public:
 	static const char* JewelFrontInfoVert();
 	static const char* JewelFrontInfoFrag();
 	//************************************
-	// Method:    JewelFrontVert
-	// FullName:  M3D::ShaderSrcCode::JewelFrontVert
+	// Method:    DiamondFrontVert
+	// FullName:  M3D::ShaderSrcCode::DiamondFrontVert
 	// Access:    public static 
 	// Returns:   const char*
 	// Qualifier: 钻石front渲染层
@@ -126,8 +126,8 @@ public:
 	static const char* DiamondFrontFrag();
 
 	//************************************
-	// Method:    JewelBackVert
-	// FullName:  M3D::ShaderSrcCode::JewelBackVert
+	// Method:    DiamondBackVert
+	// FullName:  M3D::ShaderSrcCode::DiamondBackVert
 	// Access:    public static
 	// Returns:   const char*
 	// Qualifier: 钻石back渲染层

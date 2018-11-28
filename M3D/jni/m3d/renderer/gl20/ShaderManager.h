@@ -78,7 +78,9 @@ public:
 	const static string JewelBack;
 	const static string DiamondFront;
 	const static string DiamondBack;
+	const static string DiamondStar;
 	const static string JewelFinalQuad;
+	const static string DiamondFinalQuad;
 	const static string Ring;
 	const static string JewelType;
 	const static string JewelHighLight;
@@ -96,9 +98,6 @@ public:
 	const static string SaoMinifyCSZ;
 	const static string SaoBlur;
     const static string Mirror;
-    
-	const static string NewJewelFront;
-	const static string NewJewelBack;
 	const static string JewelFrontInfo;
 
 public:

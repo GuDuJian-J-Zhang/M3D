@@ -2374,17 +2374,21 @@ bool SVL2AsynReader::GetMatrialColor(int materialId, Color& difuseColor,
 			//将材质加入全局资源管理器中，进行资源管理
 			material =
 					this->m_view->GetSceneManager()->GetResourceManager()->GetMaterialTemplateManager()->GetMaterialFromTemplateByName(name,1);
-			if (!material->GetNeedsUpdateUniformParamerers()) {
-				return false;
+			if (material == NULL) {
+				material =this->m_view->GetSceneManager()->GetResourceManager()->GetOrCreateMaterial(
+											materialIDStr, MaterialType_Shader);
 			}
-			material->DisplayName(name);
+				if (!material->GetNeedsUpdateUniformParamerers()) {
+					return false;
+				}
+				material->DisplayName(name);
+				//	vector<int> * vec = new vector<int>();
+				//	vec->push_back(materialType);
+				Uniform uniform("Int", (int) materialType);
+				material->SetUniformParameter("type", uniform);
+				ParseMaterialParameters(materialPtr, material);
+				material->SetMaterialType((MaterialType) materialType);
 
-			//	vector<int> * vec = new vector<int>();
-			//	vec->push_back(materialType);
-			Uniform uniform("Int", (int) materialType);
-			material->SetUniformParameter("type", uniform);
-			ParseMaterialParameters(materialPtr, material);
-			material->SetMaterialType((MaterialType) materialType);
 
 		}
 #endif
