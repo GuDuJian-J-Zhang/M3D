@@ -95,8 +95,8 @@ void PMIData::RayPick(RayPickAction* action)
 
 		action->UpdateGroupPickPnts();
 
-		//添加相交点
-		action->EndPickAsGroup(this);
+		//添加相交点-TODO-zhanglei PMI不添加到拾取中
+//        action->EndPickAsGroup(this);
 
 		//if (this->m_DefPlaneDirty)
 		//{

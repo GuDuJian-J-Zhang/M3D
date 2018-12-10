@@ -130,15 +130,13 @@ namespace M3D
 		//填充meaureNote,根据不同的测量类型创建不同的Note对象
 		if (type == Measure::MEASURE_TYPE_PNT_PNT_DISTANCE) ///点到点测量
 		{
-            measure = createDesignerPntToPntDistance(firstShapeID, secondShapID, scene);
-//            measure = createPntToPntDistance(firstShapeID, secondShapID, screenPnt,
-//                scene);
+            measure = createPntToPntDistance(firstShapeID, secondShapID, screenPnt,
+                scene);
 		}
 		else if (type == Measure::MEASURE_TYPE_PNT_LINE_DISTANCE)
 		{
-            measure = createDesignerPntToLineDistance(secondShapID, firstShapeID, scene);
-//            measure = createPntTOLineDistance(firstShapeID, secondShapID, screenPnt,
-//                scene);
+            measure = createPntTOLineDistance(firstShapeID, secondShapID, screenPnt,
+                scene);
 		}
 		else if (type == Measure::MEASURE_TYPE_PNT_FACE_DISTANCE) ///点到面距离
 		{
