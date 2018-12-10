@@ -568,7 +568,10 @@ public:
 	 * @param id
 	 */
 	void ResetSelectedShapes(M3D::IShape* shape);
-
+	/**
+	 * 判断模型上是否有PMI
+	 */
+	bool hasPMI(Model* model);
 	///设置相关
 	/**
 	 * @brief 保存当前配置到XML文件中

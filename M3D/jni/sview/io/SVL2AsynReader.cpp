@@ -75,7 +75,6 @@ using rapidjson::MemoryPoolAllocator;
 #include "m3d/utils/PathHelper.h"
 #include "m3d/graphics/MatCapMaterial.h"
 #include "m3d/graphics/MaterialTemplateManager.h"
-
 using M3D::Model;
 using M3D::Model;
 using M3D::Model;
@@ -266,6 +265,7 @@ void SVL2AsynReader::FillModelMesh(View* view, Model* model) {
 							static_cast<Model*>(model), &stkModel);
 				} else {
 					//FillModelDrawDataMergeFaceWithColor(static_cast<Model*>(model), &stkModel);
+
 					FillModelDrawData(static_cast<Model*>(model), &stkModel);
 				}
 
@@ -1583,6 +1583,11 @@ Model* SVL2AsynReader::ReadFile(const char* thePath) {
 
 	return topModel;
 }
+/**
+ * 解析材质文件参数
+ * @param materialPtr
+ * @param material
+ */
 
 void SVL2AsynReader::ParseMaterialParameters(Stk_MaterialPtr materialPtr,
 		BaseMaterial* material) {
@@ -2356,36 +2361,39 @@ bool SVL2AsynReader::GetMatrialColor(int materialId, Color& difuseColor,
 			m_protoTypeColorCache.insert(
 					std::pair<int, Color>(materialId, difuseColor));
 
-        }
+		}
 #ifdef __MOBILE__
-        else if (materialType == StkMaterialTypeEnum::STK_MATERIALTYPE_JADE||materialType == StkMaterialTypeEnum::STK_MATERIALTYPE_PERAL
-                 ||materialType == StkMaterialTypeEnum::STK_MATERIALTYPE_CRYSTAL||materialType == StkMaterialTypeEnum::STK_MATERIALTYPE_JADE){
-            //如果是珠宝模型自己单独处理
-            
-            wstring wname = materialPtr->GetMaterialName();
-            string name = Platform::WStringToString(wname);
-            string materialIDStr = GetSVLMaterialID(this->m_M3DModel,
-                                                    materialId);
-            //将材质加入全局资源管理器中，进行资源管理
-            material =
-            this->m_view->GetSceneManager()->GetResourceManager()->GetMaterialTemplateManager()->GetMaterialFromTemplateByName(name,1);
-            if (!material || !material->GetNeedsUpdateUniformParamerers()) {
-                return false;
-            }
-            material->DisplayName(name);
-            
-            //    vector<int> * vec = new vector<int>();
-            //    vec->push_back(materialType);
-            Uniform uniform("Int", (int) materialType);
-            material->SetUniformParameter("type", uniform);
-            ParseMaterialParameters(materialPtr, material);
-            LOGE("材质名称：%s",material->GetName().c_str());
-            material->SetMaterialType((MaterialType) materialType);
-            
-        }
+		else if (materialType == StkMaterialTypeEnum::STK_MATERIALTYPE_JADE||materialType == StkMaterialTypeEnum::STK_MATERIALTYPE_PERAL
+				||materialType == StkMaterialTypeEnum::STK_MATERIALTYPE_CRYSTAL||materialType == StkMaterialTypeEnum::STK_MATERIALTYPE_JADE){
+			//如果是珠宝模型自己单独处理
+
+			wstring wname = materialPtr->GetMaterialName();
+			string name = Platform::WStringToString(wname);
+			string materialIDStr = GetSVLMaterialID(this->m_M3DModel,
+					materialId);
+			//将材质加入全局资源管理器中，进行资源管理
+			material =
+					this->m_view->GetSceneManager()->GetResourceManager()->GetMaterialTemplateManager()->GetMaterialFromTemplateByName(name,1);
+			if (material == NULL) {
+				material =this->m_view->GetSceneManager()->GetResourceManager()->GetOrCreateMaterial(
+											materialIDStr, MaterialType_Shader);
+			}
+				if (!material->GetNeedsUpdateUniformParamerers()) {
+					return false;
+				}
+				material->DisplayName(name);
+				//	vector<int> * vec = new vector<int>();
+				//	vec->push_back(materialType);
+				Uniform uniform("Int", (int) materialType);
+				material->SetUniformParameter("type", uniform);
+				ParseMaterialParameters(materialPtr, material);
+				material->SetMaterialType((MaterialType) materialType);
+
+
+		}
 #endif
-        else {
-			StkMaterialTypeEnum materialType = materialPtr->GetMaterialType();
+		else {
+
 			wstring wname = materialPtr->GetMaterialName();
 			string name = Platform::WStringToString(wname);
 			string materialIDStr = GetSVLMaterialID(this->m_M3DModel,
@@ -2403,8 +2411,8 @@ bool SVL2AsynReader::GetMatrialColor(int materialId, Color& difuseColor,
 			Uniform uniform("Int", (int) materialType);
 			material->SetUniformParameter("type", uniform);
 			ParseMaterialParameters(materialPtr, material);
-
 			material->SetMaterialType((MaterialType) materialType);
+
 		}
 		//设置材质原始ID-added by yanghongpeng
 		material->SetSvlId(materialPtr->GetID() + m_SVLIDOffset);
