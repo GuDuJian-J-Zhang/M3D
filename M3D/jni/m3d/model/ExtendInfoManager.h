@@ -53,11 +53,11 @@ public:
     map<wstring, wstring> GetMeshEdgeAllAttribute(const int& i_iModelID, const int& i_MeshEdgeID);
 	GeometryAttribute* GetFaceGeoAttribute(int iModelID, int iMeshFaceID);
 	GeometryAttribute* GetEdgeGeoAttribute(int iModelID, int iMeshEdgeID);
-	//��������ԭ��model
+	//拷贝复制原有model
 	void CopyMeshAttr(unsigned int iOldModelID, unsigned int iNewModelID);
-	//����漸������
+	//添加面几何属性
 	void AddMeshFaceAttr(map<unsigned int, map<unsigned int, map<wstring, wstring>>>& faceAttrs);
-	//��ӱ߼�������
+	//添加边几何属性
 	void AddMeshEdgeAttr(map<unsigned int, map<unsigned int, map<wstring, wstring>>>& edgeAttrs);
 	void SetSVLXFilePath(const string& filePath);
 	void FillModelAttribute(Model* model);
@@ -69,9 +69,9 @@ private:
 	void LoadSVLXInfo(void* document);
 
 private:
-	map<IDTYPE, map<int, PMIData*>> m_AllModelPMIMap;         //!<����PMI���б� ��ʱ��Model��
-	map<IDTYPE, vector<ModelView*>> m_AllModleViewList;       //!<��ͼ�б�
-	map<IDTYPE, vector<SectionPlane*>> m_AllSectionPlaneList; //!<����ƽ���б�
+	map<IDTYPE, map<int, PMIData*>> m_AllModelPMIMap;         //!<所有PMI的列表 临时放Model下
+	map<IDTYPE, vector<ModelView*>> m_AllModleViewList;       //!<视图列表
+	map<IDTYPE, vector<SectionPlane*>> m_AllSectionPlaneList; //!<剖视平面列表
  
 	string m_svlxFilePath;
     void* m_svlDoc;

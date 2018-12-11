@@ -1,5 +1,5 @@
 
-
+#include <typeinfo>
 #include "m3d/handler/Dragger.h"
 #include "m3d/handler/Command.h"
 #include "sview/views/View.h"
@@ -125,7 +125,7 @@ namespace M3D {
 		_pickDragger = nodePath;
 		_intersectPoint = intersectionPoint;
 
-		//TODO »ñÈ¡DraggerÏà¹Ø¶ÔÓ¦µÄ¾ØÕó
+		//TODO ï¿½ï¿½È¡Draggerï¿½ï¿½Ø¶ï¿½Ó¦ï¿½Ä¾ï¿½ï¿½ï¿½
 		M3D::Matrix3x4 worlToLoacalMatrix = _pickDragger->GetWorldTransform();
 		_LocalIntersectPoint = worlToLoacalMatrix.Inverse()*intersectionPoint;
 	}
@@ -331,7 +331,7 @@ namespace M3D {
 			{
 			case TouchEvent::PUSH:
 			{
-				//½øÐÐÊ°È¡£¬ÅÐ¶ÏÊÇ·ñºÍÍÏ×§Æ÷±íÊ¾µÄÄ£ÐÍÏà½»ÁË
+				//ï¿½ï¿½ï¿½ï¿½Ê°È¡ï¿½ï¿½ï¿½Ð¶ï¿½ï¿½Ç·ï¿½ï¿½ï¿½ï¿½×§ï¿½ï¿½ï¿½ï¿½Ê¾ï¿½ï¿½Ä£ï¿½ï¿½ï¿½à½»ï¿½ï¿½
 				_pointer.reset();
 				Dragger* pickDragger = Dragger::GetPickDragger(view, ea, _pointer);
 				Dragger* dragger = pickDragger;
@@ -422,7 +422,7 @@ namespace M3D {
 			(*itr)->receive(command);
 		}
 
-		//»Øµ÷º¯Êý
+		//ï¿½Øµï¿½ï¿½ï¿½ï¿½ï¿½
 		if (getParentDragger()->m_draggerCB != nullptr)
 		{
 			int nStage = command.getStage();
@@ -439,13 +439,13 @@ namespace M3D {
 		RayPickAction* rayPickAction = new RayPickAction(scene);
 		rayPickAction->SetPickShapeType(SHAPE_MODEL);
 		rayPickAction->SetPickGeoType(0);
-		//rayPickAction->SetInterctType(1);//ÉèÖÃ³ÉÏßÏà½»µÄ·½Ê½
+		//rayPickAction->SetInterctType(1);//ï¿½ï¿½ï¿½Ã³ï¿½ï¿½ï¿½ï¿½à½»ï¿½Ä·ï¿½Ê½
 
 		rayPickAction->SetRay((int)ea.getX(), (int)ea.getY());
 		rayPickAction->SetUseclipPlane(false);
 		//LOGI("setpoint is ok");
 
-		//Ê×ÏÈ´¦ÀíUIÔªËØÊ°È¡µÄÍÏ×§
+		//ï¿½ï¿½ï¿½È´ï¿½ï¿½ï¿½UIÔªï¿½ï¿½Ê°È¡ï¿½ï¿½ï¿½ï¿½×§
 		SceneNode* group = view->GetSceneManager()->GetHandlerGroup();
 		group->RayPick(rayPickAction);
 
@@ -748,7 +748,7 @@ namespace M3D {
 			return;
 		}
 
-		//¸üÐÂXÖá
+		//ï¿½ï¿½ï¿½ï¿½Xï¿½ï¿½
 		wstring draggerName = refDragger->GetDraggerName();
 		if (draggerName == L"XAxis"
 			|| draggerName == L"YAxis"
@@ -767,7 +767,7 @@ namespace M3D {
 			if (stage == MotionCommand::START)
 			{
 				Model* xAxisLineModel = new Model();
-				//Ìí¼ÓÁ½ÌõÏß
+				//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 				Vector3 lineStartPnt = Vector3::ZERO;
 
 				Vector3 lineEndPnt = Vector3(0, 0, -10000);
@@ -786,7 +786,7 @@ namespace M3D {
 				pnts.push_back(lineEndPnt);
 
 				xAxisLineModel->AddLineData(pnts);
-				//ÉèÖÃÕâÁ½ÌõÏßµÄÑÕÉ«
+				//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ßµï¿½ï¿½ï¿½É«
 				xAxisLineModel->GetBodys()->at(0)->GetEdges()->at(0)->SetColor(Color::RED);
 				xAxisLineModel->GetBodys()->at(1)->GetEdges()->at(0)->SetColor(Color::YELLOW);
 
@@ -800,7 +800,7 @@ namespace M3D {
 			}
 			else if (stage == MotionCommand::MOVE)
 			{
-				//ÔÚÖáÏßÉÏÃæÌí¼Ó¸¨ÖúÏß
+				//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¸ï¿½ï¿½ï¿½ï¿½ï¿½
 				Model* xAxisLineX = handlerGroup->GetDraggerTip(XAXISLIE_X);
 				if (xAxisLineX)
 				{
@@ -815,12 +815,12 @@ namespace M3D {
 				pnts.push_back(textPos);
 				xAxisLineX->AddLineData(pnts);
 				xAxisLineX->AddLineData(pnts);
-				//ÉèÖÃÕâÁ½ÌõÏßµÄÑÕÉ«
+				//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ßµï¿½ï¿½ï¿½É«
 				xAxisLineX->GetBodys()->at(0)->GetEdges()->at(0)->SetColor(Color::WHITE);
 
 				//ImageModel* textImageX = new ImageModel();
 
-				//´´½¨Í¼Æ¬
+				//ï¿½ï¿½ï¿½ï¿½Í¼Æ¬
 				/*float length = translateInLineCommand.getTranslation().Length();
 				string strLength = StringHelper::floatToString(length);
 				if (textImagePath.size()>0)
@@ -839,7 +839,7 @@ namespace M3D {
 			}
 			else if (stage == MotionCommand::FINISH)
 			{
-				//É¾³ýÌí¼ÓµÄÄ£ÐÍ
+				//É¾ï¿½ï¿½ï¿½ï¿½Óµï¿½Ä£ï¿½ï¿½
 				Model* xAxisLine = handlerGroup->GetDraggerTip(XAXISLINENAME);
 				if (xAxisLine)
 				{
@@ -863,7 +863,7 @@ namespace M3D {
 			return;
 		}
 
-		//¸üÐÂXÖá
+		//ï¿½ï¿½ï¿½ï¿½Xï¿½ï¿½
 		wstring draggerName = refDragger->GetDraggerName();
 		if (draggerName == L"XYAxis"
 			|| draggerName == L"XZAxis"
@@ -882,10 +882,10 @@ namespace M3D {
 			if (stage == MotionCommand::START)
 			{
 				Model* xAxisLineModel = new Model();
-				//Ìí¼ÓÁ½ÌõÏß
+				//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 				Vector3 lineStartPnt = Vector3::ZERO;
 
-				//¹¹½¨XZÆ½ÃæÔÚ´Ë»ù´¡ÉÏ½øÐÐÆ«ÒÆ
+				//ï¿½ï¿½ï¿½ï¿½XZÆ½ï¿½ï¿½ï¿½Ú´Ë»ï¿½ï¿½ï¿½ï¿½Ï½ï¿½ï¿½ï¿½Æ«ï¿½ï¿½
 				Vector3 lineEndPnt = Vector3(0, 0, -10000);
 
 				vector<Vector3> pnts;
@@ -913,7 +913,7 @@ namespace M3D {
 				xAxisLineModel->AddLineData(pnts);
 
 
-				//ÉèÖÃÕâÁ½ÌõÏßµÄÑÕÉ«
+				//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ßµï¿½ï¿½ï¿½É«
 				xAxisLineModel->GetBodys()->at(0)->GetEdges()->at(0)->SetColor(Color::RED);
 				xAxisLineModel->GetBodys()->at(1)->GetEdges()->at(0)->SetColor(Color::YELLOW);
 
@@ -930,7 +930,7 @@ namespace M3D {
 			}
 			else if (stage == MotionCommand::MOVE)
 			{
-				//ÔÚÖáÏßÉÏÃæÌí¼Ó¸¨ÖúÏß
+				//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¸ï¿½ï¿½ï¿½ï¿½ï¿½
 				Model* xAxisLineX = handlerGroup->GetDraggerTip(XAXISLIE_X);
 				if (xAxisLineX)
 				{
@@ -945,12 +945,12 @@ namespace M3D {
 				pnts.push_back(textPos);
 				xAxisLineX->AddLineData(pnts);
 				xAxisLineX->AddLineData(pnts);
-				//ÉèÖÃÕâÁ½ÌõÏßµÄÑÕÉ«
+				//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ßµï¿½ï¿½ï¿½É«
 				xAxisLineX->GetBodys()->at(0)->GetEdges()->at(0)->SetColor(Color::WHITE);
 
 				//ImageModel* textImageX = new ImageModel();
 
-				//´´½¨Í¼Æ¬
+				//ï¿½ï¿½ï¿½ï¿½Í¼Æ¬
 				/*float length = translateInLineCommand.getTranslation().Length();
 				string strLength = StringHelper::floatToString(length);
 				if (textImagePath.size()>0)
@@ -969,7 +969,7 @@ namespace M3D {
 			}
 			else if (stage == MotionCommand::FINISH)
 			{
-				//É¾³ýÌí¼ÓµÄÄ£ÐÍ
+				//É¾ï¿½ï¿½ï¿½ï¿½Óµï¿½Ä£ï¿½ï¿½
 				Model* xAxisLine = handlerGroup->GetDraggerTip(XAXISLINENAME);
 				if (xAxisLine)
 				{
@@ -998,7 +998,7 @@ namespace M3D {
 			if (stage == MotionCommand::START)
 			{
 				Model* xAxisLineModel = new Model();
-				//Ìí¼ÓÁ½ÌõÏß
+				//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 				Vector3 lineStartPnt = Vector3::ZERO;
 
 				Vector3 lineEndPnt = Vector3(0, 0, -10000);
@@ -1042,7 +1042,7 @@ namespace M3D {
 				pnts.push_back(lineEndPnt);
 				xAxisLineModel->AddLineData(pnts);
 
-				//ÉèÖÃÕâÁ½ÌõÏßµÄÑÕÉ«
+				//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ßµï¿½ï¿½ï¿½É«
 				xAxisLineModel->GetBodys()->at(0)->GetEdges()->at(0)->SetColor(Color::RED);
 				xAxisLineModel->GetBodys()->at(1)->GetEdges()->at(0)->SetColor(Color::YELLOW);
 
@@ -1066,7 +1066,7 @@ namespace M3D {
 			}
 			else if (stage == MotionCommand::MOVE)
 			{
-				//ÔÚÖáÏßÉÏÃæÌí¼Ó¸¨ÖúÏß
+				//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¸ï¿½ï¿½ï¿½ï¿½ï¿½
 				Model* xAxisLineX = handlerGroup->GetDraggerTip(XAXISLIE_X);
 				if (xAxisLineX)
 				{
@@ -1081,12 +1081,12 @@ namespace M3D {
 				pnts.push_back(textPos);
 				xAxisLineX->AddLineData(pnts);
 				xAxisLineX->AddLineData(pnts);
-				//ÉèÖÃÕâÁ½ÌõÏßµÄÑÕÉ«
+				//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ßµï¿½ï¿½ï¿½É«
 				xAxisLineX->GetBodys()->at(0)->GetEdges()->at(0)->SetColor(Color::WHITE);
 
 				//ImageModel* textImageX = new ImageModel();
 
-				//´´½¨Í¼Æ¬
+				//ï¿½ï¿½ï¿½ï¿½Í¼Æ¬
 				/*float length = translateInLineCommand.getTranslation().Length();
 				string strLength = StringHelper::floatToString(length);
 				if (textImagePath.size()>0)
@@ -1105,7 +1105,7 @@ namespace M3D {
 			}
 			else if (stage == MotionCommand::FINISH)
 			{
-				//É¾³ýÌí¼ÓµÄÄ£ÐÍ
+				//É¾ï¿½ï¿½ï¿½ï¿½Óµï¿½Ä£ï¿½ï¿½
 				Model* xAxisLine = handlerGroup->GetDraggerTip(XAXISLINENAME);
 				if (xAxisLine)
 				{
@@ -1130,7 +1130,7 @@ namespace M3D {
 			return;
 		}
 
-		//¸üÐÂXÖá
+		//ï¿½ï¿½ï¿½ï¿½Xï¿½ï¿½
 		wstring draggerName = refDragger->GetDraggerName();
 		if (draggerName == L"XRotate"
 			|| draggerName == L"YRotate"
@@ -1149,10 +1149,10 @@ namespace M3D {
 			if (stage == MotionCommand::START)
 			{
 				Model* xAxisLineModel = new Model();
-				//Ìí¼ÓÁ½ÌõÏß
+				//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 				Vector3 lineStartPnt = Vector3::ZERO;
 
-				//¹¹½¨XZÆ½ÃæÔÚ´Ë»ù´¡ÉÏ½øÐÐÆ«ÒÆ
+				//ï¿½ï¿½ï¿½ï¿½XZÆ½ï¿½ï¿½ï¿½Ú´Ë»ï¿½ï¿½ï¿½ï¿½Ï½ï¿½ï¿½ï¿½Æ«ï¿½ï¿½
 				Vector3 lineEndPnt = Vector3(0, 0, -10000);
 
 				vector<Vector3> pnts;
@@ -1166,7 +1166,7 @@ namespace M3D {
 				pnts.push_back(lineEndPnt);
 				xAxisLineModel->AddLineData(pnts);
 
-				//ÉèÖÃÕâÁ½ÌõÏßµÄÑÕÉ«
+				//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ßµï¿½ï¿½ï¿½É«
 				xAxisLineModel->GetBodys()->at(0)->GetEdges()->at(0)->SetColor(Color::RED);
 				xAxisLineModel->GetBodys()->at(1)->GetEdges()->at(0)->SetColor(Color::YELLOW);
 	
@@ -1197,7 +1197,7 @@ namespace M3D {
 			}
 			else if (stage == MotionCommand::MOVE)
 			{
-				//ÔÚÖáÏßÉÏÃæÌí¼Ó¸¨ÖúÏß
+				//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¸ï¿½ï¿½ï¿½ï¿½ï¿½
 				Model* xAxisLineX = handlerGroup->GetDraggerTip(XAXISLIE_X);
 				if (xAxisLineX)
 				{
@@ -1212,12 +1212,12 @@ namespace M3D {
 				pnts.push_back(textPos);
 				xAxisLineX->AddLineData(pnts);
 				xAxisLineX->AddLineData(pnts);
-				//ÉèÖÃÕâÁ½ÌõÏßµÄÑÕÉ«
+				//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ßµï¿½ï¿½ï¿½É«
 				xAxisLineX->GetBodys()->at(0)->GetEdges()->at(0)->SetColor(Color::WHITE);
 
 				//ImageModel* textImageX = new ImageModel();
 
-				//´´½¨Í¼Æ¬
+				//ï¿½ï¿½ï¿½ï¿½Í¼Æ¬
 				/*float length = translateInLineCommand.getTranslation().Length();
 				string strLength = StringHelper::floatToString(length);
 				if (textImagePath.size()>0)
@@ -1236,7 +1236,7 @@ namespace M3D {
 			}
 			else if (stage == MotionCommand::FINISH)
 			{
-				//É¾³ýÌí¼ÓµÄÄ£ÐÍ
+				//É¾ï¿½ï¿½ï¿½ï¿½Óµï¿½Ä£ï¿½ï¿½
 				Model* xAxisLine = handlerGroup->GetDraggerTip(XAXISLINENAME);
 				if (xAxisLine)
 				{
@@ -1261,7 +1261,7 @@ namespace M3D {
 			return;
 		}
 
-		//¸üÐÂXÖá
+		//ï¿½ï¿½ï¿½ï¿½Xï¿½ï¿½
 		wstring draggerName = refDragger->GetDraggerName();
 		if (draggerName == L"XYAxis"
 			|| draggerName == L"XZAxis"
@@ -1280,10 +1280,10 @@ namespace M3D {
 			if (stage == MotionCommand::START)
 			{
 				Model* xAxisLineModel = new Model();
-				//Ìí¼ÓÁ½ÌõÏß
+				//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 				Vector3 lineStartPnt = Vector3::ZERO;
 
-				//¹¹½¨XZÆ½ÃæÔÚ´Ë»ù´¡ÉÏ½øÐÐÆ«ÒÆ
+				//ï¿½ï¿½ï¿½ï¿½XZÆ½ï¿½ï¿½ï¿½Ú´Ë»ï¿½ï¿½ï¿½ï¿½Ï½ï¿½ï¿½ï¿½Æ«ï¿½ï¿½
 				Vector3 lineEndPnt = Vector3(0, 0, -10000);
 
 				vector<Vector3> pnts;
@@ -1311,7 +1311,7 @@ namespace M3D {
 				xAxisLineModel->AddLineData(pnts);
 
 
-				//ÉèÖÃÕâÁ½ÌõÏßµÄÑÕÉ«
+				//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ßµï¿½ï¿½ï¿½É«
 				xAxisLineModel->GetBodys()->at(0)->GetEdges()->at(0)->SetColor(Color::RED);
 				xAxisLineModel->GetBodys()->at(1)->GetEdges()->at(0)->SetColor(Color::YELLOW);
 
@@ -1328,7 +1328,7 @@ namespace M3D {
 			}
 			else if (stage == MotionCommand::MOVE)
 			{
-				//ÔÚÖáÏßÉÏÃæÌí¼Ó¸¨ÖúÏß
+				//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¸ï¿½ï¿½ï¿½ï¿½ï¿½
 				Model* xAxisLineX = handlerGroup->GetDraggerTip(XAXISLIE_X);
 				if (xAxisLineX)
 				{
@@ -1343,12 +1343,12 @@ namespace M3D {
 				pnts.push_back(textPos);
 				xAxisLineX->AddLineData(pnts);
 				xAxisLineX->AddLineData(pnts);
-				//ÉèÖÃÕâÁ½ÌõÏßµÄÑÕÉ«
+				//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ßµï¿½ï¿½ï¿½É«
 				xAxisLineX->GetBodys()->at(0)->GetEdges()->at(0)->SetColor(Color::WHITE);
 
 				//ImageModel* textImageX = new ImageModel();
 
-				//´´½¨Í¼Æ¬
+				//ï¿½ï¿½ï¿½ï¿½Í¼Æ¬
 				/*float length = translateInLineCommand.getTranslation().Length();
 				string strLength = StringHelper::floatToString(length);
 				if (textImagePath.size()>0)
@@ -1367,7 +1367,7 @@ namespace M3D {
 			}
 			else if (stage == MotionCommand::FINISH)
 			{
-				//É¾³ýÌí¼ÓµÄÄ£ÐÍ
+				//É¾ï¿½ï¿½ï¿½ï¿½Óµï¿½Ä£ï¿½ï¿½
 				Model* xAxisLine = handlerGroup->GetDraggerTip(XAXISLINENAME);
 				if (xAxisLine)
 				{
@@ -1396,7 +1396,7 @@ namespace M3D {
 			if (stage == MotionCommand::START)
 			{
 				Model* xAxisLineModel = new Model();
-				//Ìí¼ÓÁ½ÌõÏß
+				//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 				Vector3 lineStartPnt = Vector3::ZERO;
 
 				Vector3 lineEndPnt = Vector3(0, 0, -10000);
@@ -1440,7 +1440,7 @@ namespace M3D {
 				pnts.push_back(lineEndPnt);
 				xAxisLineModel->AddLineData(pnts);
 
-				//ÉèÖÃÕâÁ½ÌõÏßµÄÑÕÉ«
+				//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ßµï¿½ï¿½ï¿½É«
 				xAxisLineModel->GetBodys()->at(0)->GetEdges()->at(0)->SetColor(Color::RED);
 				xAxisLineModel->GetBodys()->at(1)->GetEdges()->at(0)->SetColor(Color::YELLOW);
 
@@ -1464,7 +1464,7 @@ namespace M3D {
 			}
 			else if (stage == MotionCommand::MOVE)
 			{
-				//ÔÚÖáÏßÉÏÃæÌí¼Ó¸¨ÖúÏß
+				//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¸ï¿½ï¿½ï¿½ï¿½ï¿½
 				Model* xAxisLineX = handlerGroup->GetDraggerTip(XAXISLIE_X);
 				if (xAxisLineX)
 				{
@@ -1479,12 +1479,12 @@ namespace M3D {
 				pnts.push_back(textPos);
 				xAxisLineX->AddLineData(pnts);
 				xAxisLineX->AddLineData(pnts);
-				//ÉèÖÃÕâÁ½ÌõÏßµÄÑÕÉ«
+				//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ßµï¿½ï¿½ï¿½É«
 				xAxisLineX->GetBodys()->at(0)->GetEdges()->at(0)->SetColor(Color::WHITE);
 
 				//ImageModel* textImageX = new ImageModel();
 
-				//´´½¨Í¼Æ¬
+				//ï¿½ï¿½ï¿½ï¿½Í¼Æ¬
 				/*float length = translateInLineCommand.getTranslation().Length();
 				string strLength = StringHelper::floatToString(length);
 				if (textImagePath.size()>0)
@@ -1503,7 +1503,7 @@ namespace M3D {
 			}
 			else if (stage == MotionCommand::FINISH)
 			{
-				//É¾³ýÌí¼ÓµÄÄ£ÐÍ
+				//É¾ï¿½ï¿½ï¿½ï¿½Óµï¿½Ä£ï¿½ï¿½
 				Model* xAxisLine = handlerGroup->GetDraggerTip(XAXISLINENAME);
 				if (xAxisLine)
 				{

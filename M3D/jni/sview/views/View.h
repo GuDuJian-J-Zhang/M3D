@@ -560,7 +560,7 @@ public:
 	void SetAllPMISVisible(bool isVisible);
     void SetAllPMIColor(Color color);
     /**
-     * 设置所有PMI的显隐状态
+     * 设置模型上所有PMI的显隐状态
      * @param isVisible
      * @param model 模型
      * @param mSub 是否设置子装配

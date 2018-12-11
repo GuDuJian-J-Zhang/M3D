@@ -1,3 +1,7 @@
+#include <string>
+#include <stdlib.h>
+
+#include "m3d/ResourceManager.h"
 #include "AnimationCallBackFunction.h"
 #include "animation/SimulationCommon/MatrixOperation.h"
 #include "animation/SimulationCommon/SAUtility.h"
@@ -13,12 +17,8 @@
 #include "animation/SimulationAnimation/SBehaviorAction.h"
 #include "m3d/utils/StringHelper.h"
 #include "sview/views/Parameters.h"
-
-#include <string>
-#include <stdlib.h>
 #include "animation/SimulationAnimation/AnimationAPI.h"
 #include "m3d/scene/ScreenUILayerGroup.h"
-#include "m3d/ResourceManager.h"
 #include "m3d/model/Curve.h"
 #include "m3d/model/Body.h"
 #include "m3d/model/Edge.h"

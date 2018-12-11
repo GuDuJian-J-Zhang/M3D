@@ -201,6 +201,7 @@ LOCAL_SRC_FILES +=\
     m3d\extras\modelmanager\DraggerCallbacks.cpp \
     m3d\extras\modelmanager\ModelAssemblyHelper.cpp \
     m3d\extras\modelmanager\ModelManager.cpp \
+     m3d\extras\modelmanager\PivotCallbacks.cpp \
      m3d\extras\modelmanager\ExplosionDragerCallBack.cpp \
     m3d\extras\modelmanager\MoveModelOperation.cpp \
     m3d\extras\modelmanager\RemoveModelOperation.cpp \
@@ -364,6 +365,7 @@ LOCAL_SRC_FILES +=\
     m3d\utils\ShapeHelper.cpp \
     m3d\utils\StringHelper.cpp \
     m3d\utils\Trackball.cpp \
+    m3d\utils\md5.cpp \
     sview\extern\AnimationOperator.cpp \
     sview\extern\BaseAnimation.cpp \
     sview\extern\ExplosiveViewOperator.cpp \
@@ -374,6 +376,7 @@ LOCAL_SRC_FILES +=\
     sview\extern\SpecialEffectOperator.cpp \
     sview\extern\ViewOperator.cpp \
     sview\extern\WorkNodes.cpp \
+    sview\extern\ExplosiveViewOperatorOriVersion.cpp \
     sview\io\AssimpReader.cpp \
     sview\io\MatrixOperation.cpp \
     sview\io\Reader.cpp \
