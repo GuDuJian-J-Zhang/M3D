@@ -523,7 +523,7 @@ public:
 	* @return
 	*/
 	virtual map<int, PMIData*>* GetPMIs();
-	virtual map<IDTYPE, map<int, PMIData*>>  GetAllPMIs();
+	virtual map<IDTYPE, map<int, PMIData*> >  GetAllPMIs();
 
 	/**
 	* 设置关联ProtoType的id

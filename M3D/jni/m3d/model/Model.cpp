@@ -2073,7 +2073,7 @@ map<int, PMIData*>* Model::GetPMIs()
 	return NULL;
 }
 
-map<IDTYPE, map<int, PMIData*>> Model::GetAllPMIs()
+map<IDTYPE, map<int, PMIData*> > Model::GetAllPMIs()
 {
 	map<IDTYPE, map<int, PMIData*>> pmis ;
 	if (this->m_ExtInfoMgr)
