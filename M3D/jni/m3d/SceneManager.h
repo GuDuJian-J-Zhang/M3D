@@ -1,4 +1,4 @@
-/**@file
+﻿/**@file
  *@brief	场景节点管理类
  *@author	XL
  *@date		2014-1-7
@@ -237,7 +237,7 @@ public:
 	 * @param inModel
 	 * @return 空间中点三维坐标
 	 */
-	Vector3 GetPickPoint(float x, float y, bool inModel = true);
+	Vector3 GetPickPoint(float x, float y, bool inModel = true, bool inExcludeEdge = false);
 	Vector3 GetPickNormal();
 	Vector3 GetUILayerPickPoint(float x, float y);
 
@@ -249,7 +249,7 @@ public:
 	 * @param inModel
 	 * @return
 	 */
-	bool GetPickPoint(Vector2& screenPnt, Vector3& pnt, bool inModel);
+	bool GetPickPoint(Vector2& screenPnt, Vector3& pnt, bool inModel, bool inExcludeEdge = false);
 	bool GetPickPoint(Ray & ray, Vector3 & pnt, bool inModel);
 	/**
 	 * @brief 在空间中vec位置创建类型为Type的Handler
@@ -469,8 +469,6 @@ public:
 	ScreenUILayerGroup* GetScreenUILayerGroup();
 
 	SectionNode* GetSectionNode(int ID); 
-
-	SectionNode* CreateSingleSectionNode(int ID);
 
 	void AddSectionNode(SectionNode* node);
 

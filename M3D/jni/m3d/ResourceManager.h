@@ -10,8 +10,8 @@
 #define M3D_RESOURCEMANAGER_H_
 
 #include "m3d/model/Image.h"
-#include "m3d/graphics/BaseMaterial.h"
 #include "m3d/renderer/RenderContext.h"
+#include "m3d/graphics/BaseMaterial.h"
 #include <map>
 
 using std::map;
@@ -270,7 +270,7 @@ public:
 
 	/**
 	 * 得到或者创建Material，首先去查找存在的Material，如果没有找到，则创建名称为Key的Material
-	 * mode:指定重新创建还是使用原有的 0:使用原有的, 1:重新创建
+	 * mode 指定是否新创，1: 直接指定材质新建 0：若存在材质，使用已经存在的材质
 	 * @param key
 	 * @return
 	 */
@@ -413,6 +413,10 @@ public:
 	map<string, BaseMaterial*>& GetAllMaterials();
 
 	MaterialTemplateManager*GetMaterialTemplateManager();
+
+	bool IsMaterialExisted(BaseMaterial** Material,Color* color,float alpha);
+	bool IsMaterialExisted(BaseMaterial** Material, BaseMaterial* smaterial, string excepKey);
+	bool IsMaterialUsed(Model* smodel, BaseMaterial* smaterial, Model* smodelExcept);
 
 private:
 	map<string, Texture*> m_allTextures; 	//!<存储所有的纹理资源  TODO 暂时存储两份

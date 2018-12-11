@@ -516,6 +516,12 @@ void CProcessManager::UpdateViewWithProcess(int nProcessIdx)
 		}
 	}
 	pSAManager->SetCameraPlay(bPlayCamera);
+
+	vector<PTARGETOBJECTINFO> vecTargetObjectInfo;
+	if (pSAManager->GetAnimationPlayApi())
+	{
+		pSAManager->GetAnimationPlayApi()->SetTargetState(vecTargetObjectInfo);
+	}
 }
 
 CProcess* CProcessManager::GetProcessByIdx(int idx)

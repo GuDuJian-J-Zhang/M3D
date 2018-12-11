@@ -16,6 +16,7 @@
 #include "m3d/model/Model.h"
 #include "sview/views/View.h"
 #include "m3d/Handler/dragger.h"
+#include "m3d/extras/modelmanager/PivotCallbacks.h"
 
 using namespace SVIEW;
 
@@ -57,8 +58,10 @@ public:
 
 	 Dragger* BindSectionDragger(int drggerType);
 	 //绑定的剖切拖拽器到默认包围盒中心
-	 Dragger* InitBindSectionDragger(int draggerType);
-	 
+	 Dragger* InitBindSectionDragger(int draggerType);	 
+	 void SetPivotCB(M3D_PIVOTCB* pivotCB) { m_pivotCB = pivotCB; }
+	 M3D_PIVOTCB* GetPivotCB() { return m_pivotCB; }
+
 	 /**
 	  * @brief 获取命令操作记录
 	  * @return 返回操作历史记录
@@ -76,12 +79,14 @@ private:
 	Dragger* BindScaleDragger(vector<Model*> models);
 	Dragger* BindRotateDragger(vector<Model*> models, bool bGloal = true);
 	Dragger* BindRotateDragger(vector<Model*> models, Matrix3x4* ma, bool bMove = true, bool bMulGizm = false, bool bGloal = true);
+	Dragger* BindRotateCylinderDragger(vector<Model*> models, bool bGloal = true);
 public:
 	Vector3 GetBindCenter(Model* model);
 private:
 	OperationHistoryManager* m_commandHistoryManager;//!<操作历史记录
 	View * m_view;//!<当前视图
 	Dragger* m_dragger;//当前拖拽器
+	M3D_PIVOTCB* m_pivotCB;
 };
 
 } /* namespace M3D */

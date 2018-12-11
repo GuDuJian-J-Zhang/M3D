@@ -22,6 +22,7 @@
 #include "Utility.h"
 #include <stdio.h>
 #include "../extern/PerspectiveData.h"
+#include "m3d/utils/md5.h"
 
 using namespace M3D;
 
@@ -111,6 +112,8 @@ const string Parameters::ITEM_SSAO_DISPLACE="ssaoDisplace";
 const string Parameters::ITEM_SSAO_AEAR = "ssaoAear";
 
 const string Parameters::ITEM_SHADOW_MAP_ENABLE = "shadowMapEnable";
+const string Parameters::ITEM_FILE_KEYFILE = "KeyFile";
+const string Parameters::ITEM_FILE_PASSWORD = "Password";
 
 const string Parameters::DESIGNER_ANNOTATION_USER = "annotationUser";
 const string Parameters::DESIGNER_ANNOTATION_DEPARTMENT = "annotationDepartment";
@@ -456,6 +459,13 @@ string Parameters::GetParameter(string key) {
 	  {
 		  value = this->m_shadowMapEnabled ? TRUE_VALUE : FALSE_VALUE;
 	  }
+	  else if (key == ITEM_FILE_KEYFILE)
+	  {
+		  value = this->m_strKeyFile;
+	  }
+	  else if (key == "CullFace") {
+		  value = StringHelper::IntToString(m_iCullFace);
+	  }
 	//LOGI("getParameter: key:%s,value:%s",key.c_str(),value.c_str());
 	return value;
 }
@@ -717,6 +727,28 @@ void Parameters::SetParameter(string key, string value) {
 	{
 		this->m_shadowMapEnabled = value == TRUE_VALUE;
 	}
+	else if(key == ITEM_FILE_KEYFILE)
+	{
+		this->m_strKeyFile = value;
+		//根据密钥的MD5值设置文件密码
+		ifstream in(m_strKeyFile.c_str(), ios::binary);
+		if (!in)
+			return ;
+		MD5 md5;
+		std::streamsize length;
+		char buffer[1024];
+		while (!in.eof()) {
+			in.read(buffer, 1024);
+			length = in.gcount();
+			if (length > 0)
+				md5.update(buffer, length);
+		}
+		in.close();
+		this->m_strPassword = md5.toString();
+	}
+	else if (key == "CullFace") {
+		m_iCullFace = StringHelper::StringToInt(value);
+	}
 	//LOGI("SetParameter: key:%s,value:%s",key.c_str(),value.c_str());
 }
 
@@ -866,8 +898,11 @@ void Parameters::SetDefault() {
 	 m_annotationDisplayColor.SetColor(1.0f, 0.0f, 0.0f, 1.0f);
 
 	 m_showVRInMainView = false;
+	 m_strKeyFile = "";
+	 m_strPassword = "";
 
 	 m_shadowMapType = 2;
+	 m_iCullFace = 0;
 }
 
 bool Parameters::LoadFromXML() {

@@ -530,6 +530,7 @@ void RenderManager::OnDraw()
 	CameraNode* camera = this->m_sceneMgr->GetCamera();
 	if (camera != NULL)
 	{
+		camera->GetView();
 		this->m_cullerHelper.AllowCuller(camera, m_useLowQuality);
 	}
 

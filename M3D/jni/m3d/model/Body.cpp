@@ -43,7 +43,7 @@ Body& Body::operator=(const Body& orig)
 		}
 		this->m_BodyExtInfo = orig.m_BodyExtInfo;	
 		m_isDrawDataDirty = true;
-
+		m_isClosed = true;
 		this->SetSVLId(orig.m_svlId);
 	}
 	return *this;
@@ -113,6 +113,7 @@ void Body::AddFace(Face* face)
 	{
 		face->AddRef();
 		face->SetBody(this);
+		face->SetCullBackFace(this->IsClosed());
 		this->m_FaceArray.push_back(face);
 	}	
 	m_isDrawDataDirty = true;
@@ -745,6 +746,16 @@ void Body::SetNeedClip(bool val)
 			m_EdgeArray[i]->SetNeedClip(val);
 		}
 	}
+}
+
+bool Body::IsClosed()
+{
+	return m_isClosed;
+}
+
+void Body::SetClosed(bool i_isClosed)
+{
+	m_isClosed = i_isClosed;
 }
 
 BodyExtInfo::BodyExtInfo()

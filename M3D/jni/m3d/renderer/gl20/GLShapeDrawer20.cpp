@@ -88,19 +88,58 @@ namespace M3D
 		LightManager* lightManager = action->GetScene()->GetLightManager();
 		CameraNode* camera = action->GetCamera();
 		lightManager->SetUp(camera);
-		glEnable(GL_CULL_FACE);
-		glCullFace(GL_BACK);
 
-		vector<Renderable*>::iterator it = renderableArray.begin();
+		GLboolean bOrgCullFace = glIsEnabled(GL_CULL_FACE);
+		GLboolean bLastCullFace = bOrgCullFace;
+		GLboolean bCurCullFace = bLastCullFace;
+		bool bForce = true;
+		if (0 == Parameters::Instance()->m_iCullFace) {
+			bForce = false;
+		}
+		else if (1 == Parameters::Instance()->m_iCullFace) {
+			glDisable(GL_CULL_FACE);
+			bLastCullFace = false;
+		}
+		else{
+			glEnable(GL_CULL_FACE);
+			glCullFace(GL_BACK);
+			bLastCullFace = true;
+		}
+				vector<Renderable*>::iterator it = renderableArray.begin();
 		for (; it != renderableArray.end(); it++)
 		{
 			Renderable* faceRenderData = (*it);
 			Face* face = static_cast<Face*>(faceRenderData);
 			//BaseMaterial* material = face->GetMaterial();
 			BaseMaterial* material = overrideMaterial == nullptr ? face->GetMaterial() : overrideMaterial;
+			bCurCullFace = face->IsCullBackFace();
+			if (!bForce && bLastCullFace != bCurCullFace)
+			{
+				bLastCullFace = bCurCullFace;
+				if (bCurCullFace) {
+					glEnable(GL_CULL_FACE);
+					glCullFace(GL_BACK);
+				}
+				else {
+					glDisable(GL_CULL_FACE);
+				}
+
+			}
+			
 			RenderFace(action, faceRenderData, camera, nullptr);
 		}
-		glDisable(GL_CULL_FACE);
+
+		if (bLastCullFace != bOrgCullFace) 
+		{
+			if (bOrgCullFace) {
+				glEnable(GL_CULL_FACE);
+				glCullFace(GL_BACK);
+			}
+			else {
+				glDisable(GL_CULL_FACE);
+			}
+		}
+				
 		glDisableVertexAttribArray(0);
 		M3D_GL_ERROR_CHECK
 			glDisableVertexAttribArray(1);
@@ -588,11 +627,8 @@ namespace M3D
 			{
 				int materialtype = material->GetMaterialType();
 				//TODO
-                pair<const char*, const char*>* ret = ShaderLib::GetSrcCode(IntToString(materialtype));
-                if (ret != NULL) {
-                    vs = ShaderLib::GetSrcCode(IntToString(materialtype))->first;
-                    fs = ShaderLib::GetSrcCode(IntToString(materialtype))->second;
-                }
+				vs = ShaderLib::GetSrcCode(IntToString(materialtype))->first;
+				fs = ShaderLib::GetSrcCode(IntToString(materialtype))->second;
 			}
 			material->LightHash(lightManager->GetState().hash);
 			program = shaderManager->AcquireProgram(material, vs, fs, code);
@@ -1259,7 +1295,7 @@ namespace M3D
 					ShaderParameter * texCoords = backgroundEffect->GetShaderAttributeParameter(
 						VSP_TEXCOORDS);
 					backgroundEffect->SetVertexAttribPointer(texCoords->m_location, 2, GL_FLOAT,
-						0, (void *)backgroundNode->GetTextureCoords()->Data()/*uv.data()->Data()*/);
+						0, (void *)backgroundNode->GetWaterMarkTextureCoords()->Data()/*uv.data()->Data()*/);
 					backgroundEffect->EnableAttributeArray(texCoords->m_location);
 					
 					// multi-clip planes
@@ -1528,8 +1564,10 @@ namespace M3D
 		if (textGLObj > 0)
 		{
 			Matrix4 M, MVP;
+			M.ToIdentity();
 			//		LOGI("draw image borad1");
-			M = (*(imageboard->GetRenderWorldMatrix())) * modelMat;
+			if (imageboard->GetRenderWorldMatrix())
+				M = (*(imageboard->GetRenderWorldMatrix())) * modelMat;
 			const Color& VoiceBackColor = imageboard->GetRenderColor();
 
 			ShaderParameter * vertex = shaderEffect->GetShaderAttributeParameter(VSP_POSITION);
@@ -1731,25 +1769,35 @@ namespace M3D
 		{
 			list<SectionPlane*>::iterator iter;
 			int i = 0;
+			int count = 0;
 			if (planeList->size() > 0)
 			{
 				for (iter = planeList->begin(); iter != planeList->end(); ++iter, ++i)
 				{
+					if (!(*iter)->GetEnable())
+					{
+						continue;
+					}
+					if (count == 3)
+					{
+						break;
+					}
 					float * tempPointer = (*iter)->GetTransformPlaneParam();
-					clipPlane[i].m_x = tempPointer[0];
-					clipPlane[i].m_y = tempPointer[1];
-					clipPlane[i].m_z = tempPointer[2];
-					clipPlane[i].m_w = tempPointer[3];
+					clipPlane[count].m_x = tempPointer[0];
+					clipPlane[count].m_y = tempPointer[1];
+					clipPlane[count].m_z = tempPointer[2];
+					clipPlane[count].m_w = tempPointer[3];
 					//LOGI("---------tempPointer %d = %f", j, clipPlane[4*i+j]);
 
 					if ((*iter)->GetEnable())
-						enableClip[i] = 1; //表示开启剪裁面
+						enableClip[count] = 1; //表示开启剪裁面
 					else
-						enableClip[i] = 0;
+						enableClip[count] = 0;
 					if (Parameters::Instance()->m_clipPlaneMode == 1)
 					{
-						enableClip[i] = 0;
+						enableClip[count] = 0;
 					}
+					count++;
 					//LOGI("---------tempPointer %d ",enableClip[i]);
 				}
 				action->m_bReverseClip = section->IsReverseClipping();
@@ -1865,7 +1913,7 @@ namespace M3D
 		list<SectionPlane*>* planeList = section->GetPlaneList();
 
 		list<SectionPlane*>::iterator iter;
-
+		int count = 0;
 		for (i = 0, iter = planeList->begin(); iter != planeList->end(); ++iter, i++)
 		{
 
@@ -1874,7 +1922,10 @@ namespace M3D
 			{
 				if (!sectionPlane->GetEnable())
 					continue;
-
+				if (3 == count)
+				{
+					break;
+				}
 				//			const IntRect& intRect = camera->GetViewPort().GetRect();
 				//			glViewport(intRect.m_left, intRect.m_top, intRect.m_right, intRect.m_bottom);
 				glDisable(GL_BLEND);
@@ -1892,7 +1943,7 @@ namespace M3D
 				shaderEffect->SetUniformValue(VSP_MODELMAT, M);
 				// multi-clip plane
 				shaderEffect->SetUniformValue(FSP_CLIPPLANES, 3, tc);
-				enableClips[i] = 0;
+				enableClips[count] = 0;
 				shaderEffect->SetUniformValue(FSP_ENABLECLIPS, 3, enableClips);
 				ShaderParameter* reverseClipPara = shaderEffect->GetShaderUniformParameter(FSP_REVERSECLIP);
 				shaderEffect->SetUniformValue(reverseClipPara->m_location, 0);
@@ -1907,7 +1958,8 @@ namespace M3D
 				shaderEffect->DisableAttributeArray(vertex->m_location);
 				shaderEffect->ReleaseShaderProgram();
 
-				enableClips[i] = enableClip[i];
+				enableClips[count] = enableClip[count];
+				count++;
 			}
 		}
 
@@ -1942,10 +1994,15 @@ namespace M3D
 		if (planeList->size() > 0)
 		{
 			int i = 0;
+			int count = 0;
 			list<SectionPlane*>::iterator iter;
 			for (i = 0, iter = planeList->begin(); iter != planeList->end(); ++iter, i++)
 			{
-				if (i == index)
+				if (!(*iter)->GetEnable())
+				{
+					continue;
+				}
+				if (count == index)
 				{
 					SectionPlane* sectionPlane = *iter;
 					if (sectionPlane)
@@ -1981,7 +2038,7 @@ namespace M3D
 							enableClips[j] = enableClip[j];
 						}
 						shaderEffect->SetUniformValue(FSP_CLIPPLANES, 3, tc);
-						enableClips[i] = 0;
+						enableClips[count] = 0;
 						shaderEffect->SetUniformValue(FSP_ENABLECLIPS, 3, enableClips);
 						ShaderParameter* reverseClipPara = shaderEffect->GetShaderUniformParameter(FSP_REVERSECLIP);
 						shaderEffect->SetUniformValue(reverseClipPara->m_location, 0);
@@ -2007,6 +2064,7 @@ namespace M3D
 					}
 					break;
 				}
+				count++;
 			}
 		}
 
@@ -2472,7 +2530,7 @@ namespace M3D
 
 		}
 
-		DoSection(action, true);
+		//DoSection(action, true);
 		if (Parameters::Instance()->m_LightingMode == 500) //TODO 会和其他光照模式冲突，例如不能使用CUBE环境映射
 		{
 			DrawSSSPass(action);
@@ -3234,7 +3292,9 @@ namespace M3D
 		CameraNode* camera)
 	{
 		Matrix4 M;
-		M = (*(point->GetRenderWorldMatrix()));
+		M.ToIdentity();
+		if (point->GetRenderWorldMatrix())
+			M = (*(point->GetRenderWorldMatrix()));
 		const Color& pntColor = point->GetRenderColor();
 		RenderAction * action = shaderManager->GetCurrentAction();
 
@@ -5069,7 +5129,7 @@ namespace M3D
 
 				draggerEffect->DisableAttributeArray(normal->m_location);
 				draggerEffect->DisableAttributeArray(vertex->m_location);
-
+				vertexBuffer->UnBind();
 			}
 		}
 		draggerEffect->ReleaseShaderProgram();

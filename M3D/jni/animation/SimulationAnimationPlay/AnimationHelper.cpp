@@ -17,6 +17,12 @@ using namespace M3D;
 
 #include "sview/views/View.h"
 #include <string.h>
+#include "m3d/extras/measure/MeasureGroup.h"
+#include "m3d/scene/ShapeNode.h"
+#include "m3d/extras/annotation/AnnotationGroup.h"
+#include "m3d/scene/SectionNode.h"
+#include "m3d/graphics/Section.h"
+#include "m3d/graphics/SectionPlane.h"
 using namespace SVIEW;
 
 AnimationHelper::AnimationHelper()
@@ -220,16 +226,28 @@ void AnimationHelper::GetCameraZoom(CameraNode* camera, float& zoom)
 	}
 }
 
-void AnimationHelper::AdjustCameraZoom(View* view , float aniWidth,
-		float aniHeight, float aniZoom, float& zoom)
+void AnimationHelper::AdjustCameraZoom(CameraNode* camera, float aniWidth,
+		float aniHeight, float aniZoom, float& zoom, View* view)
 {
 	float width = 1, height = 1;
-	 CameraNode* camera = view->GetSceneManager()->GetCamera();
 
-	 if (camera != NULL) {
-
-	  camera->GetOrthoSize(&width, &height);
-	 }
+	if (camera != NULL)
+	{
+		if (camera->IsOrthographic())
+		{
+			camera->GetOrthoSize(&width, &height);
+		}
+		else
+		{
+			camera->GetOrthoSize(&width, &height);
+			float fAspectRatio = width / height;
+			float fHeightAngle = 1.0;
+			float fDefaultFocusLength = 1.0f;
+			GetCameraFocal(view, fDefaultFocusLength);
+			height = (float)(fDefaultFocusLength * 2.0 * tan(fHeightAngle / 2.0));
+			width = height * fAspectRatio;
+		}
+	}
 	 float dx = aniWidth / width;
 
 	 float dy = aniHeight / height;
@@ -323,7 +341,58 @@ PMIData* AnimationHelper::GetPMI(unsigned long pmiId, View* view)
 	}
 	return pmi;
 }
-
+IShape* AnimationHelper::GetMeasure(unsigned long measureId, View* view)
+{
+	IShape* pMeasure = NULL;
+	SceneManager* pSceneManager = view->GetSceneManager();
+	if (pSceneManager == NULL)
+		return pMeasure;
+	MeasureGroup* pMeasureGroup = pSceneManager->GetMeasureGroup();
+	if (pMeasureGroup == NULL)
+		return pMeasure;
+	int nCount = pMeasureGroup->Size();
+	for (int i = 0; i < nCount; i++)
+	{
+		ShapeNode* pShapeNode = (ShapeNode*)(pMeasureGroup->GetChild(i));
+		if (pShapeNode == NULL)
+			continue;
+		IShape* pShape = pShapeNode->GetShape();
+		if (pShape == NULL)
+			continue;
+		if (pShapeNode->GetShape()->GetID() == measureId)
+		{
+			pMeasure = pShape;
+			break;;
+		}
+	}
+	return pMeasure;
+}
+IShape * AnimationHelper::GetAnnotation(unsigned long noteId, View * view)
+{
+	IShape* pAnnotation = NULL;
+	SceneManager* pSceneManager = view->GetSceneManager();
+	if (pSceneManager == NULL)
+		return pAnnotation;
+	AnnotationGroup* pAnnotationGroup = pSceneManager->GetAnnotationGroup();
+	if (pAnnotationGroup == NULL)
+		return pAnnotation;
+	int nCount = pAnnotationGroup->Size();
+	for (int i = 0; i < nCount; i++)
+	{
+		ShapeNode* pShapeNode = (ShapeNode*)(pAnnotationGroup->GetChild(i));
+		if (pShapeNode == NULL)
+			continue;
+		IShape* pShape = pShapeNode->GetShape();
+		if (pShape == NULL)
+			continue;
+		if (pShapeNode->GetShape()->GetID() == noteId)
+		{
+			pAnnotation = pShape;
+			break;;
+		}
+	}
+	return pAnnotation;
+}
 void AnimationHelper::SetPMITransform(const Matrix3x4& transform,
 		PMIData* pmiData)
 {
@@ -454,5 +523,22 @@ string AnimationHelper::AniDecPathToM3DHexPath(const string& AniPath)
 string AnimationHelper::M3DDecPathToAniDecPath(const string& m3dDecPath)
 {
 	return "";
+}
+
+SectionPlane* AnimationHelper::GetSectionPlane(const string strID, View* view)
+{
+	SectionPlane* pSecPlane = NULL;
+	SceneManager* pSceneManager = view->GetSceneManager();
+	if (pSceneManager == NULL)
+		return pSecPlane;
+	SectionNode* pSectionNode = pSceneManager->GetSectionNode();
+	if (pSectionNode == NULL)
+		return pSecPlane;
+	Section* pSection = pSectionNode->GetSection();
+	if (pSection == NULL)
+		return pSecPlane;
+	int nID = atoi(strID.c_str());
+	pSecPlane = pSection->GetPlaneById(nID);
+	return pSecPlane;
 }
 

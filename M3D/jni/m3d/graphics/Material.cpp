@@ -18,53 +18,161 @@ Material::Material(Material& org):InnerMaterial(org)
 
 	this->SetEmissive(org.m_emissive);
 	this->m_texture = new Texture();
-	*m_texture = *(org.m_texture);
-	m_texture->AddRef();
+	if (org.m_texture==NULL)
+	{
+		if (this->m_texture)
+		{
+			this->m_texture->Release();
+			this->m_texture = NULL;
+		}
+	} 
+	else
+	{
+		*m_texture = *(org.m_texture);
+		m_texture->AddRef();
+	}
+
 
 	m_normalMap = new Texture();
-	*m_normalMap = *(org.m_normalMap);
-	m_normalMap->AddRef();
+	if (org.m_normalMap==NULL)
+	{
+		if (m_normalMap==NULL)
+		{
+			m_normalMap->Release();
+			m_normalMap = NULL;
+		}
+	} 
+	else
+	{	
+		*m_normalMap = *(org.m_normalMap);
+		m_normalMap->AddRef();
+	}
+
 
 	m_specularMap = new Texture();
-	*m_specularMap = *(org.m_specularMap);
-	m_specularMap->AddRef();
+	if (org.m_specularMap==NULL)
+	{
+		m_specularMap->Release();
+		m_specularMap = NULL;
+	} 
+	else
+	{
+		*m_specularMap = *(org.m_specularMap);
+		m_specularMap->AddRef();
+	}
+
 
 	m_displacementMap = new Texture();
-	*m_displacementMap = *(org.m_displacementMap);
-	m_displacementMap->AddRef();
+	if (org.m_displacementMap==NULL)
+	{
+		m_displacementMap->Release();
+		m_displacementMap = NULL;
+	} 
+	else
+	{
+		*m_displacementMap = *(org.m_displacementMap);
+		m_displacementMap->AddRef();
+	}
+
 
 	m_matcapMap = new Texture();
-	*m_matcapMap = *(org.m_matcapMap);
-	m_matcapMap->AddRef();
+	if (org.m_matcapMap==NULL)
+	{
+		if (m_matcapMap)
+		{
+			m_matcapMap->Release();
+			m_matcapMap = NULL;
+		}
+	} 
+	else
+	{
+		*m_matcapMap = *(org.m_matcapMap);
+		m_matcapMap->AddRef();
+	}
+
 
 	m_displacementScale = org.m_displacementScale;
 	m_displacementBias = org.m_displacementBias;
 	m_normalMapScale = org.m_normalMapScale;
 	
 	m_bumpmap = new Texture();
-	*m_bumpmap = *(org.m_bumpmap);
-	m_bumpmap->AddRef();
+	if (org.m_bumpmap==NULL)
+	{
+		if (m_bumpmap)
+		{
+			m_bumpmap->Release();
+			m_bumpmap = NULL;
+		}
+	}
+	else
+	{
+		*m_bumpmap = *(org.m_bumpmap);
+		m_bumpmap->AddRef();
+	}
+
 
 	
 	this->m_textureTransform = new Matrix4();
-	*m_textureTransform = *(org.m_textureTransform);
+	if (this->m_textureTransform)
+	{
+		if (org.m_textureTransform == NULL)
+		{
+			m_textureTransform = NULL;
+		}
+		else
+		{
+			*m_textureTransform = *(org.m_textureTransform);
+		}
+	}
 	
 	this->m_ambientTexture = new Texture();
-	*m_ambientTexture = *(org.m_ambientTexture);
-	m_ambientTexture->AddRef();
+	if (org.m_ambientTexture==NULL)
+	{
+		if (m_ambientTexture)
+		{
+			m_ambientTexture->Release();
+			m_ambientTexture = NULL;
+		}
+	} 
+	else
+	{
+		*m_ambientTexture = *(org.m_ambientTexture);
+		m_ambientTexture->AddRef();
+	}
+
 
 	this->m_shininess = org.m_shininess;
 	m_reflectiveTexture = new Texture();
-	*m_reflectiveTexture = *(org.m_reflectiveTexture);
-	m_reflectiveTexture->AddRef();
+	if (org.m_reflectiveTexture==NULL)
+	{
+		if (m_reflectiveTexture)
+		{
+			m_reflectiveTexture->Release();
+			m_reflectiveTexture = NULL;
+		}
+	} 
+	else
+	{
+		*m_reflectiveTexture = *(org.m_reflectiveTexture);
+		m_reflectiveTexture->AddRef();
+	}
+
 
 	needsUpdateUniformParameters = org.needsUpdateUniformParameters;
 	m_materialType = org.m_materialType;
 	m_opacity = org.m_opacity;
 	m_isGammaOutpute = org.m_isGammaOutpute;
 	m_emissiveMap = new Texture();
-	*(m_emissiveMap) = *(org.m_emissiveMap);
-	m_emissiveMap->AddRef();
+	if (org.m_emissiveMap==NULL)
+	{
+		m_emissiveMap->Release();
+		m_emissiveMap = NULL;
+	} 
+	else
+	{	*(m_emissiveMap) = *(org.m_emissiveMap);
+		m_emissiveMap->AddRef();
+	}
+
 }
 BaseMaterial* Material::Clone()
 {
@@ -438,6 +546,144 @@ void Material::MatcapMap(Texture * val)
 		this->m_matcapMap->AddRef();
 	}
 	NeedUpdate(true);
+}
+
+bool Material::Compare(BaseMaterial * sBaseMaterial)
+{
+	InnerMaterial::Compare(sBaseMaterial);
+	Material * smaterial = (Material *)sBaseMaterial;
+
+	
+	if (!BaseMaterial::Compare(smaterial))
+	{
+		return false;
+	}
+
+	if (!this->GetDiffuse().Equals(smaterial->GetDiffuse()) )
+	{
+		return false;
+	}
+	
+	if (!this->GetEmissive().Equals(smaterial->GetEmissive()))
+	{
+		return false;
+	}
+
+	if (!this->GetAmbient().Equals(smaterial->GetAmbient()))
+	{
+		return false;
+	}
+
+	if (!this->GetSpecular().Equals(smaterial->GetSpecular()))
+	{
+		return false;
+	}
+
+	if (!this->GetShadingMode()==smaterial->GetShadingMode())
+	{
+		return false;
+	}
+
+	if (!this->GetTextureOp()==smaterial->GetTextureOp())
+	{
+		return false;
+	}
+
+	if (!this->GetTextureMapMode()==smaterial->GetTextureMapMode())
+	{
+		return false;
+	}
+
+	if (!this->GetTextureMapping()==smaterial->GetTextureMapping())
+	{
+		return false;
+	}
+
+	if (this->GetDiffuseMap()!=NULL && smaterial->GetDiffuseMap()!=NULL)
+	{
+		if (!this->GetDiffuseMap()->Equals(smaterial->GetDiffuseMap()))
+		{
+			return false;
+		}
+		
+	}
+
+
+	if (this->GetAmbientMap()!=NULL &&smaterial->GetAmbientMap()!=NULL)
+	{
+		if (!this->GetAmbientMap()->Equals(smaterial->GetAmbientMap()))
+		{
+			return false;
+		}
+		
+	}
+
+	if (this->GetBumpMap()!=NULL && smaterial->GetBumpMap()!=NULL)
+	{
+		if (!this->GetBumpMap()->Equals(smaterial->GetBumpMap()))
+		{
+			return false;
+		}
+		
+	}
+
+	if (this->GetNormalMap()!=NULL && smaterial->GetNormalMap()!=NULL)
+	{
+		if (!this->GetNormalMap()->Equals(smaterial->GetNormalMap()))
+		{
+			return false;
+		}
+	}
+
+	if (this->GetSpecularMap()!=NULL && smaterial->GetSpecularMap()!=NULL)
+	{
+		if (!this->GetSpecularMap()->Equals(smaterial->GetSpecularMap()))
+		{
+			return false;
+		}
+	}
+
+	if (this->GetReflectiveTextureTexture()!=NULL && smaterial->GetReflectiveTextureTexture()!=NULL)
+	{
+		if (!this->GetReflectiveTextureTexture()->Equals(smaterial->GetReflectiveTextureTexture()))
+		{
+			return false;
+		}
+	}
+
+
+	if (this->GetTexture2DTransform()!=NULL && *smaterial->GetTexture2DTransform()!=NULL)
+	{
+		if (!this->GetTexture2DTransform()->Equals(*smaterial->GetTexture2DTransform()))
+		{
+			return false;
+		}
+	}
+
+
+	if (!Equals(this->GetShininess(),smaterial->GetShininess()))
+	{
+		return false;
+	}
+
+	if (this->MatcapMap()!=NULL && smaterial->MatcapMap()!=NULL)
+	{
+		if (!this->MatcapMap()->Equals(smaterial->MatcapMap()))
+		{
+			return false;
+		}
+	}
+
+
+	if (this->GetEmissiveMap()!=NULL && smaterial->GetEmissiveMap()!=NULL)
+	{
+		if (!this->GetEmissiveMap()->Equals(smaterial->GetEmissiveMap()))
+		{
+			return false;
+		}
+	}
+
+	return true;
 }
 
 }

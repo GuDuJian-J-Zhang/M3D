@@ -5,11 +5,14 @@
 
 #include 	"m3d/M3D.h"
 #include "../SimulationCommon/Animation_def.h"
+#include "m3d/base/Vector3.h"
 using namespace std;
 namespace SVIEW
 {
 class View;
 }
+
+class CSAnimation;
 using SVIEW::View;
 
 class M3D_API CAnimationCallBackFunction
@@ -32,6 +35,8 @@ public:
 			const float fPos[3], const float fScale[3], const bool bOnOffFlg, void* pInstance);
 	static void  UpdateViewCallBack(void* pBehaviorManager, void* pInstance);
 	static void  PlayBeginCallBack(void* pBehaviorManager, void* pInstance);
+	static void ShowAniTrochoid(CAnimationCallBackFunction* pAnimationCallBackFunction);
+	static void GetLineVertexAndIndex(CAnimationCallBackFunction* pAnimationCallBackFunction,CSAnimation* pAnimation, std::vector<M3D::Vector3> &oVecLineVertex, std::vector<M3D_INDEX_TYPE> &oVecLineIndex);
 	static void  PlayEndCallBack(void* pBehaviorManager, void* pInstance);
 	
 	static bool  CollisionCallBack(const char* plcIdPath, void* pInstance);

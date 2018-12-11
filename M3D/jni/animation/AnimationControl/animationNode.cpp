@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "animationNode.h"
 //#include "Threads.h"
 #include <iostream>

@@ -183,6 +183,11 @@ namespace M3D
 		return nullptr;
 	}
 
+	void SectionManager::ClearDraggerList()
+	{
+		draggerList.clear();
+	}
+
 	M3D::Dragger* SectionManager::BindSectionDragger(int draggerType)
 	{
 		m_view->GetSceneManager()->Lock();

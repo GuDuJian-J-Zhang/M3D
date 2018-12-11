@@ -140,7 +140,7 @@ namespace M3D {
 		bool ret = false;
 		int x = (startIndex + endIndex) / 2;
 
-		Vector3 pnt = Pnts[x];
+		Vector3 pnt = Pnts[Indexs[x]];
 		Vector3 direction = pnt - boxCenter;
 		Ray ray(boxCenter, direction);
 

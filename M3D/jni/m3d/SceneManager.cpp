@@ -184,9 +184,7 @@ namespace M3D
 
 	void SceneManager::RemoveModel()
 	{
-		LOGE("SceneManager::RemoveModel start ----");
 		MutexLock locked(this->m_mutex);
-		LOGE("SceneManager::RemoveModel 线程锁 locked  ----");
 		this->GetRenderManager()->ClearDelayDrawList();
 		if (this->m_TopModel)
 		{
@@ -195,12 +193,15 @@ namespace M3D
 		}
 
 		this->SetModel(NULL);
+
 		//如果八插树存在，则清空八叉树
 		if (this->m_ocTree)
 		{
 			this->m_ocTree->Clear();
 		}
+
 		this->ClearModelAndHandles();
+
 		this->GetRenderManager()->ClearGLResource();
 		this->GetRenderManager()->RequestRedraw();
 	}
@@ -900,7 +901,7 @@ namespace M3D
 
 	void SceneManager::RequestUpdateWhenSceneBoxChanged()
 	{
-//		MutexLock locked(this->m_mutex);
+		MutexLock locked(this->m_mutex);
 		m_SceneBoxChanged = true;
 		//if (this->m_ocTree)
 		//{
@@ -1172,6 +1173,7 @@ IShape* SceneManager::GetPickShape(Vector2& screentPnt, int shapeType, int geoTy
 		{
 			Matrix3x4 plcMatrix((float*)matrix);
 			node->SetPlaceMatrix(plcMatrix);
+			UpdateSceneByModel(node);
 		}
  
 	}
@@ -1210,11 +1212,11 @@ IShape* SceneManager::GetPickShape(Vector2& screentPnt, int shapeType, int geoTy
 		return handle->GetID();
 	}
 
-	Vector3 SceneManager::GetPickPoint(float x, float y, bool inModel/* = true*/)
+	Vector3 SceneManager::GetPickPoint(float x, float y, bool inModel/* = true*/, bool inExcludeEdge)
 	{
 		Vector3 vec;
 		Vector2 srcPnt(x, y);
-		this->GetPickPoint(srcPnt, vec, inModel);
+		this->GetPickPoint(srcPnt, vec, inModel, inExcludeEdge);
 		return vec;
 	}
 
@@ -1298,12 +1300,19 @@ IShape* SceneManager::GetPickShape(Vector2& screentPnt, int shapeType, int geoTy
 		return ret;
 	}
 
-	bool SceneManager::GetPickPoint(Vector2& screenPnt, Vector3& pnt, bool inModel)
+	bool SceneManager::GetPickPoint(Vector2& screenPnt, Vector3& pnt, bool inModel,  bool inExcludeEdge)
 	{
 		bool ret = false;
 		Vector3 vec;
 		RayPickAction* rayPickAction = new RayPickAction(this);
-		rayPickAction->SetPickShapeType(SHAPE_MODEL);
+		if (inExcludeEdge)
+		{
+			rayPickAction->SetPickShapeType(SHAPE_MODEL, SHAPE_EDGE);
+		} 
+		else
+		{
+			rayPickAction->SetPickShapeType(SHAPE_MODEL);
+		}		
 		rayPickAction->SetPickGeoType(M3D_GEOATTR_TYPE_UNKNOWN);
 		rayPickAction->SetRay(screenPnt);
 
@@ -1940,7 +1949,6 @@ IShape* SceneManager::GetPickShape(Vector2& screentPnt, int shapeType, int geoTy
 		//	this->m_NewsShapesIDMap.clear();
 		this->m_NodesMap.clear();
 		this->GetExtendInfoManager()->Clear();
-		ReleaseMe(this->m_sectionNode);
 		//	m_Scene->m_NodesMgr->m_NodesIDMap.clear();
 		mainScene->DeleteAllChildren();
 		LOGI("clear end");
@@ -2055,25 +2063,6 @@ IShape* SceneManager::GetPickShape(Vector2& screentPnt, int shapeType, int geoTy
 			}
 		}
 		return nullptr;
-	}
-
-	SectionNode * SceneManager::CreateSingleSectionNode(int ID)
-	{
-		GroupNode * groupNode = (GroupNode*) this->GetSceneRoot();
-		SectionNode* sectionNode = new SectionNode();
-
-		//根据场景的大小默认构造三个按照X，Y，和Z方向的拖拽器
-		sectionNode->SetScene(this);
-		sectionNode->SetName(M3D::SECTION_GROUP_PATH);
-		sectionNode->SetID(ID);
-		groupNode->AddChild(sectionNode);
-
-		//this->m_sectionNode = sectionNode;
-		sectionNode->AddRef();
-
-		AddSectionNode(sectionNode);
-
-		return sectionNode;
 	}
 
 	void SceneManager::AddSectionNode(SectionNode * node)

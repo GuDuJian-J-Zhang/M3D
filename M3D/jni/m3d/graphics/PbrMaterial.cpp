@@ -32,9 +32,8 @@ namespace M3D
 		m_isGammaOutpute = true;
 		UseClearCoat(false);
 	}
-
-	PbrMaterial::PbrMaterial(PbrMaterial& org) :
-			InnerMaterial(org) {
+	PbrMaterial::PbrMaterial(PbrMaterial& org):InnerMaterial(org)
+	{
 		m_materialType = org.m_materialType;
 		m_rougthnessFactor = org.m_rougthnessFactor;
 		m_metalnessFactor = org.m_metalnessFactor;
@@ -42,8 +41,20 @@ namespace M3D
 		m_emissiveColor = org.m_emissiveColor;
 		m_normalMapScale = org.m_normalMapScale;
 		m_displacementMap = new Texture();
-		*m_displacementMap = *(org.m_displacementMap);
-		m_displacementMap->AddRef();
+		if (org.m_displacementMap == NULL)
+		{
+			if (m_displacementMap)
+			{
+				m_displacementMap->Release();
+				m_displacementMap = NULL;
+			}
+		}
+		else
+		{
+			*(m_displacementMap) = *(org.m_displacementMap);
+			m_displacementMap->AddRef();
+		}
+		
 
 		m_displacementScale = org.m_displacementScale;
 		m_displacementBias = org.m_displacementBias;
@@ -52,35 +63,120 @@ namespace M3D
 		m_clearCoatRoughness = org.m_clearCoatRoughness;
 		m_isUseClearCoat = org.m_isUseClearCoat;
 		m_albedoMap = new Texture();
-		*m_albedoMap = *(org.m_albedoMap);
-		m_albedoMap->AddRef();
-							//!<粗糙度贴图
+
+		if (org.m_albedoMap==NULL)
+		{
+			if (m_albedoMap)
+			{
+				m_albedoMap->Release();
+				m_albedoMap = NULL;
+			}
+		} 
+		else
+		{
+			*m_albedoMap = *(org.m_albedoMap);
+			m_albedoMap->AddRef();
+		}
+
+						   //!<粗糙度贴图
 		m_metalnessRoughnessMap = new Texture();
-		*m_metalnessRoughnessMap = *(org.m_metalnessRoughnessMap);
-		m_metalnessRoughnessMap->AddRef();
+		
+		if (org.m_metalnessRoughnessMap==NULL)
+		{
+			if (m_metalnessRoughnessMap==NULL)
+			{
+				m_metalnessRoughnessMap->Release();
+				m_metalnessRoughnessMap = NULL;
+			}
+		}
+		else
+		{
+			*m_metalnessRoughnessMap = *(org.m_metalnessRoughnessMap);
+			m_metalnessRoughnessMap->AddRef();
+		}
+		
 
 		m_envMap = new Texture();
-		*m_envMap = *(org.m_envMap);
-		m_envMap->AddRef();
+		if (org.m_envMap==NULL)
+		{
+			if (m_envMap)
+			{
+				m_envMap->Release();
+				m_envMap = NULL;
+			}
+		} 
+		else
+		{
+			*m_envMap = *(org.m_envMap);
+			m_envMap->AddRef();
+		}
 
 		m_envIrradianceMap = new Texture();
-		*m_envIrradianceMap = *(org.m_envIrradianceMap);
-		m_envIrradianceMap->AddRef();
+		if (org.m_envIrradianceMap==NULL)
+		{
+			if (m_envIrradianceMap)
+			{
+				m_envIrradianceMap->Release();
+				m_envIrradianceMap = NULL;
+			}
+		} 
+		else
+		{
+			*m_envIrradianceMap = *(org.m_envIrradianceMap);
+			m_envIrradianceMap->AddRef();
+		}
+
 
 		m_emissiveMap = new Texture();
-		*m_emissiveMap = *(org.m_emissiveMap);
-		m_emissiveMap->AddRef();
+		if (org.m_emissiveMap==NULL)
+		{
+			if (m_emissiveMap)
+			{
+				m_emissiveMap->Release();
+				m_emissiveMap = NULL;
+			}
+		} 
+		else
+		{
+			*m_emissiveMap = *(org.m_emissiveMap);
+			m_emissiveMap->AddRef();
+		}
+
 
 		m_ambientOcclusiontMap = new Texture();
-		*m_ambientOcclusiontMap = *(org.m_ambientOcclusiontMap);
-		m_ambientOcclusiontMap->AddRef();
+		if (org.m_ambientOcclusiontMap==NULL)
+		{
+			if (m_ambientOcclusiontMap)
+			{
+				m_ambientOcclusiontMap->Release();
+				m_ambientOcclusiontMap = NULL;
 
-		m_normalMap =  new Texture();
-		*m_normalMap = *(org.m_normalMap);
-		m_normalMap->AddRef();
-		//m_define = "#define PHYSICALLY_CORRECT_LIGHTSS\n";
-		SetDefine("PHYSICALLY_CORRECT_LIGHTSS",
-				"#define PHYSICALLY_CORRECT_LIGHTSS\n");
+			}
+		} 
+		else
+		{
+			*m_ambientOcclusiontMap = *(org.m_ambientOcclusiontMap);
+			m_ambientOcclusiontMap->AddRef();
+		}
+
+
+		m_normalMap = new Texture();
+		if (org.m_normalMap==NULL)
+		{
+			if (m_normalMap)
+			{
+				m_normalMap->Release();
+				m_normalMap = NULL;
+			}
+		} 
+		else
+		{
+			*m_normalMap = *(org.m_normalMap);
+			m_normalMap->AddRef();
+		}
+
+
+		SetDefine("PHYSICALLY_CORRECT_LIGHTSS", "#define PHYSICALLY_CORRECT_LIGHTSS\n");
 		m_envTextureMapping = org.m_envTextureMapping;
 		m_opacity = org.m_opacity;
 		m_isGammaOutpute = org.m_isGammaOutpute;
@@ -141,10 +237,9 @@ namespace M3D
 			this->m_resourceMgr = NULL;
 		}
 	}
-
 	BaseMaterial* PbrMaterial::Clone()
 	{
-		return new PbrMaterial(*this);
+		return  new PbrMaterial(*this);
 	}
 
 	void PbrMaterial::AlbedoMap(Texture* val)
@@ -513,4 +608,125 @@ namespace M3D
 		return m_opacity;
 	}
 
+	bool PbrMaterial::Compare(BaseMaterial * sBaseMaterial)
+	{
+		InnerMaterial::Compare(sBaseMaterial);
+
+		PbrMaterial * smaterial = (PbrMaterial *)sBaseMaterial;
+		if (!BaseMaterial::Compare(smaterial))
+		{
+			return false;
+		}
+
+		if (!this->AlbedoMap()->Equals(smaterial->AlbedoMap()))
+		{
+			return false;
+		}
+
+		if (!this->MetalnessRoughnessMap()->Equals(smaterial->MetalnessRoughnessMap()))
+		{
+			return false;
+		}
+
+		if (!this->EnvMap()->Equals(smaterial->EnvMap()))
+		{
+			return false;
+		}
+
+		if (!this->EnvIrradianceMap()->Equals(smaterial->EnvIrradianceMap()))
+		{
+			return false;
+		}
+
+		if (!this->EmissiveMap()->Equals(smaterial->EmissiveMap()))
+		{
+			return false;
+		}
+
+		if (!this->AmbientOcclusiontMap()->Equals(smaterial->AmbientOcclusiontMap()))
+		{
+			return false;
+		}
+
+		if (!Equals(this->AoMapIntensity(),smaterial->AoMapIntensity()))
+		{
+			return false;
+		}
+
+		if (!NormalMap()->Equals(smaterial->NormalMap()))
+		{
+			return false;
+		}
+
+		if (!DisplacementMap()->Equals(smaterial->DisplacementMap()))
+		{
+			return false;
+		}
+
+		if (!Equals(DisplacementScale(),smaterial->DisplacementScale()))
+		{
+			return false;
+		}
+
+		if (!Equals(DisplacementBias(),smaterial->DisplacementBias()))
+		{
+			return false;
+		}
+
+		if (!AlbedoColor().Equals(smaterial->AlbedoColor()))
+		{
+			return false;
+		}
+
+		if (!EmissiveColor().Equals(smaterial->EmissiveColor()))
+		{
+			return false;
+		}
+
+		if (!Equals(RougthnessFactor(),smaterial->RougthnessFactor()))
+		{
+			return false;
+		}
+
+		if (!Equals(MetalnessFactor(),smaterial->MetalnessFactor()))
+		{
+			return false;
+		}
+
+		if (!(NormalMapScale()==smaterial->NormalMapScale()))
+		{
+			return false;
+		}
+
+		if (!EnvTextureMapping()==smaterial->EnvTextureMapping())
+		{
+			return false;
+		}
+
+		if (!Equals(EnvMapIntensity(), smaterial->EnvMapIntensity()))
+		{
+			return false;
+		}
+
+		if (!Equals(ClearCoat(), smaterial->ClearCoat()))
+		{
+			return false;
+		}
+
+		if (Equals(ClearCoatRoughness(),smaterial->ClearCoatRoughness()))
+		{
+			return false;
+		}
+
+		if (!UseClearCoat()|| !smaterial->UseClearCoat())
+		{
+			return false;
+		}
+
+		if (!Equals(Opacity(),smaterial->Opacity()))
+		{
+			return false;
+		}
+		return true;
+	}
 }

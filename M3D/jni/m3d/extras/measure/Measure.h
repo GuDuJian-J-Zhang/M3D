@@ -69,7 +69,13 @@ public:
 	 */
 	void SetMeasureType(int measureType);
 
+	/**
+	* 获取CraeteID
+	* @return
+	*/
+	IDTYPE GetCreateID();
 
+	void SetCreateID(IDTYPE createID);
 private:
 	/**
 	 * @brief 初始化函数
@@ -80,6 +86,7 @@ private:
 private:
 	int m_measureType; //!< 测量类型
 
+	IDTYPE m_CreateID;
 };
 
 }

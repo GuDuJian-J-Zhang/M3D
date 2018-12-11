@@ -28,6 +28,7 @@ class CameraNode;
 class TranslateMinusAxisDragger;
 class TranslateBoxDragger;
 class Translate3DDragger;
+class RotateCylinderDragger;
 class M3D_API HandlerGroup: public GroupNode
 {
 public:
@@ -153,6 +154,7 @@ public:
     void Clear();
 
 	M3D::TranslateBoxDragger* GetTranslateBoxDragger();
+	M3D::RotateCylinderDragger* GetRotateCylinderDragger();
 
 private:
     /**
@@ -171,6 +173,8 @@ private:
 
 	void RemoveLightHandle();
 
+	void RemoveSectionHandle();
+
 	static void CacheNodeToMap(void* data, Model* node);
 
 private:
@@ -182,6 +186,7 @@ private:
 	TranslateAxisDragger* m_TransformHandlerNode; //!<
 	RotateCylinderAxisDragger* m_RotateCylinderAxisDragger;
 	ScaleAxisDragger* m_ScaleAxisDragger;
+	RotateCylinderDragger* m_RotateCylinderDragger;
 
 	TranslateBoxDragger* m_translateBoxDragger;
 	map<string,Model*> m_svlTools;

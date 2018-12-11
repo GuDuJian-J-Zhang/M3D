@@ -37,7 +37,7 @@ void PolyLine::SetBuffer(int vertexNum, float* vertexBuf, int indexNum,
 		indexNum = vertexNum;
 		for (int i = 0; i < indexNum; i++)
 		{
-			Vector3 point(vertexBuf[indexBuf[i] * 3], vertexBuf[indexBuf[i] * 3 + 1], vertexBuf[indexBuf[i] * 3 + 2]);
+			Vector3 point(vertexBuf[i * 3], vertexBuf[i * 3 + 1], vertexBuf[i * 3 + 2]);
 			this->AddPoint(point);
 		}
 	}

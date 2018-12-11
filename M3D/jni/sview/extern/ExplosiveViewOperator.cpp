@@ -1,4 +1,4 @@
-#include <stdlib.h>
+﻿#include <stdlib.h>
 //#include <unistd.h>
 
 #include "Utility.h"
@@ -93,12 +93,10 @@ bool ExplosiveViewOperator::setPercentWithDirection(View* view, vector<Model*> a
 		this->explosiveDirection = direction;
 		if (arrayModels.size() == 0)
 		{
-			this->CacheMatrixState();
 			ProcressAwayFromCenter();
 		}
 		else if (arrayModels.size() > 0)
 		{
-			this->CacheSelectMatrixState(arrayModels);
 			ProcressAwayFromCenter(arrayModels);
 		}
 		
@@ -112,22 +110,15 @@ bool ExplosiveViewOperator::SetPercent(View* view, vector<Model*> arrayModels, i
 	bool setExplosiveState = false;
 	this->explosiveDirection = Vector3(0,0,0);
 	//LOGE("SetPercent m_explosiveStyle: %d style: %d", m_explosiveStyle, style);
-	if (this->m_explosiveStyle != style)
-	{
-		this->m_explosiveStyle = style;
-		this->m_explosivePercent = 0;
-	}
-	if (percent != this->m_explosivePercent)
-	{
-		this->m_isSelector = true;
-		
-		this->m_explosivePercent = percent / 50.0f + this->m_explosivePercent;
-		this->m_view = view;
-		this->m_isUseAnimation = useAnimation;
 
-		this->CacheSelectMatrixState(arrayModels);
-		ProcressAwayFromCenter(arrayModels);
-	}
+	this->m_explosiveStyle = style;
+	this->m_isSelector = true;
+
+	this->m_explosivePercent = percent / 50.0f ;
+	this->m_view = view;
+	this->m_isUseAnimation = useAnimation;
+
+	ProcressAwayFromCenter(arrayModels);
 
 	return setExplosiveState;
 }
@@ -138,32 +129,14 @@ bool ExplosiveViewOperator::SetPercent(View* view, int style, float percent,
 	bool setExplosiveState = false;
 	this->explosiveDirection = Vector3(0, 0, 0);
 	//LOGE("SetPercent m_explosiveStyle: %d style: %d", m_explosiveStyle, style);
-	if (this->m_explosiveStyle != style)
+
+	//if (percent != this->m_explosivePercent)
 	{
 		this->m_explosiveStyle = style;
-		this->m_explosivePercent = 0;
-		this->m_explosiveAllValue = 0;
-	}
-	if (percent != this->m_explosivePercent)
-	{
-		if ((this->m_isFirstOpen || this->m_isSelector))
-		{
-			this->Reset();
-			if (view != NULL)
-			{
-				//            view->RestoreView();
-			}
-
-			this->m_isFirstOpen = false;
-			this->m_isSelector = false;
-		}
-	
 		this->m_explosivePercent = percent/50.0f;
-		this->m_explosiveAllValue = m_explosiveAllValue + this->m_explosivePercent;
 		this->m_view = view;
 		this->m_isUseAnimation = useAnimation;
-
-		this->CacheMatrixState();
+		
 		switch (m_explosiveStyle)
 		{
 		case AWAYFROMCENTER:
@@ -319,7 +292,6 @@ bool ExplosiveViewOperator::Close(View* view)
 	bool closeExplosiveState = false;
 	SceneManager* scene = m_view->GetSceneManager();
 	scene->Lock();
-	scene->RemoveShape(modelID);
 	scene->GetRenderManager()->RequestRedraw();
 	scene->UnLock();
 	SetPercent(view, this->m_explosiveStyle,0,false);
@@ -405,7 +377,6 @@ void ExplosiveViewOperator::AwayFromCenterCallback(void* data, Model* node)
 		if (currentNodeCanExplosive)
 		{
 			Vector3 center;
-			ModelShape* shapeNode =node->GetModelShape();
 			Matrix3x4 tModelMatrix;
 
 			NodeState nodestate;
@@ -444,7 +415,7 @@ void ExplosiveViewOperator::AwayFromCenterCallback(void* data, Model* node)
 				else if (explosiveViewOperator->m_explosiveStyle
 					== AWAYFROMCENTER_X)
 				{ //X direction
-					if (explosiveViewOperator->m_explosiveAllValue >= 0)
+					if (explosiveViewOperator->m_explosivePercent >= 0)
 					{
 						center = explosiveViewOperator->m_TopNodeFront;
 					}
@@ -459,7 +430,7 @@ void ExplosiveViewOperator::AwayFromCenterCallback(void* data, Model* node)
 				else if (explosiveViewOperator->m_explosiveStyle
 					== AWAYFROMCENTER_Y) //Y direction
 				{
-					if (explosiveViewOperator->m_explosiveAllValue >= 0)
+					if (explosiveViewOperator->m_explosivePercent >= 0)
 					{
 						center = explosiveViewOperator->m_TopNodeLeft;
 					}
@@ -473,7 +444,7 @@ void ExplosiveViewOperator::AwayFromCenterCallback(void* data, Model* node)
 				else if (explosiveViewOperator->m_explosiveStyle
 					== AWAYFROMCENTER_Z) //Z direction
 				{
-					if (explosiveViewOperator->m_explosiveAllValue >= 0)
+					if (explosiveViewOperator->m_explosivePercent >= 0)
 					{
 						center = explosiveViewOperator->m_TopNodeBottom;
 					}
@@ -529,10 +500,10 @@ void ExplosiveViewOperator::AwayFromCenterCallback(void* data, Model* node)
 				if (explosiveViewOperator->explosiveDirection == Vector3(0, 0, 0))
 				{
 					//将顶级包围盒中心点变化到 节点空间
-					disPos = tModelMatrix.Inverse() * disPos;
-					center = tModelMatrix.Inverse() * center;
+// 					disPos = tModelMatrix.Inverse() * disPos;
+// 					center = tModelMatrix.Inverse() * center;
 					//未指向爆炸方向，根据标准爆炸轴爆炸的功能
-					if (explosiveViewOperator->m_explosiveAllValue >= 0)
+					if (explosiveViewOperator->m_explosivePercent >= 0)
 					{
 						mov = (disPos - center)* explosiveViewOperator->m_explosivePercent;
 					}
@@ -544,7 +515,7 @@ void ExplosiveViewOperator::AwayFromCenterCallback(void* data, Model* node)
 				else
 				{
 					//指定了标准爆炸轴的方向爆炸
-					Vector3 vect = tModelMatrix.Inverse() * Vector3(0, 0, 0);
+					//Vector3 vect = tModelMatrix.Inverse() * Vector3(0, 0, 0);
 					Vector3 direction = explosiveViewOperator->explosiveDirection;
 					Plane plane;
 
@@ -585,7 +556,14 @@ void ExplosiveViewOperator::AwayFromCenterCallback(void* data, Model* node)
 					float boxDistance = M3D::Abs(plane.Distance(explosiveViewOperator->m_TopNodeCenter));
 					float percent = direction.Length() / boxDistance;
 					mov = direction / direction.Length() * percent * modelDistance;
-					mov = (tModelMatrix.Inverse() * mov- vect);
+					//mov = (tModelMatrix.Inverse() * mov- vect); 
+
+					
+// 					float modelDistance = M3D::Abs(plane.Distance(disPos));
+// 					float boxDistance = M3D::Abs(plane.Distance(explosiveViewOperator->m_TopNodeCenter));
+// 					float percent = direction.Length() / boxDistance;
+// 					mov = explosiveViewOperator->tmpDirection / explosiveViewOperator->tmpDirection.Length() * percent * modelDistance;
+
 				}
 				
 				//TODO 判断浮点数是否溢出
@@ -650,7 +628,7 @@ void ExplosiveViewOperator::CacheSelectMatrixState(vector<Model*> arrayModels)
 		
 		Vector3 maxPos = (&box)->m_max;
 		Vector3 minPos = (&box)->m_min;
-		if (this->arrayModels != arrayModels)
+		//if (this->arrayModels != arrayModels)
 		{
 			this->arrayModels = arrayModels;
 			this->m_TopNodeCenter = (maxPos + minPos)*0.5f;
@@ -690,7 +668,7 @@ void ExplosiveViewOperator::CacheMatrixState()
 		Vector3 maxPos = box->m_max;
 		Vector3 minPos = box->m_min;
 
-		if (this->m_TopNodeCenter.m_x==0&& this->m_TopNodeCenter.m_y == 0 && this->m_TopNodeCenter.m_z == 0)
+		//if (this->m_TopNodeCenter.m_x ==0 && this->m_TopNodeCenter.m_y == 0 && this->m_TopNodeCenter.m_z == 0)
 		{
 			this->m_TopNodeCenter = (maxPos + minPos)*0.5f;
 			this->m_TopNodeTop = (maxPos + Vector3(minPos.m_x, minPos.m_y, maxPos.m_z))*0.5f;
@@ -721,48 +699,6 @@ void ExplosiveViewOperator::CacheMatrixState()
 	}
 }
 
-
-bool ExplosiveViewOperator::AddNoteToScene(Vector3 start, Vector3 end)
-{
-	bool ret = false;
-	SceneManager* scene = m_view->GetSceneManager();
-
-	Line3D* m_line = new Line3D(start, end);
-	m_line->SetName("dottedLine");
-	m_line->SetLineWidth(2);
-	m_line->SetColor(Color::RED);
-	Note* baseNote = new Note;
-	baseNote->m_LineList.push_back(m_line);
-
-	if (scene && baseNote)
-	{
-		MeasureGroup* measureGroup = scene->GetMeasureGroup();
-		ShapeNode* shapNode = new ShapeNode();
-		shapNode->SetShape(baseNote);
-		baseNote->SetScene(scene);
-
-		char strID[10];
-		sprintf(strID, "%d", shapNode->GetID());
-		string anoteName = measureGroup->GetName() + "|" + strID;
-		shapNode->SetName(anoteName);
-		if (this->GetExplosivePercent() != 0)
-		{
-			scene->Lock();
-			//删除上次绘制的辅助线
-			scene->RemoveShape(modelID);
-			//增加最新的辅助线
-			measureGroup->AddChild(shapNode);
-			scene->AddShapeIDToMap(baseNote);
-			scene->GetRenderManager()->RequestRedraw();
-			modelID = baseNote->GetID();
-			scene->UnLock();
-		}
-		ret = true;
-
-	}
-	return ret;
-}
-
 void ExplosiveViewOperator::CacheMatrixState(void* data, Model* node)
 {
 	if(node)
@@ -775,12 +711,12 @@ void ExplosiveViewOperator::CacheMatrixState(void* data, Model* node)
 		{
 				if (node != NULL&& node->GetType() == SHAPE_MODEL)
 				{
-					ModelShape* shapeNode = node->GetModelShape();
-					if (shapeNode&&shapeNode->GetBodys()&&shapeNode->GetBodys()->size()>0)
+					//ModelShape* shapeNode = node->GetModelShape();
+					if (node && node->GetBodys() && node->GetBodys()->size()>0)
 					{
-						Matrix3x4& modelMatrix = shapeNode->GetWorldTransform();
+						Matrix3x4& modelMatrix = node->GetWorldTransform();
 
-						NodeState nodeState(shapeNode, modelMatrix, shapeNode->GetWorldBoundingBox());
+						NodeState nodeState(node, modelMatrix, node->GetWorldBoundingBox());
 						explosiveViewOperator->AddMatrix(node, nodeState);
 					}
 
@@ -793,12 +729,12 @@ void ExplosiveViewOperator::CacheMatrixState(void* data, Model* node)
 			if(exploveLevel == level && nodeType == MODEL_NODE)
 			{
 				//Model* shapeNode = (Model*) node;
-				ModelShape* shapeNode = node->GetModelShape();
-				if (shapeNode&&shapeNode->GetBodys()&&shapeNode->GetBodys()->size()>0)
+				//ModelShape* shapeNode = node->GetModelShape();
+				if (node && node->GetBodys() && node->GetBodys()->size()>0)
 				{
-					Matrix3x4& modelMatrix = shapeNode->GetWorldTransform();
+					Matrix3x4& modelMatrix = node->GetWorldTransform();
 
-					NodeState nodeState(shapeNode, modelMatrix, shapeNode->GetWorldBoundingBox());
+					NodeState nodeState(node, modelMatrix, node->GetWorldBoundingBox());
 
 					explosiveViewOperator->AddMatrix(node, nodeState);
 				}
@@ -836,7 +772,7 @@ bool ExplosiveViewOperator::GetMatrix(Model* nodeAddr, NodeState& nodeState)
 	{
 		return hasMatrix;
 	}
-	map<ModelShape*, NodeState>::iterator it = this->m_allNodeMatrixsCache.find(nodeAddr->GetModelShape());
+	map<Model*, NodeState>::iterator it = this->m_allNodeMatrixsCache.find(nodeAddr);
 	if (it != this->m_allNodeMatrixsCache.end())
 	{
 		nodeState = it->second;
@@ -847,7 +783,11 @@ bool ExplosiveViewOperator::GetMatrix(Model* nodeAddr, NodeState& nodeState)
 }
 void ExplosiveViewOperator::AddMatrix(Model* nodeAddr, const NodeState& nodeState)
 {
-    this->m_allNodeMatrixsCache.insert(pair<ModelShape*, NodeState>(nodeAddr->GetModelShape(), nodeState));
+    map<Model*, NodeState>::iterator it = this->m_allNodeMatrixsCache.find(nodeAddr);
+	if (it == this->m_allNodeMatrixsCache.end())
+	{
+		this->m_allNodeMatrixsCache.insert(pair<Model*, NodeState>(nodeAddr, nodeState));
+	}
 }
 
 bool ExplosiveViewOperator::FlatModel(View* view,vector<Model *>& shapeList,int row , int column )

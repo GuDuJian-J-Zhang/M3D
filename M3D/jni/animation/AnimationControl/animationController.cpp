@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "animationController.h"
 //#include <thread>
 #include <iostream>

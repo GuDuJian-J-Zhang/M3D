@@ -39,6 +39,7 @@ Measure::Measure() :
 		Note()
 {
 	this->SetType(SHAPE_MEASURE_BASE);
+	m_CreateID = m_Id;
 }
 
 Measure::~Measure()
@@ -54,6 +55,16 @@ int Measure::GetMeasureType()
 void Measure::SetMeasureType(int measureType)
 {
 	this->m_measureType = measureType;
+}
+
+IDTYPE Measure::GetCreateID()
+{
+	return m_CreateID;
+}
+
+void Measure::SetCreateID(IDTYPE createID)
+{
+	m_CreateID = createID;
 }
 
 }

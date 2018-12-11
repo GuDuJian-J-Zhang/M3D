@@ -209,6 +209,8 @@ namespace M3D
 		//************************************
 		float Opacity() const;
 		void Opacity(float val);
+
+		virtual bool Compare(BaseMaterial* smaterial) override;
 	private:
 
 		Texture* m_albedoMap;//!<固有色贴图

@@ -261,6 +261,7 @@ public:
 	Material(Material& org);
 	virtual ~Material();
 	virtual BaseMaterial* Clone();
+
 	/**
 	 *
 	 * @param ambient
@@ -443,6 +444,9 @@ public:
 	void DisplacementBias(float val) { m_displacementBias = val; }
 	float Opacity() const { return m_opacity; }
 	void Opacity(float val) { m_opacity = val; }
+
+
+	virtual bool Compare(BaseMaterial * sBaseMaterial);
 protected:
 	void Init();	
 
@@ -481,7 +485,7 @@ protected:
 	Texture* m_specularMap;//镜面反射贴图
 
 
-    Texture* m_reflectiveTexture; //反射纹理
+    Texture* m_reflectiveTexture;
     
 	Matrix4* m_textureTransform;//!<Texture2D的变换矩阵，如果存在的话
 

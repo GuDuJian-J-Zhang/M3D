@@ -100,6 +100,7 @@ Model::Model(void):Object()
 
 	this->MarkDirty();
 	m_originTrans = 1.0f;
+	m_userData = nullptr;
 }
 
 Model::~Model(void)
@@ -726,6 +727,9 @@ void Model::SetPlaceMatrix(const Matrix3x4& plcMatrix)
 	m_plcMatrix = plcMatrix;
 	MarkDirty();
 	// plcMatrix.Decompose(this->m_position, this->m_rotation, this->m_scale);
+	if (m_ExtInfoMgr) {
+		m_ExtInfoMgr->UpdateSceneByModel(this);
+	}
 }
 Matrix3x4* Model::GetPlaceMatrix() const
 {
@@ -1114,8 +1118,8 @@ string Model::GetStatistics()
 	statisticsInfo.append(";;");
 	statisticsInfo.append(LOD0PatchNumber + "::" + IntToString(GetVertexCount(0) / 3));
 	statisticsInfo.append(";;");
-	statisticsInfo.append(LOD1PatchNumber + "::" + IntToString(GetVertexCount(1) / 3));
-	statisticsInfo.append(";;");
+	//statisticsInfo.append(LOD1PatchNumber + "::" + IntToString(GetVertexCount(1) / 3));
+	//statisticsInfo.append(";;");
 	statisticsInfo.append(PMICount + "::" + IntToString(m_ExtInfoMgr->GetModelPMIsCount(m_Id)));
 	return statisticsInfo;
 }
@@ -1584,11 +1588,18 @@ void Model::MoveModelView(int viewId, int preViewId)
 		else
 		{
 			int nModelViewNewIndex = nPreModelViewIndex-1;
+			if (preViewId < 0)
+			{
+				nModelViewNewIndex++;
+			}
 			for (int i = nModelViewIndex; i < nModelViewNewIndex; i++)
 			{
 				(*pVecViews)[i] = (*pVecViews)[i + 1];
 			}
-			(*pVecViews)[nModelViewNewIndex] = pModelView;
+			if (nModelViewNewIndex >= 0 && nModelViewNewIndex < (int)pVecViews->size())
+			{
+				(*pVecViews)[nModelViewNewIndex] = pModelView;
+			}
 		}
 	}
 }
@@ -2235,6 +2246,7 @@ void Model::CopyData(Model* orig)
     this->SetPlaceMatrix(*orig->GetPlaceMatrix());
     this->SetPlcId(orig->GetPlcId());
     this->SetProtoTypeId(orig->GetProtoTypeId());
+	this->SetInstanceID(orig->GetInstatnceID());
     if(orig->GetOrigPlcMartirx()){
       this->SetOrigPlcMatrix(*orig->GetOrigPlcMartirx());
     }
@@ -2731,9 +2743,9 @@ void SignModel::SetShowSimpleSign(bool val)
 {
 	m_showSimpleSign = val;
 
-	if (this->m_allSignModel)
+	if (this->m_simpleSignModel)
 	{
-		this->m_allSignModel->SetVisible(val);
+		this->m_simpleSignModel->SetVisible(val);
 	}
 }
 

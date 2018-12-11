@@ -1,4 +1,4 @@
-#include "m3d/ResourceManager.h"
+﻿#include "m3d/ResourceManager.h"
 
 #include "m3d/M3D.h"
 
@@ -590,6 +590,7 @@ BaseMaterial* ResourceManager::GetOrCreateMaterial(string key,int type, int mode
 			material = new Material();
 			break;
 		}
+		
 		material->SetName(key);
 		material->SetResourceManager(this);
 
@@ -600,9 +601,8 @@ BaseMaterial* ResourceManager::GetOrCreateMaterial(string key,int type, int mode
 		key = key + "_uuid_" + IDCreator::GetUUID();
 		material = material->Clone();
 		material->SetName(key);
-		this->AddMaterial(key,material);
+		this->AddMaterial(key, material);
 	}
-
 	return material;
 }
 
@@ -1231,6 +1231,113 @@ MaterialTemplateManager* ResourceManager::GetMaterialTemplateManager()
 		m_materialTemplateManager = new MaterialTemplateManager(this);
 	}
 	return m_materialTemplateManager;
+}
+
+//判断材质是否被使用
+bool ResourceManager::IsMaterialExisted(BaseMaterial** refMaterial, Color* color, float alpha)
+{
+	map<string, BaseMaterial *>mapMaterials =GetAllMaterials();
+
+	if (mapMaterials.size() > 0)
+	{
+		for (auto it= mapMaterials.begin();it!= mapMaterials.end();it++)
+		{
+			BaseMaterial*tmepMaterial = it->second;
+			MaterialType tempType =tmepMaterial->GetMaterialType();
+			switch (tempType)
+			{
+			case MaterialType_Phong:
+			{
+				Material * temp = static_cast<Material*>(tmepMaterial);
+				Color tempColor = temp->GetDiffuse();
+				float tempOpacity = temp->Opacity();
+
+				//与传入的颜色和alpha值比较
+				if (tempColor.Equals(*color) &&Equals(tempOpacity,alpha))
+				{
+					*refMaterial = tmepMaterial;
+					return true;
+				}
+			}
+			break;
+			case MaterialType_Pbr:
+			{
+				PbrMaterial * temp = static_cast<PbrMaterial*>(tmepMaterial);
+				Color tempColor = temp->AlbedoColor();
+				float tempOpacity = temp->Opacity();
+
+				//与传入的颜色和alpha值比较
+				if (tempColor.Equals(*color) && Equals(tempOpacity, alpha))
+				{
+					*refMaterial = tmepMaterial;
+					return true;
+				}
+			}
+			break;
+			case MaterialType_MatCap:
+			{
+				MatCapMaterial * temp = static_cast<MatCapMaterial*>(tmepMaterial);
+				Color tempColor=temp->GetDiffuse();
+				float tempOpacity=temp->Opacity();
+
+				//与传入的颜色和alpha值比较
+				if (tempColor.Equals(*color) && Equals(tempOpacity, alpha))
+				{
+					*refMaterial = tmepMaterial;
+					return true;
+				}
+			}
+			break;
+			}
+		}
+	}
+
+	return false;
+}
+
+bool ResourceManager::IsMaterialExisted(BaseMaterial** Material, BaseMaterial* smaterial, string excepKey)
+{
+	map<string, BaseMaterial *>mapMaterials = GetAllMaterials();
+
+	for (auto iter= mapMaterials.begin();iter!=mapMaterials.end();iter++)
+	{
+		string materialKey = iter->first;
+		BaseMaterial* tmpMaterial = iter->second;
+
+		if (tmpMaterial->Compare(smaterial) && materialKey!= excepKey)
+		{
+			*Material=tmpMaterial;
+			return true;
+		}
+	}
+	return false;
+}
+
+bool ResourceManager::IsMaterialUsed(Model* smodel, BaseMaterial* smaterial, Model* smodelExcept)
+{
+	BaseMaterial* modelMaterial = smodel->GetMaterial();
+
+	if (modelMaterial != NULL)
+	{
+		if (modelMaterial->Compare(smaterial) && smodel!= smodelExcept)
+		{
+			return true;
+		}
+	}
+
+	vector<Model*> vec_ModelList=smodel->GetChildren();
+
+	for (auto iModel=vec_ModelList.begin();iModel!=vec_ModelList.end();iModel++)
+	{
+		Model* tmpModel =*iModel;
+
+		if (IsMaterialUsed(tmpModel, smaterial, smodelExcept))
+		{
+			return true;
+		}
+	}
+
+	return false;
 }
 
 }

@@ -18,6 +18,13 @@
 #include <stdlib.h>
 #include "animation/SimulationAnimation/AnimationAPI.h"
 #include "m3d/scene/ScreenUILayerGroup.h"
+#include "m3d/ResourceManager.h"
+#include "m3d/model/Curve.h"
+#include "m3d/model/Body.h"
+#include "m3d/model/Edge.h"
+#include "m3d/utils/Platform.h"
+#include "m3d/graphics/SectionPlane.h"
+
 
 using namespace SVIEW;
 
@@ -128,15 +135,16 @@ void CAnimationCallBackFunction::SetModelPlcMtxCallBack(const char* plcIdPath, c
 		return;
 	CAnimationCallBackFunction* pAnimationCallBackFunction = (CAnimationCallBackFunction*)pInstance;
 	string m3dModelPath(plcIdPath);
-	Model* model = AnimationHelper::GetModel(m3dModelPath, pAnimationCallBackFunction->m_pView);
-	if (model == NULL)
+	SceneManager* pSceneMgr = pAnimationCallBackFunction->m_pView->GetSceneManager();
+	Model* pModel = dynamic_cast<Model*>(pSceneMgr->GetShape(AnimationHelper::AniDecPathToM3DHexPath(m3dModelPath)));
+	//Model* model = AnimationHelper::GetModel(m3dModelPath, pAnimationCallBackFunction->m_pView);
+	if (pModel == NULL)
 	{
 		string strToolKey = "PLCID:" + string(plcIdPath);
-		HandlerGroup* handlerGroup = pAnimationCallBackFunction->m_pView->GetSceneManager()->GetHandlerGroup();
-		model = handlerGroup->GetSVLTool(strToolKey);
+		HandlerGroup* handlerGroup = pSceneMgr->GetHandlerGroup();
+		pModel = handlerGroup->GetSVLTool(strToolKey);
 	}
-	AnimationHelper::SetModelTransform(fMtxAA,model);
-    
+	AnimationHelper::SetModelTransform(fMtxAA, pModel);
 	pAnimationCallBackFunction->m_pView->RequestDraw();
 }
 
@@ -196,17 +204,31 @@ void CAnimationCallBackFunction::SetCameraCallBack(const char* plcIdPath,const f
 		if (atof(animationVersion.c_str()) >= 1.15f && ((int)fScale[1]) > 0
 			&& ((int)fScale[2]) > 0)
 		{
-			AnimationHelper::AdjustCameraZoom( pAnimationCallBackFunction->m_pView,aniWidth, aniHeight, aniZoom, zoom);
+			AnimationHelper::AdjustCameraZoom(camera, aniWidth, aniHeight, aniZoom, zoom, pAnimationCallBackFunction->m_pView);
 		}
 		else
 		{
 			zoom = 1 / aniZoom;
 		}
 
-		AnimationHelper::SetCameraTransform(fMtxAA, camera);
-		AnimationHelper::SetCameraZoom(zoom, camera, pAnimationCallBackFunction->m_pView);
+		//AnimationHelper::SetCameraTransform(fMtxAA, camera);
+		Matrix4 inMatrix4((float*)fMtxAA);
+		inMatrix4 = inMatrix4.Transpose();
 
-		pAnimationCallBackFunction->m_pView->RequestDraw();
+		Matrix3x4 transfromMatrix3x4(inMatrix4);
+		
+		Vector3 trans = transfromMatrix3x4.Translation();
+		Quaternion rot = transfromMatrix3x4.Rotation();
+		Vector3 aixs = rot.GetAixsValue();
+		camera->SetTransform(trans, rot, zoom);
+		
+		char chLogBuf[1024];
+		sprintf(chLogBuf, "Translation:%f,%f,%f\tRotation Aixs:%f,%f,%f Angle:%f\r\n",
+			trans.m_x, trans.m_y, trans.m_z,
+			aixs.m_z, aixs.m_y, aixs.m_z, rot.GetAngleValue());
+		//AnimationHelper::SetCameraZoom(zoom, camera, pAnimationCallBackFunction->m_pView);
+		LOGI(chLogBuf);
+		//pAnimationCallBackFunction->m_pView->RequestDraw();
 	}
 }
 
@@ -240,9 +262,21 @@ bool CAnimationCallBackFunction::PlayVisibleCallBack(const char* plcIdPath, cons
 		unsigned long decID;
 		AnimationHelper::GetPMIID(cEntId,decID);
 
-		PMIData* pmiData = AnimationHelper::GetPMI(decID, pAnimationCallBackFunction->m_pView);
-
-		AnimationHelper::SetPMIVisible(bOnOff,pmiData);
+		IShape* pShape = AnimationHelper::GetMeasure(decID, pAnimationCallBackFunction->m_pView);
+		if (pShape)
+		{
+			pShape->SetVisible(bOnOff);
+			pShape->SetAlpha(fTran, true);
+		}
+		else//批注
+		{
+			pShape = AnimationHelper::GetAnnotation(decID, pAnimationCallBackFunction->m_pView);
+			if (pShape)
+			{
+				pShape->SetVisible(bOnOff);
+				pShape->SetAlpha(fTran, true);
+			}
+		}
 	}
 	else if (strlen(name) == 0)
 	{
@@ -349,7 +383,7 @@ bool CAnimationCallBackFunction::PlayAnimationImageCallBack(const char* plcIdPat
 			ImageModel* pImageModel = new M3D::ImageModel();
 			pImageModel->SetName(strName);
 			pImageModel->SetImagePath(strFilePath);
-            Vector2 temp = Vector2(fImgWidth, fImgHeight);
+            Vector2 temp(fImgWidth, fImgHeight);
 			pImageModel->SetImageSize(position, temp);
 			pImageModel->SetAllowScall(true);
 			pImageModel->SetAllowRotate(true);
@@ -374,8 +408,175 @@ void CAnimationCallBackFunction::UpdateViewCallBack(void* pBehaviorManager, void
 //播放开始的处理
 void CAnimationCallBackFunction::PlayBeginCallBack(void* pBehaviorManager, void* pInstance)
 {
-	if (!pInstance)
+	if (!pInstance || !pBehaviorManager)
 		return;
+
+	CAnimationCallBackFunction* pAnimationCallBackFunction = (CAnimationCallBackFunction*)pInstance;
+	if (!pAnimationCallBackFunction->m_pView)
+		return;
+
+	if (((CSBehaviorAction*)pBehaviorManager)->IsShowTrochoid()/* &&
+		((CSBehaviorAction*)pBehaviorManager)->IsPlaying()*/)
+	{
+		ShowAniTrochoid(pAnimationCallBackFunction);
+	}
+	
+}
+
+/************************************************************************/
+/*    显示动画轨迹线                                                                  */
+/************************************************************************/
+void CAnimationCallBackFunction::ShowAniTrochoid(CAnimationCallBackFunction* pAnimationCallBackFunction)
+{
+	if (!pAnimationCallBackFunction->m_pView)
+		return;
+	CAnimationAPI* pAnimationAPI = CAnimationAPI::GetInstance();
+	NS_SimulationAnimation::CSBehaviorAction* pBehaviorAction = pAnimationAPI->GetCurBehaviorAction();
+	if (NULL == pBehaviorAction)
+		return;
+
+
+	SceneManager* pSceneManager = pAnimationCallBackFunction->m_pView->GetSceneManager();
+	if (pSceneManager == NULL)
+		return;
+	HandlerGroup* pScreenHandlerGroup = pSceneManager->GetHandlerGroup();
+	if (pScreenHandlerGroup == NULL)
+		return;
+	string strTrochoidName = "AnimationTrochoid";
+	Model* pTrochoidModel = pScreenHandlerGroup->GetSVLTool(strTrochoidName);
+	if (pTrochoidModel)
+	{
+		pScreenHandlerGroup->RemoveSVLTool(strTrochoidName);
+		pTrochoidModel = NULL;
+	}
+	pTrochoidModel = new M3D::Model();
+	pTrochoidModel->SetName(strTrochoidName);
+	pTrochoidModel->SetMaterial(pSceneManager->GetResourceManager()->GetOrCreateMaterial("m3d_default_material"));
+	pSceneManager->GetHandlerGroup()->AddSVLTool(pTrochoidModel, strTrochoidName);
+
+	//int curTick = pBehaviorAction->GetCurrentTick();
+	vlist_s* animationList = pBehaviorAction->GetAnimationList();
+	START_LIST_ITERATION(CSAnimation, animationList)
+		wstring wstrAnimationName = Platform::StringToWString(temp->GetName(), "auto");
+		wstring wstrPosition = Platform::StringToWString("位置");
+		if (wstrAnimationName.compare(wstrPosition)==0)
+		{
+			//CSTimeline* pTimeline = temp->GetTimeline();
+			//int tlArrayLength = pTimeline->GetTimelineArrayLength();
+			//int* tlArray = 0;
+			//int beginTick = -1;
+			//int endTick = -1;
+			//if (tlArrayLength > 0)
+			//{
+			//	tlArray = pTimeline->GetTimelineArray();
+			//	beginTick = tlArray[0];
+			//	endTick = tlArray[tlArrayLength - 1];
+			//	if (curTick >= beginTick && curTick <= endTick)
+			//	{
+					vector<Vector3> vecLineVertex;
+					vector<M3D_INDEX_TYPE> vecLineIndex;
+					GetLineVertexAndIndex(pAnimationCallBackFunction, temp, vecLineVertex, vecLineIndex);
+					if((int)vecLineVertex.size()>0)
+					{
+						pTrochoidModel->AddLineData(vecLineVertex/*, vecLineIndex*/);
+					}
+
+					vecLineVertex.clear();
+					vecLineIndex.clear();
+			//	}
+			//}
+		}
+	END_LIST_ITERATION(animationList)
+	
+}
+
+
+/************************************************************************/
+/* 获取动画的所有顶点及索引值                                                                     */
+/************************************************************************/
+void CAnimationCallBackFunction::GetLineVertexAndIndex(CAnimationCallBackFunction* pAnimationCallBackFunction,CSAnimation* pAnimation, vector<Vector3> &oVecLineVertex, vector<M3D_INDEX_TYPE> &oVecLineIndex)
+{
+	CSTimeline* pTimeline = pAnimation->GetTimeline();
+	int* tlArray = 0;
+	int tlArrayLength = pTimeline->GetTimelineArrayLength();
+	if (tlArrayLength > 0)
+		tlArray = pTimeline->GetTimelineArray();
+	CAnimationAPI* pAnimationAPI = CAnimationAPI::GetInstance();
+	if (!pAnimationAPI)
+	{
+		return;
+	}
+
+	STargetObject* pTargetObject = pAnimation->GetTarget();
+	if (!pTargetObject || strcmp(pTargetObject->GetType(), TARGETOBJECTTYPE_INS))
+		return;
+	const char* saPlcPath = pTargetObject->GetResolvedPath();
+	string m3dModelPath(saPlcPath);
+	Vector3 centerPnt(0.0f,0.0f,0.0f);
+	Model* model = AnimationHelper::GetModel(m3dModelPath, pAnimationCallBackFunction->m_pView);
+	if (model != NULL)
+	{
+		Matrix3x4 insMatrix = model->GetWorldTransform();
+		centerPnt = model->GetBoundingBox().Center();
+		//centerPnt = insMatrix.Inverse().Multiply(centerPnt);
+	}
+
+	vlist_s* pInterpolatorList = pAnimation->GetInterpolatorList();
+	for (int j = 0; j < tlArrayLength; j++)
+	{
+		AniPoint pivotPoint(0.0, 0.0, 0.0);
+		AniPoint point(0.0, 0.0, 0.0);
+		AniQuat quat(0.0, 0.0, 0.0, 1.0);
+		START_LIST_ITERATION(CSInterpolator, pInterpolatorList)
+			int keyFrameCount = temp->GetArrayLength();
+		if (keyFrameCount > 0 && j < keyFrameCount)
+		{
+			if (strcmp(temp->GetType(), INTERPOLATOR_PIVOT) == 0)
+			{
+				pivotPoint = ((CKeyframeChannel*)temp->GetAt(j))->m_cp;
+			}
+			else if (strcmp(temp->GetType(), INTERPOLATOR_QUATROT) == 0)
+			{
+				quat = ((CKeyframeQuatSquad*)temp->GetAt(j))->m_quat;
+			}
+			else if (strcmp(temp->GetType(), INTERPOLATOR_POS) == 0)
+			{
+				point = ((CKeyframeChannel*)temp->GetAt(j))->m_cp;
+			}
+		}
+		END_LIST_ITERATION(pInterpolatorList)
+
+			
+		point = CSACommonAPI::UniTanslationToMtxTanslation(pivotPoint, quat, point);
+
+		Vector3 tmpVtx(point.x, point.y, point.z);
+
+		//取当前状态模型包围盒中心点的位置
+		Quaternion tmpQuat(quat.w, quat.x, quat.y, quat.z);
+		Matrix3x4* tmpModelMatrix = new Matrix3x4(tmpVtx, tmpQuat,1.0f);
+		tmpVtx = tmpModelMatrix->Multiply(centerPnt);
+		
+		string m3dParentModelPath = m3dModelPath;
+		size_t indexCh = m3dParentModelPath.find_last_of('\\');
+		if (indexCh != std::string::npos)
+		{
+			m3dParentModelPath = m3dParentModelPath.substr(0, indexCh);
+			Model* parentModel = AnimationHelper::GetModel(m3dParentModelPath, pAnimationCallBackFunction->m_pView);
+			if (parentModel != NULL)
+			{
+				Matrix3x4 parentInsMatrix = parentModel->GetWorldTransform();
+				tmpVtx = parentInsMatrix.Multiply(tmpVtx);
+			}
+		}
+		
+		oVecLineVertex.push_back(tmpVtx);
+	}
+
+	for (int m = 0; m < (int)oVecLineVertex.size() - 1; m++)
+	{
+		oVecLineIndex.push_back(m);
+		oVecLineIndex.push_back(m + 1);
+	}
 }
 
 //播放结束时的处理
@@ -383,6 +584,23 @@ void CAnimationCallBackFunction::PlayEndCallBack(void* pBehaviorManager, void* p
 {
 	if (!pInstance)
 		return;
+	CAnimationCallBackFunction* pAnimationCallBackFunction = (CAnimationCallBackFunction*)pInstance;
+	if (!pAnimationCallBackFunction->m_pView)
+		return;
+	SceneManager* pSceneManager = pAnimationCallBackFunction->m_pView->GetSceneManager();
+	if (pSceneManager == NULL)
+		return;
+	HandlerGroup* pScreenHandlerGroup = pSceneManager->GetHandlerGroup();
+	if (pScreenHandlerGroup == NULL)
+		return;
+	string strTrochoidName = "AnimationTrochoid";
+	Model* pTrochoidModel = pScreenHandlerGroup->GetSVLTool(strTrochoidName);
+	if (pTrochoidModel)
+	{
+		pSceneManager->Lock();
+		pScreenHandlerGroup->RemoveSVLTool(strTrochoidName);
+		pSceneManager->UnLock();
+	}
 }
 
 bool CAnimationCallBackFunction::CollisionCallBack(const char* plcIdPath, void* pInstance)
@@ -506,7 +724,7 @@ void CAnimationCallBackFunction::SetCameraState(const PTARGETOBJECTINFO& cameraI
 		if (atof(animationVersion.c_str())>= 1.15f && ((int) cameraInfo->m_Scale[1]) > 0
 				&& ((int) cameraInfo->m_Scale[2]) > 0)
 		{
-			AnimationHelper::AdjustCameraZoom(m_pView,aniWidth,aniHeight,aniZoom,zoom);
+			AnimationHelper::AdjustCameraZoom(camera,aniWidth,aniHeight,aniZoom,zoom,m_pView);
 		}
 		else
 		{
@@ -581,10 +799,21 @@ void CAnimationCallBackFunction::SetPMIState(const PTARGETOBJECTINFO& PMIInfo)
 	}
 }
 
-void CAnimationCallBackFunction::PlayClipPlaneCallBack(const char plcIdPath[SA_BUFFER_SIZE_SMALL], const char name[SA_BUFFER_SIZE_SMALL], const float fPos[3], const float fScale[3], bool bOnOffFlg, void* pInstance)
+void CAnimationCallBackFunction::PlayClipPlaneCallBack(const char plcIdPath[SA_BUFFER_SIZE_SMALL], const char name[SA_BUFFER_SIZE_SMALL], const float fNormal[3], const float fPos[3], bool bOnOffFlg, void* pInstance)
 {
 	if (!pInstance)
 		return;
+	CAnimationCallBackFunction* pAnimationCallBackFunction = (CAnimationCallBackFunction*)pInstance;
+	if (!pAnimationCallBackFunction->m_pView)
+		return;
+	SectionPlane* pSectionPlane = AnimationHelper::GetSectionPlane(plcIdPath, pAnimationCallBackFunction->m_pView);
+	if (pSectionPlane == NULL)
+		return;
+	Vector3 vecPos(fPos[0], fPos[1], fPos[2]);
+	Vector3 vecNormal(fNormal[0], fNormal[1], fNormal[2]);
+	pSectionPlane->SetEnable(bOnOffFlg);
+	float D = -(vecNormal.DotProduct(vecPos));
+	pSectionPlane->SetPlaneParam(vecNormal.m_x, vecNormal.m_y, vecNormal.m_z, D);
 }
 
 //插入工具库动画的回调方法
@@ -597,10 +826,9 @@ void CAnimationCallBackFunction::PlayToolAnimationCallBack(int nType, const char
 	//获取模型
 	if (plcIdPath && pAnimationCallBackFunction->m_pView)
 	{
-        string toolsFilePath = Parameters::Instance()->m_appWorkPath + "data\\Tools\\" + string(strToolPath);
+        string toolsFilePath = Parameters::Instance()->m_appWorkPath + "\\data\\Tools\\" + string(strToolPath);
 		string toolsKey =/*Parameters::Instance()->m_appWorkPath + "data\\Tools\\" + string(strToolPath) + */string(plcIdPath);
         //toolsKey = M3D::FileHelper::GetUnionStylePath(toolsKey);
-
 		HandlerGroup* handlerGroup = pAnimationCallBackFunction->m_pView->GetSceneManager()->GetHandlerGroup();
 		Model* toolsModel = handlerGroup->GetSVLTool(toolsKey);
 		if (!toolsModel)

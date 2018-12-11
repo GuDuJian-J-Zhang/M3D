@@ -105,6 +105,10 @@
 #include "m3d/base/glue/GlueObj.h"
 #include "m3d/scene/CameraGroup.h"
 
+#include "m3d/graphics/Material.h"
+#include "m3d/graphics/PbrMaterial.h"
+#include "m3d/graphics/MatCapMaterial.h"
+
 #include "m3d/extras/note/ThreeDGesturesNote.h"
 #include "m3d/utils/MemoryHelper.h"
 #include "m3d/model/ModelShape.h"
@@ -216,11 +220,12 @@ View::View() :
 
 	m_curDrawMode = 0;
 
-	m_isAnimationShowPMI = false;
-	this->m_ExplosiveViewOperator = NULL;
-	this->m_isNeedChangeViewAnimation = false;
-	this->m_backgroundNode = NULL;
-	m_DrawLimit = 0.0f;
+		m_isAnimationShowPMI = false;
+		this->m_ExplosiveViewOperator = NULL;
+		this->m_ExplosiveViewOperatorOriVersion = NULL;
+		this->m_isNeedChangeViewAnimation = false;
+		this->m_backgroundNode = NULL;
+		m_DrawLimit = 0.0f;
 
 	m_draggerInit = false;
 	m_isDragger = false;
@@ -290,7 +295,11 @@ View::~View() {
 		delete this->m_ExplosiveViewOperator;
 	}
 	this->m_ExplosiveViewOperator = NULL;
-
+		if (this->m_ExplosiveViewOperatorOriVersion)
+		{
+			delete this->m_ExplosiveViewOperatorOriVersion;
+		}
+		this->m_ExplosiveViewOperatorOriVersion = NULL;
 	if (m_SceneManager) {
 		delete m_SceneManager;
 		m_SceneManager = NULL;
@@ -689,9 +698,9 @@ M3D_STATUS View::ReadFile(string & path) {
 		this->SetAnimationXMLData(m_Reader->GetXMLAnimationData());
 //        LOGI(                "ReadFile -- read animationXML %s sfs", this->m_AnimationXMLData.c_str());
 		//	LOGI("SetModel start");
-		m_SceneManager->SetModel(m_Model);
-		LOGI("View::ReadFile m_SceneManager->SetModel ok.");
-		this->SetDefaultWorkNodes();
+			m_SceneManager->SetModel(m_Model);
+			//	LOGI("View::ReadFile m_SceneManager->SetModel ok.");
+			this->SetDefaultWorkNodes();
 
 		m_SceneManager->OptimizeScene(m_Reader->IsAsynMode());
 
@@ -1115,6 +1124,10 @@ void View::CloseFile() {
 		if (m_ExplosiveViewOperator) {
 			m_ExplosiveViewOperator->Reset();
 		}
+			if (m_ExplosiveViewOperatorOriVersion)
+			{
+				m_ExplosiveViewOperatorOriVersion->Reset();
+			}
 		if (this->m_Selector != NULL) {
 			this->m_Selector->Clear();
 		}
@@ -1784,9 +1797,7 @@ int View::AddHandle(float x, float y, int type) {
 	int ret = this->GetSceneManager()->AddHandle(x, y, type);
 	return ret;
 }
-
-Vector3 View::GetSelectedPoint(float x, float y, int type,
-		bool inModel/* = true*/) {
+Vector3 View::GetSelectedPoint(float x, float y, int type, bool inModel/* = true*/, bool inExcludeEdge /* = true*/){
 	M3D::Vector3 vec = this->GetSceneManager()->GetPickPoint(x, y, inModel);
 
 	return vec;
@@ -2002,318 +2013,504 @@ void View::ShowModelView(int viewId, bool isAnni) {
 		this->m_SceneManager->UnLock();
 		return;
 	}
-	if (isAnni) {
-		//如果需要更新摄像机
-		if (pView->GetUpDataCameraState()) {
-			//获得视图中的相机参数
-			const CameraNode &camera = pView->GetCamera();
-
-			//先把摄像机复位下，然后仅设置摄像机位置和旋转和缩放信息
-			//	GetSceneManager()->ResetCamera();
-			//this->ReSetCamera();
-
-			CameraNode *currentCamera = GetSceneManager()->GetCamera();
-
-			Vector3 cameraNewPos = camera.GetPosition();
-
-			currentCamera->SetPosition(cameraNewPos);
-			currentCamera->SetRotation(camera.GetRotation());
-
-			currentCamera->SetOrthographic(camera.IsOrthographic());
-			if (currentCamera->IsOrthographic()) {
-				currentCamera->SetZoom(
-						currentCamera->GetOrthoSize() / camera.GetOrthoSize()
-								* camera.GetZoom());
-			} else {
-				//currentCamera->SetZoom(camera.GetZoom());
-				float defaultZoom = m_SceneManager->GetDefaultZoom();
-				currentCamera->SetZoom(defaultZoom);
-			}
-
-			//如果是平行投影，进行显示矫正
-			if (camera.IsOrthographic()) {
-				BoundingBox& sceneBox = this->m_SceneManager->GetSceneBox();
-					Vector3 center = sceneBox.Center();
-				Vector3 cameraPos = currentCamera->GetPosition();
-				//如果摄像机在模型内部，则进行调整
-				if (sceneBox.IsInside(cameraPos) == INSIDE) {
-					Matrix3 viewMat = currentCamera->GetView().ToMatrix3();
-					Vector3 direction(viewMat.m_m20, viewMat.m_m21,
-							viewMat.m_m22);
-					direction.Normalize();
-					Vector3 newPos = cameraPos + direction * sceneBox.Length();
-					currentCamera->SetWorldPosition(newPos);
-				}
-					else
-					{
-						//如果超出视景体，进行调整
-						Matrix3 viewMat = currentCamera->GetView().ToMatrix3();
-						Vector3 direction(viewMat.m_m20, viewMat.m_m21, viewMat.m_m22);
-						Plane centerPlane(direction, center);
-						Vector3 targetPnt = centerPlane.Project(cameraNewPos);
-
-						float fHalfViewSize = currentCamera->GetHalfViewSize();
-						Vector3 viewMin(center.m_x - fHalfViewSize, center.m_y - fHalfViewSize, center.m_z - fHalfViewSize);
-						Vector3 viewMax(center.m_x + fHalfViewSize, center.m_y + fHalfViewSize, center.m_z + fHalfViewSize);
-						BoundingBox viewBox(viewMin, viewMax);
-						if (viewBox.IsInside(targetPnt) != INSIDE)
-						{
-							cameraNewPos = sceneBox.Center() + direction * sceneBox.Length()* 0.8f;
-							currentCamera->SetWorldPosition(cameraNewPos);
-						}
-						
-					}
-				}
-			}
-
-		if (pView->GetUpDataModelState()) {
-
-			//TODO:相机设置旋转动画
-
-			//insAtt
-			const map<int, InstanceAttribute>& insAttMap =
-					pView->GetInstanceAttributeMap();
-			for (map<int, InstanceAttribute>::const_iterator it =
-					insAttMap.begin(); it != insAttMap.end(); it++) {
-				const InstanceAttribute &curInsAtt = it->second;
-
-				IShape* shape = this->GetShapeBySVLPath(curInsAtt.path);
-				if (shape && shape->GetType() == SHAPE_MODEL) {
-					Model *curModel = (Model*) shape;
-					curModel->SetVisible(curInsAtt.visible, false);
-					if (curInsAtt.hasColor) {
-						Color tmpColor = curInsAtt.insColor;
-                        //TODO 贴图类型
-                        if (tmpColor != Color(0.0, 0.0, 0.0, 1.0)) {
-						curModel->SetColor(tmpColor);
-					}
-					}
-					//ModelShape* shapeNode = curModel->GetModelShape();
-					//if (shapeNode)
-					//{
-					//	Matrix3x4& modelTransform = curModel->GetWorldTransform();
-					//	Matrix3x4 transform = curInsAtt.placeMatrix;
-					//	transform = modelTransform.Inverse()*transform;
-					//	shapeNode->SetWorldMatrix(transform);
-					//}
-
-					Matrix3x4 transform = curInsAtt.placeMatrix;
-					if ((int) transform.m_m00 == 0 && (int) transform.m_m01 == 0
-							&& (int) transform.m_m02 == 0
-							&& (int) transform.m_m03 == 0
-							&& (int) transform.m_m10 == 0
-							&& (int) transform.m_m11 == 0
-							&& (int) transform.m_m12 == 0
-							&& (int) transform.m_m13 == 0
-							&& (int) transform.m_m20 == 0
-							&& (int) transform.m_m21 == 0
-							&& (int) transform.m_m22 == 0
-							&& (int) transform.m_m23 == 0) {
-						continue;
-					}
-					ModelShape* modelshape = curModel->GetModelShape();
-					if (modelshape) {
-						modelshape->SetTargetWorldMatrix(transform);
-					}
-//                        curModel->SetPlaceMatrix(transform);
-				}
-			}
-		}
-
-	} else {
-		ShowModelViewAnimation(pView);
-	}
-	//	LOGE("SceneManager::showModelView clipPlaneIdList 11" );
-	//设置视图中的剖面为启用
-//
-// TODO 剖面后期完善
-	vector<int> clipPlaneIdList = pView->GetSectionPlaneIDList();
-	this->m_SceneManager->GetSectionNode()->GetSection()->ClearPlanes();
-//    if (clipPlaneIdList.size() > 0) {
-//        //        LOGE("SceneManager::showModelView clipPlaneIdList 2" );
-//        for (int i = 0; i < curRootModel->GetSectionPlaneList()->size(); i++) {
-//            SectionPlane* curPlane = curRootModel->GetSectionPlaneList()->at(i);
-//            for (int j = 0; j < clipPlaneIdList.size(); j++) {
-//                if (clipPlaneIdList.at(j) == curPlane->GetID()) {
-//                    //                    LOGE("SceneManager::showModelView clipPlaneIdList 3" );
-//                    this->m_SceneManager->GetSectionNode()->GetSection()->AddPlane(
-//                            curPlane);
-//                    //                    LOGE("SceneManager::showModelView clipPlaneIdList 4" );
-//                    //                    LOGI("SceneManager::showModelView enable plane:%d param:%f,%f,%f,%f", curPlane->GetID(), *curPlane->GetEquation(), *(curPlane->GetEquation()+1), *(curPlane->GetEquation()+2), *(curPlane->GetEquation()+3));
-//                    break;
-//                }
-//            }
-//        }
-//    }
-
-	if (pView->GetUpDataModelState()) {
-		//设置与视图关联的PMI
-		string PMIName("");
-		int displayPMIId;
-
-		map<int, PMIData*>* pmis = curRootModel->GetPMIs();
-
-		if (pmis != NULL && pmis->size() > 0) {
-			//如果视图名为“DEFAULT”则显示所有PMI
-			if (pView->GetViewType() == 0) {
-				for (map<int, PMIData*>::iterator itPMI = pmis->begin();
-						itPMI != pmis->end(); itPMI++) {
-					(*itPMI).second->SetVisible(true);
-				}
-			} else { //否则只显示当前视图关联的PMI
-					 //首先所有PMI设为隐藏
-				for (map<int, PMIData*>::iterator itPMI = pmis->begin();
-						itPMI != pmis->end(); itPMI++) {
-					(*itPMI).second->SetVisible(false);
-				}
-
-				//显示关联的PMI
-				for (int i = 0; i < pView->GetPMIList().size(); i++) {
-					displayPMIId = pView->GetPMIList().at(i);
-					//循环PMI列表，将指定Id的PMI设置为可见
-					map<int, PMIData*>::iterator it2 = pmis->find(displayPMIId);
-					if (it2 != pmis->end()) {
-						PMIData* curTmpPMI = (*it2).second;
-						if (curTmpPMI != NULL) {
-							curTmpPMI->SetVisible(true);
-						}
-					}
-				}
-			}
-		}
-
-		//显示关联的批注信息
-		NoteGroup* pNoteGroup = this->GetSceneManager()->GetNoteGroup();
-		if (pNoteGroup) {
-			int noteCount = pNoteGroup->Size();
-			//隐藏所有批注
-			for (int i = 0; i < pNoteGroup->Size(); i++) {
-				SceneNode* pNode = pNoteGroup->GetChild(i);
-				if (!pNode)
-					continue;
-				pNode->SetVisible(false);
-			}
-
-			int iNoteCount = 0;
-			vector<int> vecNoteList = pView->GetNoteList();
-			iNoteCount = vecNoteList.size();
-			for (int i = 0; i < iNoteCount; i++) {
-				int iNoteID = vecNoteList[i];
-				bool isCreate = true;
-				for (int j = 0; j < pNoteGroup->Size(); j++) {
-					SceneNode* pNode = pNoteGroup->GetChild(j);
-					if (!pNode)
-						continue;
-					IShape* pShape = ((ShapeNode*) pNode)->GetShape();
-					if (pShape && iNoteID == pShape->GetID()) {
-						pNode->SetVisible(true);
-						pShape->SetVisible(true);
-						isCreate = false;
-						break;
-					}
-				}
-				if (isCreate
-						&& GetTextJsonData(StringHelper::IntToString(iNoteID))
-								!= M3D::NO_VALUE) {
-					string jsonValue = GetTextJsonData(
-							StringHelper::IntToString(iNoteID));
-					Note *pNode = NoteFactory::CreateTextNoteFromJSON(
-							this->GetSceneManager(), jsonValue);
-				}
-				if (isCreate
-						&& GetSequenceJsonData(
-								StringHelper::IntToString(iNoteID))
-								!= M3D::NO_VALUE) {
-					string jsonValue = GetSequenceJsonData(
-							StringHelper::IntToString(iNoteID));
-					Note *pNode = NoteFactory::CreateSequenceNoteFromJSON(
-							this->GetSceneManager(), jsonValue);
-				}
-				if (isCreate
-						&& GetGestureJsonData(
-								StringHelper::IntToString(iNoteID))
-								!= M3D::NO_VALUE) {
-					string jsonValue = GetGestureJsonData(
-							StringHelper::IntToString(iNoteID));
-					Note *pNode = NoteFactory::CreateThreeDGestureNoteFromJson(
-							this->GetSceneManager(), jsonValue);
-				}
-			}
-		}
-
-		//文本批注
-		AnnotationGroup* pAnnotationGroup =
-				this->GetSceneManager()->GetAnnotationGroup();
-		if (pAnnotationGroup) {
-			int iAnnotationCount = pAnnotationGroup->Size();
-			//隐藏所有批注
-			for (int i = 0; i < iAnnotationCount; i++) {
-				SceneNode* pNode = pAnnotationGroup->GetChild(i);
-				if (!pNode)
-					continue;
-				pNode->SetVisible(false);
-			}
-
-			int iNoteCount = 0;
-			vector<int> vecNoteList = pView->GetNoteList();
-			iNoteCount = vecNoteList.size();
-			for (int i = 0; i < iNoteCount; i++) {
-				int iNoteID = vecNoteList[i];
-				for (int j = 0; j < pAnnotationGroup->Size(); j++) {
-					SceneNode* pNode = pAnnotationGroup->GetChild(j);
-					if (!pNode)
-						continue;
-					IShape* pShape = ((ShapeNode*) pNode)->GetShape();
-					if (pShape && iNoteID == pShape->GetID()) {
-						pNode->SetVisible(true);
-						break;
-					}
-				}
-			}
-		}
-
-		//测量批注
-		MeasureGroup* pMeasureGroup =
-				this->GetSceneManager()->GetMeasureGroup();
-		if (pMeasureGroup) {
-			int iMeasureCount = pMeasureGroup->Size();
-			//隐藏所有批注
-			for (int i = 0; i < iMeasureCount; i++) {
-				SceneNode* pNode = pMeasureGroup->GetChild(i);
-				if (!pNode)
-					continue;
-				pNode->SetVisible(false);
-			}
-
-			int iNoteCount = 0;
-			vector<int> vecNoteList = pView->GetNoteList();
-			iNoteCount = vecNoteList.size();
-			for (int i = 0; i < iNoteCount; i++) {
-				int iNoteID = vecNoteList[i];
-				for (int j = 0; j < pMeasureGroup->Size(); j++) {
-					SceneNode* pNode = pMeasureGroup->GetChild(j);
-					if (!pNode)
-						continue;
-					IShape* pShape = ((ShapeNode*) pNode)->GetShape();
-					if (pShape && iNoteID == pShape->GetID()) {
-						pNode->SetVisible(true);
-						break;
-					}
-				}
-			}
-		}
-		this->m_SceneManager->GetRenderManager()->RequestRedraw();
-	}
-
-	//	//允许动画
-	//	if (isAnni)
-	//	{
-	//		ViewStateOperateAction::CreateAnnitation(pView, this->m_SceneManager,
-	//				10);
-	//	}
-	this->m_SceneManager->UnLock();
+    if (isAnni) {
+        //如果需要更新摄像机
+        if (pView->GetUpDataCameraState()) {
+            //获得视图中的相机参数
+            const CameraNode &camera = pView->GetCamera();
+            
+            //先把摄像机复位下，然后仅设置摄像机位置和旋转和缩放信息
+            //    GetSceneManager()->ResetCamera();
+            //this->ReSetCamera();
+            
+            CameraNode *currentCamera = GetSceneManager()->GetCamera();
+            
+            Vector3 cameraNewPos = camera.GetPosition();
+            
+            currentCamera->SetPosition(cameraNewPos);
+            currentCamera->SetRotation(camera.GetRotation());
+            
+            currentCamera->SetOrthographic(camera.IsOrthographic());
+            if (currentCamera->IsOrthographic()) {
+                currentCamera->SetZoom(
+                                       currentCamera->GetOrthoSize() / camera.GetOrthoSize()
+                                       * camera.GetZoom());
+            } else {
+                //currentCamera->SetZoom(camera.GetZoom());
+                float defaultZoom = m_SceneManager->GetDefaultZoom();
+                currentCamera->SetZoom(defaultZoom);
+            }
+            
+            //如果是平行投影，进行显示矫正
+            if (camera.IsOrthographic()) {
+                BoundingBox& sceneBox = this->m_SceneManager->GetSceneBox();
+                Vector3 center = sceneBox.Center();
+                Vector3 cameraPos = currentCamera->GetPosition();
+                //如果摄像机在模型内部，则进行调整
+                if (sceneBox.IsInside(cameraPos) == INSIDE) {
+                    Matrix3 viewMat = currentCamera->GetView().ToMatrix3();
+                    Vector3 direction(viewMat.m_m20, viewMat.m_m21,
+                                      viewMat.m_m22);
+                    direction.Normalize();
+                    Vector3 newPos = cameraPos + direction * sceneBox.Length();
+                    currentCamera->SetWorldPosition(newPos);
+                }
+                else
+                {
+                    //如果超出视景体，进行调整
+                    Matrix3 viewMat = currentCamera->GetView().ToMatrix3();
+                    Vector3 direction(viewMat.m_m20, viewMat.m_m21, viewMat.m_m22);
+                    Plane centerPlane(direction, center);
+                    Vector3 targetPnt = centerPlane.Project(cameraNewPos);
+                    
+                    float fHalfViewSize = currentCamera->GetHalfViewSize();
+                    Vector3 viewMin(center.m_x - fHalfViewSize, center.m_y - fHalfViewSize, center.m_z - fHalfViewSize);
+                    Vector3 viewMax(center.m_x + fHalfViewSize, center.m_y + fHalfViewSize, center.m_z + fHalfViewSize);
+                    BoundingBox viewBox(viewMin, viewMax);
+                    if (viewBox.IsInside(targetPnt) != INSIDE)
+                    {
+                        cameraNewPos = sceneBox.Center() + direction * sceneBox.Length()* 0.8f;
+                        currentCamera->SetWorldPosition(cameraNewPos);
+                    }
+                    
+                }
+            }
+        }
+        
+        if (pView->GetUpDataModelState()) {
+            
+            //TODO:相机设置旋转动画
+            
+            //insAtt
+            const map<int, InstanceAttribute>& insAttMap =
+            pView->GetInstanceAttributeMap();
+            for (map<int, InstanceAttribute>::const_iterator it =
+                 insAttMap.begin(); it != insAttMap.end(); it++) {
+                const InstanceAttribute &curInsAtt = it->second;
+                
+                IShape* shape = this->GetShapeBySVLPath(curInsAtt.path);
+                if (shape && shape->GetType() == SHAPE_MODEL)
+                {
+                    Model *pModel = (Model*)shape;
+                    if (pModel == NULL)
+                        continue;
+                    
+                    pModel->SetVisible(curInsAtt.visible, false);
+                    if (curInsAtt.hasColor && curInsAtt.insColor.m_r >=0 && curInsAtt.insColor.m_g >= 0 && curInsAtt.insColor.m_b >= 0)
+                    {
+                        Color tmpColor = curInsAtt.insColor;
+                        float fAlpha = curInsAtt.insColor.m_a;
+                        
+                        //获取当前模型的材质
+                        BaseMaterial* pMatrial = pModel->GetMaterial();
+                        
+                        //Color* curColor=curModel->GetColor();
+                        
+                        if (pMatrial == NULL)
+                        {
+                            BaseMaterial* refMaterial = NULL;
+                            
+                            bool isExist = GetSceneManager()->GetResourceManager()->IsMaterialExisted(&refMaterial, &tmpColor, fAlpha);
+                            if (isExist)
+                            {
+                                pModel->SetMaterial(refMaterial);
+                            }
+                            else
+                            {
+                                string matKey = "material_phong_uuid_" + IDCreator::GetUUID();
+                                BaseMaterial* newMaterial = GetSceneManager()->GetResourceManager()->GetOrCreateMaterial(matKey, MaterialType_Phong);
+                                ((Material*)newMaterial)->SetDiffuse(tmpColor);
+                                pModel->SetMaterial(newMaterial);
+                            }
+                            //curModel->SetColor(tmpColor);
+                        }
+                        else
+                        {
+                            
+                            Model* topModel = GetSceneManager()->GetModel();
+                            
+                            switch (pMatrial->GetMaterialType())
+                            {
+                                case MaterialType_Phong://1
+                                {
+                                    Material* matrialPhone = (Material*)pMatrial;
+                                    
+                                    //临时创建一个新Material类型的材质，判断此类型的材质是否存在
+                                    string matKey = "material_phong_uuid_" + IDCreator::GetUUID();
+                                    
+                                    Material*tmpNewMaterialPhone = (Material*)matrialPhone->Clone();
+                                    tmpNewMaterialPhone->SetDiffuse(tmpColor);
+                                    
+                                    BaseMaterial* temMaterial = NULL;
+                                    
+                                    bool isExist = GetSceneManager()->GetResourceManager()->IsMaterialExisted(&temMaterial, tmpNewMaterialPhone, matKey);
+                                    if (isExist)
+                                    {
+                                        tmpNewMaterialPhone->Release();
+                                        
+                                        tmpNewMaterialPhone = NULL;
+                                        
+                                        pModel->SetMaterial(temMaterial);
+                                    }
+                                    else
+                                    {
+                                        
+                                        bool isUsed = GetSceneManager()->GetResourceManager()->IsMaterialUsed(topModel, matrialPhone, pModel);
+                                        
+                                        if (isUsed)
+                                        {
+                                            tmpNewMaterialPhone->SetName(matKey);
+                                            bool isAddSucess = GetSceneManager()->GetResourceManager()->AddMaterial(matKey, tmpNewMaterialPhone);
+                                            tmpNewMaterialPhone->SetResourceManager(GetSceneManager()->GetResourceManager());
+                                            
+                                            pModel->SetMaterial(tmpNewMaterialPhone);
+                                        }
+                                        else
+                                        {
+                                            matrialPhone->SetDiffuse(tmpColor);
+                                            pModel->SetMaterial(matrialPhone);
+                                            
+                                            tmpNewMaterialPhone->Release();
+                                            tmpNewMaterialPhone = NULL;
+                                        }
+                                    }
+                                }
+                                    break;
+                                    
+                                case MaterialType_Pbr://2
+                                {
+                                    PbrMaterial* pbrMaterial = (PbrMaterial*)pMatrial;
+                                    
+                                    //临时创建一个新Material类型的材质，判断此类型的材质是否存在
+                                    string matKey = "material_pbr_uuid_" + IDCreator::GetUUID();
+                                    
+                                    PbrMaterial*tmpNewMaterialPbr = (PbrMaterial*)pbrMaterial->Clone();
+                                    
+                                    tmpNewMaterialPbr->AlbedoColor(tmpColor);
+                                    
+                                    //判断材质类型是否存在
+                                    BaseMaterial* temPbrMaterial = new BaseMaterial();
+                                    
+                                    bool isExist = GetSceneManager()->GetResourceManager()->IsMaterialExisted(&temPbrMaterial, tmpNewMaterialPbr, matKey);
+                                    
+                                    if (isExist)
+                                    {
+                                        tmpNewMaterialPbr->Release();
+                                        tmpNewMaterialPbr = NULL;
+                                        pModel->SetMaterial(temPbrMaterial);
+                                    }
+                                    else
+                                    {
+                                        bool isUsed = GetSceneManager()->GetResourceManager()->IsMaterialUsed(topModel, pbrMaterial, pModel);
+                                        
+                                        if (isUsed)
+                                        {
+                                            tmpNewMaterialPbr->SetName(matKey);
+                                            
+                                            bool isAddSucess = GetSceneManager()->GetResourceManager()->AddMaterial(matKey, tmpNewMaterialPbr);
+                                            
+                                            tmpNewMaterialPbr->SetResourceManager(GetSceneManager()->GetResourceManager());
+                                            
+                                            pModel->SetMaterial(tmpNewMaterialPbr);
+                                        }
+                                        else
+                                        {
+                                            
+                                            pbrMaterial->AlbedoColor(tmpColor);
+                                            
+                                            pModel->SetMaterial(pbrMaterial);
+                                            
+                                            tmpNewMaterialPbr->Release();
+                                            tmpNewMaterialPbr = NULL;
+                                        }
+                                    }
+                                }
+                                    
+                                    break;
+                                    
+                                case MaterialType_MatCap://4
+                                {
+                                    MatCapMaterial* matCapMaterial = (MatCapMaterial*)pMatrial;
+                                    
+                                    //临时创建一个新Material类型的材质，判断此类型的材质是否存在
+                                    string matKey = "material_matCap_uuid_" + IDCreator::GetUUID();
+                                    
+                                    MatCapMaterial*tmpNewMaterialmatCap = (MatCapMaterial*)matCapMaterial->Clone();
+                                    
+                                    tmpNewMaterialmatCap->SetDiffuse(tmpColor);
+                                    
+                                    //判断材质类型是否存在
+                                    BaseMaterial* temcapMatMaterial = new BaseMaterial();
+                                    
+                                    bool isExist = GetSceneManager()->GetResourceManager()->IsMaterialExisted(&temcapMatMaterial, tmpNewMaterialmatCap, matKey);
+                                    
+                                    if (isExist)
+                                    {
+                                        pModel->SetMaterial(temcapMatMaterial);
+                                        
+                                        tmpNewMaterialmatCap->Release();
+                                        
+                                        tmpNewMaterialmatCap = NULL;
+                                    }
+                                    else
+                                    {
+                                        bool isUsed = GetSceneManager()->GetResourceManager()->IsMaterialUsed(topModel, matCapMaterial, pModel);
+                                        
+                                        if (isUsed)
+                                        {
+                                            tmpNewMaterialmatCap->SetName(matKey);
+                                            
+                                            bool isAddSucess = GetSceneManager()->GetResourceManager()->AddMaterial(matKey, tmpNewMaterialmatCap);
+                                            
+                                            tmpNewMaterialmatCap->SetResourceManager(GetSceneManager()->GetResourceManager());
+                                            
+                                            pModel->SetMaterial(tmpNewMaterialmatCap);
+                                        }
+                                        else
+                                        {
+                                            matCapMaterial->SetDiffuse(tmpColor);
+                                            
+                                            pModel->SetMaterial(matCapMaterial);
+                                            
+                                            tmpNewMaterialmatCap->Release();
+                                            
+                                            tmpNewMaterialmatCap = NULL;
+                                        }
+                                    }
+                                }
+                                    break;
+                                    
+                                default:
+                                    break;
+                            }
+                            
+                        }
+                        //ModelShape* shapeNode = curModel->GetModelShape();
+                        //if (shapeNode)
+                        //{
+                        //    Matrix3x4& modelTransform = curModel->GetWorldTransform();
+                        //    Matrix3x4 transform = curInsAtt.placeMatrix;
+                        //    transform = modelTransform.Inverse()*transform;
+                        //    shapeNode->SetWorldMatrix(transform);
+                        //}
+                        
+                        Matrix3x4 transform = curInsAtt.placeMatrix;
+                        if ((int) transform.m_m00 == 0 && (int) transform.m_m01 == 0
+                            && (int) transform.m_m02 == 0
+                            && (int) transform.m_m03 == 0
+                            && (int) transform.m_m10 == 0
+                            && (int) transform.m_m11 == 0
+                            && (int) transform.m_m12 == 0
+                            && (int) transform.m_m13 == 0
+                            && (int) transform.m_m20 == 0
+                            && (int) transform.m_m21 == 0
+                            && (int) transform.m_m22 == 0
+                            && (int) transform.m_m23 == 0) {
+                            continue;
+                        }
+                        ModelShape* modelshape = pModel->GetModelShape();
+                        if (modelshape) {
+                            modelshape->SetTargetWorldMatrix(transform);
+                        }
+                        //                        curModel->SetPlaceMatrix(transform);
+                    }
+                }
+            }
+            
+        } else {
+            ShowModelViewAnimation(pView);
+        }
+        //    LOGE("SceneManager::showModelView clipPlaneIdList 11" );
+        //设置视图中的剖面为启用
+        //
+        // TODO 剖面后期完善
+        vector<int> clipPlaneIdList = pView->GetSectionPlaneIDList();
+        this->m_SceneManager->GetSectionNode()->GetSection()->ClearPlanes();
+        //    if (clipPlaneIdList.size() > 0) {
+        //        //        LOGE("SceneManager::showModelView clipPlaneIdList 2" );
+        //        for (int i = 0; i < curRootModel->GetSectionPlaneList()->size(); i++) {
+        //            SectionPlane* curPlane = curRootModel->GetSectionPlaneList()->at(i);
+        //            for (int j = 0; j < clipPlaneIdList.size(); j++) {
+        //                if (clipPlaneIdList.at(j) == curPlane->GetID()) {
+        //                    //                    LOGE("SceneManager::showModelView clipPlaneIdList 3" );
+        //                    this->m_SceneManager->GetSectionNode()->GetSection()->AddPlane(
+        //                            curPlane);
+        //                    //                    LOGE("SceneManager::showModelView clipPlaneIdList 4" );
+        //                    //                    LOGI("SceneManager::showModelView enable plane:%d param:%f,%f,%f,%f", curPlane->GetID(), *curPlane->GetEquation(), *(curPlane->GetEquation()+1), *(curPlane->GetEquation()+2), *(curPlane->GetEquation()+3));
+        //                    break;
+        //                }
+        //            }
+        //        }
+        //    }
+        
+        if (pView->GetUpDataModelState()) {
+            //设置与视图关联的PMI
+            string PMIName("");
+            int displayPMIId;
+            
+            map<int, PMIData*>* pmis = curRootModel->GetPMIs();
+            
+            if (pmis != NULL && pmis->size() > 0) {
+                //如果视图名为“DEFAULT”则显示所有PMI
+                if (pView->GetViewType() == 0) {
+                    for (map<int, PMIData*>::iterator itPMI = pmis->begin();
+                         itPMI != pmis->end(); itPMI++) {
+                        (*itPMI).second->SetVisible(true);
+                    }
+                } else { //否则只显示当前视图关联的PMI
+                    //首先所有PMI设为隐藏
+                    for (map<int, PMIData*>::iterator itPMI = pmis->begin();
+                         itPMI != pmis->end(); itPMI++) {
+                        (*itPMI).second->SetVisible(false);
+                    }
+                    
+                    //显示关联的PMI
+                    for (int i = 0; i < pView->GetPMIList().size(); i++) {
+                        displayPMIId = pView->GetPMIList().at(i);
+                        //循环PMI列表，将指定Id的PMI设置为可见
+                        map<int, PMIData*>::iterator it2 = pmis->find(displayPMIId);
+                        if (it2 != pmis->end()) {
+                            PMIData* curTmpPMI = (*it2).second;
+                            if (curTmpPMI != NULL) {
+                                curTmpPMI->SetVisible(true);
+                            }
+                        }
+                    }
+                }
+            }
+            
+            //显示关联的批注信息
+            NoteGroup* pNoteGroup = this->GetSceneManager()->GetNoteGroup();
+            if (pNoteGroup) {
+                int noteCount = pNoteGroup->Size();
+                //隐藏所有批注
+                for (int i = 0; i < pNoteGroup->Size(); i++) {
+                    SceneNode* pNode = pNoteGroup->GetChild(i);
+                    if (!pNode)
+                        continue;
+                    pNode->SetVisible(false);
+                }
+                
+                int iNoteCount = 0;
+                vector<int> vecNoteList = pView->GetNoteList();
+                iNoteCount = vecNoteList.size();
+                for (int i = 0; i < iNoteCount; i++) {
+                    int iNoteID = vecNoteList[i];
+                    bool isCreate = true;
+                    for (int j = 0; j < pNoteGroup->Size(); j++) {
+                        SceneNode* pNode = pNoteGroup->GetChild(j);
+                        if (!pNode)
+                            continue;
+                        IShape* pShape = ((ShapeNode*) pNode)->GetShape();
+                        if (pShape && iNoteID == pShape->GetID()) {
+                            pNode->SetVisible(true);
+                            pShape->SetVisible(true);
+                            isCreate = false;
+                            break;
+                        }
+                    }
+                    if (isCreate
+                        && GetTextJsonData(StringHelper::IntToString(iNoteID))
+                        != M3D::NO_VALUE) {
+                        string jsonValue = GetTextJsonData(
+                                                           StringHelper::IntToString(iNoteID));
+                        Note *pNode = NoteFactory::CreateTextNoteFromJSON(
+                                                                          this->GetSceneManager(), jsonValue);
+                    }
+                    if (isCreate
+                        && GetSequenceJsonData(
+                                               StringHelper::IntToString(iNoteID))
+                        != M3D::NO_VALUE) {
+                        string jsonValue = GetSequenceJsonData(
+                                                               StringHelper::IntToString(iNoteID));
+                        Note *pNode = NoteFactory::CreateSequenceNoteFromJSON(
+                                                                              this->GetSceneManager(), jsonValue);
+                    }
+                    if (isCreate
+                        && GetGestureJsonData(
+                                              StringHelper::IntToString(iNoteID))
+                        != M3D::NO_VALUE) {
+                        string jsonValue = GetGestureJsonData(
+                                                              StringHelper::IntToString(iNoteID));
+                        Note *pNode = NoteFactory::CreateThreeDGestureNoteFromJson(
+                                                                                   this->GetSceneManager(), jsonValue);
+                    }
+                }
+            }
+            
+            //文本批注
+            AnnotationGroup* pAnnotationGroup =
+            this->GetSceneManager()->GetAnnotationGroup();
+            if (pAnnotationGroup) {
+                int iAnnotationCount = pAnnotationGroup->Size();
+                //隐藏所有批注
+                for (int i = 0; i < iAnnotationCount; i++) {
+                    SceneNode* pNode = pAnnotationGroup->GetChild(i);
+                    if (!pNode)
+                        continue;
+                    pNode->SetVisible(false);
+                }
+                
+                int iNoteCount = 0;
+                vector<int> vecNoteList = pView->GetNoteList();
+                iNoteCount = vecNoteList.size();
+                for (int i = 0; i < iNoteCount; i++) {
+                    int iNoteID = vecNoteList[i];
+                    for (int j = 0; j < pAnnotationGroup->Size(); j++) {
+                        SceneNode* pNode = pAnnotationGroup->GetChild(j);
+                        if (!pNode)
+                            continue;
+                        IShape* pShape = ((ShapeNode*) pNode)->GetShape();
+                        if (pShape && iNoteID == pShape->GetID()) {
+                            pNode->SetVisible(true);
+                            break;
+                        }
+                    }
+                }
+            }
+            
+            //测量批注
+            MeasureGroup* pMeasureGroup =
+            this->GetSceneManager()->GetMeasureGroup();
+            if (pMeasureGroup) {
+                int iMeasureCount = pMeasureGroup->Size();
+                //隐藏所有批注
+                for (int i = 0; i < iMeasureCount; i++) {
+                    SceneNode* pNode = pMeasureGroup->GetChild(i);
+                    if (!pNode)
+                        continue;
+                    pNode->SetVisible(false);
+                }
+                
+                int iNoteCount = 0;
+                vector<int> vecNoteList = pView->GetNoteList();
+                iNoteCount = vecNoteList.size();
+                for (int i = 0; i < iNoteCount; i++) {
+                    int iNoteID = vecNoteList[i];
+                    for (int j = 0; j < pMeasureGroup->Size(); j++) {
+                        SceneNode* pNode = pMeasureGroup->GetChild(j);
+                        if (!pNode)
+                            continue;
+                        IShape* pShape = ((ShapeNode*) pNode)->GetShape();
+                        if (pShape && iNoteID == pShape->GetID()) {
+                            pNode->SetVisible(true);
+                            break;
+                        }
+                    }
+                }
+            }
+            this->m_SceneManager->GetRenderManager()->RequestRedraw();
+        }
+        
+        //    //允许动画
+        //    if (isAnni)
+        //    {
+        //        ViewStateOperateAction::CreateAnnitation(pView, this->m_SceneManager,
+        //                10);
+        //    }
+        this->m_SceneManager->UnLock();
+    }
 }
-
 void View::ShowModelViewAnimation(ModelView *pView) {
 	if (!pView)
 		return;
@@ -2378,20 +2575,21 @@ void View::ShowModelViewAnimation(ModelView *pView) {
 		fCurMatrix[3][1] = curCamPos.m_y;
 		fCurMatrix[3][2] = curCamPos.m_z;
 
-		float fCurOrthoSize = currentCamera->GetOrthoSize();
-		if (currentCamera->IsOrthographic()) {
-			fCurScale = currentCamera->GetZoom();
-			fCurInitWind[0] = fCurOrthoSize * currentCamera->GetAspectRatio();
-			fCurInitWind[1] = fCurOrthoSize;
-		} else {
-			double fHeightAngle = 1.0;
-			fCurInitWind[1] = (float) (fFlocalDistance * 2.0
-					* tan(fHeightAngle / 2.0));
-			fCurInitWind[0] =
-					fCurInitWind[1]
-							* currentCamera->GetAspectRatio()/* * (cameraOrthoSize.m_x / cameraOrthoSize.m_y)*/;
-			fCurScale = 1.0f;
-		}
+			float fCurOrthoSize = currentCamera->GetOrthoSize();
+			if (currentCamera->IsOrthographic())
+			{
+				fCurScale = currentCamera->GetZoom();
+				//fCurInitWind[0] = fCurOrthoSize* currentCamera->GetAspectRatio();
+				//fCurInitWind[1] = fCurOrthoSize;
+				currentCamera->GetOrthoSize(&fCurInitWind[0], &fCurInitWind[1]);
+			}
+			else
+			{
+				double fHeightAngle = 1.0;
+				fCurInitWind[1] = (float)(fFlocalDistance * 2.0 * tan(fHeightAngle / 2.0));
+				fCurInitWind[0] = fCurInitWind[1]* currentCamera->GetAspectRatio()/* * (cameraOrthoSize.m_x / cameraOrthoSize.m_y)*/;
+				fCurScale = 1.0f;
+			}
 
 		pAnimationAPI->RecCamera(fCenter, fCurMatrix, fCurScale, fCurInitWind,
 				true, pChgViewBehaviorAction);
@@ -2407,20 +2605,33 @@ void View::ShowModelViewAnimation(ModelView *pView) {
 				//如果摄像机在模型内部，则进行调整
 				if (sceneBox.IsInside(newCamPos) == INSIDE)
 				{
-					Matrix3 viewMat = camera.GetView().ToMatrix3();
+					Matrix3 viewMat = newCamRotaion.RotationMatrix();
 					//Vector3 direction(viewMat.m_m20, viewMat.m_m21, viewMat.m_m22);
-					Vector3 direction(viewMat.m_m20, viewMat.m_m21, viewMat.m_m22);
+					Vector3 direction(viewMat.m_m02, viewMat.m_m12, viewMat.m_m22);
 					newCamPos = newCamPos + direction * sceneBox.Length()* 0.8f;
 				}
 				else
 				{
 					//如果超出视景体，进行调整
-					Matrix3 viewMat = camera.GetView().ToMatrix3();
-					Vector3 direction(viewMat.m_m20, viewMat.m_m21, viewMat.m_m22);
+					Matrix3 viewMat = newCamRotaion.RotationMatrix();
+					Vector3 direction(viewMat.m_m02, viewMat.m_m12, viewMat.m_m22);
 					Plane centerPlane(direction, center);
 					Vector3 targetPnt = centerPlane.Project(newCamPos);
 					
-					float fHalfViewSize = currentCamera->GetHalfViewSize();
+					float fHalfViewSize = camera.GetOrthoSize()*0.5;
+					if (camera.GetZoom() < 1.0f)
+					{
+						fHalfViewSize = fHalfViewSize / camera.GetZoom();
+					}
+					float fScreenWidthHeightRat = fCurInitWind[0] / fCurInitWind[1];
+					if (fScreenWidthHeightRat >= 1.0)
+					{
+						fHalfViewSize = fHalfViewSize*fScreenWidthHeightRat;
+					}
+					else
+					{
+						fHalfViewSize = fHalfViewSize/fScreenWidthHeightRat;
+					}
 					Vector3 viewMin(center.m_x- fHalfViewSize, center.m_y - fHalfViewSize, center.m_z - fHalfViewSize);
 					Vector3 viewMax(center.m_x + fHalfViewSize, center.m_y + fHalfViewSize, center.m_z + fHalfViewSize);
 					BoundingBox viewBox(viewMin, viewMax);
@@ -2456,7 +2667,7 @@ void View::ShowModelViewAnimation(ModelView *pView) {
 			fNewMatrix[3][2] = newCamPos.m_z;
 
 			float fNewOrthoSize = camera.GetOrthoSize();
-			if (fNewOrthoSize <= 0)
+			if ((int)fNewOrthoSize <= 0)
 			{
 				fNewOrthoSize = fCurInitWind[1];
 			}
@@ -2524,12 +2735,197 @@ void View::ShowModelViewAnimation(ModelView *pView) {
 				if (pModel == NULL)
 					continue;
 
-				//颜色和显隐藏不使用动画效果
-				pModel->SetVisible(curInsAtt.visible, false);
-				if (curInsAtt.hasColor) {
-					Color tmpColor = curInsAtt.insColor;
-					pModel->SetColor(tmpColor);
-				}
+					//颜色和显隐藏不使用动画效果
+					pModel->SetVisible(curInsAtt.visible, false);
+					if (curInsAtt.hasColor && curInsAtt.insColor.m_r >=0 && curInsAtt.insColor.m_g >= 0 && curInsAtt.insColor.m_b >= 0)
+					{
+						Color tmpColor = curInsAtt.insColor;
+						float fAlpha = curInsAtt.insColor.m_a;
+
+						//获取当前模型的材质
+						BaseMaterial* pMatrial = pModel->GetMaterial();
+
+						//Color* curColor=curModel->GetColor();
+
+						if (pMatrial == NULL)
+						{
+							BaseMaterial* refMaterial = NULL;
+							
+							bool isExist = GetSceneManager()->GetResourceManager()->IsMaterialExisted(&refMaterial, &tmpColor, fAlpha);
+							if (isExist)
+							{
+								pModel->SetMaterial(refMaterial);
+								
+							}
+							else
+							{
+								string matKey = "material_phong_uuid_" + IDCreator::GetUUID();
+								BaseMaterial* newMaterial = GetSceneManager()->GetResourceManager()->GetOrCreateMaterial(matKey, MaterialType_Phong);
+								((Material*)newMaterial)->SetDiffuse(tmpColor);
+								pModel->SetMaterial(newMaterial);
+							}
+							//curModel->SetColor(tmpColor);
+						}
+						else
+						{
+							Model* topModel = GetSceneManager()->GetModel();
+
+							switch (pMatrial->GetMaterialType())
+							{
+							case MaterialType_Phong://1
+							{
+								Material* matrialPhone = (Material*)pMatrial;
+
+								//临时创建一个新Material类型的材质，判断此类型的材质是否存在
+								string matKey = "material_phong_uuid_" + IDCreator::GetUUID();
+
+								Material*tmpNewMaterialPhone= (Material*)matrialPhone->Clone();
+								tmpNewMaterialPhone->SetDiffuse(tmpColor);
+
+								BaseMaterial* temMaterial = NULL;
+
+								bool isExist = GetSceneManager()->GetResourceManager()->IsMaterialExisted(&temMaterial, tmpNewMaterialPhone, matKey);
+								if (isExist)
+								{
+									tmpNewMaterialPhone->Release();
+									tmpNewMaterialPhone = NULL;
+									pModel->SetMaterial(temMaterial);
+								}
+								else
+								{
+
+									bool isUsed = GetSceneManager()->GetResourceManager()->IsMaterialUsed(topModel, matrialPhone, pModel);
+
+									if (isUsed)
+									{
+										tmpNewMaterialPhone->SetName(matKey);
+										bool isAddSucess = GetSceneManager()->GetResourceManager()->AddMaterial(matKey, tmpNewMaterialPhone);
+										tmpNewMaterialPhone->SetResourceManager(GetSceneManager()->GetResourceManager());
+
+										pModel->SetMaterial(tmpNewMaterialPhone);
+									}
+									else
+									{
+										matrialPhone->SetDiffuse(tmpColor);
+										pModel->SetMaterial(matrialPhone);
+
+										tmpNewMaterialPhone->Release();
+										tmpNewMaterialPhone = NULL;
+									}
+								}
+							}
+							break;
+
+							case MaterialType_Pbr://2
+							{
+								PbrMaterial* pbrMaterial = (PbrMaterial*)pMatrial;
+
+								//临时创建一个新Material类型的材质，判断此类型的材质是否存在
+								string matKey = "material_pbr_uuid_" + IDCreator::GetUUID();
+
+								PbrMaterial*tmpNewMaterialPbr = (PbrMaterial*) pbrMaterial->Clone();
+
+								tmpNewMaterialPbr->AlbedoColor(tmpColor);
+
+								//判断材质类型是否存在
+								BaseMaterial* temPbrMaterial = new BaseMaterial();
+
+								bool isExist = GetSceneManager()->GetResourceManager()->IsMaterialExisted(&temPbrMaterial, tmpNewMaterialPbr, matKey);
+
+								if (isExist)
+								{
+									tmpNewMaterialPbr->Release();
+									tmpNewMaterialPbr = NULL;
+									pModel->SetMaterial(temPbrMaterial);
+								}
+								else
+								{
+									bool isUsed = GetSceneManager()->GetResourceManager()->IsMaterialUsed(topModel, pbrMaterial, pModel);
+
+									if (isUsed)
+									{
+										tmpNewMaterialPbr->SetName(matKey);
+
+										bool isAddSucess = GetSceneManager()->GetResourceManager()->AddMaterial(matKey, tmpNewMaterialPbr);
+										
+										tmpNewMaterialPbr->SetResourceManager(GetSceneManager()->GetResourceManager());
+
+										pModel->SetMaterial(tmpNewMaterialPbr);
+									}
+									else
+									{
+
+										pbrMaterial->AlbedoColor(tmpColor);
+
+										pModel->SetMaterial(pbrMaterial);
+
+										tmpNewMaterialPbr->Release();
+										tmpNewMaterialPbr = NULL;
+									}
+								}
+
+							}
+
+							break;
+
+							case MaterialType_MatCap://4
+							{
+								MatCapMaterial* matCapMaterial = (MatCapMaterial*)pMatrial;
+
+								//临时创建一个新Material类型的材质，判断此类型的材质是否存在
+								string matKey = "material_matCap_uuid_" + IDCreator::GetUUID();
+
+								MatCapMaterial*tmpNewMaterialmatCap =(MatCapMaterial*)matCapMaterial->Clone();
+
+								tmpNewMaterialmatCap->SetDiffuse(tmpColor);
+
+								//判断材质类型是否存在
+								BaseMaterial* temcapMatMaterial = new BaseMaterial();
+
+								bool isExist = GetSceneManager()->GetResourceManager()->IsMaterialExisted(&temcapMatMaterial, tmpNewMaterialmatCap, matKey);
+
+								if (isExist)
+								{
+									pModel->SetMaterial(temcapMatMaterial);
+
+									tmpNewMaterialmatCap->Release();
+
+									tmpNewMaterialmatCap = NULL;
+								}
+								else
+								{
+									bool isUsed = GetSceneManager()->GetResourceManager()->IsMaterialUsed(topModel, matCapMaterial, pModel);
+
+									if (isUsed)
+									{
+										tmpNewMaterialmatCap->SetName(matKey);
+
+										bool isAddSucess = GetSceneManager()->GetResourceManager()->AddMaterial(matKey, tmpNewMaterialmatCap);
+
+										tmpNewMaterialmatCap->SetResourceManager(GetSceneManager()->GetResourceManager());
+
+										pModel->SetMaterial(tmpNewMaterialmatCap);
+									}
+									else
+									{
+										matCapMaterial->SetDiffuse(tmpColor);
+
+										pModel->SetMaterial(matCapMaterial);
+
+										tmpNewMaterialmatCap->Release();
+
+										tmpNewMaterialmatCap = NULL;
+									}
+								}
+							}
+							break;
+
+							default:
+								break;
+							}
+
+						}
+					}
 
 				string strPlcID, saPlcID, strObjName;
 				Matrix3x4 plcMatrix;
@@ -2771,8 +3167,7 @@ bool View::SaveAllUserViews(string &xmlPath) {
 	ret = xmlSerializer.Save(xmlPath);
 	return ret;
 }
-ModelView*
-View::GetDefaultModelView() {
+ModelView* View::GetDefaultModelView() {
 	LOGI(" View::GetDefaultModelView() ");
 	ModelView* defaultView = NULL;
 	if (GetModel() && (m_enableCreateDefaultView)) {
@@ -2833,36 +3228,77 @@ bool View::UpdateViewByCurrentScene(ModelView* newView) {
 		allSubModels.push_back(topModel);
 		topModel->GetAllSubModels(allSubModels);
 
-		for (int i = 0; i < allSubModels.size(); i++) {
-			Model *curModel = (Model*) allSubModels[i];
+			for (int i = 0; i < allSubModels.size(); i++) {
+				Model *curModel = (Model*)allSubModels[i];
+				
+				InstanceAttribute ia;
+				ia.id = curModel->GetInstatnceID();
+				ia.materialId = -1;
+				ia.visible = curModel->IsVisible();
 
-			InstanceAttribute ia;
-			ia.id = curModel->GetInstatnceID();
-			ia.materialId = -1;
-			ia.visible = curModel->IsVisible();
-			//如果存在于颜色修改列表中则保存
-			//map<string, Model*>::iterator tmpIt = m_ColorChangedModelMap.find(
-			//	curModel->GetPlcPath());
-			//if (tmpIt != m_ColorChangedModelMap.end())
-			//{
-			//	ia.hasColor = true;
-			//	ia.insColor = *curModel->GetColor();
-			//}
-			//else
-			//{
-			//	ia.hasColor = false;
-			//	ia.insColor = Color::GRAY;
-			//}
-			Color* pColor = curModel->GetColor();
-			if (pColor) {
-				ia.hasColor = true;
-				ia.insColor = *curModel->GetColor();
-			} else {
-				ia.hasColor = false;
-				ia.insColor = Color::GRAY;
-			}
+				if (curModel->GetSubModelCount() <= 0)
+				{
+					//如果存在于颜色修改列表中则保存
+					//map<string, Model*>::iterator tmpIt = m_ColorChangedModelMap.find(
+					//	curModel->GetPlcPath());
+					//if (tmpIt != m_ColorChangedModelMap.end())
+					//{
+					//	ia.hasColor = true;
+					//	ia.insColor = *curModel->GetColor();
+					//}
+					//else
+					//{
+					//	ia.hasColor = false;
+					//	ia.insColor = Color::GRAY;
+					//}
+					Color* pColor = curModel->GetColor();
 
-			ia.path = PathHelper::GetSVLPath(curModel);
+					BaseMaterial* curModeMaterial = curModel->GetMaterial();
+					Color pTmpColor;
+					if (curModeMaterial != NULL)
+					{
+						switch (curModeMaterial->GetMaterialType())
+						{
+						case MaterialType_Phong:
+						{
+							pTmpColor = ((Material*)curModeMaterial)->GetDiffuse();
+						}break;
+						case MaterialType_Pbr:
+						{
+							pTmpColor = ((PbrMaterial*)curModeMaterial)->AlbedoColor();
+						}break;
+						case MaterialType_MatCap:
+						{
+							pTmpColor = ((MatCapMaterial*)curModeMaterial)->GetDiffuse();
+						}break;
+						default:
+							break;
+						}
+
+						ia.hasColor = true;
+						ia.insColor = pTmpColor;
+
+					}
+					else
+					{
+						if (pColor)
+						{
+							ia.hasColor = true;
+
+							ia.insColor = *curModel->GetColor();
+						}
+						else
+						{
+							ia.hasColor = false;
+							ia.insColor = Color::GRAY;
+						}
+					}
+				}
+				else
+				{
+					ia.hasColor = false;
+				}
+				ia.path = PathHelper::GetSVLPath(curModel);
 
 			ModelShape* modelshape = curModel->GetModelShape();
 			if (modelshape) {
@@ -2894,7 +3330,7 @@ bool View::UpdateViewByCurrentScene(ModelView* newView) {
 					if (!pPlane)
 						continue;
 					if (pPlane->GetEnable()) {
-						newView->AddSectionPlaneId(pPlane->GetID());
+							newView->AddSectionPlaneId(pPlane->GetCreateId());
 						if (!topModel->GetSectionPlane(pPlane->GetID())) {
 							SectionPlane* iPlane = new SectionPlane();
 							iPlane->Copy(pPlane);
@@ -5285,6 +5721,16 @@ void View::UpdateDrawLimit() {
 	{
 		this->GetExplosiveView()->endExplosion();
 	}
+
+	bool View::SetExplosiveViewOriVersion(int stype, int pos, bool useAnimation)
+	{
+		this->GetExplosiveViewOriVersion()->SetPercent(this, stype, pos, useAnimation);
+		//        if (this->GetCurrentModelView()) {
+		//            this->GetCurrentModelView()->setExplosivePercent(pos);
+		//        }
+		return false;
+	}
+
 	bool View::SetExplosiveViewWithDirection(vector<Model*> arrayModels,int stype, int pos, Vector3 direction)
 	{
 		this->GetExplosiveView()->setPercentWithDirection(this, arrayModels,stype, pos, direction);
@@ -5313,13 +5759,25 @@ bool View::SetExplosiveViewWithoutRestore(int stype, int pos,
 	return false;
 }
 
-ExplosiveViewOperator* View::GetExplosiveView() {
-	if (this->m_ExplosiveViewOperator == NULL) {
-		this->m_ExplosiveViewOperator = new ExplosiveViewOperator();
-		this->m_ExplosiveViewOperator->SetView(this);
+	ExplosiveViewOperatorOriVersion* View::GetExplosiveViewOriVersion()
+	{
+		if (this->m_ExplosiveViewOperatorOriVersion == NULL)
+		{
+			this->m_ExplosiveViewOperatorOriVersion = new ExplosiveViewOperatorOriVersion();
+			this->m_ExplosiveViewOperatorOriVersion->SetView(this);
+		}
+		return this->m_ExplosiveViewOperatorOriVersion;
 	}
-	return this->m_ExplosiveViewOperator;
-}
+
+	ExplosiveViewOperator* View::GetExplosiveView()
+	{
+		if (this->m_ExplosiveViewOperator == NULL)
+		{
+			this->m_ExplosiveViewOperator = new ExplosiveViewOperator();
+			this->m_ExplosiveViewOperator->SetView(this);
+		}
+		return this->m_ExplosiveViewOperator;
+	}
 
 bool View::CloseExplisiveView() {
 	if (this->m_ExplosiveViewOperator != NULL) {
@@ -5331,11 +5789,25 @@ bool View::CloseExplisiveView() {
 	return false;
 }
 
-bool View::FitScaleView() {
-	bool ret = false;
-	ret = ViewOperator::FitView(this->GetSceneManager());
-	return ret;
-}
+	bool View::CloseExplisiveViewOriVersion()
+	{
+		if (this->m_ExplosiveViewOperatorOriVersion != NULL)
+		{
+			this->m_ExplosiveViewOperatorOriVersion->Close(this);
+		}
+
+		//        this->RestoreView();
+
+		return false;
+	}
+
+
+	bool View::FitScaleView()
+	{
+		bool ret = false;
+		ret = ViewOperator::FitView(this->GetSceneManager());
+		return ret;
+	}
 
 void View::SetShowAxis(bool show) {
 	if (this->m_axisNode) {

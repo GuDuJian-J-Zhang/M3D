@@ -306,6 +306,11 @@ void CSimulationAnimationManager::ProcessXMLData( const char *buffer )
 	xp.SetTagCallback("InstanceCreateInterpolator", CSInterpolatorInstanceCreate::XMLCallback, this);
 	xp.ProcessXMLData();
 
+	if (isCreateSABuffer)
+	{
+		delete[] pSABuffer;
+	}
+
 	VersionConvert_1_To_2_1();
 
 	//如果动画文件中没有动画，创建默认的动画管理器
@@ -350,10 +355,7 @@ void CSimulationAnimationManager::ProcessXMLData( const char *buffer )
 			pProcessManager->SetCurProcessByID(pProcess->GetID(),false);
 		}
 	}
-//    if (isCreateSABuffer)
-//    {
-//        delete[] pSABuffer;
-//    }
+
 }
 
 

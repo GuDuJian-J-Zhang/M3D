@@ -207,6 +207,54 @@ namespace M3D
 			CreatePerspectiveAnimation(PerspectiveData::DOWNBEHINDRIGHT_MVMATRIX,
 				m_bAllowRotate, m_bAllowTran, m_bAllowScale);
 			break;
+		case PerspectiveData::UPBEHIND:
+			CreatePerspectiveAnimation(PerspectiveData::UPBEHIND_MVMATRIX,
+				m_bAllowRotate, m_bAllowTran, m_bAllowScale);
+			break;
+		case PerspectiveData::UPFRONT:
+			CreatePerspectiveAnimation(PerspectiveData::UPFRONT_MVMATRIX,
+				m_bAllowRotate, m_bAllowTran, m_bAllowScale);
+			break;
+		case PerspectiveData::UPLEFT:
+			CreatePerspectiveAnimation(PerspectiveData::UPLEFT_MVMATRIX,
+				m_bAllowRotate, m_bAllowTran, m_bAllowScale);
+			break;
+		case PerspectiveData::UPRIGHT:
+			CreatePerspectiveAnimation(PerspectiveData::UPRIGHT_MVMATRIX,
+				m_bAllowRotate, m_bAllowTran, m_bAllowScale);
+			break;
+		case PerspectiveData::DOWNBEHIND:
+			CreatePerspectiveAnimation(PerspectiveData::DOWNBEHIND_MVMATRIX,
+				m_bAllowRotate, m_bAllowTran, m_bAllowScale);
+			break;
+		case PerspectiveData::DOWNFRONT:
+			CreatePerspectiveAnimation(PerspectiveData::DOWNFRONT_MVMATRIX,
+				m_bAllowRotate, m_bAllowTran, m_bAllowScale);
+			break;
+		case PerspectiveData::DOWNLEFT:
+			CreatePerspectiveAnimation(PerspectiveData::DOWNLEFT_MVMATRIX,
+				m_bAllowRotate, m_bAllowTran, m_bAllowScale);
+			break;
+		case PerspectiveData::DOWNRIGHT:
+			CreatePerspectiveAnimation(PerspectiveData::DOWNRIGHT_MVMATRIX,
+				m_bAllowRotate, m_bAllowTran, m_bAllowScale);
+			break;
+		case PerspectiveData::FRONTLEFT:
+			CreatePerspectiveAnimation(PerspectiveData::FRONTLEFT_MVMATRIX,
+				m_bAllowRotate, m_bAllowTran, m_bAllowScale);
+			break;
+		case PerspectiveData::RONTRIGHT:
+			CreatePerspectiveAnimation(PerspectiveData::RONTRIGHT_MVMATRIX,
+				m_bAllowRotate, m_bAllowTran, m_bAllowScale);
+			break;
+		case PerspectiveData::BEHINDLEFT:
+			CreatePerspectiveAnimation(PerspectiveData::BEHINDLEFT_MVMATRIX,
+				m_bAllowRotate, m_bAllowTran, m_bAllowScale);
+			break;
+		case PerspectiveData::BEHINDRIGHT:
+			CreatePerspectiveAnimation(PerspectiveData::BEHINDRIGHT_MVMATRIX,
+				m_bAllowRotate, m_bAllowTran, m_bAllowScale);
+			break;
 		default:
 			break;
 		}
@@ -227,7 +275,7 @@ namespace M3D
 
 		CameraNode* camera = m_pView->GetSceneManager()->GetCamera();
 
-		m_animationmvMatrix->rotation = camera->GetRotation();
+		m_animationmvMatrix->rotation = camera->GetRotation().Inverse();
 		m_animationmvMatrix->moveVector = camera->GetPosition();
 		m_animationmvMatrix->scaleFactor = camera->GetZoom();
 

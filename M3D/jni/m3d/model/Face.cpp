@@ -1,4 +1,4 @@
-#include "m3d/model/Body.h"
+﻿#include "m3d/model/Body.h"
 #include "m3d/model/Face.h"
 #include "m3d/model/Edge.h"
 #include "m3d/model/MeshData.h"
@@ -88,6 +88,7 @@ Face::Face(const Face& orig)
 	m_drawMesh = NULL;
 	this->m_svlId = OBJID++;
 	this->m_selectable = true;
+	m_bNeedClip = true;
 	*this = orig;
 }
 
@@ -108,6 +109,7 @@ Face& Face::operator =(const Face& orig)
 		this->SetSVLId(orig.m_svlId);
 
 		this->m_selectable = orig.m_selectable;
+		this->m_bNeedClip = orig.m_bNeedClip;
 		if(orig.m_FaceExtInfo)
 		{
 			this->m_FaceExtInfo = new FaceExtInfo();
@@ -349,7 +351,7 @@ void Face::SetInitColor(const Color &color)
 	m_Color = color;
 	if (m_material)
 	{
-		if (m_material->GetMaterialType() == MaterialType_Base ||
+		if (m_material->GetMaterialType() == MaterialType_Base || 
 			m_material->GetMaterialType() == MaterialType_Phong||
 			m_material->GetMaterialType() == MaterialType_MatCap)
 		{
@@ -362,16 +364,7 @@ void Face::SetInitColor(const Color &color)
 			PbrMaterial* temp = static_cast<PbrMaterial*>(m_material);
 			temp->AlbedoColor(m_Color);
 //			temp->Opacity(m_Color.m_a);
-		}
-
-//		else if(m_material->GetMaterialType() == 101 ||
-//				m_material->GetMaterialType() == 102 ||
-//				m_material->GetMaterialType() == 103 ||
-//				m_material->GetMaterialType() == 104 ||
-//				m_material->GetMaterialType() == MaterialType_Shader ){
-//			Material* temp = static_cast<Material*>(m_material);
-//			temp->SetDiffuse(m_Color);
-//		}
+		}		
 	}
 	if (!m_FaceExtInfo)
 	{
@@ -450,7 +443,8 @@ GeometryAttribute* Face::GetGeoAttribute()
 		{
 			if (this->GetBody())
 			{
-				if (this->GetBody()->GetModel())
+				if (this->GetBody()->GetModel() &&
+					this->GetBody()->GetModel()->GetExtendInfoManager())
 				{
 					geo = this->GetBody()->GetModel()->GetExtendInfoManager()->GetFaceGeoAttribute(
 						this->GetBody()->GetModel()->GetProtoTypeId(), this->GetSVLId());
