@@ -137,7 +137,7 @@ bool M3D::TranslateMinusAxisDragger::handle(const TouchEvent& ea)
 			Section* pSection = _scene->GetSectionNode()->GetSection();
 			IShape* selectedShape = _scene->GetPickShape(ea.getX(), ea.getY(), SHAPE_MODEL, 0);
 			SectionPlane* section = dynamic_cast<SectionPlane*>(selectedShape);
-			if (section && section->GetID() == GetID())
+			if (section && section->GetID() == GetID() && section->IsSelected())
 			{
 				CameraNode *rootCamera = view->GetSceneManager()->GetCamera();
 				_pointer.setCamera(rootCamera);

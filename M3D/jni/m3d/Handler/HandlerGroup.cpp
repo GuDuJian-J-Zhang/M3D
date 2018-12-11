@@ -1,4 +1,4 @@
-#include "m3d/handler/HandlerGroup.h"
+﻿#include "m3d/handler/HandlerGroup.h"
 
 #include "m3d/graphics/cameranode.h"
 #include "m3d/handler/HandlerPoint.h"
@@ -17,6 +17,7 @@
 #include "ScaleAxisDragger.h"
 #include "../action/RenderAction.h"
 #include "TranslateBoxDragger.h"
+#include "RotateCylinderDragger.h"
 
 namespace M3D
 {
@@ -54,6 +55,7 @@ void HandlerGroup::Initialize()
 	m_RotateCylinderAxisDragger = NULL;
 	m_ScaleAxisDragger = NULL;
 	m_translateBoxDragger = NULL;
+	m_RotateCylinderDragger = NULL;
 }
 
 void HandlerGroup::Clear()
@@ -63,6 +65,8 @@ void HandlerGroup::Clear()
 	ReleaseMe(m_ScaleAxisDragger);
 	ReleaseMe(m_TransMinusformHandlerNode);
 	ReleaseMe(m_translateBoxDragger);
+	ReleaseMe(m_RotateCylinderDragger);
+	this->RemoveSectionHandle();
 	this->RemoveLightHandle();
 	this->RemoveAllTools();
     this->RemoveRotateCenter();
@@ -228,8 +232,9 @@ void HandlerGroup::HandleDragger(TouchEvent& touchEvent)
 		{
 			if (!childDragger->handle(touchEvent))
 			{
-				Dragger* dragger = childDragger;
-				dragger->handle(touchEvent);
+				//去除该处处理-yhp-20181121
+				//Dragger* dragger = childDragger;
+				//dragger->handle(touchEvent);
 			}
 		}
 	}
@@ -254,6 +259,12 @@ void HandlerGroup::HandleDragger(TouchEvent& touchEvent)
 	if (!touchEvent.getHandled() && this->m_ScaleAxisDragger && m_ScaleAxisDragger->IsVisible())
 	{
 		Dragger* dragger = m_ScaleAxisDragger;
+		dragger->handle(touchEvent);
+	}
+
+	if (!touchEvent.getHandled() && this->m_RotateCylinderDragger && m_RotateCylinderDragger->IsVisible())
+	{
+		Dragger* dragger = m_RotateCylinderDragger;
 		dragger->handle(touchEvent);
 	}
 }
@@ -365,6 +376,21 @@ void HandlerGroup::FindVisiableObject(RenderAction* renderAction)
 		Vector3 OldscaleVec3 = m_ScaleAxisDragger->GetOrigScale();
 		OldscaleVec3 *= scaleVec3;
 		m_ScaleAxisDragger->SetScale(OldscaleVec3);
+	}
+	if (m_RotateCylinderDragger && m_RotateCylinderDragger->IsVisible())
+	{
+		if (renderAction->GetSceneBoxChanged() || m_RotateCylinderDragger->GetNeedScale())
+		{
+			Vector2 size = ShapeHelper::GetCommonSize(renderAction->GetScene(), Vector2(scaleFactor, scaleFactor));
+			m_RotateCylinderDragger->SetOrigScale(Vector3(size.m_x, size.m_x, size.m_x));
+			m_RotateCylinderDragger->SetNeedScale(false);
+		}
+		Vector3 position = m_RotateCylinderDragger->GetWorldTransform()* Vector3(0, 0, 0);
+		float scale = Billboard::GetFitShowScale(renderAction, position) / 0.4f;
+		Vector3 scaleVec3(scale, scale, scale);
+		Vector3 OldscaleVec3 = m_RotateCylinderDragger->GetOrigScale();
+		OldscaleVec3 *= scaleVec3;
+		m_RotateCylinderDragger->SetScale(OldscaleVec3);
 	}
 	map<int, M3D::RenderQueue>* currentRenderQueue = renderAction->GetWorkingRenderQueueGroup();
 	map<int, M3D::RenderQueue>* draggerRenderQueue = &renderAction->GetDraggerRenderQueueGroup();
@@ -621,6 +647,19 @@ M3D::TranslateBoxDragger* HandlerGroup::GetTranslateBoxDragger()
 }
 
 
+M3D::RotateCylinderDragger* HandlerGroup::GetRotateCylinderDragger()
+{
+	if (m_RotateCylinderDragger == NULL)
+	{
+		m_RotateCylinderDragger = new RotateCylinderDragger();
+		m_RotateCylinderDragger->setupDefaultGeometry();
+		m_RotateCylinderDragger->AddRef();
+		m_RotateCylinderDragger->SetScene(m_scene);
+		this->AddChild(m_RotateCylinderDragger);
+	}
+	return m_RotateCylinderDragger;
+}
+
 TranslateMinusAxisDragger * HandlerGroup::GetSingleTransMinusformHandler()
 {
 	if (m_TransMinusformHandlerNode == NULL)
@@ -725,6 +764,16 @@ Translate3DDragger* HandlerGroup::GetTranslate3DPntHandle()
 //		this->m_TransformHandlerNode->SetHide(!visible);
 //	}
 //}
+
+void HandlerGroup::RemoveSectionHandle()
+{
+	for (list<TranslateMinusAxisDragger*>::iterator it = miusMinusAxisDraggerList.begin(); it != miusMinusAxisDraggerList.end(); it++)
+	{
+		DeleteChild(*it);
+		ReleaseMe(*it);
+	}
+	miusMinusAxisDraggerList.clear();
+}
 
 void HandlerGroup::RemoveLightHandle()
 {

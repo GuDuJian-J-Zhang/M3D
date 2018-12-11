@@ -19,6 +19,8 @@ namespace M3D
 	class Vector3;
 	class CameraNode;
 	class ModelNode;
+	class IShape;
+	class SectionPlane;
 }
 using namespace M3D;
 
@@ -69,8 +71,8 @@ public:
 	static void GetCameraZoom(CameraNode* camera,float& zoom);
 
 	//根据当前view的宽高比调整缩放比例
-	static void AdjustCameraZoom(View* view , float aniWidth,
-			float aniHeight, float aniZoom, float& zoom);
+	static void AdjustCameraZoom(CameraNode* camera,float aniWidth,float aniHeight,
+			float aniZoom, float& zoom, View* view);
 
 	//ViewPort
 	static void GetViewSize(float& outWidth,float& outHeight,View* view);
@@ -81,6 +83,8 @@ public:
 
 	//PMI----------------------
 	static PMIData* GetPMI(unsigned long pmiId,View* view);
+	static IShape* GetMeasure(unsigned long measureId, View* view);
+	static IShape* GetAnnotation(unsigned long noteId, View* view);
 	static void SetPMITransform(const Matrix3x4& transform,PMIData* pmiData);
 
 	static void SetPMIRotate(const Quaternion& rotation,PMIData* pmiData);
@@ -109,7 +113,7 @@ public:
 	static string AniDecPathToM3DHexPath(const string& AniPath);
 
 	static string M3DDecPathToAniDecPath(const string& m3dDecPath);
-
+	static SectionPlane* GetSectionPlane(const string strID, View* view);
 
 private:
 	static const Matrix3x4& GetPlaceMatrix(Model* model);

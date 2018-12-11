@@ -127,7 +127,7 @@ PickTypeFilter::~PickTypeFilter()
 
 }
 
-void PickTypeFilter::SetPickShapeType(int shapeType)
+void PickTypeFilter::SetPickShapeType(int shapeType, int excludeShapeType)
 {
 	if (shapeType == this->currentShapeType)
 	{
@@ -148,6 +148,11 @@ void PickTypeFilter::SetPickShapeType(int shapeType)
 		pickShapeTyeArray[SHAPE_IMAGE_MODEL] = true;
 		pickShapeTyeArray[SHAPE_LIGHT_DIRECTIONAL] = true;
 //		pickShapeTyeArray[SHAPE_POINT] = true;
+		//设置需要忽略的shape类型
+		if (SHAPE_EDGE == excludeShapeType)
+		{
+			pickShapeTyeArray[SHAPE_EDGE] = false;
+		}
 	}
 	else if (shapeType == SHAPE_NOTCONTAIN_IMAGEMODEL)
 	{
@@ -1322,9 +1327,9 @@ int RayPickAction::GetPickGeoType()
 {
 	return this->pickTypeFilter.GetPickGeoType();
 }
-void RayPickAction::SetPickShapeType(int shapeType)
+void RayPickAction::SetPickShapeType(int shapeType, int excludeShapeType)
 {
-	this->pickTypeFilter.SetPickShapeType(shapeType);
+	this->pickTypeFilter.SetPickShapeType(shapeType, excludeShapeType);
 }
 void RayPickAction::SetPickGeoType(int geoType)
 {

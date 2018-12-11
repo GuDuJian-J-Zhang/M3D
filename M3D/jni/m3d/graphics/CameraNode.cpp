@@ -952,14 +952,16 @@ const Viewport& CameraNode::GetViewPort()const
 				BoundingBox& sceneBox = this->m_scene->GetSceneBox();
 				Plane nearPlane = this->GetFrustum().m_planes[PLANE_NEAR];
 				//说明相交了
-				if (nearPlane.Distance(sceneBox.m_min)* nearPlane.Distance(sceneBox.m_max)<0.0f)
+				float fnMinDis = nearPlane.Distance(sceneBox.m_min);
+				float fnMaxDis = nearPlane.Distance(sceneBox.m_max);
+				/*if (fnMinDis * fnMaxDis <0.0f)*///edit by zhouyunpeng 强制更新
 				{
 					Vector3 cameraPos = this->GetPosition();
 					Vector3 nearPlanePnt = nearPlane.Project(sceneBox.Center());
 
 					float dis = (cameraPos - sceneBox.Center()).Length();
 
-					Matrix3 viewMat = this->GetView().ToMatrix3();
+					Matrix3 viewMat = GetEffectiveWorldTransform().Inverse().ToMatrix3();
 					Vector3 direction(viewMat.m_m20, viewMat.m_m21, viewMat.m_m22);
 
 					Plane centerPlane(direction,sceneBox.Center());

@@ -39,6 +39,7 @@ namespace M3D
 
 		m_faceColor.m_a = 0.5f;
 		m_selectColor = Color(1, 0, 0, 0.1f);
+		m_createId = OBJID++;
 		Init();
 	}
 
@@ -256,29 +257,29 @@ namespace M3D
 			//找到原始平面上面一点
 			Vector3 pntInPlane = projectPlane.Project(m_sceneBox.Center());
 
-			float right = normal.Angle(Vector3::RIGHT);
-			float up = normal.Angle(Vector3::UP);
-			float forward = normal.Angle(Vector3::FORWARD);
+			//float right = normal.Angle(Vector3::RIGHT);
+			//float up = normal.Angle(Vector3::UP);
+			//float forward = normal.Angle(Vector3::FORWARD);
 
-			Vector3 direction;
-			if (forward <= right && forward <= up)
-			{
-				direction = Vector3::FORWARD;
-			}
-			else if (right <= forward && right <= up)
-			{
-				direction = Vector3::RIGHT;
-			}
-			else
-			{
-				direction = Vector3::UP;
-			}
-			//找到过此点的XY平面
-			Plane XYPlane(direction, pntInPlane);
+			//Vector3 direction;
+			//if (forward <= right && forward <= up)
+			//{
+			//	direction = Vector3::FORWARD;
+			//}
+			//else if (right <= forward && right <= up)
+			//{
+			//	direction = Vector3::RIGHT;
+			//}
+			//else
+			//{
+			//	direction = Vector3::UP;
+			//}
+			////找到过此点的XY平面
+			//Plane XYPlane(direction, pntInPlane);
 
-			Quaternion deltaRot(direction, projectPlane.m_normal);
+			//Quaternion deltaRot(direction, projectPlane.m_normal);
 
-			BoundingBox m_box = m_sceneBox.Projected(XYPlane);
+			//BoundingBox m_box = m_sceneBox.Projected(XYPlane);
 
 			if (this->GetScene())
 			{
@@ -299,42 +300,52 @@ namespace M3D
 
 			//仅仅显示包围盒的最底面
 			Vector3 vertices[4];
-			if (direction == Vector3::FORWARD)
-			{
-				Vector3 projMin = m_box.m_min;
-				Vector3 projMax = Vector3(m_box.m_max.m_x, m_box.m_max.m_y, m_box.m_min.m_z);
-				vertices[0] = projMin;
-				vertices[1] = Vector3(projMin.m_x, projMax.m_y, projMin.m_z);
-				vertices[2] = Vector3(projMax.m_x, projMin.m_y, projMin.m_z);
-				vertices[3] = Vector3(projMax.m_x, projMax.m_y, projMin.m_z);
-			}
-			else if (direction == Vector3::RIGHT)
-			{
-				Vector3 projMin = m_box.m_min;
-				Vector3 projMax = Vector3(m_box.m_min.m_x, m_box.m_max.m_y, m_box.m_max.m_z);
-				vertices[0] = projMin;
-				vertices[1] = Vector3(projMin.m_x, projMin.m_y, projMax.m_z);
-				vertices[2] = Vector3(projMin.m_x, projMax.m_y, projMin.m_z);
-				vertices[3] = Vector3(projMin.m_x, projMax.m_y, projMax.m_z);
-			}
-			else if (direction == Vector3::UP)
-			{
-				Vector3 projMin = m_box.m_min;
-				Vector3 projMax = Vector3(m_box.m_max.m_x, m_box.m_min.m_y, m_box.m_max.m_z);
-				vertices[0] = projMin;
-				vertices[1] = Vector3(projMax.m_x, projMin.m_y, projMin.m_z);
-				vertices[2] = Vector3(projMin.m_x, projMin.m_y, projMax.m_z);
-				vertices[3] = Vector3(projMax.m_x, projMin.m_y, projMax.m_z);
-			}
-
+			//if (direction == Vector3::FORWARD)
+			//{
+			//	Vector3 projMin = m_box.m_min;
+			//	Vector3 projMax = Vector3(m_box.m_max.m_x, m_box.m_max.m_y, m_box.m_min.m_z);
+			//	vertices[0] = projMin;
+			//	vertices[1] = Vector3(projMin.m_x, projMax.m_y, projMin.m_z);
+			//	vertices[2] = Vector3(projMax.m_x, projMin.m_y, projMin.m_z);
+			//	vertices[3] = Vector3(projMax.m_x, projMax.m_y, projMin.m_z);
+			//}
+			//else if (direction == Vector3::RIGHT)
+			//{
+			//	Vector3 projMin = m_box.m_min;
+			//	Vector3 projMax = Vector3(m_box.m_min.m_x, m_box.m_max.m_y, m_box.m_max.m_z);
+			//	vertices[0] = projMin;
+			//	vertices[1] = Vector3(projMin.m_x, projMin.m_y, projMax.m_z);
+			//	vertices[2] = Vector3(projMin.m_x, projMax.m_y, projMin.m_z);
+			//	vertices[3] = Vector3(projMin.m_x, projMax.m_y, projMax.m_z);
+			//}
+			//else if (direction == Vector3::UP)
+			//{
+			//	Vector3 projMin = m_box.m_min;
+			//	Vector3 projMax = Vector3(m_box.m_max.m_x, m_box.m_min.m_y, m_box.m_max.m_z);
+			//	vertices[0] = projMin;
+			//	vertices[1] = Vector3(projMax.m_x, projMin.m_y, projMin.m_z);
+			//	vertices[2] = Vector3(projMin.m_x, projMin.m_y, projMax.m_z);
+			//	vertices[3] = Vector3(projMax.m_x, projMin.m_y, projMax.m_z);
+			//}
+			vertices[0] = m_sceneBox.m_min;
+			vertices[1] = Vector3(m_sceneBox.m_max.m_x, m_sceneBox.m_min.m_y, m_sceneBox.m_max.m_z);
+			vertices[2] = Vector3(m_sceneBox.m_min.m_x, m_sceneBox.m_max.m_y, m_sceneBox.m_min.m_z);
+			vertices[3] = m_sceneBox.m_max;
 
 			//先将标准的面移动到远点，然后旋转，旋转完成之后平移到新的剖切位置
 			Matrix3x4 transformMaxtix;
 			transformMaxtix.MultiTranslate(pntInPlane);
-			Matrix3x4 rotationMatrix = deltaRot.RotationMatrix();
+			Vector3 direction = (vertices[0] - vertices[1]).CrossProduct(vertices[0] - vertices[2]);
+			Quaternion deltaRot1(direction, projectPlane.m_normal);
+			Matrix3x4 rotationMatrix = deltaRot1.RotationMatrix();
 			transformMaxtix = transformMaxtix*rotationMatrix;
-			transformMaxtix.MultiTranslate(m_box.Center().Nagative());
+			transformMaxtix.MultiTranslate(m_sceneBox.Center().Nagative());
 			transformMaxtix.LeftMultiTranslate(normal.Normalized()*0.001);
+			//transformMaxtix.MultiTranslate(pntInPlane);
+			//Matrix3x4 rotationMatrix = deltaRot.RotationMatrix();
+			//transformMaxtix = transformMaxtix*rotationMatrix;
+			//transformMaxtix.MultiTranslate(m_box.Center().Nagative());
+			//transformMaxtix.LeftMultiTranslate(normal.Normalized()*0.001);
 			for (int i = 0; i < 4; i++)
 			{
 				vertices[i] = transformMaxtix*vertices[i];
@@ -518,8 +529,7 @@ namespace M3D
 	void SectionPlane::RayPick(RayPickAction* action)
 	{
 		Ray ray = action->GetData()->GetCameraRay();
-		Matrix3x4 modelMatrixInverse = GetWorldTransform().Inverse();
-		ray = ray.Transformed(modelMatrixInverse);
+		action->UpdataModelRay(this->GetWorldTransform());
 
 		action->BeginPickAsGroup(this);
 
@@ -530,7 +540,6 @@ namespace M3D
 		{
 			if (RayPickAction::ISintersectRayAndTriangle(triData[i * 3], triData[i * 3 + 1], triData[i * 3 + 2], ray, intersectPos))
 			{
-				//intersectPos = GetWorldTransform()*intersectPos;
 				action->AddIntersectPnt(intersectPos);
 				bInner = true;
 			}

@@ -438,12 +438,16 @@ namespace M3D {
 				}
 				for (int i = 0; i < srcNormals->size(); i++)
 				{
-					Vector3 normal = NeedSetMatrix ? worldMatrix * Vector4(srcNormals->at(i), 1.0) : srcNormals->at(i);
+					Matrix3x4 worldMatrixRot = worldMatrix;
+					worldMatrixRot.SetTranslation(Vector3(0.0f, 0.0f, 0.0f));
+					Vector3 normal = NeedSetMatrix ? worldMatrixRot * Vector3(srcNormals->at(i)) : srcNormals->at(i);
 					destNormals->push_back(normal);
 				}
 				for (int i = 0; i < srcTextures->size(); i++)
 				{
-					Vector3 texture = NeedSetMatrix ? worldMatrix * Vector4(srcTextures->at(i), 1.0) : srcTextures->at(i);
+					Matrix3x4 worldMatrixRot = worldMatrix;
+					worldMatrixRot.SetTranslation(Vector3(0.0f, 0.0f, 0.0f));
+					Vector3 texture = /*NeedSetMatrix ? worldMatrixRot * Vector3(srcTextures->at(i)) : */srcTextures->at(i);
 					destTextures->push_back(texture);
 				}
 			}

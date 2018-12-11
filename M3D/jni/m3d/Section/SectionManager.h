@@ -97,6 +97,7 @@ namespace M3D
 		bool SetDraggerVisiable(int id, bool val);
 		bool UnBindOneDragger(Dragger* dragger);
 		TranslateMinusAxisDragger* GetTranslateDragger(int id);
+		void ClearDraggerList();
 	private:
 		bool _enableXY; //!<开启XY平面剖切
 		bool _enableXZ; //!<开启XZ平面剖切

@@ -62,6 +62,7 @@ public:
 	void FillModelAttribute(Model* model);
 	M3D::SceneManager* GetScene() const;
 	void SetScene(M3D::SceneManager* val);
+	void UpdateSceneByModel(Model* model);
 private:
 	void UnSVLXInfo(void* document);
 	void LoadSVLXInfo(void* document);

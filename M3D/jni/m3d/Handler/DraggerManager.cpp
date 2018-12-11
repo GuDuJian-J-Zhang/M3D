@@ -37,6 +37,7 @@ DraggerManager::DraggerManager(View * view):Object()
 	m_commandHistoryManager = NULL;
 	m_view = view;
 	m_dragger = NULL;
+	m_pivotCB = NULL;
 }
 
 DraggerManager::~DraggerManager()
@@ -70,7 +71,7 @@ Dragger* DraggerManager::BindExplosionDragger(vector<Model*> models,int explosio
 	m_dragger = dragger;
 	return dragger;
 }
- 
+
 Dragger* DraggerManager::BindDragger(vector<Model*> models, int draggerType, bool bGloal)
 {
 	m_view->GetSceneManager()->Lock();
@@ -88,6 +89,10 @@ Dragger* DraggerManager::BindDragger(vector<Model*> models, int draggerType, boo
 		break;
 	case 4:
 		dragger = bindMinusAxisDragger(models);
+		break;
+	case 5:
+		dragger = BindRotateCylinderDragger(models);
+		break;
 	default:
 		break;
 	}
@@ -112,6 +117,10 @@ Dragger* DraggerManager::BindDragger(vector<Model*> models, int draggerType, Mat
 		break;
 	case 4:
 		dragger = bindMinusAxisDragger(models);
+		break;
+	case 5:
+		dragger = BindRotateCylinderDragger(models);
+		break;
 	default:
 		break;
 	}
@@ -161,6 +170,9 @@ Dragger* DraggerManager::BindExplosionStdDragger(vector<Model*> models, int expl
 		explosioinAixsDragger->SetName("TranslateAxisDragger");
 		explosioinAixsDragger->SetVisible(true);
 		explosioinAixsDragger->SetWorldPosition(position);
+		//恢复默认值，消除移动对拖拽器的影响
+		M3D::Quaternion rotaion(1.0f, 0.0f, 0.0f, 0.0f);
+		explosioinAixsDragger->SetRotation(rotaion);
 
 		ExplosionDragerCallBack* draggerCallback = new ExplosionDragerCallBack();
 		draggerCallback->m_view = m_view;
@@ -224,8 +236,6 @@ Dragger* DraggerManager::BindExplosionFreedomDragger(vector<Model*> models, int 
 		draggerCallback->AddRef();
 		minusAxisDragger->addDraggerCallback(draggerCallback);
 		draggerCallback->Release();
-
-		
 	}
     return minusAxisDragger;
 }
@@ -383,6 +393,10 @@ Dragger* DraggerManager::BindAxisDragger(vector<Model*> models, bool bGloal/* = 
 		translateAixsDragger->SetWorldPosition(position);
 		if (!bGloal)
 		{
+			translateAixsDragger->SetRotation(pLastModel->GetTransform().Rotation());
+		}
+		else
+		{
 			translateAixsDragger->SetRotation(pLastModel->GetWorldRotation());
 		}
 
@@ -430,7 +444,12 @@ Dragger* DraggerManager::BindAxisDragger(vector<Model*> models, Matrix3x4* ma, b
 		{
 			position = GetBindCenter(pLastModel);
 			translateAixsDragger->SetWorldPosition(position);
+
 			if (!bGloal)
+			{
+				translateAixsDragger->SetRotation(pLastModel->GetTransform().Rotation());
+			}
+			else
 			{
 				translateAixsDragger->SetRotation(pLastModel->GetWorldRotation());
 			}
@@ -446,6 +465,19 @@ Dragger* DraggerManager::BindAxisDragger(vector<Model*> models, Matrix3x4* ma, b
 		draggerCallback->AddRef();
 		translateAixsDragger->addDraggerCallback(draggerCallback);
 		draggerCallback->Release();
+
+		PivotCallback* pivotCallback = new PivotCallback(*ma);
+		pivotCallback->SetPivotCB(m_pivotCB);
+		for (int i = 0; i < nModelCount; i++)
+		{
+			if (models[i] == NULL)
+				continue;
+			pivotCallback->AddModel(models[i]);
+		}
+		//pivotCallback->SetScene(m_view->GetSceneManager());
+		pivotCallback->AddRef();
+		translateAixsDragger->addDraggerCallback(pivotCallback);
+		pivotCallback->Release();
 	}
 	return translateAixsDragger;
 }
@@ -484,6 +516,43 @@ Dragger* DraggerManager::bindMinusAxisDragger(vector<Model*> models)
 		draggerCallback->Release();
 	}
 	return minusAixsDragger;
+}
+
+Dragger* DraggerManager::BindRotateCylinderDragger(vector<Model*> models, bool bGloal /*= true*/)
+{
+	RotateCylinderDragger* rotDragger = NULL;
+
+	int nModelCount = models.size();
+	if (nModelCount <= 0)
+		return NULL;
+	Model* pLastModel = models[nModelCount - 1];
+	if (pLastModel == NULL)
+		return NULL;
+	Vector3 position = GetBindCenter(pLastModel);
+	if (m_view)
+	{
+		rotDragger = m_view->GetSceneManager()->GetHandlerGroup()->GetRotateCylinderDragger();
+		rotDragger->SetName("RotateCylinderDragger");
+		rotDragger->SetVisible(true);
+		rotDragger->SetWorldPosition(position);
+		if (!bGloal)
+			rotDragger->SetRotation(pLastModel->GetTransform().Rotation());
+		else
+			rotDragger->SetRotation(pLastModel->GetWorldRotation());
+		//方向设置1为X轴2为Y轴3为Z轴
+		//minusAixsDragger->SetOrientation(models.size()%3);
+		ModelDraggerCallback* draggerCallback = new ModelDraggerCallback();
+		for (int i = 0; i < nModelCount; i++)
+		{
+			if (models[i] == NULL)
+				continue;
+			draggerCallback->AddModel(models[i]);
+		}
+		draggerCallback->AddRef();
+		rotDragger->addDraggerCallback(draggerCallback);
+		draggerCallback->Release();
+	}
+	return rotDragger;
 }
 
 Dragger* DraggerManager::BindScaleDragger(vector<Model*> models)
@@ -539,6 +608,10 @@ Dragger* DraggerManager::BindRotateDragger(vector<Model*> models, bool bGloal/* 
 		rotateAixsDragger->SetWorldPosition(position);
 		if (!bGloal)
 		{
+			rotateAixsDragger->SetRotation(pLastModel->GetTransform().Rotation());
+		}
+		else
+		{
 			rotateAixsDragger->SetRotation(pLastModel->GetWorldRotation());
 		}
 		ModelDraggerCallback* draggerCallback = new ModelDraggerCallback();
@@ -547,11 +620,23 @@ Dragger* DraggerManager::BindRotateDragger(vector<Model*> models, bool bGloal/* 
 			if (models[i] == NULL)
 				continue;
 			draggerCallback->AddModel(models[i]);
-		}
+		}		
 		draggerCallback->SetScene(m_view->GetSceneManager());
 		draggerCallback->AddRef();
 		rotateAixsDragger->addDraggerCallback(draggerCallback);
 		draggerCallback->Release();
+
+		//PivotCallback* pivotCallback = new PivotCallback();
+		//for (int i = 0; i < nModelCount; i++)
+		//{
+		//	if (models[i] == NULL)
+		//		continue;
+		//	pivotCallback->AddModel(models[i]);
+		//}
+		//pivotCallback->SetScene(m_view->GetSceneManager());
+		//pivotCallback->AddRef();
+		//rotateAixsDragger->addDraggerCallback(pivotCallback);
+		//pivotCallback->Release();
 	}
 	return rotateAixsDragger;
 }
@@ -588,6 +673,10 @@ Dragger* DraggerManager::BindRotateDragger(vector<Model*> models, Matrix3x4* ma,
 			rotateAixsDragger->SetWorldPosition(position);
 			if (!bGloal)
 			{
+				rotateAixsDragger->SetRotation(pLastModel->GetTransform().Rotation());
+			}
+			else
+			{
 				rotateAixsDragger->SetRotation(pLastModel->GetWorldRotation());
 			}
 		}
@@ -603,6 +692,20 @@ Dragger* DraggerManager::BindRotateDragger(vector<Model*> models, Matrix3x4* ma,
 		draggerCallback->AddRef();
 		rotateAixsDragger->addDraggerCallback(draggerCallback);
 		draggerCallback->Release();
+
+		PivotCallback* pivotCallback = new PivotCallback(*ma);
+		pivotCallback->SetPivotCB(m_pivotCB);
+
+		for (int i = 0; i < nModelCount; i++)
+		{
+			if (models[i] == NULL)
+				continue;
+			pivotCallback->AddModel(models[i]);
+		}
+		pivotCallback->SetScene(m_view->GetSceneManager());
+		pivotCallback->AddRef();
+		rotateAixsDragger->addDraggerCallback(pivotCallback);
+		pivotCallback->Release();
 	}
 	return rotateAixsDragger;
 }

@@ -197,6 +197,8 @@ public:
 	static const string ITEM_SSAO_AEAR;
 
 	static const string ITEM_SHADOW_MAP_ENABLE;
+	static const string ITEM_FILE_KEYFILE;
+	static const string ITEM_FILE_PASSWORD;
 
 	//----设计器参数开始
 	static const string DESIGNER_ANNOTATION_USER;
@@ -388,6 +390,10 @@ public:
 	float g_radius;
 
 	bool m_showVRInMainView;//在主窗口显示VR
+	//文件加密解密
+	string	m_strKeyFile;			//密钥文件
+	string	m_strPassword;		//文件密码
+	int		m_iCullFace;//背面剔除选项 0 根据标志位 1强制关闭 2 强制开启
 
 private:
 	static const string xmlPath;

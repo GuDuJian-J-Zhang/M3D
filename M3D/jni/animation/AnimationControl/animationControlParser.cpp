@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "animationControlParser.h"
 #include "animationNode.h"
 #include <sstream>

@@ -128,7 +128,8 @@ public:
 	 * @brief 设置当前拾取对象类型
 	 * @param shapeType 拾取对象类型
 	 */
-	void SetPickShapeType(int shapeType);
+	//解决类似点点测量和根据法线创建剖面命令间的冲突-20181123-yhp
+	void SetPickShapeType(int shapeType, int excludeShapeType = SHAPE_BASE);
 	/**
 	 * @brief 设置当前拾取对象几何几何类型
 	 * @param geoType 拾取对象几何类型
@@ -429,7 +430,7 @@ public:
 	 * @brief 设置待拾取对象的类型
 	 * @param shapeType 拾取对象的类型
 	 */
-	void SetPickShapeType(int shapeType);
+	void SetPickShapeType(int shapeType, int excludeShapeType = SHAPE_BASE);
 	/**
 	 * @brief 设置待拾取对象具有的几何属性
 	 * @param geoType 拾取对象的几何属性

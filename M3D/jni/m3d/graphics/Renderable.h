@@ -149,6 +149,16 @@ public:
 	virtual void SetFrontShow(bool frontShow);
 
 	/**
+	* 是否使用背面剔除
+	*  @return
+	*/
+	bool IsCullBackFace() { return m_bCullBackFace; };
+	/**
+	* 设置使用双面光照
+	* @param bFlg
+	*/
+	virtual void SetCullBackFace(bool bFlg) { m_bCullBackFace = bFlg; };
+	/**
 	 *
 	 * @param size
 	 * @return
@@ -227,6 +237,7 @@ private:
 protected:
 	bool m_frontShow;//!< 最前端显示
 	bool m_useIndex;//!<是否使用索引解析数据
+	bool m_bCullBackFace;//Add by zyp 是否使用双面光照
 
 	Matrix4* m_renderWorldMatrix;//!< 世界矩阵
 

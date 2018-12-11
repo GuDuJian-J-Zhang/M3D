@@ -442,4 +442,14 @@ namespace M3D
 		m_definesMap[key] = "";
 	}
 
+	bool BaseMaterial::Compare(BaseMaterial* smaterial)
+	{
+		if (this->GetMaterialType() != smaterial->GetMaterialType())
+		{
+			return false;
+		}
+
+		return true;
+	}
+
 }

@@ -259,6 +259,9 @@
 		90A84FA721369B4000AE230B /* SMaterial.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 90A84FA121369B3F00AE230B /* SMaterial.cpp */; };
 		90A84FA821369B4000AE230B /* SLight.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 90A84FA321369B3F00AE230B /* SLight.cpp */; };
 		90A84FA921369B4000AE230B /* SCamera.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 90A84FA421369B3F00AE230B /* SCamera.cpp */; };
+		90AE844221BE4B7400ED4685 /* ExplosiveViewOperatorOriVersion.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 90AE844121BE4B7300ED4685 /* ExplosiveViewOperatorOriVersion.cpp */; };
+		90AE844521BE4F1900ED4685 /* PivotCallbacks.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 90AE844321BE4F1900ED4685 /* PivotCallbacks.cpp */; };
+		90AE844821BE59FA00ED4685 /* md5.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 90AE844721BE59FA00ED4685 /* md5.cpp */; };
 		90B51C312019CCDA000A5453 /* RotateCylinderDragger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 90B51C0C2019CCD7000A5453 /* RotateCylinderDragger.cpp */; };
 		90B51C322019CCDA000A5453 /* Scale2DDragger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 90B51C0E2019CCD7000A5453 /* Scale2DDragger.cpp */; };
 		90B51C332019CCDA000A5453 /* Scale1DDragger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 90B51C0F2019CCD7000A5453 /* Scale1DDragger.cpp */; };
@@ -1031,6 +1034,12 @@
 		90A84FA421369B3F00AE230B /* SCamera.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SCamera.cpp; sourceTree = "<group>"; };
 		90A84FA521369B3F00AE230B /* SLight.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SLight.h; sourceTree = "<group>"; };
 		90A84FA621369B3F00AE230B /* SMaterial.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SMaterial.h; sourceTree = "<group>"; };
+		90AE844021BE4B7300ED4685 /* ExplosiveViewOperatorOriVersion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ExplosiveViewOperatorOriVersion.h; sourceTree = "<group>"; };
+		90AE844121BE4B7300ED4685 /* ExplosiveViewOperatorOriVersion.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ExplosiveViewOperatorOriVersion.cpp; sourceTree = "<group>"; };
+		90AE844321BE4F1900ED4685 /* PivotCallbacks.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PivotCallbacks.cpp; sourceTree = "<group>"; };
+		90AE844421BE4F1900ED4685 /* PivotCallbacks.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PivotCallbacks.h; sourceTree = "<group>"; };
+		90AE844621BE59FA00ED4685 /* md5.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = md5.h; sourceTree = "<group>"; };
+		90AE844721BE59FA00ED4685 /* md5.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = md5.cpp; sourceTree = "<group>"; };
 		90B51C0B2019CCD7000A5453 /* DraggerManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DraggerManager.h; path = ../Handler/DraggerManager.h; sourceTree = "<group>"; };
 		90B51C0C2019CCD7000A5453 /* RotateCylinderDragger.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RotateCylinderDragger.cpp; path = ../Handler/RotateCylinderDragger.cpp; sourceTree = "<group>"; };
 		90B51C0E2019CCD7000A5453 /* Scale2DDragger.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Scale2DDragger.cpp; path = ../Handler/Scale2DDragger.cpp; sourceTree = "<group>"; };
@@ -1500,6 +1509,8 @@
 		658F940E1C5068FB00A09686 /* modelmanager */ = {
 			isa = PBXGroup;
 			children = (
+				90AE844321BE4F1900ED4685 /* PivotCallbacks.cpp */,
+				90AE844421BE4F1900ED4685 /* PivotCallbacks.h */,
 				90577D31211070B50032C4D1 /* ExplosionDragerCallBack.cpp */,
 				90577D2E211070B50032C4D1 /* ExplosionDragerCallBack.h */,
 				90577D30211070B50032C4D1 /* ReplaceModelOperation.cpp */,
@@ -2510,6 +2521,8 @@
 		BD4D24FD1A3EB67900E863F7 /* utils */ = {
 			isa = PBXGroup;
 			children = (
+				90AE844721BE59FA00ED4685 /* md5.cpp */,
+				90AE844621BE59FA00ED4685 /* md5.h */,
 				9083197F1F90545F00C325C4 /* MemoryHelper.cpp */,
 				9083197E1F90545E00C325C4 /* MemoryHelper.h */,
 				907C46701DF039C200696070 /* Platform.cpp */,
@@ -2561,6 +2574,8 @@
 		BD4D250D1A3EB67900E863F7 /* extern */ = {
 			isa = PBXGroup;
 			children = (
+				90AE844121BE4B7300ED4685 /* ExplosiveViewOperatorOriVersion.cpp */,
+				90AE844021BE4B7300ED4685 /* ExplosiveViewOperatorOriVersion.h */,
 				6502D6D11B70889500517C24 /* ViewOperator.cpp */,
 				6502D6D21B70889500517C24 /* ViewOperator.h */,
 				8E8816D41A8F1C1000B3B0AD /* AnimationOperator.cpp */,
@@ -3056,6 +3071,7 @@
 				8E8816DC1A8F1C1000B3B0AD /* NormalAnimation.cpp in Sources */,
 				658F942C1C5068FB00A09686 /* Measure.cpp in Sources */,
 				BD4D25A51A3EB67900E863F7 /* M3DTools.cpp in Sources */,
+				90AE844221BE4B7400ED4685 /* ExplosiveViewOperatorOriVersion.cpp in Sources */,
 				901E17B81D3F570A00908B1D /* shapes.cpp in Sources */,
 				8E908C201A8378870091C9F0 /* ExplosiveViewOperator.cpp in Sources */,
 				65F723F51B464EDB002AE45C /* Billboard.cpp in Sources */,
@@ -3214,6 +3230,7 @@
 				658F94541C50691200A09686 /* BaseEvent.cpp in Sources */,
 				65F1BAC11C3CC24600508808 /* PathHelper.cpp in Sources */,
 				65F723FE1B464EDB002AE45C /* TextNode.cpp in Sources */,
+				90AE844821BE59FA00ED4685 /* md5.cpp in Sources */,
 				BD4D25B31A3EB67900E863F7 /* XmlSceneSerializer.cpp in Sources */,
 				901E180C1D3F588600908B1D /* PMIData.cpp in Sources */,
 				90944CCF20AA707000769916 /* AnnotationFactory.cpp in Sources */,
@@ -3264,6 +3281,7 @@
 				90B51C362019CCDA000A5453 /* DraggerManager.cpp in Sources */,
 				908319681F9053DA00C325C4 /* animationController.cpp in Sources */,
 				658F94301C5068FB00A09686 /* MeasureGroup.cpp in Sources */,
+				90AE844521BE4F1900ED4685 /* PivotCallbacks.cpp in Sources */,
 				658F943C1C5068FB00A09686 /* RenameOperation.cpp in Sources */,
 				658F94311C5068FB00A09686 /* MeasureProperty.cpp in Sources */,
 				658F94561C50691200A09686 /* EventHelper.cpp in Sources */,

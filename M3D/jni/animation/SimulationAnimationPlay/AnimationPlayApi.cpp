@@ -140,9 +140,8 @@ void AnimationPlayApi::PlayClipPlane(int type,const char* plcIdPath, const char*
 		m_ClipNormal[2] = fNormal[2];
 		break;
 	case 2:
-//		if (m_AnimationPlayFun->m_PlayClipPlane == NULL)
-//			return;
-//		m_AnimationPlayFun->m_PlayClipPlane(plcIdPath, name, m_ClipNormal, m_ClipPos, bOnOff);
+		if (m_pAnimationCB)
+			m_pAnimationCB->InvokePlayClipPlaneCB(plcIdPath, name, m_ClipNormal, m_ClipPos, bOnOff);
 		break;
 	}
 }

@@ -441,4 +441,11 @@ void ExtendInfoManager::SetScene(M3D::SceneManager* val)
 	m_scene = val;
 }
 
+void ExtendInfoManager::UpdateSceneByModel(Model* model)
+{
+	if (m_scene && model) {
+		m_scene->UpdateSceneByModel(model);
+	}
+}
+
 }

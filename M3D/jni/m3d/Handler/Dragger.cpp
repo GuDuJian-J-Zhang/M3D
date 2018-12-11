@@ -12,6 +12,8 @@
 #include "../utils/StringHelper.h"
 #include "../utils/MeshHelper.h"
 #include "RotateCylinderDragger.h"
+#include "../extras/modelmanager/DraggerCallbacks.h"
+#include "../extras/modelmanager/PivotCallbacks.h"
 
 namespace M3D {
 
@@ -406,21 +408,17 @@ namespace M3D {
 		//// move self
 		getParentDragger()->receive(command);
 
-		//»Øµ÷º¯Êý2
-		if (getParentDragger()->m_draggerCB2 != nullptr)
-		{
-			int nStage = command.getStage();
-			Matrix3x4 matrix3x4 = _drawModel->GetWorldTransform();
-			getParentDragger()->m_draggerCB2(nStage, m_strName, matrix3x4);
-		}
-
-		if (!getParentDragger()->m_bMoveModel)
-			return;
-
+		Matrix3x4 ma;
 		for (DraggerCallbacks::iterator itr = getParentDragger()->getDraggerCallbacks().begin();
 			itr != getParentDragger()->getDraggerCallbacks().end();
 			++itr)
 		{
+			if (typeid(**itr).name() == typeid(ModelDraggerCallback).name())
+			{
+				if (!getParentDragger()->m_bMoveModel)
+					continue;
+			}
+
 			(*itr)->receive(command);
 		}
 
@@ -633,6 +631,10 @@ namespace M3D {
 			else if (command.GetType() == MotionCommand::Type::TYPE_TRANSLATEINPLANE)
 			{
 				this->receive((TranslateInPlaneCommand&)command);
+			}
+			else if (command.GetType() == MotionCommand::Type::TYPE_ROTATE3D)
+			{
+				this->receive((Rotate3DCommand&)command);
 			}
 		}
 		return false;

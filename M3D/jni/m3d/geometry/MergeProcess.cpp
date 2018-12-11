@@ -67,12 +67,18 @@ namespace M3D {
 			{
 				newModel->SetPlcId(models[0]->GetPlcId());
 				newModel->SetSVLId(models[0]->GetSVLId());
+				newModel->SetInstanceID(models[0]->GetInstatnceID());
 				//parentModel = models[0]->GetParent();
 			}
 			else
 			{
 				string strParentPath = GetParentPath(models);
 				parentModel = dynamic_cast<Model*>(scene->GetShape(strParentPath));
+			}
+			for (int i = 0; i < models.size(); i++)
+			{
+				Model* srcModel = models[i];
+				scene->AsynRemoveModelFromeScene(srcModel->GetParent(), srcModel);
 			}
 			if (InsertModel(scene, newModel, parentModel))
 			{
@@ -103,6 +109,7 @@ namespace M3D {
 						newModel->SetVisible(true);
 						newModel->SetPlcId(model->GetPlcId());
 						newModel->SetSVLId(model->GetSVLId());
+						newModel->SetInstanceID(model->GetInstatnceID());
 
 						ModelShape* tShapeNode = new ModelShape();
 						newModel->SetModelShape(tShapeNode);
@@ -115,6 +122,8 @@ namespace M3D {
 						{
 							newModel->SetPlaceMatrix(parentModel->GetWorldTransform().Inverse());
 							m_newModels.push_back(newModel);
+
+							scene->AsynRemoveModelFromeScene(parentModel, model);
 						}
 						else
 						{

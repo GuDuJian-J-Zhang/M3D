@@ -422,9 +422,10 @@ CSInterpolator * CSInterpolatorPosition::CreateInstance(CSAnimation *ainst)
 
 void CSInterpolatorPosition::CalculatePos(int keyframe, float fraction,  AniPoint &res)
 {
-	 CKeyframeChannelCurve **splinearray = (CKeyframeChannelCurve **)GetArray();
-
  	int length = GetArrayLength();
+	if (length <= 0)
+		return;
+	CKeyframeChannelCurve **splinearray = (CKeyframeChannelCurve **)GetArray();
 
 	if (!GetAnimation()->GetCurrentlyRunning() && splinearray[0]->m_bConstant)		
  			GetTranslationFromMatrix(splinearray[0]->m_cp);		
@@ -521,8 +522,10 @@ void CSInterpolatorPosition::CalculatePos(int keyframe, float fraction,  AniPoin
 
 void CSInterpolatorPosition::CalculatePosCamera(int keyframe, float fraction,  AniPoint &res)
 {
-	CKeyframeChannelCurve **splinearray = (CKeyframeChannelCurve **)GetArray();
 	int length = GetArrayLength();
+	if (length <= 0)
+		return;
+	CKeyframeChannelCurve **splinearray = (CKeyframeChannelCurve **)GetArray();
 
 	//CURVE_ARRAY(keyframe)->Interpolate((CKeyframeChannel **)splinearray, keyframe, fraction, length, res);
 
@@ -606,9 +609,10 @@ void CSInterpolatorPosition::CalculatePosCamera(int keyframe, float fraction,  A
 
 void CSInterpolatorPosition::CalculateAllTangents()
 {
-	
-	CKeyframeChannelCurve **splinearray = (CKeyframeChannelCurve **)GetArray();
 	int length = GetArrayLength();
+	if (length <= 0)
+		return;
+	CKeyframeChannelCurve **splinearray = (CKeyframeChannelCurve **)GetArray();
 	for (int i=0;i<length-1;i++)
 	{
 		if (((CKeyframeChannel *)splinearray[i])->m_channeltype == ANIFollowPath || 
@@ -806,9 +810,13 @@ void CSInterpolatorColor::Serialize(CUtilityXMLGenerator *xmlgen)
 		xmlt.AddProperty("Type", m_ColorComponent, true);
 		xmlt.AddProperty("GeomType", m_GeomType, true);
 
-		CKeyframeChannel **array = (CKeyframeChannel **)GetArray();
-		for (int i=0; i< GetArrayLength(); i++)
-			array[i]->Serialize(&xmlt);
+		int length = GetArrayLength();
+		if (length >0)
+		{
+			CKeyframeChannel **array = (CKeyframeChannel **)GetArray();
+			for (int i = 0; i < GetArrayLength(); i++)
+				array[i]->Serialize(&xmlt);
+		}
 
    		xmlgen->AddTag(&xmlt);
 
@@ -897,8 +905,10 @@ CSInterpolator * CSInterpolatorColor::CreateInstance(CSAnimation *ainst)
  
 void CSInterpolatorColor::CalculatePos(int keyframe, float fraction,  AniPoint &res)
 {
-	CKeyframeChannel **colorarray  = (CKeyframeChannel **)GetArray();	
 	int length = GetArrayLength();
+	if (length <= 0)
+		return;
+	CKeyframeChannel **colorarray  = (CKeyframeChannel **)GetArray();	
 	if (keyframe >= length-1)
 		res = colorarray[length-1]->m_cp;
 	else 
@@ -964,9 +974,10 @@ void CSInterpolatorScale::Reset()
 
 void CSInterpolatorScale::CalculateAllTangents()
 {
-	
-	CKeyframeChannelCurve **splinearray = (CKeyframeChannelCurve **)GetArray();
 	int length = GetArrayLength();
+	if (length <= 0)
+		return;
+	CKeyframeChannelCurve **splinearray = (CKeyframeChannelCurve **)GetArray();
 	for (int i=0;i<length-1;i++)
 	{
 		if (((CKeyframeChannel *)splinearray[i])->m_channeltype == ANIHermiteSpline)
@@ -1021,9 +1032,13 @@ void CSInterpolatorScale::Serialize(CUtilityXMLGenerator *xmlgen)
 		xmlt.SetTagname(tagname);
 		xmlt.AddProperty("Name", m_Name, true);
   
-		CKeyframeChannel **array = (CKeyframeChannel **)GetArray();
-		for (int i=0; i< GetArrayLength(); i++)
-			array[i]->Serialize(&xmlt);
+		int length = GetArrayLength();
+		if (length > 0)
+		{
+			CKeyframeChannel **array = (CKeyframeChannel **)GetArray();
+			for (int i = 0; i < GetArrayLength(); i++)
+				array[i]->Serialize(&xmlt);
+		}
 
    		xmlgen->AddTag(&xmlt);
 
@@ -1091,9 +1106,10 @@ CSInterpolator * CSInterpolatorScale::CreateInstance(CSAnimation *ainst)
  
 void CSInterpolatorScale::CalculatePos(int keyframe, float fraction,  AniPoint &res)
 {
+	int length = GetArrayLength();
+	if (length <= 0)
+		return;
 	 CKeyframeChannelCurve **splinearray = (CKeyframeChannelCurve **)GetArray();
-
- 	int length = GetArrayLength();
 
 	if (!GetAnimation()->GetCurrentlyRunning() && splinearray[0]->m_bConstant)		
  			GetTranslationFromMatrix(splinearray[0]->m_cp);		
@@ -1192,8 +1208,10 @@ CSInterpolator* CSInterpolatorQuatSquad::Clone()
 
 void CSInterpolatorQuatSquad::AdjustQuaternions()
 {
+	int length = GetArrayLength();
+	if (length <= 0)
+		return;
 	CKeyframeQuatSquad **quatarray  = (CKeyframeQuatSquad **)GetArray();
-  	int length = GetArrayLength();
 	float q1[4];
 	float q2[4];
 	AniQuat qres;
@@ -1249,9 +1267,13 @@ void CSInterpolatorQuatSquad::Serialize(CUtilityXMLGenerator *xmlgen)
 		xmlt.SetTagname(tagname);
 		xmlt.AddProperty("Name", m_Name, true);
  
-		CKeyframeQuatSquad **array = (CKeyframeQuatSquad **)GetArray();
-		for (int i=0; i< GetArrayLength(); i++)
-			array[i]->Serialize(&xmlt);
+		int length = GetArrayLength();
+		if (length > 0)
+		{
+			CKeyframeQuatSquad **array = (CKeyframeQuatSquad **)GetArray();
+			for (int i = 0; i < GetArrayLength(); i++)
+				array[i]->Serialize(&xmlt);
+		}
 
    		xmlgen->AddTag(&xmlt);
 
@@ -1345,8 +1367,10 @@ const char * CSInterpolatorQuatSquad::GetType() { return "QuatRot"; }
 
 void CSInterpolatorQuatSquad::CalculateQuat(int keyframe, float fraction,  AniQuat &res)
 {
+	int length = GetArrayLength();
+	if (length <= 0)
+		return;
 	CKeyframeQuatSquad **quatarray  = (CKeyframeQuatSquad **)GetArray();
- 	int length = GetArrayLength();
 	AniQuat q0, q1, q2, q3, a, b;
 	
 
@@ -1498,9 +1522,13 @@ void CSInterpolatorVisible::Serialize(CUtilityXMLGenerator *xmlgen)
 	xmlt.SetTagname(tagname);
 	xmlt.AddProperty("Name", m_Name, true);
 
-	CKeyframeString **array = (CKeyframeString **)GetArray();
-	for (int i=0; i< GetArrayLength(); i++)
-		array[i]->Serialize(&xmlt);
+	int length = GetArrayLength();
+	if (length> 0)
+	{
+		CKeyframeString **array = (CKeyframeString **)GetArray();
+		for (int i = 0; i < GetArrayLength(); i++)
+			array[i]->Serialize(&xmlt);
+	}
 
 	xmlgen->AddTag(&xmlt);
 
@@ -1571,13 +1599,15 @@ CSInterpolator* CSInterpolatorVisible::Clone()
 
 void CSInterpolatorVisible::Interpolate(int keyframe, float fraction)
 {
+	int length = GetArrayLength();
+	if (length <= 0)
+		return;
 	if(fraction > (1.0f - ANIMATION_D_TOL2))
 	{
 		keyframe++;
 		fraction = 0.0f;
 	}
 	CKeyframeString **posarray  = (CKeyframeString **)GetArray();
-	int length = GetArrayLength();
 	char plcIdPath[SA_BUFFER_SIZE_SMALL] = {0};
 	strcpy( plcIdPath, GetAnimation()->GetTarget()->GetResolvedPath());
 	//const char *pName = GetAnimation()->GetInterpolator(INTERPOLATOR_VISIBLE)->GetName();
@@ -1986,9 +2016,10 @@ void CSInterpolatorClip::Reset()
 
 void CSInterpolatorClip::CalculatePos( int keyframe, float fraction, AniPoint &res)
 {
-	CKeyframeChannelCurve **splinearray = (CKeyframeChannelCurve **)GetArray();
-
 	int length = GetArrayLength();
+	if (length <= 0)
+		return;
+	CKeyframeChannelCurve **splinearray = (CKeyframeChannelCurve **)GetArray();
 
 	if (!GetAnimation()->GetCurrentlyRunning() && splinearray[0]->m_bConstant)		
 		GetTranslationFromMatrix(splinearray[0]->m_cp);		
@@ -2024,8 +2055,11 @@ CSInterpolator* CSInterpolatorClip::Clone()
 
 void CSInterpolatorClip::CalculateAllTangents()
 {
-	CKeyframeChannelCurve **splinearray = (CKeyframeChannelCurve **)GetArray();
 	int length = GetArrayLength();
+	if (length <= 0)
+		return;
+	CKeyframeChannelCurve **splinearray = (CKeyframeChannelCurve **)GetArray();
+	
 	for (int i=0;i<length-1;i++)
 	{
 		if (((CKeyframeChannel *)splinearray[i])->m_channeltype == ANIFollowPath || 
@@ -2092,9 +2126,13 @@ void CSInterpolatorNormal::Serialize( CUtilityXMLGenerator *xmlgen )
 	xmlt.SetTagname(tagname);
 	xmlt.AddProperty("Name", m_Name, true);
 
-	CKeyframeChannel **array = (CKeyframeChannel **)GetArray();
-	for (int i=0; i< GetArrayLength(); i++)
-		array[i]->Serialize(&xmlt);
+	int length = GetArrayLength();
+	if (length > 0)
+	{
+		CKeyframeChannel **array = (CKeyframeChannel **)GetArray();
+		for (int i = 0; i < GetArrayLength(); i++)
+			array[i]->Serialize(&xmlt);
+	}
 
 	xmlgen->AddTag(&xmlt);
 }
@@ -2181,8 +2219,10 @@ void CSInterpolatorNormal::Interpolate( int keyframe, float fraction )
 
 void CSInterpolatorNormal::CalculatePos( int keyframe, float fraction, AniPoint &res )
 {
-	CKeyframeChannel **colorarray  = (CKeyframeChannel **)GetArray();	
 	int length = GetArrayLength();
+	if (length <= 0)
+		return;
+	CKeyframeChannel **colorarray  = (CKeyframeChannel **)GetArray();	
 	if (keyframe >= length-1)
 		res = colorarray[length-1]->m_cp;
 	else 
@@ -2225,10 +2265,13 @@ void CSInterpolatorPivot::Serialize(CUtilityXMLGenerator *xmlgen)
 	strcat(tagname,"Interpolator");
 	xmlt.SetTagname(tagname);
 	xmlt.AddProperty("Name", m_Name, true);
-
-	CKeyframeChannel **array = (CKeyframeChannel **)GetArray();
-	for (int i=0; i< GetArrayLength(); i++)
-		array[i]->Serialize(&xmlt);
+	int length = GetArrayLength();
+	if (length > 0)
+	{
+		CKeyframeChannel **array = (CKeyframeChannel **)GetArray();
+		for (int i = 0; i < GetArrayLength(); i++)
+			array[i]->Serialize(&xmlt);
+	}
 
 	xmlgen->AddTag(&xmlt);
 
@@ -2298,8 +2341,10 @@ CSInterpolator * CSInterpolatorPivot::CreateInstance(CSAnimation *ainst)
 
 void CSInterpolatorPivot::CalculatePos(int keyframe, float fraction,  AniPoint &res)
 {
-	CKeyframeChannel **colorarray  = (CKeyframeChannel **)GetArray();	
 	int length = GetArrayLength();
+	if (length <= 0)
+		return;
+	CKeyframeChannel **colorarray  = (CKeyframeChannel **)GetArray();	
 	if (keyframe >= length-1)
 		res = colorarray[length-1]->m_cp;
 	else 
@@ -2367,9 +2412,13 @@ void CSInterpolatorSound::Serialize(CUtilityXMLGenerator *xmlgen)
 	xmlt.SetTagname(tagname);
 	xmlt.AddProperty("Name", m_Name, true);
 
-	CKeyframeString **array = (CKeyframeString **)GetArray();
-	for (int i=0; i< GetArrayLength(); i++)
-		array[i]->Serialize(&xmlt);
+	int length = GetArrayLength();
+	if (length > 0)
+	{
+		CKeyframeString **array = (CKeyframeString **)GetArray();
+		for (int i = 0; i < GetArrayLength(); i++)
+			array[i]->Serialize(&xmlt);
+	}
 
 	xmlgen->AddTag(&xmlt);
 
@@ -2460,8 +2509,10 @@ void CSInterpolatorSound::GetFilePathName(char* cSoundFilePath)
 }
 void CSInterpolatorSound::Interpolate(int keyframe, float fraction)
 {
-	CKeyframeString **posarray  = (CKeyframeString **)GetArray();
 	int length = GetArrayLength();
+	if (length <= 0)
+		return;
+	CKeyframeString **posarray  = (CKeyframeString **)GetArray();
 	char plcIdPath[SA_BUFFER_SIZE_SMALL] = {0};
 	strcpy( plcIdPath, GetAnimation()->GetTarget()->GetResolvedPath());
 
@@ -2559,9 +2610,13 @@ void CSInterpolatorInstanceCreate::Serialize(CUtilityXMLGenerator *xmlgen)
 	xmlt.SetTagname(tagname);
 	xmlt.AddProperty("Name", m_Name, true);
 
-	CKeyframeString **array = (CKeyframeString **)GetArray();
-	for (int i=0; i< GetArrayLength(); i++)
-		array[i]->Serialize(&xmlt);
+	int length = GetArrayLength();
+	if (length > 0)
+	{
+		CKeyframeString **array = (CKeyframeString **)GetArray();
+		for (int i = 0; i < GetArrayLength(); i++)
+			array[i]->Serialize(&xmlt);
+	}
 
 	xmlgen->AddTag(&xmlt);
 }
@@ -2660,8 +2715,10 @@ CSInterpolator * CSInterpolatorInstanceCreate::CreateInstance(CSAnimation *ainst
 
 void CSInterpolatorInstanceCreate::Reset()
 {
-	CKeyframe3String **posarray  = (CKeyframe3String **)GetArray();
 	int length = GetArrayLength();
+	if (length <= 0)
+		return;
+	CKeyframe3String **posarray  = (CKeyframe3String **)GetArray();
 	//for (int i=0;i<length;i++)
 	//{
 	//	HC_Delete_Segment(posarray[i]->GetTarget1());
@@ -2676,8 +2733,10 @@ void CSInterpolatorInstanceCreate::Interpolate(int keyframe, float fraction)
 	CSBehaviorAction *pBehaviorAction = pAnimation->GetBehaviorAction();
 	if (pBehaviorAction == NULL)
 		return;
-	CKeyframe3String **posarray  = (CKeyframe3String **)GetArray();
 	int length = GetArrayLength();
+	if (length <= 0)
+		return;
+	CKeyframe3String **posarray  = (CKeyframe3String **)GetArray();
 
 	char targetsegment[SA_BUFFER_SIZE_SMALL];
 	char targetinclude[SA_BUFFER_SIZE_SMALL];

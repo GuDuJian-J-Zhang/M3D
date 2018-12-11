@@ -1356,7 +1356,7 @@ bool CSAnimation::IsAniIntervalByHKeyFrame(CSInterpolator * pInterpolator, int i
 
 	CKeyframe* kp1 = NULL;
 	CKeyframe* kp2 = NULL;
-	if(!pInterpolator)
+	if(!pInterpolator || pInterpolator->GetArrayLength()<=0)
 	{
 		return false;
 	}

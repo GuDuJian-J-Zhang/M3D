@@ -184,6 +184,8 @@ public:
 	VertexSet* GetData(int lodLevel = 0);
 
 	void SetNeedClip(bool val);
+	bool	IsClosed();
+	void SetClosed(bool i_isClosed);
 private:
 	vector<Face*> m_FaceArray;//!<body的所有face列表
 	vector<Edge*> m_EdgeArray;//!<body中所有的边界线
@@ -194,6 +196,7 @@ private:
 	bool m_isDrawDataDirty; //是否需要重新组织绘制数据	
 	int m_svlId;
 	IDTYPE  m_Id; //!<编号
+	bool	m_isClosed;	//是否闭合-yhp-20181103
 };
 }
 #endif /*BODY_H_*/

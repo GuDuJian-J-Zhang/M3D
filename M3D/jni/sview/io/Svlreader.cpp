@@ -494,7 +494,7 @@ void SvlReader::GetInstanceData(Model* model, Stk_Instance* ins,
 	STK_MTX32 outMatrix;
 	ins->GetPlacement(outPlcID, outMatrix);
 	model->SetPlcId(outPlcID);
-
+	model->SetInstanceID(ins->GetID());
 	float* plcMatrixData = outMatrix.PlcMatrix[0];
 	model->SetPlaceMatrix(Matrix4(plcMatrixData));
 
@@ -601,9 +601,9 @@ void SvlReader::GetInstanceData(Model* model, Stk_Instance* ins,
 
 			if (!this->IsCancel()) {
 				Model* submodel = new Model();
+				model->AddSubModel(submodel);
 				GetInstanceData(submodel, childIns, hasColor, curInsColor,
 						upInsVisible);
-				model->AddSubModel(submodel);
 
 				if (curInsColor.Red<0 && curInsColor.Alpha>0.0f)
 				{
@@ -1763,7 +1763,7 @@ int protoTypeLODCount,
 	{
 		Stk_View *pView = pNode->GetView();
 		//LOGI("SvlReader::GetStkNodeData view: name:%s type:%d",tmpName.c_str(),pView->GetUsageType());
-		if (pView != NULL )//&& pView->GetUsageType() != VIEW_USAGE_UNKNOWN)
+		if (pView != NULL && pModel == this->m_M3DModel)//&& pView->GetUsageType() != VIEW_USAGE_UNKNOWN)
 		{
 			string tmpName = Platform::WStringToString(pView->GetName());
 			pStkViewList->push_back(pView);

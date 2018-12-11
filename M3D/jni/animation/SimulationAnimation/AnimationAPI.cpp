@@ -25,7 +25,7 @@ CAnimationAPI::CAnimationAPI()
 	m_bRecCamera = false;
 	m_bAutoKey = true;
 	m_numAutoKeyFrame = 20;
-	m_bEvaluateFlag = false;
+	m_bEvaluateFlag = true;
 	m_blinear = true;
 	m_pRecCB = NULL;
 	m_pPlayCB = NULL;

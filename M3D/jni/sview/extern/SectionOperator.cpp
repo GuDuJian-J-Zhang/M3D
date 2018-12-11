@@ -103,16 +103,16 @@ void SectionOperator::Show(SVIEW::View* pView, int id, int direction, float perc
 		SectionOperator::Instance = new SectionOperator();
 		LOGI("new SectionAction::Instance");
 	}
-	LOGI("SectionOperator::Show step 1");
+//	LOGI("SectionOperator::Show step 1");
 	SectionOperator::Instance->Init(pView, id, direction, percentage,
 			isShowClipPlane, isShowCappingPlane, isReverseClip);
-	LOGI("SectionOperator::Show step 2");
+//	LOGI("SectionOperator::Show step 2");
 	SceneManager* pSceneManager = pView->GetSceneManager();
 	pSceneManager->Lock();
 	SectionOperator::Instance->Handle();
     pView->RequestDraw();
 	pSceneManager->UnLock();
-	LOGI("SectionOperator::Show step 3");
+//	LOGI("SectionOperator::Show step 3");
 }
 
 void SectionOperator::Clear(SVIEW::View* pView)
@@ -221,7 +221,7 @@ void SectionOperator::Handle()
 	pSection->SetIsReverseClipping(m_IsReverseClip);
  
 //	m_pView->GetSceneManager()->setSectionEnable(true);
-	LOGI("new SectionAction::Instance  step 3");
+//	LOGI("new SectionAction::Instance  step 3");
 	//请求绘制
 	m_pView->RequestDraw();
 	//	LOGI("SectionAction::Handle() end");

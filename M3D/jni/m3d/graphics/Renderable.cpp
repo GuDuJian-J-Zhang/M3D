@@ -258,6 +258,7 @@ void  Renderable::Init()
 	m_hardWareVertexBuffer = NULL;
 	m_hardWareIndexBuffer = NULL;
 	m_recesiveShadow = true;
+	m_bCullBackFace = true;
 }
 
 bool Renderable::HardwarebufferValid(Mesh* mesh)

@@ -1,4 +1,4 @@
-﻿#ifndef _MESHTOOL_H_
+#ifndef _MESHTOOL_H_
 #define _MESHTOOL_H_
 
 
@@ -7,6 +7,14 @@
 #include <vector>
 #include <math.h>
 #include "m3d/base/MathDefs.h"
+
+
+#include "m3d/base/Matrix3x4.h"
+
+#include "m3d/base/Vector3.h"
+
+#include "prebuilt/svl2/include/Stk_Enum.h"
+#include "prebuilt/svl2/include/Stk_Define.h"
 namespace MTools{
 #define  EPL 1.e-5
 #define  EP 1.e-8
@@ -222,6 +230,59 @@ public:
 	static void MapEdgeWithTri(const std::vector<Tri>& triVect,std::map<Edge,VECTRI> & mapEdgeTri);
 	static bool PointIsOnPlane( Vtx& point,  Plane& plane);
 	static Vtx& GetNormal(Vtx& v1, Vtx& v2, Vtx& v3);
+
+
+	/****************************************************************************
+	*	@brief		写二进制形式的JSVL文件
+	*	@param[in]	i_vcVtxs			点列
+	*	@param[in]	i_vcIndexs			索引
+	*	@param[in]	i_chFileName		文件名
+	*	@param[out]	无
+	*	@retval		STK_SUCCESS			正常结束
+	*	@retval		其它				异常结束
+	*	@note		无
+	*	@attention	无
+	****************************************************************************/
+	static STK_STATUS	WriteBinarySTL(const vector<M3D::Vector3>& i_vcVtxs, const vector<int>& i_vcIndexs, const STK_CHAR* i_chFileName);
+
+	/****************************************************************************
+	*	@brief		写ASCII形式的STL文件
+	*	@param[in]	i_vcVtxs			点列
+	*	@param[in]	i_vcIndexs			索引
+	*	@param[in]	i_chFileName		文件名
+	*	@param[out]	无
+	*	@retval		STK_SUCCESS			正常结束
+	*	@retval		其它				异常结束
+	*	@note		无
+	*	@attention	无
+	****************************************************************************/
+	static STK_STATUS	WriteAsciiSTL(const vector<M3D::Vector3>& i_vcVtxs, const vector<int>& i_vcIndexs, const STK_CHAR* i_chFileName);
+
+	/****************************************************************************
+	*	@brief		根据配置矩阵转换点数据
+	*	@param[in]	i_mtxPlacement		配置矩阵
+	*	@param[in]	i_pntSrc			原始点
+	*	@param[out]	o_pntDst			目标点
+	*	@retval		STK_SUCCESS			正常结束
+	*	@note		无
+	*	@attention	无
+	****************************************************************************/
+	static STK_STATUS	MultMatrixVec(STK_MTX32 i_mtxPlacement, STK_PNT32 i_pntSrc, STK_PNT32& o_pntDst);
+
+
+
+	static STK_STATUS	MultMatrixVec(M3D::Matrix3x4 i_mtxPlacement, M3D::Vector3 i_pntSrc, M3D::Vector3& o_pntDst);
+
+	/****************************************************************************
+	*	@brief		计算新的配置矩阵
+	*	@param[in]	i_mtxPlacement1		配置矩阵1
+	*	@param[in]	i_mtxPlacement2		配置矩阵2
+	*	@param[out]	o_mtxPlacement		目标配置矩阵
+	*	@retval		STK_SUCCESS			正常结束
+	*	@note		无
+	*	@attention	无
+	****************************************************************************/
+	static STK_STATUS	ConvertMatrix(STK_MTX32 i_mtxPlacement1, STK_MTX32 i_mtxPlacement2, STK_MTX32& o_mtxPlacement);
 };
 }
 #endif 

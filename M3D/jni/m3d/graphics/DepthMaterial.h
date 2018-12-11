@@ -7,7 +7,7 @@
 namespace M3D
 {
 	/************************************************************************/
-	/* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¼                                                                     */
+	/* Éî¶ÈÎÆÀí¡£ÓÃÀ´Éú³ÉÉî¶ÈÌùÍ¼                                                                     */
 	/************************************************************************/
 	class M3D_API DepthMaterial :public InnerMaterial
 	{
@@ -16,8 +16,8 @@ namespace M3D
 		DepthMaterial(DepthMaterial& org);
 		~DepthMaterial();
 		virtual BaseMaterial* Clone();
-		bool GetUseLight() const ;
-		void SetUseLight(bool val) ;
+		bool GetUseLight() const override;
+		void SetUseLight(bool val) override;
 		
 	};
 }

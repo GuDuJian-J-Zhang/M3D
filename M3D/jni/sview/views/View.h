@@ -28,6 +28,7 @@
 
 #include "sview/extern/PerspectiveOperator.h"
 #include "animation/SimulationCommon/Animation_def.h"
+#include "sview/extern/ExplosiveViewOperatorOriVersion.h"
 
 namespace M3D
 {
@@ -400,6 +401,7 @@ public:
 	 */
 	void ClearClipPlane();
 
+	virtual bool SetExplosiveViewOriVersion(int stype, int pos = 100, bool useAnimation = false);
     /**
      * 设置爆炸视图
      * @param stype
@@ -425,13 +427,14 @@ public:
 	virtual bool SetExplosiveViewWithoutRestore(int stype, int pos = 100, bool useAnimation = false);
 
     virtual ExplosiveViewOperator* GetExplosiveView();
-
+	virtual ExplosiveViewOperatorOriVersion* GetExplosiveViewOriVersion();
     /**
      * 关闭爆炸图
      * @return true表示成功 false表示失败
      */
     virtual bool CloseExplisiveView();
 
+	virtual bool CloseExplisiveViewOriVersion();
 
 	void StartExplosition(vector<Model*> models);
 	void endExplosition();
@@ -595,7 +598,7 @@ public:
 	 * @param type 是否
 	 * @return 空间中的点
 	 */
-	Vector3 GetSelectedPoint(float x, float y, int type, bool inModel=true);
+	Vector3 GetSelectedPoint(float x, float y, int type, bool inModel=true, bool inExcludeEdge = false);
 
 	Vector3 GetUILayerSelectedPoint(float x, float y);
 
@@ -1376,7 +1379,7 @@ private:
     SceneGroundNode * m_sceneGroundNode;//!<地面节点
 
     ExplosiveViewOperator* m_ExplosiveViewOperator;//!<爆炸操作
-
+	ExplosiveViewOperatorOriVersion* m_ExplosiveViewOperatorOriVersion;
 	DraggerManager* _draggerManager;
 	SectionManager* _sectionManager;
 	ModelView  *m_tempDefaultView;//!<默认视图

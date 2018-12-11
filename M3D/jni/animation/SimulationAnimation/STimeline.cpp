@@ -370,9 +370,10 @@ CSTimeline* CSTimeline::Clone()
 
 bool CSTimeline::GetTimelineInterval(int currentTime, int &interval)
 {
-	int *timeline = GetTimelineArray();
 	int length = GetTimelineArrayLength();
-
+	if (length <= 0)
+		return false;
+	int *timeline = GetTimelineArray();
 	for (int i=0;i<length;i++)
 	{
 		if (currentTime>=timeline[i])

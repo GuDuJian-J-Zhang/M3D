@@ -44,6 +44,19 @@ public:
 	const static int DOWNFRONTLEFT = 14; //下前左轴测图
 	const static int DOWNBEHINDRIGHT = 15; //下后右轴测图
 
+	const static int  UPBEHIND = 16;   //上后测图
+	const static int  UPFRONT = 17;   //上前测图
+	const static int  UPLEFT = 18;   //上左测图
+	const static int  UPRIGHT = 19;   //上右测图
+	const static int  DOWNBEHIND = 20;   //下后测图
+	const static int  DOWNFRONT = 21;   //下前测图
+	const static int  DOWNLEFT = 22;   //下左测图
+	const static int  DOWNRIGHT = 23;   //下右测图
+	const static int  FRONTLEFT = 24;   //前左测图
+	const static int  RONTRIGHT = 25;   //前右测图
+	const static int  BEHINDLEFT = 26;   //后左测图
+	const static int  BEHINDRIGHT = 27;   //后右测图
+
 	const static ControlInfo FRONT_MVMATRIX;
 	const static ControlInfo BACK_MVMATRIX;
 
@@ -65,6 +78,19 @@ public:
 	const static ControlInfo DOWNFRONTRIGHT_MVMATRIX;   //下前右轴测图
 	const static ControlInfo DOWNFRONTLEFT_MVMATRIX;   //下前左轴测图
 	const static ControlInfo DOWNBEHINDRIGHT_MVMATRIX;   //下后右轴测图
+
+	const static ControlInfo UPBEHIND_MVMATRIX;   //上后测图
+	const static ControlInfo UPFRONT_MVMATRIX;   //上前测图
+	const static ControlInfo UPLEFT_MVMATRIX;   //上左测图
+	const static ControlInfo UPRIGHT_MVMATRIX;   //上右测图
+	const static ControlInfo DOWNBEHIND_MVMATRIX;   //下后测图
+	const static ControlInfo DOWNFRONT_MVMATRIX;   //下前右轴测图
+	const static ControlInfo DOWNLEFT_MVMATRIX;   //下左测图
+	const static ControlInfo DOWNRIGHT_MVMATRIX;   //下右测图
+	const static ControlInfo FRONTLEFT_MVMATRIX;   //前左测图
+	const static ControlInfo RONTRIGHT_MVMATRIX;   //前右测图
+	const static ControlInfo BEHINDLEFT_MVMATRIX;   //后左测图
+	const static ControlInfo BEHINDRIGHT_MVMATRIX;   //后右测图
 
 private:
 	const static float DISTRI; //扰动,防止矩阵不可逆

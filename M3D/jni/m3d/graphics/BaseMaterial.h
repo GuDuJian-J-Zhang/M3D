@@ -217,6 +217,9 @@ namespace M3D
 		//************************************
 		void SetDefine(string key, string value);
 		void ClearDefine(string key);
+
+		virtual bool Compare(BaseMaterial* smaterial);
+
 	protected:
 		void Rename(string newName);//TODO
 		MaterialType m_materialType;

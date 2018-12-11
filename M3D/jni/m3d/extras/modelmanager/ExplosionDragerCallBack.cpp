@@ -33,10 +33,10 @@ namespace M3D
 			{
 				this->receive((TranslateInLineCommand&)command);
 			}
-			else if (command.GetType() == MotionCommand::Type::TYPE_TRANSLATEINPLANE)
-			{
-				this->receive((TranslateInPlaneCommand&)command);
-			}
+			//else if (command.GetType() == MotionCommand::Type::TYPE_TRANSLATEINPLANE)
+			//{
+			//	this->receive((TranslateInPlaneCommand&)command);
+			//}
 			
 		}
 		else if (command.getStage() == MotionCommand::FINISH)
@@ -71,8 +71,7 @@ namespace M3D
 		if (dragger->GetDraggerName() == L"MinusXAxis")
 		{
 			//指定轴的爆炸操作
-			dragTranslationAll = dragTranslationAll + translation;
-			m_view->SetExplosiveViewWithDirection(arrayModels, type, percent, dragTranslationAll);
+			m_view->SetExplosiveViewWithDirection(arrayModels, type, percent, dragTranslation);
 		}
 		else
 		{

@@ -5,8 +5,8 @@
  *@version	1.0
  *
  */
-#ifndef EXPLOSIVEVIEWOPERA_H_
-#define EXPLOSIVEVIEWOPERA_H_
+#ifndef EXPLOSIVEVIEWOPERATORORIVERSION_H_
+#define EXPLOSIVEVIEWOPERATORORIVERSION_H_
 
 #define NOEXPLOSIVE -1
 #define AWAYFROMCENTER 0
@@ -19,18 +19,12 @@
 #define AWAYFROMCENTER_Y_FRONT 5
 #define AWAYFROMCENTER_Z_BOTTOM 6
 
-#define AWAYFROMCENTER_YZ_FACE 7
-#define AWAYFROMCENTER_XZ_FACE 8
-#define AWAYFROMCENTER_XY_FACE 9
-
-#define TOBALLSURFACE 10
-
+#define TOBALLSURFACE 11
 
 #include "m3d/M3D.h"
 #include "m3d/base/Vector3.h"
 #include "m3d/base/Matrix4.h"
 #include "m3d/scene/ShapeNode.h"
-#include "m3d/model/Note.h"
 
 namespace SVIEW
 {
@@ -45,21 +39,21 @@ class Model;
 class GroupNode;
 class BoundingBox;
 class ModelShape;
-class M3D_API NodeState
+class M3D_API NodeStateCache
 {
 public:
-	NodeState()
+	NodeStateCache()
 	{
 	}
 
-	NodeState(Model* node, const Matrix3x4& matrix, const BoundingBox& box)
+	NodeStateCache(ModelShape* node, const Matrix3x4& matrix, const BoundingBox& box)
 	{
 		this->sceneNode = node;
 		this->matrixCache = matrix;
 		this->boxCache = box;
 	}
 
-	Model* sceneNode;
+	ModelShape* sceneNode;
 	Matrix3x4 matrixCache;
 	BoundingBox boxCache;
 };
@@ -70,31 +64,24 @@ public:
  *
  * 当前支持爆炸到指定级别，支持按照中心点向四周爆炸操作
  */
-class M3D_API ExplosiveViewOperator
+class M3D_API ExplosiveViewOperatorOriVersion
 {
 public:
 	static const int MAX_ASSEMBLY_LEVLE; //默认最大的爆炸装配级别
 
 public:
-	ExplosiveViewOperator();
-	virtual ~ExplosiveViewOperator();
+	ExplosiveViewOperatorOriVersion();
+	virtual ~ExplosiveViewOperatorOriVersion();
 
 	void SetView(View* view);
 	View* GetView();
 
 	bool SetPercent(View* view, int style, float percent = 100.0f,
 			bool useAnimation = true);
-
-	bool SetPercent(View* view,vector<Model*> arrayModels, int style, float percent = 100.0f,
-		bool useAnimation = true);
-	bool setPercentWithDirection(View* view, vector<Model*> arrayModels, int style, float percent = 100.0f, Vector3 director =Vector3(0,0,0));
-
 	//不带复位的
 	bool SetPercentWithoutRestore(View* view, int style, float percent = 100.0f,
 		bool useAnimation = true);
 	bool Close(View* view);
-	void startExplosion(vector<Model*> models);
-	void endExplosion();
 	/**
 	 * 将模型拆解，并排列
 	 * @param shapeList 模型列表
@@ -139,10 +126,7 @@ public:
 	 * @param level
 	 */
 	void SetExplosiveStyle(int style);
-	void SetExplosiveMinus(int minus);
 	void Reset();
-	BoundingBox targetBoundingBox;
-	void CacheMatrixState();
 private:
 	
 
@@ -151,7 +135,7 @@ private:
 	 * @return
 	 */
 	bool ProcressAwayFromCenter();
-	bool ProcressAwayFromCenter(vector < Model*> models);
+
 	/**
 	 * 实现所有零件到球面的爆炸效果
 	 * @return
@@ -162,8 +146,7 @@ private:
 
 	void AwayFromCenter(const Vector3& topCenter, GroupNode* subNode);
 
-	
-	void CacheSelectMatrixState(vector<Model*> arrayModels);
+	void CacheMatrixState();
 
 	static void CacheMatrixState(void* data, Model* node);
 
@@ -176,60 +159,37 @@ private:
 	 * @param matrix
 	 * @return
 	 */
-	bool GetMatrix(Model* nodeAddr, NodeState& nodeState);
+	bool GetMatrix(Model* nodeAddr, NodeStateCache& nodeState);
 	/**
 	 * 将矩阵加入缓存中
 	 * @param nodeAddr
 	 * @param matrix
 	 */
-	void AddMatrix(Model* nodeAddr, const NodeState& nodeState);
+	void AddMatrix(Model* nodeAddr, const NodeStateCache& nodeState);
 
 private:
 	View* m_view;
 	int m_explosiveStyle; //当前作用的爆炸图类型
-	int m_explosiveMinus;
 	float m_explosivePercent; //爆炸力度
-	
 	bool m_isUseAnimation;
 
 	bool m_isFirstOpen;
-	bool m_isSelector;
-	 
-	Vector3 explosiveDirection;//指定爆炸轴为选定方向
 
-	vector<Model*> arrayModels;
-	
-	map<Model*, NodeState> m_allNodeMatrixsCache;
+	map<ModelShape*, NodeStateCache> m_allNodeMatrixsCache;
 
 	Matrix4 m_viewMatrix; //viewMatrix
 
 	Vector3 m_TopNodeCenter; //顶层节点包围盒中心
 
-	Vector3 m_TopNodeTop; //顶层节点包围盒最上边
-
 	Vector3 m_TopNodeBottom; //顶层节点包围盒最下边
 
 	Vector3 m_TopNodeLeft; //顶层节点包围盒最左边
-	
-	Vector3 m_TopNodeRight; //顶层节点包围盒最右边
 
 	Vector3 m_TopNodeFront; //顶层节点包围盒最前边
-
-	Vector3 m_TopNodeBehind; //顶层节点包围盒最后边
-	//如果是自由指定的方向，则需要以法向量及包围盒合适的点确定的面为参考系
-	Vector3 p000;
-	Vector3 p001;
-	Vector3 p010;
-	Vector3 p011;
-	Vector3 p100;
-	Vector3 p101;
-	Vector3 p110;
-	Vector3 p111;
 
 	float m_screenDepth; //屏幕点到空间点所需的深度
 
 	int m_explosiveLevel; //爆炸到几级装配
-
 
 };
 }
