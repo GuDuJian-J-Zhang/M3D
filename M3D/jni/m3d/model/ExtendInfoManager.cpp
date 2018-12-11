@@ -58,6 +58,10 @@ map<int, PMIData*>* ExtendInfoManager::GetModelPMIs(IDTYPE ModelId)
 	}
 	return NULL;
 }
+map<IDTYPE, map<int, PMIData*>> ExtendInfoManager::GetAllPMIs()
+{
+	return  m_AllModelPMIMap;
+}
 
 int ExtendInfoManager::GetModelPMIsCount(IDTYPE ModelId)
 {

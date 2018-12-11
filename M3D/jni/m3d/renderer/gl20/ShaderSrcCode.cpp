@@ -7520,6 +7520,46 @@ namespace M3D
 			;
 	}
 
+	const char * ShaderSrcCode::DiamondStarVert()
+	{
+		return
+
+			"attribute  vec3 a_position;\n"
+			"attribute  vec3 a_texCoords;\n"
+			"uniform mat4 u_modelMat;\n"
+			"uniform mat4 u_viewMat;\n"
+			"uniform mat4 u_textureMat;\n"
+			"uniform mat4 u_projectionMat;\n"
+			"uniform vec2 flarePos;\n"
+			"uniform vec2 size;\n"
+			"varying vec2 v_texCoords;\n"
+			"\n"
+			"void main(void)\n"
+			"{\n"
+			"    gl_Position = vec4(a_position,1.0);\n"
+			"    v_texCoords =(u_textureMat*vec4(a_texCoords.xyz,1.0)).xy;\n"
+			"    vec2 flare = vec2(v_texCoords.x-flarePos.x+size.x,v_texCoords.y-flarePos.y+size.y);\n"
+			"    flare =vec2(flare.x/size.x-0.5,flare.y/size.y-0.5);\n"
+			"    gl_Position = u_projectionMat*u_modelMat*u_viewMat*vec4(a_position,1.0);\n"
+			"}\n"
+			"\n";
+	}
+
+	const char * ShaderSrcCode::DiamondStarFrag()
+	{
+		return
+			"precision highp  float;"
+			 "varying vec2 vUv;\n"
+			"uniform sampler2D refoutTexture;\n" //星星图片
+			// "    uniform vec2 screen;",  //屏幕坐标 没用也要留着...
+			"varying vec2 v_texCoords;\n"
+			"void main() { \n"
+			"    vec4 fpic=  texture2D(refoutTexture,v_texCoords);\n"
+			"    gl_FragColor = fpic*fpic.a*fpic.a;\n"
+//				"    gl_FragColor = vec4(0.0,1.0,0.0,1.0);\n"
+			"}\n";
+	}
+
 	const char * ShaderSrcCode::DiamondBlendQuadVert()
 	{
 		return
@@ -7542,14 +7582,14 @@ namespace M3D
 			"precision highp  float;"
 			"uniform sampler2D u_sampler0;\n"
 			"uniform sampler2D u_sampler1;\n"
-//			"uniform sampler2D u_sampler3;\n"
+			"uniform sampler2D u_sampler3;\n"
 			"varying vec2 v_texCoords;\n"
 			"void main() { \n"
 			"  vec4 frontColor = texture2D(u_sampler0,v_texCoords);\n"
 			"  vec4 backColor = texture2D(u_sampler1,v_texCoords);\n"
-//			"  vec4 starColor = texture2D(u_sampler3,v_texCoords);\n"
+			"  vec4 starColor = texture2D(u_sampler3,v_texCoords);\n"
 			"  vec4 FragColor = vec4(0.0);"
-			"  FragColor = vec4(frontColor.xyz+backColor.xyz,1.0);\n "
+			"  FragColor = vec4(frontColor.xyz+backColor.xyz+starColor.rgb*0.40,1.0);\n "
 			"  gl_FragColor = FragColor;\n"
 			"}\n";
 	}
@@ -7614,7 +7654,7 @@ namespace M3D
 				"uniform sampler2D u_sampler1;\n"
 				"uniform sampler2D u_sampler2;\n"
 				"uniform sampler2D u_sampler3;\n"
-				"//uniform sampler2D u_sampler4;\n"
+				"uniform sampler2D u_sampler4;\n"
 				"//uniform sampler2D u_sampler5;\n"
 				"uniform sampler2D u_sampler6;\n"
 				"uniform sampler2D u_sampler7;\n"
@@ -7626,7 +7666,7 @@ namespace M3D
 				"  vec4 jewelDepth = texture2D(u_sampler1,v_texCoords);\n"
 				"  vec4 ringArmColor = texture2D(u_sampler2,v_texCoords);\n"
 				"  vec4 ringArmDepth = texture2D(u_sampler3,v_texCoords);\n"
-				"  //vec4 jewelStarColor= texture2D(u_sampler4,v_texCoords);\n"
+				"  vec4 jewelStarColor= texture2D(u_sampler4,v_texCoords);\n"
 				" // vec4 jewelStarDepth= texture2D(u_sampler5,v_texCoords);\n"
 				"  vec4 jewelNoteColor = texture2D(u_sampler6,v_texCoords);\n"
 				"  vec4 diamondDlendColor = texture2D(u_sampler7,v_texCoords);\n"
@@ -7644,6 +7684,10 @@ namespace M3D
 				"   else\n"
 				"   {\n"
 				"      FragColor = vec4(ringArmColor.rgba);\n"
+				"   }\n"
+				"    if(jewelStarColor.a>0.0)\n"
+				"    {\n"
+				"      FragColor = vec4(jewelStarColor.rgb,1.0);\n "
 				"   }\n"
 				"    if(jewelNoteColor.a>0.0)\n"
 				"    {\n"

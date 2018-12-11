@@ -563,6 +563,13 @@ public:
      * @param mSub 是否设置子装配
      */
     void SetPMISVisible(bool isVisible, Model *model, bool mSub = false);
+    /**
+        * 根据PMIID设置PMI的显隐状态
+        * @param isVisible
+        * @param model 模型
+        * @param mSub 是否设置子装配
+        */
+    void SetPMISVisible(bool isVisible, int pmiID, bool mSub = false);
 	/**
 	 * @brief 复位ID为id的shape到最初加载位置
 	 * @param id

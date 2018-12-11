@@ -2062,6 +2062,16 @@ map<int, PMIData*>* Model::GetPMIs()
 	return NULL;
 }
 
+map<IDTYPE, map<int, PMIData*>> Model::GetAllPMIs()
+{
+	map<IDTYPE, map<int, PMIData*>> pmis ;
+	if (this->m_ExtInfoMgr)
+	{
+		pmis =  m_ExtInfoMgr->GetAllPMIs();
+	}
+	return pmis;
+}
+
 void Model::SetProtoTypeId(int protoTypeId)
 {
 	this->m_ProtoTypeID = protoTypeId;

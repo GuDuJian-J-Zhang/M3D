@@ -97,8 +97,8 @@ private:
 	//int m_ProtoTypeID; //!<原型id
 	Matrix3x4 m_origPlcMatrix; //!<配置矩阵
 
-	//std::string m_Name; //!<名称				
-	string m_placePath;//!<配置路径			   
+	//std::string m_Name; //!<名称
+	string m_placePath;//!<配置路径
 	bool m_origVisible;//!<读取时候的显示隐藏状态
 	Color m_origColor;//!<读取模型默认原始颜色
 public:
@@ -523,6 +523,7 @@ public:
 	* @return
 	*/
 	virtual map<int, PMIData*>* GetPMIs();
+	virtual map<IDTYPE, map<int, PMIData*>>  GetAllPMIs();
 
 	/**
 	* 设置关联ProtoType的id
@@ -634,7 +635,7 @@ protected:
 	mutable bool m_dirty; //!< @see SceneNode
 	///World-space transform matrix.
 	mutable Matrix3x4 m_worldMatrix; //!< @see SceneNode
-	std::string m_Name; //!<名称	
+	std::string m_Name; //!<名称
 private:
 		mutable Matrix3x4 m_plcMatrix; //!<配置矩阵
 		Model* m_ParentModel; //!<父模型
@@ -650,8 +651,8 @@ private:
 		ModelExtInfo* m_modelExtInfo;
 		ExtendInfoManager* m_ExtInfoMgr;
 
-		int m_PlaceID; //!<配置ID	
-		int m_InstanceID; //纪录实例的id，方便后期从文件中获取所需数据	
+		int m_PlaceID; //!<配置ID
+		int m_InstanceID; //纪录实例的id，方便后期从文件中获取所需数据
 		int m_svlId;
 		int m_ProtoTypeID; //纪律原型的id
 		void* m_userData;

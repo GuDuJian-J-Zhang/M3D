@@ -187,6 +187,16 @@ public:
 	static const char* JewelHighLightFrag();
 
 	//************************************
+	// Method:    StarVert
+	// FullName:  M3D::ShaderSrcCode::JewelHighLightVert
+	// Access:    public static
+	// Returns:   const char*
+	// Qualifier:  钻石的星星效果层
+	//************************************
+	static const char* DiamondStarVert();
+	static const char* DiamondStarFrag();
+
+	//************************************
 	// Method:    JewelBlendQuadVert
 	// FullName:  M3D::ShaderSrcCode::JewelBlendQuadVert
 	// Access:    public static 

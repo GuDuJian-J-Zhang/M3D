@@ -5149,6 +5149,27 @@ void View::SetPMISVisible(bool isVisible, Model *model, bool mSub) {
         
     }
 }
+void View::SetPMISVisible(bool isVisible, int pmiID, bool mSub) {
+	map<IDTYPE, map<int, PMIData*>> pmis = this->GetModel()->GetAllPMIs();
+	if (pmis.size() > 0) {
+		map<IDTYPE, map<int, PMIData*>>::iterator pmisit = pmis.begin();
+		map<IDTYPE, map<int, PMIData*>>::iterator pmiend = pmis.end();
+		while (pmisit != pmiend) {
+			map<int, PMIData*> tmpPMIs = (*pmisit).second;
+			map<int, PMIData*>::iterator it = tmpPMIs.begin();
+			map<int, PMIData*>::iterator end = tmpPMIs.end();
+			while (it != end) {
+				PMIData* pmi = (*it).second;
+				if (pmi->GetID() == pmiID) {
+					pmi->SetVisible(isVisible);
+					return;
+				}
+				it++;
+			}
+			pmisit++;
+		}
+	}
+}
 
 bool View::hasPMI(Model* model) {
 	bool ret = false;

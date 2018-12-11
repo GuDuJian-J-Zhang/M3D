@@ -32,6 +32,7 @@ public:
 
 	void AddModelPMIs(IDTYPE ModelId,const map<int, PMIData*>& pmis);
 	map<int, PMIData*>* GetModelPMIs(IDTYPE ModelId);
+	map<IDTYPE, map<int, PMIData*>> GetAllPMIs();
 	int GetModelPMIsCount(IDTYPE ModelId);
 
 	void AddModelView(IDTYPE ModelId, const vector<ModelView*>& vecViews);
@@ -52,11 +53,11 @@ public:
     map<wstring, wstring> GetMeshEdgeAllAttribute(const int& i_iModelID, const int& i_MeshEdgeID);
 	GeometryAttribute* GetFaceGeoAttribute(int iModelID, int iMeshFaceID);
 	GeometryAttribute* GetEdgeGeoAttribute(int iModelID, int iMeshEdgeID);
-	//¿½±´¸´ÖÆÔ­ÓÐmodel
+	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô­ï¿½ï¿½model
 	void CopyMeshAttr(unsigned int iOldModelID, unsigned int iNewModelID);
-	//Ìí¼ÓÃæ¼¸ºÎÊôÐÔ
+	//ï¿½ï¿½ï¿½ï¿½æ¼¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	void AddMeshFaceAttr(map<unsigned int, map<unsigned int, map<wstring, wstring>>>& faceAttrs);
-	//Ìí¼Ó±ß¼¸ºÎÊôÐÔ
+	//ï¿½ï¿½Ó±ß¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	void AddMeshEdgeAttr(map<unsigned int, map<unsigned int, map<wstring, wstring>>>& edgeAttrs);
 	void SetSVLXFilePath(const string& filePath);
 	void FillModelAttribute(Model* model);
@@ -67,9 +68,9 @@ private:
 	void LoadSVLXInfo(void* document);
 
 private:
-	map<IDTYPE, map<int, PMIData*>> m_AllModelPMIMap;         //!<ËùÓÐPMIµÄÁÐ±í ÁÙÊ±·ÅModelÏÂ
-	map<IDTYPE, vector<ModelView*>> m_AllModleViewList;       //!<ÊÓÍ¼ÁÐ±í
-	map<IDTYPE, vector<SectionPlane*>> m_AllSectionPlaneList; //!<ÆÊÊÓÆ½ÃæÁÐ±í
+	map<IDTYPE, map<int, PMIData*>> m_AllModelPMIMap;         //!<ï¿½ï¿½ï¿½ï¿½PMIï¿½ï¿½ï¿½Ð±ï¿½ ï¿½ï¿½Ê±ï¿½ï¿½Modelï¿½ï¿½
+	map<IDTYPE, vector<ModelView*>> m_AllModleViewList;       //!<ï¿½ï¿½Í¼ï¿½Ð±ï¿½
+	map<IDTYPE, vector<SectionPlane*>> m_AllSectionPlaneList; //!<ï¿½ï¿½ï¿½ï¿½Æ½ï¿½ï¿½ï¿½Ð±ï¿½
  
 	string m_svlxFilePath;
     void* m_svlDoc;

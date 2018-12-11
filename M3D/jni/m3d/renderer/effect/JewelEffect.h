@@ -113,6 +113,8 @@ namespace M3D
 		// Parameter: RenderQueue * RenderStateArray
 		//************************************
 		void DrawJewelHighLight(RenderQueue* RenderStateArray);
+
+		void DrawDiamondStar(RenderQueue* RenderStateArray);
 		//************************************
 		// Method:    DrawJadeBlendQuad
 		// FullName:  M3D::JewelEffect::DrawJadeBlendQuad
